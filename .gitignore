@@ -1,0 +1,36 @@
+# Unity tarafından üretilen klasörler (her makinede yeniden oluşur)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/Captures/
+
+# IDE ve proje dosyaları
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Çökme raporları ve geçici dosyalar
+sysinfo.txt
+crashlytics-build.properties
+*.apk
+*.aab
+*.unitypackage
+*.tmp
