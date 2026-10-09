@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 // RescueCrew karakter ve animasyon FBX'lerine README'deki import ayarlarını otomatik uygular.
 // Ayarlar elle girilmez; her dosyaya bir kez yazılır, sonra Inspector'dan yapılan değişiklikler ezilmez.
@@ -12,6 +15,10 @@ internal class RescueCrewImportSettings : AssetPostprocessor
     // importSettingsMissing kopyalanan dosyalarda güvenilir çıkmadı, bu yüzden kendi işaretimizi tutuyoruz.
     private const string AppliedMarker = "RescueCrewDefaults:v1";
 
+    // Karakter FBX'leri için işaret v3: humanoid kas limitleri Unity varsayılanında (v2'deki kol daraltması geri alındı).
+    // Kol gömülmesi avatarda değil, Running klibinde RescueCrewClipFixes ile giderilir.
+    private const string CharacterMarker = "RescueCrewDefaults:v3";
+
     private void OnPreprocessModel()
     {
         bool isCharacter = assetPath.StartsWith(CharacterFolder);
@@ -20,7 +27,8 @@ internal class RescueCrewImportSettings : AssetPostprocessor
             return;
 
         var importer = (ModelImporter)assetImporter;
-        if (importer.userData == AppliedMarker)
+        string marker = isCharacter ? CharacterMarker : AppliedMarker;
+        if (importer.userData == marker)
             return;
 
         importer.globalScale = 1f;
@@ -33,9 +41,30 @@ internal class RescueCrewImportSettings : AssetPostprocessor
         {
             importer.importBlendShapes = true;
             importer.importAnimation = false;  // Karakter dosyasında klip yok, T-pose
-            importer.userData = AppliedMarker;
+            // İlk importta human listesi henüz boş olabilir; o zaman işaret konmaz, sonraki reimport'ta uygulanır
+            if (UseDefaultMuscleLimits(importer))
+                importer.userData = CharacterMarker;
         }
         // Animasyon dosyalarında işaret, klip ayarları da yazılınca OnPreprocessAnimation'da konur
+    }
+
+    // Tüm kemiklerin kas limitlerini Unity varsayılanına yazar (useDefaultValues = true).
+    private static bool UseDefaultMuscleLimits(ModelImporter importer)
+    {
+        HumanDescription description = importer.humanDescription;
+        if (description.human == null || description.human.Length == 0)
+            return false;
+
+        HumanBone[] humanBones = description.human;
+        for (int i = 0; i < humanBones.Length; i++)
+        {
+            HumanLimit limit = humanBones[i].limit;
+            limit.useDefaultValues = true;
+            humanBones[i].limit = limit;
+        }
+        description.human = humanBones;
+        importer.humanDescription = description;
+        return true;
     }
 
     private void OnPreprocessAnimation()
