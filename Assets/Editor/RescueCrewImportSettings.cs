@@ -78,7 +78,8 @@ internal class RescueCrewImportSettings : AssetPostprocessor
 
         string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
         bool loops = !fileName.Contains("Waving");                       // El sallama tek sefer oynar
-        bool inPlace = fileName.Contains("Walking") || fileName.Contains("Running");
+        // Yürüme ve koşu klipleri yerinde oynar. Aday adları "Walk_SneakWalk", "Run_SlowRun" gibi; bu yüzden kök kelimeye bakılır
+        bool inPlace = fileName.Contains("Walk") || fileName.Contains("Run");
 
         ModelImporterClipAnimation[] clips = importer.defaultClipAnimations;
         foreach (ModelImporterClipAnimation clip in clips)
