@@ -178,7 +178,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d047a1dff7642144b951985479e5e71e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 198034289}
   m_SourcePrefab: {fileID: 100100000, guid: d047a1dff7642144b951985479e5e71e, type: 3}
 --- !u!4 &5637416 stripped
 Transform:
@@ -220,6 +223,47 @@ Transform:
   - {fileID: 1267800773}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &198034287 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d047a1dff7642144b951985479e5e71e, type: 3}
+  m_PrefabInstance: {fileID: 5637415}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &198034289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198034287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35bd16e9579c2ae47b0cee57ce0e2d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootGroundingIK
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  rayStartHeight: 0.5
+  rayDownDistance: 0.6
+  maxGroundAngle: 45
+  ankleHeightOverride: 0
+  soleDetectHeight: 0.015
+  soleToeForward: 0.156
+  soleHeelBack: 0.097
+  soleHalfWidth: 0.086
+  soleCenterOffset: 0.031
+  soleLift: 0.01
+  fullWeightClearance: 0.01
+  zeroWeightClearance: 0.05
+  maxRaise: 0.25
+  maxLower: 0.25
+  flattenWeight: 1
+  maxBodyRaise: 0.25
+  maxBodyDrop: 0.25
+  bodySmoothTime: 0.05
+  residualGain: 0.8
+  maxResidual: 0.1
+  masterWeight: 1
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,7 +324,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 47.1
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -357,6 +401,11 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &331872911 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 21cffc3b6b097c14b97a2aadbd57ee34, type: 3}
+  m_PrefabInstance: {fileID: 1516868502}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -533,6 +582,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &844838337 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 367de73dc205366439c21cd2fbff7ace, type: 3}
+  m_PrefabInstance: {fileID: 1267800772}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1087132438
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -592,7 +646,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b85e5c0bfa912ad43a4eb561e8f59322, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1699383023}
   m_SourcePrefab: {fileID: 100100000, guid: b85e5c0bfa912ad43a4eb561e8f59322, type: 3}
 --- !u!4 &1087132439 stripped
 Transform:
@@ -771,13 +828,52 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 367de73dc205366439c21cd2fbff7ace, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1267800775}
   m_SourcePrefab: {fileID: 100100000, guid: 367de73dc205366439c21cd2fbff7ace, type: 3}
 --- !u!4 &1267800773 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 367de73dc205366439c21cd2fbff7ace, type: 3}
   m_PrefabInstance: {fileID: 1267800772}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1267800775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844838337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35bd16e9579c2ae47b0cee57ce0e2d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootGroundingIK
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  rayStartHeight: 0.5
+  rayDownDistance: 0.6
+  maxGroundAngle: 45
+  ankleHeightOverride: 0
+  soleDetectHeight: 0.015
+  soleToeForward: 0.156
+  soleHeelBack: 0.097
+  soleHalfWidth: 0.086
+  soleCenterOffset: 0.031
+  soleLift: 0.01
+  fullWeightClearance: 0.01
+  zeroWeightClearance: 0.05
+  maxRaise: 0.25
+  maxLower: 0.25
+  flattenWeight: 1
+  maxBodyRaise: 0.25
+  maxBodyDrop: 0.25
+  bodySmoothTime: 0.05
+  residualGain: 0.8
+  maxResidual: 0.1
+  masterWeight: 1
 --- !u!1 &1392930576
 GameObject:
   m_ObjectHideFlags: 0
@@ -949,13 +1045,93 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 21cffc3b6b097c14b97a2aadbd57ee34, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1516868505}
   m_SourcePrefab: {fileID: 100100000, guid: 21cffc3b6b097c14b97a2aadbd57ee34, type: 3}
 --- !u!4 &1516868503 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 21cffc3b6b097c14b97a2aadbd57ee34, type: 3}
   m_PrefabInstance: {fileID: 1516868502}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1516868505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 331872911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35bd16e9579c2ae47b0cee57ce0e2d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootGroundingIK
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  rayStartHeight: 0.5
+  rayDownDistance: 0.6
+  maxGroundAngle: 45
+  ankleHeightOverride: 0
+  soleDetectHeight: 0.015
+  soleToeForward: 0.156
+  soleHeelBack: 0.097
+  soleHalfWidth: 0.086
+  soleCenterOffset: 0.031
+  soleLift: 0.01
+  fullWeightClearance: 0.01
+  zeroWeightClearance: 0.05
+  maxRaise: 0.25
+  maxLower: 0.25
+  flattenWeight: 1
+  maxBodyRaise: 0.25
+  maxBodyDrop: 0.25
+  bodySmoothTime: 0.05
+  residualGain: 0.8
+  maxResidual: 0.1
+  masterWeight: 1
+--- !u!1 &1699383021 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b85e5c0bfa912ad43a4eb561e8f59322, type: 3}
+  m_PrefabInstance: {fileID: 1087132438}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1699383023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1699383021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35bd16e9579c2ae47b0cee57ce0e2d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootGroundingIK
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  rayStartHeight: 0.5
+  rayDownDistance: 0.6
+  maxGroundAngle: 45
+  ankleHeightOverride: 0
+  soleDetectHeight: 0.015
+  soleToeForward: 0.156
+  soleHeelBack: 0.097
+  soleHalfWidth: 0.086
+  soleCenterOffset: 0.031
+  soleLift: 0.01
+  fullWeightClearance: 0.01
+  zeroWeightClearance: 0.05
+  maxRaise: 0.25
+  maxLower: 0.25
+  flattenWeight: 1
+  maxBodyRaise: 0.25
+  maxBodyDrop: 0.25
+  bodySmoothTime: 0.05
+  residualGain: 0.8
+  maxResidual: 0.1
+  masterWeight: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
