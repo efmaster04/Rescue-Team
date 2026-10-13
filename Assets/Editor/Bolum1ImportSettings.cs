@@ -32,35 +32,30 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     }
 
     // Postprocessor sürümü: materyal düzeltmesi değişirse artır, Unity ilgili FBX'leri yeniden import eder.
-    public override uint GetVersion() { return 4; }
+    // v5: renk telafisi kaldırıldı (FBX'ler artık lineer DiffuseColor taşıyor), yalnız cam şeffaflığı kaldı.
+    public override uint GetVersion() { return 5; }
 
     public const string PaintMaterial = "M_Minivan_Paint";
     public const string GlassMaterial = "M_Minivan_Glass";
     public const float GlassAlpha = 0.35f;
 
-    // Minibüs materyalleri (FBX'e gömülü, URP Lit).
-    // Renk: Blender export'u FBX'e sRGB değerleri yazdı (#9AC4D2 → 0.604, 0.769, 0.824). URP'nin FBX okuyucusu
-    // (FBXMaterialDescriptionPreprocessor) bu sayıyı lineer sayıp bir kez daha sRGB'ye çeviriyor (diffuseColor.gamma);
-    // sonuç soluk (#CCE3EA, beklenene ΔE76 ≈ 14). Burada FBX'teki sayı doğrudan sRGB renk olarak yazılır. Ölçüm: Bolum1ColorProbe.
-    // Cam: URP'de Transparent yüzey, alfa 0.35 (minivan_meta.json glass_alpha 0.34).
+    // Minibüs camı (FBX'e gömülü, URP Lit): Transparent yüzey, alfa 0.35 (minivan_meta.json glass_alpha 0.34).
+    // Renk: Blender FBX'e lineer DiffuseColor yazar (#9AC4D2 → 0.323, 0.552, 0.644); URP'nin FBX okuyucusu
+    // (FBXMaterialDescriptionPreprocessor) bunu lineer kabul edip sRGB'ye çevirir, sonuç doğrudan beklenen hex olur.
+    // Bu yüzden renge dokunulmaz; yalnızca URP'nin yazdığı rengin alfası değiştirilir. Ölçüm: Bolum1ColorProbe.
     // Not: Materyal açıklaması modunda OnPostprocessMaterial çağrılmıyor (ölçüldü); bu yüzden OnPreprocessMaterialDescription.
-    // Sıra: URP'ninki -980, bizimki varsayılan 0, yani URP'den SONRA çalışıp onun yazdığı rengi ezer.
+    // Sıra: URP'ninki -980, bizimki varsayılan 0, yani URP'den SONRA çalışır.
     private void OnPreprocessMaterialDescription(MaterialDescription description, Material material, AnimationClip[] clips)
     {
-        if (!assetPath.StartsWith(VehicleFolder) || !material.HasProperty("_BaseColor")
-            || !description.TryGetProperty("DiffuseColor", out Vector4 diffuse))
+        if (!assetPath.StartsWith(VehicleFolder) || description.materialName != GlassMaterial || !material.HasProperty("_BaseColor"))
             return;
 
         Color c = material.GetColor("_BaseColor");
-        Color fixedColor = new Color(diffuse.x, diffuse.y, diffuse.z, c.a);
-        if (description.materialName == GlassMaterial)
-        {
-            fixedColor.a = GlassAlpha;
-            MakeTransparent(material);
-        }
-        material.SetColor("_BaseColor", fixedColor);
+        c.a = GlassAlpha;
+        MakeTransparent(material);
+        material.SetColor("_BaseColor", c);
         if (material.HasProperty("_Color"))
-            material.SetColor("_Color", fixedColor);
+            material.SetColor("_Color", c);
     }
 
     // URP Lit'i alfa karışımlı şeffaf yüzeye çevirir (Inspector'daki Surface Type = Transparent, Blending = Alpha ile aynı ayarlar).

@@ -9,13 +9,15 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// Minibüs renk ölçümü (yalnızca ölçer, sahneyi kaydetmez).
+// Bölüm 1 renk ölçümü (yalnızca ölçer, sahneyi kaydetmez): minibüs, mekân ve karakter (4 varyant).
 // Batchmode (-nographics OLMADAN): Unity.exe -batchmode -projectPath ... -executeMethod Bolum1ColorProbe.Run -renkTag once -logFile <dosya>
-// 1) FBX'in gömülü materyallerini okur: shader, renk (sRGB hex), saydamlık.
+// 1) FBX'lerin gömülü materyallerini okur: shader, renk (sRGB hex), saydamlık. Her materyalin Material.color'ı (sRGB)
+//    beklenen hex'le ΔE76 ile karşılaştırılır (MeasureAll; Bolum1Verify (a2) de aynı tabloyu kullanır).
 // 2) Sahneyi açar, minibüsü iki ışıkta çeker: sahne ışığı (olduğu gibi) ve nötr ışık (geçici: beyaz güneş kameradan, ortam ışığı kapalı).
 //    Nötr ışıkta ışığa dik yüzeylerde URP Lit'in yaygın (diffuse) payı ≈ albedo olur; böylece ekrandaki boya rengi materyal rengiyle karşılaştırılabilir.
 // 3) Her pikselin hangi materyale düştüğünü geçici MeshCollider + raycast ile bulur, boya piksellerinin medyan rengini raporlar.
-// Çıktı: Captures/Bolum1/renk_<tag>_sahne.png, renk_<tag>_notr.png, renk_<tag>_rapor.txt
+// 4) Karakterin (TestCharacter_RescueCrew, turuncu varyant) yakın planını sahne ışığında çeker.
+// Çıktı: Captures/Bolum1/renk_<tag>_sahne.png, renk_<tag>_notr.png, renk_<tag>_karakter.png, renk_<tag>_rapor.txt
 public static class Bolum1ColorProbe
 {
     private const string OutDir = "Captures/Bolum1";
@@ -36,6 +38,9 @@ public static class Bolum1ColorProbe
             Line("BOLUM1 RENK OLCUMU (" + tag + ") " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", Inv));
             Line("renk uzayı: " + PlayerSettings.colorSpace + ", render pipeline: " + (GraphicsSettings.currentRenderPipeline != null ? GraphicsSettings.currentRenderPipeline.name : "Built-in"));
             ReportMaterials();
+            var results = MeasureAll(out List<string> problems);
+            ReportMeasurements(results, problems);
+            ReportAvatars();
 
             EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
             var van = GameObject.Find(Bolum1SceneBuilder.MinivanName);
@@ -47,6 +52,7 @@ public static class Bolum1ColorProbe
 
             var probes = BuildProbeColliders(van);
             Shoot("sahne", tag, camPos, look, probes);
+            ShootCharacter(tag);
 
             // Nötr ışık: değişiklikler yalnızca bellekte, sahne kaydedilmez.
             var sun = GameObject.Find("Sun").GetComponent<Light>();
@@ -58,7 +64,9 @@ public static class Bolum1ColorProbe
             Shoot("notr", tag, camPos, look, probes);
 
             foreach (var p in probes.Keys) UnityEngine.Object.DestroyImmediate(p.gameObject);
-            Line("BOLUM1 RENK OLCUMU OK");
+            bool colorsOk = problems.Count == 0 && results.All(r => r.DeltaE < MaxDeltaE);
+            if (!colorsOk) code = 1;
+            Line(colorsOk ? "BOLUM1 RENK OLCUMU OK" : "BOLUM1 RENK OLCUMU FAILED");
         }
         catch (Exception e)
         {
@@ -69,6 +77,171 @@ public static class Bolum1ColorProbe
         Debug.Log(report.ToString());
         EditorApplication.Exit(code);
     }
+
+    // ---------- tüm materyallerin beklenen renkleri ----------
+    public const float MaxDeltaE = 2f;
+
+    // Mekân: build_bolum1_ucurum.py sample_palette() albedo_srgb (Rock/Dirt/Grass referanstan örneklenip karıştırılır;
+    // kesin değerler Export/Bolum1_Ucurum/stats.json palette.albedo_srgb, 2870cdc). sRGB 0-1.
+    public static readonly Dictionary<string, Color> EnvironmentExpected = new Dictionary<string, Color>
+    {
+        { "M_Asphalt",    new Color(0.2000f, 0.2000f, 0.2150f) }, // #333337
+        { "M_LineYellow", new Color(0.9100f, 0.6500f, 0.2500f) }, // #E8A640
+        { "M_LineWhite",  new Color(0.8600f, 0.8400f, 0.7300f) }, // #DBD6BA
+        { "M_Rock",       new Color(0.6434f, 0.5088f, 0.3555f) }, // #A4825B
+        { "M_Dirt",       new Color(0.5042f, 0.3287f, 0.2035f) }, // #815434
+        { "M_Gravel",     new Color(0.4900f, 0.4350f, 0.3400f) }, // #7D6F57
+        { "M_Grass",      new Color(0.3662f, 0.3859f, 0.1159f) }, // #5D621E
+        { "M_Metal",      new Color(0.4800f, 0.4800f, 0.4600f) }, // #7A7A75
+        { "M_Sign",       new Color(0.7800f, 0.0800f, 0.0700f) }, // #C71412
+        { "M_Backdrop",   new Color(0.5500f, 0.5000f, 0.5900f) }, // #8C8096
+    };
+
+    // Karakter: build_rescue_crew.py build_materials(); varyantlar export_variants.py (M_Helmet → M_Helmet_<V>, M_Reflective_Orange → M_Reflective_<V>).
+    public static readonly Dictionary<string, string> CharacterExpected = new Dictionary<string, string>
+    {
+        { "M_Skin", "#BD865A" }, { "M_Hair", "#302823" }, { "M_Jacket", "#252E46" },
+        { "M_Reflective_Orange", "#F47727" }, { "M_Reflective_Silver", "#C7C9BF" }, { "M_Pants", "#2D3650" },
+        { "M_Boots", "#584034" }, { "M_Sole", "#282421" }, { "M_Gloves", "#252627" }, { "M_Belt", "#654636" },
+        { "M_Radio", "#30373A" }, { "M_RadioScreen", "#829C64" }, { "M_Helmet", "#D94310" }, { "M_HelmetStrap", "#777A7E" },
+        { "M_Lamp", "#FFF0CA" }, { "M_EyeWhite", "#DDD9CE" }, { "M_Pupil", "#111211" }, { "M_Mouth", "#3E211B" },
+        { "M_Helmet_Yellow", "#F1C52D" }, { "M_Reflective_Yellow", "#F1C52D" },
+        { "M_Helmet_Blue", "#376BE0" }, { "M_Reflective_Blue", "#376BE0" },
+        { "M_Helmet_Green", "#53A855" }, { "M_Reflective_Green", "#53A855" },
+    };
+
+    public static readonly string[] Variants = { "Orange", "Yellow", "Blue", "Green" };
+    public const string CharacterFolder = "Assets/Models/Characters/RescueCrew/";
+
+    public struct ColorResult
+    {
+        public string Group, Asset, Material;
+        public Color Actual, Expected;
+        public float DeltaE;
+    }
+
+    // Tüm Bölüm 1 materyallerini ölçer. problems: beklenen tabloda olmayan materyal, eksik materyal, yanlış varyant rengi.
+    public static List<ColorResult> MeasureAll(out List<string> problems)
+    {
+        var results = new List<ColorResult>();
+        problems = new List<string>();
+
+        // (a) minibüs: minivan_meta.json (build_minivan.py reference_palette çıktısı)
+        var vanExpected = Bolum1Coordinates.Obj(Bolum1Coordinates.LoadJson(Bolum1Coordinates.MinivanMetaPath), "materials")
+            .ToDictionary(kv => kv.Key, kv => { ColorUtility.TryParseHtmlString((string)kv.Value, out Color c); return c; });
+        Measure("minibüs", Bolum1SceneBuilder.MinivanPath, vanExpected, vanExpected.Keys, results, problems);
+
+        // (b) mekân: 24 FBX
+        var envSeen = new HashSet<string>();
+        foreach (string guid in AssetDatabase.FindAssets("t:Model", new[] { Bolum1ImportSettings.EnvironmentFolder.TrimEnd('/') }))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            foreach (var m in AssetDatabase.LoadAllAssetsAtPath(path).OfType<Material>()) envSeen.Add(m.name);
+            Measure("mekân", path, EnvironmentExpected, null, results, problems);
+        }
+        foreach (string name in new[] { "M_Rock", "M_Dirt", "M_Asphalt", "M_Grass", "M_Metal", "M_Sign" })
+            if (!envSeen.Contains(name)) problems.Add("mekânda " + name + " yok");
+
+        // (c) karakter: 4 varyant; kask ve turuncu reflektör varyant rengini taşımalı
+        var charExpected = CharacterExpected.ToDictionary(kv => kv.Key, kv => { ColorUtility.TryParseHtmlString(kv.Value, out Color c); return c; });
+        foreach (string v in Variants)
+        {
+            string path = CharacterFolder + "SK_RescueCrew_" + v + ".fbx";
+            string helmet = v == "Orange" ? "M_Helmet" : "M_Helmet_" + v;
+            string reflective = "M_Reflective_" + v;
+            var required = charExpected.Keys.Where(k => !k.StartsWith("M_Helmet") && !k.StartsWith("M_Reflective_")).ToList();
+            required.AddRange(new[] { helmet, "M_HelmetStrap", reflective, "M_Reflective_Silver" });
+            // Bu varyantta olmaması gereken (başka varyantın) kask/reflektör materyalleri tabloda yok sayılır → beklenmeyen olarak raporlanır.
+            var allowed = charExpected.Where(kv => required.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+            Measure("karakter " + v, path, allowed, required, results, problems);
+        }
+        return results;
+    }
+
+    private static void Measure(string group, string path, Dictionary<string, Color> expected, IEnumerable<string> required,
+        List<ColorResult> results, List<string> problems)
+    {
+        var mats = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Material>().ToList();
+        if (mats.Count == 0) { problems.Add(path + ": materyal yok"); return; }
+        foreach (var m in mats)
+        {
+            if (!expected.TryGetValue(m.name, out Color want)) { problems.Add(group + " " + Path.GetFileName(path) + ": beklenmeyen materyal " + m.name); continue; }
+            Color c = m.color; // URP Lit'te _BaseColor ([MainColor])
+            results.Add(new ColorResult { Group = group, Asset = Path.GetFileName(path), Material = m.name, Actual = c, Expected = want, DeltaE = DeltaE(c, want) });
+        }
+        if (required != null)
+            foreach (string r in required)
+                if (!mats.Any(m => m.name == r)) problems.Add(group + " " + Path.GetFileName(path) + ": eksik materyal " + r);
+    }
+
+    private static void ReportMeasurements(List<ColorResult> results, List<string> problems)
+    {
+        Line("RENK TABLOSU (Material.color sRGB, beklenen, ΔE76; eşik < " + MaxDeltaE.ToString("F0", Inv) + ")");
+        // Mekânda aynı materyal birçok FBX'te tekrar eder: materyal başına en kötü ölçüm yazılır.
+        foreach (var g in results.GroupBy(r => r.Group + "|" + r.Material).Select(g => g.OrderByDescending(r => r.DeltaE).First()))
+            Line("  " + (g.DeltaE < MaxDeltaE ? "[OK]   " : "[FAIL] ") + g.Group + " " + g.Material + ": " + Hex(g.Actual) + " beklenen " + Hex(g.Expected)
+                + " ΔE76 " + g.DeltaE.ToString("F2", Inv) + " (" + results.Count(r => r.Group == g.Group && r.Material == g.Material) + " FBX, en kötü " + g.Asset + ")");
+        foreach (string p in problems) Line("  [FAIL] " + p);
+        var worst = results.OrderByDescending(r => r.DeltaE).FirstOrDefault();
+        Line("  toplam " + results.Count + " ölçüm, en kötü ΔE76 " + worst.DeltaE.ToString("F2", Inv) + " (" + worst.Group + " " + worst.Material + ")");
+    }
+
+    // Karakter yakın planı (sahne ışığı). Kamera karakterin önünde, göğüs hizasında.
+    private static void ShootCharacter(string tag)
+    {
+        var ch = GameObject.Find(Bolum1SceneBuilder.CharacterName);
+        var anim = ch.GetComponent<Animator>();
+        Transform head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : null;
+        Vector3 look = head != null ? head.position + Vector3.down * 0.3f : ch.transform.position + Vector3.up * 1.0f;
+        Vector3 fwd = ch.transform.forward; fwd.y = 0f;
+        if (fwd.sqrMagnitude < 1e-4f) fwd = Vector3.forward;
+        Vector3 pos = look + fwd.normalized * 2.4f + Vector3.up * 0.2f;
+
+        const int W = 1920, H = 1080;
+        var go = new GameObject("Bolum1ColorProbe_CharCam");
+        var cam = go.AddComponent<Camera>();
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = Camera.main != null ? Camera.main.backgroundColor : Color.gray;
+        cam.nearClipPlane = 0.05f;
+        cam.farClipPlane = 2000f;
+        cam.fieldOfView = 48f;
+        go.transform.position = pos;
+        go.transform.LookAt(look);
+        var rt = new RenderTexture(W, H, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { antiAliasing = 4 };
+        cam.targetTexture = rt;
+        cam.Render();
+        var prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        var tex = new Texture2D(W, H, TextureFormat.RGB24, false);
+        tex.ReadPixels(new Rect(0, 0, W, H), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prev;
+        string file = Path.Combine(OutDir, "renk_" + tag + "_karakter.png");
+        File.WriteAllBytes(file, tex.EncodeToPNG());
+        Line("GÖRÜNTÜ karakter: " + file + " (kamera " + F3v(pos) + " → " + F3v(look) + ")");
+        cam.targetTexture = null;
+        UnityEngine.Object.DestroyImmediate(rt);
+        UnityEngine.Object.DestroyImmediate(tex);
+        UnityEngine.Object.DestroyImmediate(go);
+    }
+
+    // Reimport sonrası karakter avatarı: importer'dan geri okunur (importSettingsMissing'e güvenilmez).
+    private static void ReportAvatars()
+    {
+        Line("KARAKTER AVATARI");
+        foreach (string v in Variants)
+        {
+            string path = CharacterFolder + "SK_RescueCrew_" + v + ".fbx";
+            var imp = AssetImporter.GetAtPath(path) as ModelImporter;
+            var avatar = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Avatar>().FirstOrDefault();
+            int mapped = imp != null ? imp.humanDescription.human.Length : -1;
+            Line("  " + v + ": userData " + (imp != null ? imp.userData : "?") + ", tip " + (imp != null ? imp.animationType.ToString() : "?")
+                + ", blendShapes " + (imp != null && imp.importBlendShapes) + ", avatar " + (avatar == null ? "YOK" : (avatar.isValid ? "geçerli" : "GEÇERSİZ") + (avatar.isHuman ? " humanoid" : " generic"))
+                + ", kemik eşlemesi " + mapped + "/" + HumanTrait.RequiredBoneCount + " zorunlu (toplam insan kemiği " + HumanTrait.BoneCount + ")");
+        }
+    }
+
+    private static string F3v(Vector3 v) { return v.x.ToString("F2", Inv) + ", " + v.y.ToString("F2", Inv) + ", " + v.z.ToString("F2", Inv); }
 
     private static void ReportMaterials()
     {

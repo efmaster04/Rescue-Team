@@ -59,7 +59,7 @@ public static class Bolum1Verify
             Line("BOLUM1 VERIFY " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", Inv));
 
             CheckImports();                                    // (a)
-            CheckMinivanMaterials();                           // (a2)
+            CheckMaterialColors();                           // (a2) tüm renkler
             EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
             CheckSceneObjects();                               // (b)
             Physics.SyncTransforms();
@@ -166,26 +166,30 @@ public static class Bolum1Verify
         Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 25 && total == 25, ok + "/" + total + " (beklenen 25: 24 mekân + 1 minibüs)");
     }
 
-    // ---------- (a2) minibüs materyalleri ----------
-    // Her materyalin rengi minivan_meta.json'daki sRGB hex'e ΔE76 < 2 ile eşit olmalı; cam Transparent ve alfa ≈ 0.35.
-    private static void CheckMinivanMaterials()
+    // ---------- (a2) materyal renkleri: minibüs, mekân, karakter ----------
+    // Her materyalin Material.color'ı (sRGB) beklenen hex'e ΔE76 < 2 ile eşit olmalı (tablo: Bolum1ColorProbe.MeasureAll);
+    // minibüs camı Transparent ve alfa ≈ 0.35.
+    private static void CheckMaterialColors()
     {
-        var expected = Bolum1Coordinates.Obj(Bolum1Coordinates.LoadJson(Bolum1Coordinates.MinivanMetaPath), "materials");
-        var mats = AssetDatabase.LoadAllAssetsAtPath(Bolum1SceneBuilder.MinivanPath).OfType<Material>().ToDictionary(m => m.name);
-        float worst = 0f; string worstName = "-";
-        bool allFound = true;
-        foreach (var kv in expected)
+        var results = Bolum1ColorProbe.MeasureAll(out List<string> problems);
+        foreach (string p in problems) Line("  renk sorunu: " + p);
+        var parts = new List<string>();
+        foreach (var g in results.GroupBy(r => r.Group.StartsWith("karakter") ? "karakter" : r.Group))
         {
-            if (!mats.TryGetValue(kv.Key, out var m) || !ColorUtility.TryParseHtmlString((string)kv.Value, out Color want)) { allFound = false; continue; }
-            float d = Bolum1ColorProbe.DeltaE(m.GetColor("_BaseColor"), want);
-            if (d > worst) { worst = d; worstName = kv.Key; }
+            var w = g.OrderByDescending(r => r.DeltaE).First();
+            parts.Add(g.Key + " " + g.Select(r => r.Group + r.Material).Distinct().Count() + " materyal, en büyük ΔE76 " + w.DeltaE.ToString("F2", Inv) + " (" + w.Material + (g.Key == "karakter" ? " " + w.Group.Substring(9) : "") + ")");
         }
+        foreach (var r in results.Where(r => r.DeltaE >= Bolum1ColorProbe.MaxDeltaE))
+            Line("  renk sapması: " + r.Group + " " + r.Asset + " " + r.Material + " #" + ColorUtility.ToHtmlStringRGB(r.Actual) + " beklenen #" + ColorUtility.ToHtmlStringRGB(r.Expected) + " ΔE76 " + r.DeltaE.ToString("F2", Inv));
+        bool colorsOk = problems.Count == 0 && results.Count > 0 && results.All(r => r.DeltaE < Bolum1ColorProbe.MaxDeltaE);
+
+        var mats = AssetDatabase.LoadAllAssetsAtPath(Bolum1SceneBuilder.MinivanPath).OfType<Material>().ToDictionary(m => m.name);
         mats.TryGetValue(Bolum1ImportSettings.PaintMaterial, out var paint);
         mats.TryGetValue(Bolum1ImportSettings.GlassMaterial, out var glass);
         bool glassOk = glass != null && glass.GetFloat("_Surface") > 0.5f && glass.renderQueue >= 3000
             && Mathf.Abs(glass.GetColor("_BaseColor").a - Bolum1ImportSettings.GlassAlpha) < 0.01f;
-        Check("(a2) minibüs materyal renkleri (ΔE76 < 2) ve şeffaf cam", allFound && worst < 2f && glassOk,
-            expected.Count + " materyal, en büyük ΔE76 " + worst.ToString("F2", Inv) + " (" + worstName + "); boya "
+        Check("(a2) materyal renkleri (minibüs + mekân + karakter 4 varyant, ΔE76 < 2) ve şeffaf cam", colorsOk && glassOk,
+            string.Join("; ", parts) + "; sorun " + problems.Count + "; boya "
             + (paint != null ? "#" + ColorUtility.ToHtmlStringRGB(paint.GetColor("_BaseColor")) : "YOK")
             + "; cam " + (glass != null ? (glass.GetFloat("_Surface") > 0.5f ? "Transparent" : "Opaque") + " a=" + glass.GetColor("_BaseColor").a.ToString("F2", Inv) + " kuyruk " + glass.renderQueue : "YOK"));
     }
