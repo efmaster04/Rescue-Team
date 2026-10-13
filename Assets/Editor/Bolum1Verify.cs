@@ -220,6 +220,10 @@ public static partial class Bolum1Verify
         var rb = van.GetComponent<Rigidbody>();
         bool vanOk = rb != null && Mathf.Approximately(rb.mass, Bolum1SceneBuilder.MinivanMass)
             && van.GetComponentsInChildren<MeshCollider>().All(c => c.convex);
+        // Minibüste VehicleHold var ve holdOnStart açık (private SerializeField, SerializedObject ile okunur).
+        var hold = van.GetComponent<VehicleHold>();
+        bool holdOk = hold != null && new SerializedObject(hold).FindProperty("holdOnStart").boolValue;
+        Check("(g) minibüs VehicleHold, holdOnStart açık", holdOk, hold != null ? "VehicleHold var" : "VehicleHold YOK");
         Check("(b) sahne açıldı, beklenen objeler", missing.Count == 0 && backdropClean && modulesMesh && vanOk,
             expected.Count + " obje, eksik: " + (missing.Count == 0 ? "yok" : string.Join(",", missing))
             + "; backdrop collider yok=" + backdropClean + "; modül collider kuralı (Ground/Road/Guardrail convex olmayan MeshCollider, diğerleri yok)=" + modulesMesh
@@ -382,7 +386,10 @@ public static partial class Bolum1Verify
         Physics.simulationMode = SimulationMode.Script;
         Physics.SyncTransforms();
         Vector3 start = van.transform.position;
-        Line("FİZİK TESTİ (minibüs, 2200 kg, 5 sn, adım 0.02 sn; kabul ölçütü değil)");
+        Line("FİZİK TESTİ (minibüs, 2200 kg, adım 0.02 sn): 5 sn sabit (VehicleHold), sonra ReleaseHold() ve 2 sn serbest");
+        var hold = van.GetComponent<VehicleHold>();
+        Quaternion startRot = van.transform.rotation;
+        float heldDrift = 0f, heldTilt = 0f;
         // Başlangıçta minibüs collider'larının mekâna gömülme derinliği (sıfırdan büyükse fizik ilk karede iter).
         foreach (var c in van.GetComponentsInChildren<Collider>())
         {
@@ -398,8 +405,17 @@ public static partial class Bolum1Verify
         Line("  t(s)  kök(x,y,z)                 yer değiştirme  eğim(°)  yuvarlanma(°)  en düşük y   hız(m/s)");
         Capture("physics_t0", camPos, camLook, 45f);
         var coneProbe = new ConePhysicsProbe();
-        for (int step = 0; step <= 250; step++)
+        for (int step = 0; step <= 350; step++)
         {
+            if (step == 250)
+            {
+                // 5 sn doldu: sabit kalma ölçümü, ardından minibüs bırakılır.
+                heldDrift = Vector3.Distance(start, van.transform.position);
+                heldTilt = Quaternion.Angle(startRot, van.transform.rotation);
+                Capture("physics_t5", camPos, camLook, 45f);
+                hold.ReleaseHold();
+                Line("  >>> ReleaseHold() çağrıldı (IsHeld=" + hold.IsHeld + ")");
+            }
             if (step <= 150) coneProbe.Sample();
             if (step == 150) coneProbe.Report();
             if (step % 25 == 0)
@@ -414,9 +430,14 @@ public static partial class Bolum1Verify
                 Line(string.Format(Inv, "  {0,4:F1}  {1,-26} {2,8:F3} m     {3,6:F1}   {4,8:F1}      {5,8:F3}   {6,6:F2}",
                     step * 0.02f, V(van.transform.position), Vector3.Distance(start, van.transform.position), pitch, roll, lowest, rb.linearVelocity.magnitude));
             }
-            if (step < 250) Physics.Simulate(0.02f);
+            if (step < 350) Physics.Simulate(0.02f);
         }
-        Capture("physics_t5", camPos, camLook, 45f);
+        float freeMove = Vector3.Distance(van.transform.position, start);
+        Capture("physics_t7", camPos, camLook, 45f);
+        Check("(h) 5 sn sonra minibüs sabit (konum < 1 cm, eğim < 0.5°)", heldDrift < 0.01f && heldTilt < 0.5f,
+            "konum farkı " + Cm(heldDrift) + ", dönme farkı " + heldTilt.ToString("F3", Inv) + "°");
+        Check("(i) ReleaseHold sonrası 2 sn içinde minibüs hareket ediyor (> 0.5 m)", freeMove > 0.5f,
+            "yer değiştirme " + freeMove.ToString("F2", Inv) + " m (bilgi: serbest kalınca öne devrilip düşmesi bilinen durum)");
         Physics.simulationMode = oldMode;
     }
 

@@ -182,6 +182,12 @@ public static class Bolum1SceneBuilder
         var rb = minivan.AddComponent<Rigidbody>();
         rb.mass = MinivanMass;
 
+        // Halat bağlanana kadar minibüs yerinde durur (kinematik); halat sistemi ReleaseHold() ile fiziği açar.
+        var hold = minivan.AddComponent<VehicleHold>();
+        var holdSo = new SerializedObject(hold);
+        holdSo.FindProperty("holdOnStart").boolValue = true;
+        holdSo.ApplyModifiedPropertiesWithoutUndo();
+
         // Gövde: kök uzayında iki kutu. Kök uzayı = Blender minibüs uzayı (X işareti ters, simetrik olduğu için fark etmez).
         var body = minivan.transform.Find("SM_Minivan_Body");
         var verts = body.GetComponent<MeshFilter>().sharedMesh.vertices;
