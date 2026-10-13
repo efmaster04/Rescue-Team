@@ -1,0 +1,425 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X"
+  },
+  "field_descriptions": {
+    "parts": "Object-name map; all values use the CLOSED Blender pose.",
+    "pivot_m": "XYZ object origin in root/Blender world coordinates, metres.",
+    "axis": "Unit XYZ vector of hinge/axle/slide axis in root coordinates; null for static parts.",
+    "motion.type": "hinge / slide / axle / free_rigid_body; null means static.",
+    "motion.open_angle_deg": "Signed right-hand rotation about axis; closed angle is zero.",
+    "motion.limit_abs_deg": "Maximum absolute hinge angle (degrees).",
+    "motion.outward_direction": "Unit vector for first sliding-door clearance phase.",
+    "motion.outward_clearance_m": "Translate this distance outward before rearward motion.",
+    "motion.slide_direction": "Unit rearward translation vector after outward clearance.",
+    "motion.slide_distance_m": "Rearward travel in metres, added to outward translation.",
+    "motion.sequence": "Required ordering of slide phases.",
+    "motion.rotation_limit_deg": "Null: wheel rotation is unrestricted.",
+    "motion.attached_initially": "Suitcase starts attached; gameplay can release its rigid body.",
+    "parent": "Direct FBX parent object name.",
+    "markers": "XYZ root-space locations in metres; seats mark pelvis/cushion contact, TowPoint is ring centre.",
+    "measurement": "Body envelope excludes mirrors, rack, luggage and rear tow ring; roof height is measured from ground.",
+    "palette_samples": "sRGB hex + top-left pixel coordinates and median patch size in the cited concept."
+  },
+  "parts": {
+    "SM_Minivan_Body": {
+      "pivot_m": [
+        0,
+        0,
+        0
+      ],
+      "axis": null,
+      "motion": null,
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Glass": {
+      "pivot_m": [
+        0,
+        0,
+        0
+      ],
+      "axis": null,
+      "motion": null,
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Door_FL": {
+      "pivot_m": [
+        0.963,
+        -1.68,
+        0.815
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "motion": {
+        "type": "hinge",
+        "open_angle_deg": -70,
+        "limit_abs_deg": 70
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Door_FR": {
+      "pivot_m": [
+        -0.963,
+        -1.68,
+        0.815
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "motion": {
+        "type": "hinge",
+        "open_angle_deg": 70,
+        "limit_abs_deg": 70
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Door_Slide_R": {
+      "pivot_m": [
+        -0.95,
+        -0.459,
+        0.58
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "motion": {
+        "type": "slide",
+        "outward_direction": [
+          -1,
+          0,
+          0
+        ],
+        "outward_clearance_m": 0.12,
+        "slide_direction": [
+          0,
+          1,
+          0
+        ],
+        "slide_distance_m": 1.39,
+        "sequence": "First outward clearance, then rearward slide; reverse to close."
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Tailgate": {
+      "pivot_m": [
+        0,
+        2.403,
+        1.8845
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "motion": {
+        "type": "hinge",
+        "open_angle_deg": 85,
+        "limit_abs_deg": 85
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Wheel_FL": {
+      "pivot_m": [
+        0.8299999833106995,
+        -1.600000023841858,
+        0.375
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "motion": {
+        "type": "axle",
+        "rotation_limit_deg": null
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Wheel_RL": {
+      "pivot_m": [
+        0.8299999833106995,
+        1.600000023841858,
+        0.375
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "motion": {
+        "type": "axle",
+        "rotation_limit_deg": null
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Wheel_FR": {
+      "pivot_m": [
+        -0.8299999833106995,
+        -1.600000023841858,
+        0.375
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "motion": {
+        "type": "axle",
+        "rotation_limit_deg": null
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Wheel_RR": {
+      "pivot_m": [
+        -0.8299999833106995,
+        1.600000023841858,
+        0.375
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "motion": {
+        "type": "axle",
+        "rotation_limit_deg": null
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_Interior": {
+      "pivot_m": [
+        0,
+        0,
+        0
+      ],
+      "axis": null,
+      "motion": null,
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_RackSuitcase_01": {
+      "pivot_m": [
+        -0.36,
+        0.2,
+        2.1375
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true
+      },
+      "parent": "SM_Minivan"
+    },
+    "SM_Minivan_RackSuitcase_02": {
+      "pivot_m": [
+        0.31,
+        0.67,
+        2.1375
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true
+      },
+      "parent": "SM_Minivan"
+    }
+  },
+  "markers": {
+    "Seat_01": [
+      0.43,
+      -0.7100000000000001,
+      0.781
+    ],
+    "Seat_02": [
+      -0.43,
+      -0.7100000000000001,
+      0.781
+    ],
+    "Seat_03": [
+      0.43,
+      0.44999999999999996,
+      0.781
+    ],
+    "Seat_04": [
+      -0.43,
+      0.44999999999999996,
+      0.781
+    ],
+    "Seat_05": [
+      0.43,
+      1.54,
+      0.781
+    ],
+    "Seat_06": [
+      -0.43,
+      1.54,
+      0.781
+    ],
+    "TowPoint": [
+      0,
+      2.565,
+      0.5
+    ]
+  },
+  "measurement": {
+    "length_m": 5.0,
+    "width_m": 1.9,
+    "ground_to_roof_m": 2.0,
+    "tolerance_m": 0.05,
+    "wheel_diameter_m": 0.75,
+    "wheel_centres_y_m": [
+      -1.6,
+      1.6
+    ],
+    "interior_bounds_m": [
+      [
+        -0.85,
+        -1.65,
+        0.5
+      ],
+      [
+        0.85,
+        2.25,
+        1.88
+      ]
+    ]
+  },
+  "materials": {
+    "M_Minivan_Paint": "#9AC4D2",
+    "M_Minivan_Trim": "#93909B",
+    "M_Minivan_Tire": "#1E2129",
+    "M_Minivan_Rim": "#4D494D",
+    "M_Minivan_Glass": "#D7D7DB",
+    "M_Minivan_Interior": "#686270",
+    "M_Minivan_Headlight": "#CAC8CC",
+    "M_Minivan_Taillight": "#CB4136",
+    "M_Minivan_Suitcase_A": "#A87958",
+    "M_Minivan_Suitcase_B": "#566A82",
+    "M_Minivan_Strap": "#86A1B8",
+    "M_Minivan_Damage": "#171716"
+  },
+  "palette_reference": "ArtSource/Minivan/references/01_turnaround_light_blue.jpg",
+  "palette_samples": {
+    "Paint": {
+      "hex": "#9AC4D2",
+      "source_pixel_xy_top_left": [
+        210,
+        655
+      ],
+      "median_patch_px": 5
+    },
+    "Trim": {
+      "hex": "#93909B",
+      "source_pixel_xy_top_left": [
+        237,
+        680
+      ],
+      "median_patch_px": 5
+    },
+    "Tire": {
+      "hex": "#1E2129",
+      "source_pixel_xy_top_left": [
+        987,
+        718
+      ],
+      "median_patch_px": 5
+    },
+    "Rim": {
+      "hex": "#4D494D",
+      "source_pixel_xy_top_left": [
+        1001,
+        710
+      ],
+      "median_patch_px": 5
+    },
+    "Glass": {
+      "hex": "#D7D7DB",
+      "source_pixel_xy_top_left": [
+        238,
+        180
+      ],
+      "median_patch_px": 5
+    },
+    "Interior": {
+      "hex": "#686270",
+      "source_pixel_xy_top_left": [
+        194,
+        207
+      ],
+      "median_patch_px": 5
+    },
+    "Headlight": {
+      "hex": "#CAC8CC",
+      "source_pixel_xy_top_left": [
+        159,
+        286
+      ],
+      "median_patch_px": 5
+    },
+    "Taillight": {
+      "hex": "#CB4136",
+      "source_pixel_xy_top_left": [
+        324,
+        642
+      ],
+      "median_patch_px": 5
+    },
+    "Suitcase_A": {
+      "hex": "#A87958",
+      "source_pixel_xy_top_left": [
+        1030,
+        418
+      ],
+      "median_patch_px": 5
+    },
+    "Suitcase_B": {
+      "hex": "#566A82",
+      "source_pixel_xy_top_left": [
+        1066,
+        439
+      ],
+      "median_patch_px": 5
+    },
+    "Strap": {
+      "hex": "#86A1B8",
+      "source_pixel_xy_top_left": [
+        1099,
+        419
+      ],
+      "median_patch_px": 5
+    },
+    "Damage": {
+      "hex": "#171716",
+      "source_pixel_xy_top_left": [
+        309,
+        278
+      ],
+      "median_patch_px": 5
+    }
+  },
+  "glass_alpha": 0.34,
+  "unity_import": {
+    "scale_factor": 1,
+    "bake_axis_conversion": false,
+    "glass_note": "FBX stores alpha; choose a transparent shader in the target render pipeline."
+  }
+}
