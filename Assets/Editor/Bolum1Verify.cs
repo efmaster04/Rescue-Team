@@ -18,7 +18,7 @@ using UnityEngine;
 // ekran görüntüleri ve fizik testi. Play'e girerken domain yeniden yüklendiği için ara durum SessionState'te taşınır.
 // Fizik testi sırasında Rigidbody'nin kendiliğinden düşmemesi için Physics.simulationMode geçici olarak Script yapılır, sonda geri alınır.
 [InitializeOnLoad]
-public static class Bolum1Verify
+public static partial class Bolum1Verify
 {
     private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1Verify.Stage";
@@ -51,6 +51,7 @@ public static class Bolum1Verify
 
     private static void Begin(bool batch)
     {
+        playStart = -1f;
         try
         {
             Directory.CreateDirectory(OutDir);
@@ -67,6 +68,7 @@ public static class Bolum1Verify
             CheckCoordinates(markers);                         // dönüşüm doğrulaması
             CheckRoadAndPath(markers);                         // (c)
             CheckRearWheels(GameObject.Find(Bolum1SceneBuilder.MinivanName)); // (d)
+            CheckTowTruck(markers);
             var character = GameObject.Find(Bolum1SceneBuilder.CharacterName);
             bindPoseGap = SoleGap(character);
             SessionState.SetFloat("Bolum1Verify.BindHeight", MeasureHeight(character, out _));
@@ -114,6 +116,7 @@ public static class Bolum1Verify
             Vector3 vanLook = minivan.transform.position + Vector3.up * 0.3f;
             Vector3 closeCam = Bolum1Coordinates.ToUnity(new Vector3(-3.5f, -24f, -6.5f));
             Capture("closeup_minivan_character", closeCam, (vanLook + character.transform.position) * 0.5f, 45f);
+            CaptureTowTruck();
 
             PhysicsTest(minivan, closeCam, vanLook);           // yalnızca rapor
         }
@@ -152,7 +155,7 @@ public static class Bolum1Verify
     // ---------- (a) import ayarları ----------
     private static void CheckImports()
     {
-        var guids = AssetDatabase.FindAssets("t:Model", new[] { "Assets/Models/Environment/Bolum1", "Assets/Models/Vehicles/Minivan" });
+        var guids = AssetDatabase.FindAssets("t:Model", new[] { "Assets/Models/Environment/Bolum1", "Assets/Models/Vehicles/Minivan", "Assets/Models/Vehicles/TowTruck" });
         int ok = 0, total = 0;
         foreach (string guid in guids)
         {
@@ -163,7 +166,7 @@ public static class Bolum1Verify
             if (imp != null && Bolum1ImportSettings.IsApplied(imp) && AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) ok++;
             else Line("  ayar hatalı: " + path);
         }
-        Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 25 && total == 25, ok + "/" + total + " (beklenen 25: 24 mekân + 1 minibüs)");
+        Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 26 && total == 26, ok + "/" + total + " (beklenen 26: 24 mekân + minibüs + çekici)");
     }
 
     // ---------- (a2) materyal renkleri: minibüs, mekân, karakter ----------
@@ -197,11 +200,11 @@ public static class Bolum1Verify
     // ---------- (b) sahne ----------
     private static void CheckSceneObjects()
     {
-        var expected = new List<string>(Bolum1SceneBuilder.Modules) { Bolum1SceneBuilder.MinivanName, Bolum1SceneBuilder.CharacterName, "Sun", "Main Camera" };
+        var expected = new List<string>(Bolum1SceneBuilder.Modules) { Bolum1SceneBuilder.MinivanName, Bolum1SceneBuilder.TowTruckName, Bolum1SceneBuilder.CharacterName, "Sun", "Main Camera" };
         expected.AddRange(Bolum1SceneBuilder.MarkerNames);
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         foreach (var kv in Bolum1Coordinates.Obj(markers, "placements"))
-            if (kv.Key != "MinivanPlacement") expected.Add(kv.Key);
+            if (kv.Key != "MinivanPlacement" && kv.Key != "TowTruckPlacement") expected.Add(kv.Key);
         var missing = expected.Where(n => GameObject.Find(n) == null).ToList();
 
         // Collider kuralları
@@ -394,8 +397,11 @@ public static class Bolum1Verify
         }
         Line("  t(s)  kök(x,y,z)                 yer değiştirme  eğim(°)  yuvarlanma(°)  en düşük y   hız(m/s)");
         Capture("physics_t0", camPos, camLook, 45f);
+        var coneProbe = new ConePhysicsProbe();
         for (int step = 0; step <= 250; step++)
         {
+            if (step <= 150) coneProbe.Sample();
+            if (step == 150) coneProbe.Report();
             if (step % 25 == 0)
             {
                 // Minibüsün önü kök uzayında -Y (Blender), yukarısı +Z.

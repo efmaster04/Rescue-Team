@@ -16,6 +16,7 @@ public static class Bolum1Coordinates
 {
     public const string MarkersPath = "Assets/Models/Environment/Bolum1/markers.json";
     public const string MinivanMetaPath = "Assets/Models/Vehicles/Minivan/minivan_meta.json";
+    public const string TowTruckMetaPath = "Assets/Models/Vehicles/TowTruck/towtruck_meta.json";
 
     // Dönüşümün tek kaynağı: Blender dünya noktası → Unity dünya noktası.
     public static Vector3 ToUnity(Vector3 blender)

@@ -10,12 +10,15 @@ internal class Bolum1ImportSettings : AssetPostprocessor
 {
     public const string EnvironmentFolder = "Assets/Models/Environment/Bolum1/";
     public const string VehicleFolder = "Assets/Models/Vehicles/Minivan/";
+    public const string TowTruckFolder = "Assets/Models/Vehicles/TowTruck/";
+    public const string TowTruckGlassMaterial = "M_TowTruck_Glass";
+    public const float TowTruckGlassAlpha = 0.34f;
     public const string AppliedMarker = "Bolum1Defaults:v1";
 
     public static bool IsBolum1Model(string path)
     {
         return path.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)
-            && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder));
+            && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder) || path.StartsWith(TowTruckFolder));
     }
 
     private void OnPreprocessModel()
@@ -33,7 +36,7 @@ internal class Bolum1ImportSettings : AssetPostprocessor
 
     // Postprocessor sürümü: materyal düzeltmesi değişirse artır, Unity ilgili FBX'leri yeniden import eder.
     // v5: renk telafisi kaldırıldı (FBX'ler artık lineer DiffuseColor taşıyor), yalnız cam şeffaflığı kaldı.
-    public override uint GetVersion() { return 5; }
+    public override uint GetVersion() { return 6; }
 
     public const string PaintMaterial = "M_Minivan_Paint";
     public const string GlassMaterial = "M_Minivan_Glass";
@@ -47,11 +50,13 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     // Sıra: URP'ninki -980, bizimki varsayılan 0, yani URP'den SONRA çalışır.
     private void OnPreprocessMaterialDescription(MaterialDescription description, Material material, AnimationClip[] clips)
     {
-        if (!assetPath.StartsWith(VehicleFolder) || description.materialName != GlassMaterial || !material.HasProperty("_BaseColor"))
+        bool vanGlass = assetPath.StartsWith(VehicleFolder) && description.materialName == GlassMaterial;
+        bool truckGlass = assetPath.StartsWith(TowTruckFolder) && description.materialName == TowTruckGlassMaterial;
+        if ((!vanGlass && !truckGlass) || !material.HasProperty("_BaseColor"))
             return;
 
         Color c = material.GetColor("_BaseColor");
-        c.a = GlassAlpha;
+        c.a = truckGlass ? TowTruckGlassAlpha : GlassAlpha;
         MakeTransparent(material);
         material.SetColor("_BaseColor", c);
         if (material.HasProperty("_Color"))

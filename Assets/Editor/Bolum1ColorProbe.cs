@@ -131,6 +131,10 @@ public static class Bolum1ColorProbe
             .ToDictionary(kv => kv.Key, kv => { ColorUtility.TryParseHtmlString((string)kv.Value, out Color c); return c; });
         Measure("minibüs", Bolum1SceneBuilder.MinivanPath, vanExpected, vanExpected.Keys, results, problems);
 
+        var truckExpected = Bolum1Coordinates.Obj(Bolum1Coordinates.LoadJson(Bolum1Coordinates.TowTruckMetaPath), "materials")
+            .ToDictionary(kv => kv.Key, kv => { ColorUtility.TryParseHtmlString((string)kv.Value, out Color c); return c; });
+        Measure("çekici", Bolum1SceneBuilder.TowTruckPath, truckExpected, truckExpected.Keys, results, problems);
+
         // (b) mekân: 24 FBX
         var envSeen = new HashSet<string>();
         foreach (string guid in AssetDatabase.FindAssets("t:Model", new[] { Bolum1ImportSettings.EnvironmentFolder.TrimEnd('/') }))

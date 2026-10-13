@@ -2126,7 +2126,35 @@
         1.0,
         1.0
       ],
-      "source_sha256": "c3b1a6b1e07dedc8b07b5f24c48154098a7551a046cf0c5e6faf54e3d0a44cfd"
+      "source_sha256": "c2f3141a9dc23d6cfc68b3d70c8c21cb38cb23d4a2307733e84683ee85f1be88"
+    },
+    "TowTruckPlacement": {
+      "position": [
+        15.0,
+        -8.91015338897705,
+        0.463874489068985
+      ],
+      "asset": "Export/TowTruck/SM_TowTruck.fbx",
+      "root_object": "SM_TowTruck",
+      "coordinate_system": "Blender: X east, Y mountain, Z up; meters",
+      "rotation_quaternion_wxyz": [
+        0.7069510817527771,
+        -0.014836839400231838,
+        -0.014836839400231838,
+        0.7069511413574219
+      ],
+      "rotation_euler_degrees": [
+        -2.4045892282007335,
+        0.0,
+        90.00000250447816
+      ],
+      "euler_order": "XYZ",
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "source_sha256": "796fc3c5b2cdf3edfb711c9188537d1c3490dbd37d44735748489d0ddc74814a"
     }
   },
   "placements": {
@@ -2462,7 +2490,35 @@
         1.0,
         1.0
       ],
-      "source_sha256": "c3b1a6b1e07dedc8b07b5f24c48154098a7551a046cf0c5e6faf54e3d0a44cfd"
+      "source_sha256": "c2f3141a9dc23d6cfc68b3d70c8c21cb38cb23d4a2307733e84683ee85f1be88"
+    },
+    "TowTruckPlacement": {
+      "asset": "Export/TowTruck/SM_TowTruck.fbx",
+      "root_object": "SM_TowTruck",
+      "coordinate_system": "Blender: X east, Y mountain, Z up; meters",
+      "position": [
+        15.0,
+        -8.91015338897705,
+        0.463874489068985
+      ],
+      "rotation_quaternion_wxyz": [
+        0.7069510817527771,
+        -0.014836839400231838,
+        -0.014836839400231838,
+        0.7069511413574219
+      ],
+      "rotation_euler_degrees": [
+        -2.4045892282007335,
+        0.0,
+        90.00000250447816
+      ],
+      "euler_order": "XYZ",
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "source_sha256": "796fc3c5b2cdf3edfb711c9188537d1c3490dbd37d44735748489d0ddc74814a"
     }
   },
   "geometry_probes": {

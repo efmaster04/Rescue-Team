@@ -13,6 +13,8 @@ public static class Bolum1SceneBuilder
     public const string ScenePath = "Assets/Scenes/Bolum1_Ucurum.unity";
     public const string EnvironmentFolder = "Assets/Models/Environment/Bolum1/";
     public const string MinivanPath = "Assets/Models/Vehicles/Minivan/SM_Minivan.fbx";
+    public const string TowTruckPath = "Assets/Models/Vehicles/TowTruck/SM_TowTruck.fbx";
+    public const string TowTruckName = "SM_TowTruck";
     public const string CharacterPath = "Assets/Models/Characters/RescueCrew/SK_RescueCrew_Orange.fbx";
     public const string IdleControllerPath = "Assets/Animations/RescueCrew/Controllers/AC_RescueCrew_Idle.controller";
 
@@ -87,7 +89,7 @@ public static class Bolum1SceneBuilder
         var props = new GameObject("Bolum1_Props").transform;
         foreach (var kv in Bolum1Coordinates.Obj(markers, "placements"))
         {
-            if (kv.Key == "MinivanPlacement")
+            if (kv.Key == "MinivanPlacement" || kv.Key == "TowTruckPlacement")
                 continue;
             var parent = kv.Key.Contains("LooseRock") ? rocks : props;
             var go = InstantiateFbx(EnvironmentFolder + kv.Key + ".fbx", parent);
@@ -107,6 +109,15 @@ public static class Bolum1SceneBuilder
             Bolum1Coordinates.QuatWxyz(minivanPlacement["rotation_quaternion_wxyz"]),
             minivan.transform.rotation);
         SetupMinivanPhysics(minivan);
+
+        var truckPlacement = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(markers, "markers"), "TowTruckPlacement");
+        var truck = InstantiateFbx(TowTruckPath, null);
+        truck.name = TowTruckName;
+        Bolum1Coordinates.Place(truck.transform,
+            Bolum1Coordinates.Vec3(truckPlacement, "position"),
+            Bolum1Coordinates.QuatWxyz(truckPlacement["rotation_quaternion_wxyz"]),
+            truck.transform.rotation);
+        Bolum1TowTruck.SetupPhysics(truck);
 
         // 4) İşaretler: boş objeler.
         var markerRoot = new GameObject("Bolum1_Markers").transform;
