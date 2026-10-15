@@ -80,8 +80,8 @@ public static class Bolum1TrafficVerify
         var director = GameObject.Find(Bolum1TrafficBuilder.DirectorName)?.GetComponent<TrafficDirector>();
         bool prefabs = Bolum1TrafficBuilder.Types.All(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1TrafficBuilder.PrefabPath(t)) != null);
         bool dirOk = director != null && director.settings != null && director.eastBound != null && director.westBound != null && director.prefabs.Length == 5 && director.prefabs.All(p => p != null) && director.mission != null;
-        var cones = Bolum1TowTruck.ConeNames.Select(n => GameObject.Find(n)?.GetComponent<TrafficCone>()).ToList();
-        bool conesOk = cones.All(c => c != null && c.road != null);
+        var cones = Bolum1TowTruck.ConeNames.Select(n => GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n))?.GetComponent<TrafficCone>()).ToList();
+        bool conesOk = cones.All(c => c != null && c.road != null && c.target != null && c.target.name == c.name.Replace("TrafficCone_", ""));
         var player = GameObject.Find(Bolum1SceneBuilder.CharacterName)?.GetComponent<ThirdPersonPlayer>();
         bool playerOk = player != null && player.knockdown != null && player.knockdown.ragdollBodies.Length >= 10 && player.knockdown.ragdollBodies.All(b => b != null && b.isKinematic)
             && player.knockdown.ragdollColliders.All(c => c != null && !c.enabled);
@@ -122,7 +122,7 @@ public static class Bolum1TrafficVerify
         var cone = SynthClips.ConeHit();
         clips.Add(cone);
         float rc = SynthClips.Rms(cone);
-        var coneSrc = Bolum1TowTruck.ConeNames.Select(n => GameObject.Find(n).GetComponent<TrafficCone>().hitSource).ToList();
+        var coneSrc = Bolum1TowTruck.ConeNames.Select(n => GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n)).GetComponent<TrafficCone>().hitSource).ToList();
         bool coneOk = rc > 0.01f && coneSrc.All(s => s != null && s.spatialBlend == 1f && s.dopplerLevel > 0f);
         ok &= coneOk;
         parts.Add("koni çarpma RMS " + rc.ToString("F3", Inv) + ", koni kaynakları 3D/Doppler " + coneOk);
@@ -217,7 +217,7 @@ public static class Bolum1TrafficVerify
     private static PlayerInteraction Interaction { get { return player.GetComponent<PlayerInteraction>(); } }
     private static StretcherHelperBot Bot { get { return UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>(); } }
     private static StretcherController Stretcher(int i) { return GameObject.Find(Bolum1AmbulanceBuilder.StretcherNames[i]).GetComponent<StretcherController>(); }
-    private static TrafficCone Cone(int i) { var go = GameObject.Find(Bolum1TowTruck.ConeNames[i]); return go != null ? go.GetComponent<TrafficCone>() : null; }
+    private static TrafficCone Cone(int i) { var go = GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(Bolum1TowTruck.ConeNames[i])); return go != null ? go.GetComponent<TrafficCone>() : null; }
 
     // ---- her kare örneklenen ölçümler ----
     private static int overlapFrames;
@@ -241,7 +241,7 @@ public static class Bolum1TrafficVerify
                 if (Physics.ComputePenetration(a, a.transform.position, a.transform.rotation, b, b.transform.position, b.transform.rotation, out _, out float dist) && dist > 0.01f)
                 {
                     overlapFrames++;
-                    if (overlapInfo.Length == 0) overlapInfo = a.name + " ↔ " + b.name + " " + dist.ToString("F2", Inv) + " m (t=" + Time.time.ToString("F1", Inv) + ")";
+                    if (overlapInfo.Length == 0) overlapInfo = Describe(a) + " ↔ " + Describe(b) + " " + dist.ToString("F2", Inv) + " m (t=" + Time.time.ToString("F1", Inv) + ")";
                 }
             }
         foreach (var v in Traffic.Vehicles)
@@ -255,6 +255,13 @@ public static class Bolum1TrafficVerify
             }
         }
         if (yieldWatch != null) SampleYield();
+    }
+
+    private static string Describe(BoxCollider c)
+    {
+        var f = c.GetComponent<LaneFollower>();
+        if (f == null || f.lane == null) return c.name;
+        return c.name + " [" + f.lane.name + " s " + f.Distance.ToString("F1", Inv) + "/" + f.lane.Length.ToString("F0", Inv) + ", v " + f.Speed.ToString("F1", Inv) + ", " + V(c.transform.position) + "]";
     }
 
     // (f) şeritteki oyuncu: izlenen aracın yavaşlaması
@@ -489,7 +496,7 @@ public static class Bolum1TrafficVerify
         foreach (var t in new[] { TrafficVehicleType.Sedan, TrafficVehicleType.BoxTruck, TrafficVehicleType.PanelVan })
         {
             TrafficVehicle v = null;
-            yield return Until(() => (v = traffic.ForceSpawn(true, t)) != null, 15f, "kuyruk aracı spawn " + t);
+            yield return Until(() => v != null || (v = traffic.ForceSpawn(true, t)) != null, 15f, "kuyruk aracı spawn " + t);
             queue.Add(v);
         }
         yield return Until(() => amb.Phase == AmbulancePhase.Waiting, 30f, "ambulans durakta");
@@ -536,7 +543,7 @@ public static class Bolum1TrafficVerify
         foreach (var t in new[] { TrafficVehicleType.Sedan, TrafficVehicleType.Pickup, TrafficVehicleType.BoxTruck })
         {
             TrafficVehicle v = null;
-            yield return Until(() => (v = traffic.ForceSpawn(false, t)) != null, 15f, "koni kuyruğu spawn " + t);
+            yield return Until(() => v != null || (v = traffic.ForceSpawn(false, t)) != null, 15f, "koni kuyruğu spawn " + t);
             queue.Add(v);
             if (queue.Count == 1) v.ConeRammed += (x, c, waited) => { ramWait = waited; ramEventTime = Time.time; };
             yield return Seconds(2.5f);
@@ -576,7 +583,7 @@ public static class Bolum1TrafficVerify
         bool tippedCloses = tipped.ClosesLane(lane, settings.coneUprightMaxAngle, out _);
         float tilt = tipped.TiltAngle;
         TrafficVehicle pass = null;
-        yield return Until(() => (pass = traffic.ForceSpawn(false, TrafficVehicleType.Hatchback)) != null, 10f, "devrik koni aracı");
+        yield return Until(() => pass != null || (pass = traffic.ForceSpawn(false, TrafficVehicleType.Hatchback)) != null, 10f, "devrik koni aracı");
         float minSpeed = float.MaxValue;
         bool sawCone = false;
         yield return (Func<bool>)(() =>
@@ -602,14 +609,7 @@ public static class Bolum1TrafficVerify
     {
         Vector3 p = lane.PointAt(s);
         Quaternion rot = Quaternion.FromToRotation(cone.localUp.normalized, lane.TangentAt(s));
-        cone.PlaceAt(p, 0f);
-        cone.transform.SetPositionAndRotation(p + Vector3.up * (cone.radius + 0.02f) - lane.TangentAt(s) * cone.height * 0.4f, rot);
-        var rb = cone.Body;
-        rb.position = cone.transform.position;
-        rb.rotation = rot;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-        Physics.SyncTransforms();
+        cone.PlaceWithPose(p + Vector3.up * (cone.radius + 0.02f) - lane.TangentAt(s) * cone.height * 0.4f, rot);
     }
 
     // ---- (e) koni E ile alınıp konuyor; elde 1 koni; koni–sedye kısıtı ----
@@ -709,17 +709,19 @@ public static class Bolum1TrafficVerify
         bool ragdoll = Player.IsDown && kd.ragdollBodies.All(b => !b.isKinematic) && !Player.GetComponent<CharacterController>().enabled;
         int horns = hitCar != null ? hitCar.sound.HornPlays - hornAtStart : -1;
         float cruise = hitCar != null ? hitCar.Follower.cruiseSpeed : 12f;
-        yield return Seconds(1.2f);
+        // Çarpan araç (yavaşlayarak) uzaklaşınca yerdeki ragdoll'un görüntüsü
+        yield return Until(() => hitCar == null || Vector3.Distance(hitCar.transform.position, kd.GroundPosition) > 20f, 20f, "çarpan araç uzaklaştı");
         Vector3 hips = kd.GroundPosition;
         Vector3 t = Flat(lane.TangentAt(s0)).normalized;
-        yield return Capture("trafik_dusme", hips - t * 4.5f + lane.RightAt(s0) * 3f + Vector3.up * 2.6f, hips, 50f);
+        yield return Capture("trafik_dusme", hips - t * 3.5f + lane.RightAt(s0) * 2.5f + Vector3.up * 3.2f, hips, 50f);
         Check("(f1) şeritteki oyuncu: korna, hız ≤ %40 ve > 0; temasla oyuncu Ragdoll",
             horns >= 1 && yieldFrames > 0 && minYieldSpeed <= 0.4f * cruise + 0.05f && minYieldSpeed > 0f && ragdoll,
             "korna " + horns + " kez; yavaşlama " + yieldFrames + " kare, en düşük hız " + minYieldSpeed.ToString("F2", Inv) + " m/sn (sınır " + (0.4f * cruise).ToString("F2", Inv)
             + "); temas: düştü " + Player.IsDown + ", ragdoll gövdeleri dinamik " + ragdoll + "; kalça " + V(hips));
         yield return Seconds(1.0f);
 
-        // f2: arkadaş (ikinci test taşıyıcısı) E basılı 2 sn
+        // f2: arkadaş (ikinci test taşıyıcısı) E basılı 2 sn. Önce çarpan araç uzaklaşsın (yavaşlayarak düşen oyuncunun yanından geçer).
+        yield return Until(() => hitCar == null || Vector3.Distance(hitCar.transform.position, kd.GroundPosition) > 20f, 20f, "çarpan araç uzaklaştı");
         mateGo.SetActive(true);
         var mate = mateGo.GetComponent<ThirdPersonPlayer>();
         var mateI = mateGo.GetComponent<PlayerInteraction>();
@@ -734,15 +736,18 @@ public static class Bolum1TrafficVerify
         yield return Seconds(1.0f);
         float progressAt1 = kd.ReviveProgress;
         var hud = UnityEngine.Object.FindAnyObjectByType<MissionHud>();
-        yield return Until(() => !Player.IsDown, 4f, "arkadaş kaldırdı");
-        float mateTime = Time.time - holdStart;
+        yield return (Func<bool>)(() => !Player.IsDown || Time.time > holdStart + 4f);
+        float mateTime = Player.IsDown ? -1f : Time.time - holdStart;
+        string mateDiag = "arkadaş–kalça " + M(Vector3.Distance(Flat(mate.transform.position), Flat(kd.GroundPosition))) + ", dy " + (mate.transform.position.y - kd.GroundPosition.y).ToString("F2", Inv)
+            + ", arkadaş ipucu şimdi \"" + mateI.CurrentHint + "\", kontrol " + mate.HasControl + ", ilerleme %" + (kd.ReviveProgress * 100f).ToString("F0", Inv);
         mateI.SetInteractHeld(false);
         yield return Seconds(0.3f);
         bool stoodUp = !Player.IsDown && Player.HasControl && Player.GetComponent<CharacterController>().enabled && kd.ragdollBodies.All(b => b.isKinematic);
         mateGo.SetActive(false);
         Check("(f2) arkadaş (ikinci test taşıyıcısı) E basılı 2 sn ile kaldırıyor; oyuncu ayağa kalkıp kontrolü geri alıyor",
             mateHint == PlayerInteraction.HintRevive && Mathf.Abs(mateTime - kd.reviveSeconds) <= 0.25f && progressAt1 > 0.4f && progressAt1 < 0.6f && stoodUp,
-            "arkadaş ipucu \"" + mateHint + "\"; 1 sn'de ilerleme %" + (progressAt1 * 100f).ToString("F0", Inv) + "; kalkma " + S(mateTime) + " (beklenen " + kd.reviveSeconds + "); ayakta, kontrol " + stoodUp);
+            "arkadaş ipucu \"" + mateHint + "\"; 1 sn'de ilerleme %" + (progressAt1 * 100f).ToString("F0", Inv) + "; kalkma " + S(mateTime) + " (beklenen " + kd.reviveSeconds + "); ayakta, kontrol " + stoodUp + (mateTime < 0f ? "; " + mateDiag : ""));
+        if (Player.IsDown) { bot.assistEnabled = true; yield return Until(() => !Player.IsDown, 8f, "toparlama"); }
         yield return Seconds(0.5f);
 
         // f3: bot açık → 3 sn sonra yanına ışınlanır, 2 sn'de kaldırır
@@ -783,11 +788,12 @@ public static class Bolum1TrafficVerify
     // Oyuncuyu şeritte s noktasına (gelen araca bakarak) koyar, EastBound'a araç çıkarır, düşmeyi bekler.
     private static IEnumerator HitPlayerAt(LanePath lane, float s, TrafficVehicleType type, bool watchYield)
     {
-        Vector3 p = lane.PointAt(s) + Vector3.up * 0.05f;
+        // Şerit ortasının 0.4 m solunda (dağ tarafı): çarpma itkisi uçuruma değil karşı şeride doğru olsun
+        Vector3 p = lane.PointAt(s) - lane.RightAt(s) * 0.4f + Vector3.up * 0.05f;
         Player.Teleport(p, Quaternion.LookRotation(-Flat(lane.TangentAt(s)).normalized));
         yield return Seconds(0.3f);
         TrafficVehicle v = null;
-        yield return Until(() => (v = Traffic.ForceSpawn(true, type)) != null, 10f, "çarpacak araç " + type);
+        yield return Until(() => v != null || (v = Traffic.ForceSpawn(true, type)) != null, 10f, "çarpacak araç " + type);
         lastHitCar = v;
         if (watchYield)
         {
@@ -831,7 +837,7 @@ public static class Bolum1TrafficVerify
         float hitTime = -1f;
         bool releasedAtHit = false;
         TrafficVehicle v = null;
-        yield return Until(() => (v = traffic.ForceSpawn(true, TrafficVehicleType.Sedan)) != null, 10f, "sedye aracı");
+        yield return Until(() => v != null || (v = traffic.ForceSpawn(true, TrafficVehicleType.Sedan)) != null, 10f, "sedye aracı");
         v.HitPatient += (car, p) => { if (p == tourist && hitTime < 0f) { hitPos = p.Position; hitTime = Time.time; } };
         v.HitPlayer += (car, p) => { releasedAtHit = p.HeldStretcher == null && !s1.IsHeldBy(p); };
         Time.timeScale = 2f;

@@ -26,6 +26,7 @@ public static class Bolum1TrafficBuilder
 
     public const string WestLaneName = "TrafficLane_WestBound";
     public const string DirectorName = "Bolum1_Traffic";
+    public static string ConeControllerName(string cone) { return "TrafficCone_" + cone; }
 
     public static readonly TrafficVehicleType[] Types = { TrafficVehicleType.Sedan, TrafficVehicleType.Hatchback, TrafficVehicleType.Pickup, TrafficVehicleType.PanelVan, TrafficVehicleType.BoxTruck };
 
@@ -145,6 +146,11 @@ public static class Bolum1TrafficBuilder
             follower.wheelRadius = WheelRadius(wheels[0], spec.wheelRadius);
             follower.frontOverhang = center.z + size.z * 0.5f;
             follower.rearOverhang = -(center.z - size.z * 0.5f);
+            // Aks noktaları şeritte: yarım dingil mesafesi (en öndeki ve en arkadaki aks)
+            var axleZ = wheels.Select(w => root.transform.InverseTransformPoint(w.position).z).ToArray();
+            follower.axleHalfSpan = (axleZ.Max() - axleZ.Min()) * 0.5f;
+            // 2 m'den geniş araç şeridin sağına yakın gider (3.5 m aralıklı şeritlerde iki kamyon virajda birbirine değmesin)
+            follower.lateralOffset = Mathf.Max(0f, (size.x - 2.0f) * 0.5f);
 
             var audio = root.AddComponent<VehicleAudio>();
             audio.engine = root.AddComponent<AudioSource>();
@@ -372,13 +378,18 @@ public static class Bolum1TrafficBuilder
         director.mission = GameObject.Find(Bolum1AmbulanceBuilder.MissionName).GetComponent<MissionDirector>();
         Line("Trafik yönetmeni: " + DirectorName + ", ayarlar " + SettingsPath + " (sakin " + settings.calmSeconds + ", dalga " + settings.waveSize + ", aralık " + settings.waveGapSeconds + ")");
 
-        // 3) Koniler (çekici kasasında): TrafficCone; yukarı ekseni ve taban ölçüsü sahnedeki dik duruşlarından
+        // 3) Koniler (çekici kasasında): her biri için ayrı kontrol objesi (TrafficCone_<ad>); çekici hiyerarşisine betik eklenmez.
+        //    Yukarı ekseni ve taban ölçüsü sahnedeki dik duruşlarından.
         var road = GameObject.Find("SM_B1_Road").transform;
         float killY = GameObject.Find("FallRespawnPlane").transform.position.y;
         foreach (string name in Bolum1TowTruck.ConeNames)
         {
             var cone = Bolum1TowTruck.Part(truck, name);
-            var c = cone.gameObject.AddComponent<TrafficCone>();
+            var ctrl = new GameObject(ConeControllerName(name));
+            ctrl.transform.SetParent(root, false);
+            ctrl.transform.position = cone.position;
+            var c = ctrl.AddComponent<TrafficCone>();
+            c.target = cone;
             Vector3 up = Vector3.up;
             c.localUp = (Quaternion.Inverse(cone.rotation) * up).normalized;
             MeasureCone(cone, up, out float baseOffset, out float radius, out float height);
@@ -387,7 +398,7 @@ public static class Bolum1TrafficBuilder
             c.height = height;
             c.road = road;
             c.killBelowY = killY;
-            var src = cone.gameObject.AddComponent<AudioSource>();
+            var src = ctrl.AddComponent<AudioSource>();
             src.playOnAwake = false;
             src.spatialBlend = 1f;
             src.dopplerLevel = 1f;

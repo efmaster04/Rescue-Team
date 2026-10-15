@@ -27,6 +27,10 @@ public class LaneFollower : MonoBehaviour
     [Tooltip("Kökten ön tampona / arka tampona uzaklık (m). Şerit doluluk servisi (araç takibi) kullanır.")]
     public float frontOverhang = 2.5f;
     public float rearOverhang = 2.5f;
+    [Tooltip("Ön ve arka aksın kökten uzaklığı (m, yarım dingil mesafesi). > 0 ise iki aks da şerit çizgisinde durur ve kök onların ortasına gelir (virajda uzun araç dışa taşmaz). 0 = kök şerit çizgisinde, yön teğet (ambulans).")]
+    public float axleHalfSpan = 0f;
+    [Tooltip("Şerit çizgisinden sağa kayma (m). Geniş araçlar (kamyon) şeridin sağına yakın gider; karşı şeritteki araçla virajda boşluk kalır. 0 = ortada.")]
+    public float lateralOffset = 0f;
 
     // Şerit üzerinde ön ve arka tamponun s değeri
     public float FrontS { get { return Distance + frontOverhang; } }
@@ -72,8 +76,7 @@ public class LaneFollower : MonoBehaviour
         if (body == null) body = GetComponent<Rigidbody>();
         Distance = Mathf.Clamp(s, 0f, lane.Length);
         Speed = Mathf.Max(0f, startSpeed);
-        Vector3 p = lane.PointAt(Distance);
-        Quaternion r = Quaternion.LookRotation(lane.TangentAt(Distance), Vector3.up);
+        Pose(Distance, out Vector3 p, out Quaternion r);
         transform.SetPositionAndRotation(p, r);
         body.position = p;
         body.rotation = r;
@@ -81,6 +84,21 @@ public class LaneFollower : MonoBehaviour
 
     public void StopAt(float s) { stopDistance = s; }
     public void ClearStop() { stopDistance = float.PositiveInfinity; }
+
+    // s'deki kök pozu. axleHalfSpan > 0: aks noktaları şeritte, kök aralarında, yön akstan aksa.
+    public void Pose(float s, out Vector3 position, out Quaternion rotation)
+    {
+        float h = axleHalfSpan;
+        if (h > 0.01f && s - h >= 0f && s + h <= lane.Length)
+        {
+            Vector3 front = lane.PointAt(s + h), rear = lane.PointAt(s - h);
+            position = (front + rear) * 0.5f + lane.RightAt(s) * lateralOffset;
+            rotation = Quaternion.LookRotation(front - rear, Vector3.up);
+            return;
+        }
+        position = lane.PointAt(s) + (lateralOffset != 0f ? lane.RightAt(s) * lateralOffset : Vector3.zero);
+        rotation = Quaternion.LookRotation(lane.TangentAt(s), Vector3.up);
+    }
 
     // Tek adımlık hız/konum integratörü. Tahmin (TravelTime) ile gerçek sürüş AYNI fonksiyonu kullanır;
     // böylece varış zamanı, frenleme dahil, kare kare aynı çıkar.
@@ -133,8 +151,7 @@ public class LaneFollower : MonoBehaviour
         Distance = s;
         Speed = v;
 
-        Vector3 p = lane.PointAt(s);
-        Quaternion r = Quaternion.LookRotation(lane.TangentAt(s), Vector3.up);
+        Pose(s, out Vector3 p, out Quaternion r);
         body.MovePosition(p);
         body.MoveRotation(r);
 
