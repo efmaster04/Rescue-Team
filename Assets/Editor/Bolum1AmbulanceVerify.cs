@@ -55,6 +55,7 @@ public static class Bolum1AmbulanceVerify
             EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
             CheckEditScene();
             CheckAudioClips();
+            Bolum1AmbulanceModelChecks.CheckAssets(Check);
         }
         catch (Exception e)
         {
@@ -325,6 +326,11 @@ public static class Bolum1AmbulanceVerify
 
     private static IEnumerator Scenario()
     {
+        // Gerçek klip oynarken üç hastanın patikadaki yakın planı ve yüzey ölçümü.
+        yield return null;
+        Vector3 patientsCenter = Mission.patients.Aggregate(Vector3.zero, (sum, p) => sum + p.Position) / Mission.patients.Length;
+        yield return Capture("hastalar_yakin", patientsCenter + new Vector3(0f, 5f, -4f), patientsCenter, 52f, false);
+        yield return Bolum1AmbulanceModelChecks.CheckPoses(Check);
         parkPosition = PatientOf("Tourist").Position + new Vector3(-2.5f, 0f, -1.8f);
         records.Clear();
         var test = ScriptableObject.CreateInstance<AmbulanceSchedule>();
@@ -399,7 +405,7 @@ public static class Bolum1AmbulanceVerify
         float trailerGap = Vector3.Distance(Flat(bot.HeldStretcher != null ? bot.GetHandPoint(s1.transform.position) : bot.transform.position), Flat(Player.GetHandPoint(s1.transform.position)));
         Vector3 mid = (Player.transform.position + bot.transform.position) * 0.5f;
         Vector3 sideDir = Vector3.Cross(Vector3.up, fwd);
-        Capture("ambulans_tasima", mid + Vector3.up * 2.2f - sideDir * 4.2f + fwd * 0.5f, mid + Vector3.up * 0.6f, 50f, false);
+        yield return Capture("ambulans_tasima", mid + Vector3.up * 2.2f - sideDir * 4.2f + fwd * 0.5f, mid + Vector3.up * 0.6f, 50f, false);
         Check("(e1) oyuncu + bot sedyeyi kaldırıyor; tek taşıyıcıyla kalkmıyor; hasta sedyeye alınıyor",
             placedOk && singleNotRaised && singleNotice == Bolum1AmbulanceBuilder.Rules.NotEnoughCarriersMessage && raised && hintGrab == PlayerInteraction.HintGrab && hintRelease == PlayerInteraction.HintRelease,
             "sedyeye alma " + placedOk + "; bot kapalı: kalktı mı " + !singleNotRaised + ", uyarı \"" + singleNotice + "\", ipuçları \"" + hintGrab + "\" / \"" + hintRelease
@@ -446,7 +452,7 @@ public static class Bolum1AmbulanceVerify
         yield return Until(() => records.Count > 0 && records[0].amb != null && records[0].amb.LoadingOpen, 40f, "ambulans 1 yükleme açık");
         var amb1 = records[0].amb;
         yield return Seconds(1.2f);
-        CaptureStop(amb1);
+        yield return CaptureStop(amb1);
         yield return LoadAtAmbulance(s1, amb1);
         bool slot1 = tourist.State == PatientState.InAmbulance && tourist.transform.IsChildOf(amb1.patientSlots[0].parent);
         yield return LoadAtAmbulance(s2, amb1);
@@ -479,7 +485,7 @@ public static class Bolum1AmbulanceVerify
         hudOrbit.Pitch = 22f;
         float departed1 = records[0].departure;
         yield return (Func<bool>)(() => Mission.Elapsed >= departed1 + 2.5f);
-        CaptureHud();
+        yield return CaptureHud();
         ParkCarriersOffLane();
 
         // Ambulans 1 şeridin sonunda kaybolur, hastalar Rescued
@@ -678,26 +684,26 @@ public static class Bolum1AmbulanceVerify
     }
 
     // ---------- ekran görüntüleri ----------
-    private static void CaptureStop(AmbulanceController amb)
+    private static IEnumerator CaptureStop(AmbulanceController amb)
     {
         // Ambulansın arkasından ve vadi tarafından, yukarıdan: açık kapılar ve korkuluk boşluğu (rampa ağzı) görünsün.
         Vector3 back = -amb.transform.forward;
         Vector3 right = amb.transform.right;
         Vector3 rear = amb.transform.position + back * 3f;
         Vector3 camPos = rear + back * 11f + right * 1.5f + Vector3.up * 4.5f;
-        Capture("ambulans_durak", camPos, rear + back * 1.5f + right * 1.2f + Vector3.up * 0.5f, 55f, false);
+        return Capture("ambulans_durak", camPos, rear + back * 1.5f + right * 1.2f + Vector3.up * 0.5f, 55f, false);
     }
 
-    private static void CaptureHud()
+    private static IEnumerator CaptureHud()
     {
         var cam = Camera.main;
         var hud = UnityEngine.Object.FindAnyObjectByType<MissionHud>();
         Line("  HUD: sayaç \"" + hud.TimerText.text + "\", telsiz \"" + hud.RadioLabel.text + "\", ipucu \"" + hud.HintText.text + "\"; göstergeler "
             + string.Join(", ", hud.Indicators.Select(i => i.patient.displayName + (i.Visible ? " görünür " : " gizli ") + i.patient.MissedAmbulances + "/3")));
-        Capture("ambulans_hud", cam.transform.position, cam.transform.position + cam.transform.forward, cam.fieldOfView, true);
+        return Capture("ambulans_hud", cam.transform.position, cam.transform.position + cam.transform.forward, cam.fieldOfView, true);
     }
 
-    private static void Capture(string name, Vector3 pos, Vector3 look, float fov, bool withHud)
+    private static IEnumerator Capture(string name, Vector3 pos, Vector3 look, float fov, bool withHud)
     {
         var go = new GameObject("AmbulanceVerify_CaptureCam");
         var cam = go.AddComponent<Camera>();
@@ -720,6 +726,12 @@ public static class Bolum1AmbulanceVerify
         }
         var rt = new RenderTexture(1920, 1080, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
         cam.targetTexture = rt;
+        Canvas.ForceUpdateCanvases();
+        // GPU Resident Drawer yeni kameranın görünürlük verisini bir sonraki
+        // render döngüsünde hazırlar. Aynı karede Render statik mesh'leri atlayabilir.
+        yield return null;
+        yield return null;
+        if (hud != null) foreach (var i in hud.Indicators) i.FaceCamera(cam);
         Canvas.ForceUpdateCanvases();
         cam.Render();
         var prev = RenderTexture.active;
@@ -763,6 +775,7 @@ public static class Bolum1AmbulanceVerify
     {
         allOk &= ok;
         Line((ok ? "[OK]   " : "[FAIL] ") + label + " — " + detail);
+        Debug.Log((ok ? "CHECK OK " : "CHECK FAIL ") + label + " — " + detail);
     }
 
     private static void Fail(string message)

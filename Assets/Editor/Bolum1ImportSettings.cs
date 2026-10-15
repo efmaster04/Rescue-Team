@@ -3,7 +3,7 @@ using UnityEditor.AssetImporters;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// Bölüm 1 mekân modülleri ve minibüs FBX'lerine import ayarlarını otomatik uygular.
+// Bölüm 1 mekân, araç, sedye ve hasta FBX'lerine import ayarlarını otomatik uygular.
 // Ayarlar her dosyaya bir kez yazılır (işaret importer.userData'da), sonra Inspector'dan yapılan değişiklikler ezilmez.
 // importSettingsMissing kopyalanan FBX'lerde güvenilir çıkmadığı için kendi işaretimizi tutuyoruz (bkz. RescueCrewImportSettings).
 internal class Bolum1ImportSettings : AssetPostprocessor
@@ -14,11 +14,15 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     public const string TowTruckGlassMaterial = "M_TowTruck_Glass";
     public const float TowTruckGlassAlpha = 0.34f;
     public const string AppliedMarker = "Bolum1Defaults:v1";
+    public const string AmbulanceFolder = "Assets/Models/Vehicles/Ambulance/";
+    public const string PropsFolder = "Assets/Models/Props/Stretcher/";
+    public const string PatientFolder = "Assets/Models/Characters/Patient/";
 
     public static bool IsBolum1Model(string path)
     {
         return path.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)
-            && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder) || path.StartsWith(TowTruckFolder));
+            && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder) || path.StartsWith(TowTruckFolder)
+                || path.StartsWith(AmbulanceFolder) || path.StartsWith(PropsFolder) || path.StartsWith(PatientFolder));
     }
 
     private void OnPreprocessModel()
@@ -27,7 +31,7 @@ internal class Bolum1ImportSettings : AssetPostprocessor
             return;
 
         var importer = (ModelImporter)assetImporter;
-        if (importer.userData == AppliedMarker)
+        if (importer.userData == AppliedMarker && !assetPath.StartsWith(PatientFolder))
             return;
 
         Apply(importer);
@@ -52,11 +56,12 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     {
         bool vanGlass = assetPath.StartsWith(VehicleFolder) && description.materialName == GlassMaterial;
         bool truckGlass = assetPath.StartsWith(TowTruckFolder) && description.materialName == TowTruckGlassMaterial;
-        if ((!vanGlass && !truckGlass) || !material.HasProperty("_BaseColor"))
+        bool ambulanceGlass = assetPath.StartsWith(AmbulanceFolder) && description.materialName == "M_Ambulance_Glass";
+        if ((!vanGlass && !truckGlass && !ambulanceGlass) || !material.HasProperty("_BaseColor"))
             return;
 
         Color c = material.GetColor("_BaseColor");
-        c.a = truckGlass ? TowTruckGlassAlpha : GlassAlpha;
+        c.a = ambulanceGlass ? 0.3f : truckGlass ? TowTruckGlassAlpha : GlassAlpha;
         MakeTransparent(material);
         material.SetColor("_BaseColor", c);
         if (material.HasProperty("_Color"))
@@ -87,9 +92,61 @@ internal class Bolum1ImportSettings : AssetPostprocessor
         importer.globalScale = 1f;
         importer.useFileScale = true;          // Inspector'daki "Convert Units"
         importer.bakeAxisConversion = false;   // Açıkken modeller ters dönüyor (karakterde görüldü)
-        // Statik modeller ve minibüs: iskelet/klip yok. None seçilmezse Unity köke gereksiz bir Animator ekler.
+        // Statik modeller: iskelet/klip yok. Hasta modelleri aşağıda Humanoid olarak ayrılır.
         importer.animationType = ModelImporterAnimationType.None;
         importer.importAnimation = false;
+        if (importer.assetPath.StartsWith(PatientFolder))
+        {
+            bool pose = System.IO.Path.GetFileName(importer.assetPath).StartsWith("Patient_LiePose");
+            importer.animationType = ModelImporterAnimationType.Human;
+            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            importer.importAnimation = pose;
+            importer.importBlendShapes = true;
+            // Aynı 31 kemikli T-poz iskeleti; poz klibinden Avatar üretmek kolları çarpıtır.
+            // Kliplerin armature kök adı SK_Patient_Civilian; kemikler aynı olsa da
+            // RescueCrew kök adı CopyFromOther hiyerarşi doğrulamasını geçmez.
+            var source = AssetDatabase.LoadAssetAtPath<Avatar>(PatientFolder + "SK_Patient_Civilian.fbx");
+            if (pose && source != null)
+            {
+                importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
+                importer.sourceAvatar = source;
+            }
+            var description = importer.humanDescription;
+            if (description.human != null && description.human.Length > 0)
+            {
+                var bones = description.human;
+                for (int i = 0; i < bones.Length; i++)
+                {
+                    var limit = bones[i].limit;
+                    limit.useDefaultValues = true;
+                    bones[i].limit = limit;
+                }
+                description.human = bones;
+                importer.humanDescription = description;
+            }
+        }
+    }
+
+    private void OnPreprocessAnimation()
+    {
+        if (!assetPath.StartsWith(PatientFolder)) return;
+        var importer = (ModelImporter)assetImporter;
+        var clips = importer.defaultClipAnimations;
+        foreach (var clip in clips)
+        {
+            clip.name = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            // Tek kareli FBX'in sıfır süreli aralığında Unity kas eğrisi üretmiyor.
+            // Aynı sabit pozu bir kare boyunca örnekleyerek döngülenebilir klip yap.
+            clip.lastFrame = clip.firstFrame + 1f;
+            clip.loopTime = true;
+            clip.lockRootRotation = true;
+            clip.lockRootHeightY = true;
+            clip.lockRootPositionXZ = true;
+            clip.keepOriginalOrientation = true;
+            clip.keepOriginalPositionY = true;
+            clip.keepOriginalPositionXZ = true;
+        }
+        importer.clipAnimations = clips;
     }
 
     public static bool IsApplied(ModelImporter importer)
@@ -98,7 +155,9 @@ internal class Bolum1ImportSettings : AssetPostprocessor
             && importer.globalScale == 1f
             && importer.useFileScale
             && !importer.bakeAxisConversion
-            && importer.animationType == ModelImporterAnimationType.None
-            && !importer.importAnimation;
+            && (importer.assetPath.StartsWith(PatientFolder)
+                ? importer.animationType == ModelImporterAnimationType.Human
+                    && importer.importAnimation == System.IO.Path.GetFileName(importer.assetPath).StartsWith("Patient_LiePose")
+                : importer.animationType == ModelImporterAnimationType.None && !importer.importAnimation);
     }
 }

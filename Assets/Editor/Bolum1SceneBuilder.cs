@@ -140,6 +140,12 @@ public static class Bolum1SceneBuilder
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))
             throw new Exception("Sahne kaydedilemedi: " + ScenePath);
+        // Runtime R ile yeniden yükleme, build'de yalnız etkin sahneler için çalışır.
+        var buildScenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+        var entry = buildScenes.Find(s => s.path == ScenePath);
+        if (entry == null) buildScenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+        else entry.enabled = true;
+        EditorBuildSettings.scenes = buildScenes.ToArray();
         AssetDatabase.SaveAssets();
     }
 

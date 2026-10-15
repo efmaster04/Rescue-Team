@@ -1,0 +1,481 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X",
+    "length_axis": "Y",
+    "marker_direction": "Marker local +Y points toward vehicle front (-Y world). All positions/axes below are Blender root coordinates."
+  },
+  "field_descriptions": {
+    "pivot_m": "Object origin XYZ in metres, rest pose.",
+    "motion": "Positive angle uses right-hand rule around signed axis; rest=0 deg.",
+    "axis": "Unit rotation axis in Blender root coordinates; null for blinking lights.",
+    "range_deg": "Mechanical min/max angle; null means continuous spin or no mechanical motion.",
+    "work_pose_deg": "Open demonstration/test pose: doors 100, step 90.",
+    "markers": "Empty position, local +Y heading and rest Euler rotation in Blender coordinates.",
+    "palette_samples": "5x5 median at top-left-origin source pixel coordinates; assumed colors explicitly labelled.",
+    "measurement": "Body envelope excludes mirrors; body height excludes three beacons; ground Z=0."
+  },
+  "parts": {
+    "SM_Ambulance_Body": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Ambulance",
+      "motion": null
+    },
+    "SM_Ambulance_Glass": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Ambulance",
+      "motion": null
+    },
+    "SM_Ambulance_Wheel_FL": {
+      "pivot_m": [
+        0.86,
+        -1.85,
+        0.43
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "radius_m": 0.43
+      }
+    },
+    "SM_Ambulance_Wheel_FR": {
+      "pivot_m": [
+        -0.86,
+        -1.85,
+        0.43
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "radius_m": 0.43
+      }
+    },
+    "SM_Ambulance_Wheel_RL": {
+      "pivot_m": [
+        0.86,
+        1.85,
+        0.43
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "radius_m": 0.43
+      }
+    },
+    "SM_Ambulance_Wheel_RR": {
+      "pivot_m": [
+        -0.86,
+        1.85,
+        0.43
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "radius_m": 0.43
+      }
+    },
+    "SM_Ambulance_Door_RL": {
+      "pivot_m": [
+        0.92,
+        2.94,
+        0.694
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_deg": [
+          0,
+          260
+        ],
+        "work_pose_deg": 100,
+        "note": "0 closed; 100 displayed open; signed axis swings outward."
+      }
+    },
+    "SM_Ambulance_Door_RR": {
+      "pivot_m": [
+        -0.92,
+        2.94,
+        0.694
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range_deg": [
+          0,
+          260
+        ],
+        "work_pose_deg": 100,
+        "note": "0 closed; 100 displayed open; signed axis swings outward."
+      }
+    },
+    "SM_Ambulance_Step_Rear": {
+      "pivot_m": [
+        0.0,
+        3.0,
+        0.34
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          -1,
+          0,
+          0
+        ],
+        "range_deg": [
+          0,
+          90
+        ],
+        "work_pose_deg": 90,
+        "note": "0 folded upward; +90 along -X opens horizontally rearward."
+      }
+    },
+    "SM_Ambulance_Interior": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Ambulance",
+      "motion": null
+    },
+    "SM_Ambulance_Lightbar": {
+      "pivot_m": [
+        0.0,
+        -1.12,
+        2.723
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "blink",
+        "axis": null,
+        "range_deg": null,
+        "note": "Separate object; emission toggled by gameplay."
+      }
+    },
+    "SM_Ambulance_Light_RearL": {
+      "pivot_m": [
+        0.79,
+        2.6,
+        2.72
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "blink",
+        "axis": null,
+        "range_deg": null
+      }
+    },
+    "SM_Ambulance_Light_RearR": {
+      "pivot_m": [
+        -0.79,
+        2.6,
+        2.72
+      ],
+      "parent": "SM_Ambulance",
+      "motion": {
+        "type": "blink",
+        "axis": null,
+        "range_deg": null
+      }
+    }
+  },
+  "markers": {
+    "PatientSlot_01": {
+      "position_m": [
+        0.61,
+        1.21,
+        1.03
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    },
+    "PatientSlot_02": {
+      "position_m": [
+        -0.61,
+        1.21,
+        1.03
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    },
+    "LoadPoint": {
+      "position_m": [
+        0,
+        4.18,
+        0
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    },
+    "SirenPoint": {
+      "position_m": [
+        0,
+        -1.12,
+        2.723
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    }
+  },
+  "measurement": {
+    "length_m": 6.0,
+    "width_m": 2.0,
+    "height_m": 2.65,
+    "beacon_top_max_m": 2.8,
+    "tolerance_m": 0.05,
+    "wheel_radius_m": 0.43,
+    "wheel_x_m": 0.86,
+    "axles_y_m": {
+      "F": -1.85,
+      "R": 1.85
+    },
+    "rear_bumper_max_y_m": 2.98
+  },
+  "rear_opening": {
+    "x_m": [
+      -0.918,
+      0.918
+    ],
+    "z_m": [
+      0.69,
+      2.55
+    ],
+    "rear_plane_y_m": 2.87,
+    "closed_seam_max_m": 0.01
+  },
+  "beds": {
+    "surface_z_m": 0.98,
+    "centres_xy_m": [
+      [
+        0.61,
+        1.21
+      ],
+      [
+        -0.61,
+        1.21
+      ]
+    ],
+    "length_m": 2.0,
+    "width_m": 0.55
+  },
+  "materials": {
+    "M_Ambulance_Paint": "#DCDBDC",
+    "M_Ambulance_Red": "#CF3533",
+    "M_Ambulance_Trim": "#48474F",
+    "M_Ambulance_Tire": "#252837",
+    "M_Ambulance_Rim": "#38373F",
+    "M_Ambulance_Glass": "#A4AEB4",
+    "M_Ambulance_Beacon": "#5C74D6",
+    "M_Ambulance_Interior": "#A59691",
+    "M_Ambulance_Seat": "#212227",
+    "M_Ambulance_Headlight": "#C3C4CD",
+    "M_Ambulance_Amber": "#AF8D7A",
+    "M_Ambulance_Metal": "#5B5964",
+    "M_Ambulance_Driver": "#49565E"
+  },
+  "palette_samples": {
+    "Paint": {
+      "hex": "#DCDBDC",
+      "source_pixel_xy_top_left": [
+        1159,
+        191
+      ],
+      "median_patch_px": 5
+    },
+    "Red": {
+      "hex": "#CF3533",
+      "source_pixel_xy_top_left": [
+        1155,
+        253
+      ],
+      "median_patch_px": 5
+    },
+    "Trim": {
+      "hex": "#48474F",
+      "source_pixel_xy_top_left": [
+        553,
+        327
+      ],
+      "median_patch_px": 5
+    },
+    "Tire": {
+      "hex": "#252837",
+      "source_pixel_xy_top_left": [
+        1190,
+        350
+      ],
+      "median_patch_px": 5
+    },
+    "Rim": {
+      "hex": "#38373F",
+      "source_pixel_xy_top_left": [
+        1168,
+        344
+      ],
+      "median_patch_px": 5
+    },
+    "Glass": {
+      "hex": "#A4AEB4",
+      "source_pixel_xy_top_left": [
+        1040,
+        187
+      ],
+      "median_patch_px": 5
+    },
+    "Beacon": {
+      "hex": "#5C74D6",
+      "source_pixel_xy_top_left": [
+        251,
+        63
+      ],
+      "median_patch_px": 5
+    },
+    "Interior": {
+      "hex": "#A59691",
+      "source_pixel_xy_top_left": [
+        880,
+        621
+      ],
+      "median_patch_px": 5
+    },
+    "Seat": {
+      "hex": "#212227",
+      "source_pixel_xy_top_left": [
+        1100,
+        547
+      ],
+      "median_patch_px": 5
+    },
+    "Headlight": {
+      "hex": "#C3C4CD",
+      "source_pixel_xy_top_left": [
+        159,
+        279
+      ],
+      "median_patch_px": 5
+    },
+    "Amber": {
+      "hex": "#AF8D7A",
+      "source_pixel_xy_top_left": [
+        130,
+        283
+      ],
+      "median_patch_px": 5
+    },
+    "Metal": {
+      "hex": "#5B5964",
+      "source_pixel_xy_top_left": [
+        1252,
+        338
+      ],
+      "median_patch_px": 5
+    },
+    "Canvas": {
+      "hex": "#D97836",
+      "source": "neutral brief assumption"
+    },
+    "Aluminium": {
+      "hex": "#AAB3B8",
+      "source": "neutral brief assumption"
+    },
+    "Driver": {
+      "hex": "#49565E",
+      "source": "neutral brief assumption"
+    }
+  },
+  "palette_reference": "ArtSource/Ambulance/references/01_turnaround_white_red.jpg",
+  "unity_import": {
+    "scale_factor": 1,
+    "bake_axis_conversion": false,
+    "color_note": "Hex sRGB -> linear Base Color -> unchanged FBX DiffuseColor; Linear URP.",
+    "glass_note": "Set transparent URP material using exported alpha 0.3.",
+    "light_note": "Three separate blue light objects; blink via game code."
+  }
+}

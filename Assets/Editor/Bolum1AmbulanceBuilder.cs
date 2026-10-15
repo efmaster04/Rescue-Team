@@ -79,6 +79,13 @@ public static class Bolum1AmbulanceBuilder
         try
         {
             Bolum1SceneBuilder.Build();
+            bool assetsOk = true;
+            Bolum1AmbulanceModelChecks.CheckAssets((label, ok, detail) =>
+            {
+                assetsOk &= ok;
+                Debug.Log((ok ? "CHECK OK " : "CHECK FAIL ") + label + " — " + detail);
+            });
+            if (!assetsOk) throw new Exception("Gerçek model asset kabulü başarısız; CHECK FAIL satırlarına bakın.");
             Debug.Log("AMBULANCE BUILD OK");
             EditorApplication.Exit(0);
         }
@@ -95,6 +102,14 @@ public static class Bolum1AmbulanceBuilder
 
     public static void BuildAssets()
     {
+        // İlk import sırasından bağımsız olarak T-poz Avatar'ı hazırken klipleri tekrar bağla.
+        foreach (string path in PatientTypes.Select(PatientModelPath).Concat(new[] { LiePosePath, LiePoseArmSlingPath }))
+        {
+            var importer = AssetImporter.GetAtPath(path) as ModelImporter;
+            if (importer == null) throw new Exception("Hasta FBX bulunamadı: " + path);
+            Bolum1ImportSettings.Apply(importer);
+            importer.SaveAndReimport();
+        }
         report = new StringBuilder();
         Line("AMBULANCE BUILD " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", Inv));
         EnsureFolder(PrefabFolder);
@@ -195,6 +210,16 @@ public static class Bolum1AmbulanceBuilder
             var box = root.AddComponent<BoxCollider>();
             box.center = center;
             box.size = size;
+            if (fbx != null)
+            {
+                // Aynalar/tampon tüm mesh bounds'unu büyütür; ana gövde collider'ı
+                // gerçek kabin genişliği ve arka açıklık düzleminde biter.
+                var data = Bolum1Coordinates.LoadJson(AmbulanceMetaPath);
+                float rear = -Convert.ToSingle(Bolum1Coordinates.Obj(data, "rear_opening")["rear_plane_y_m"]);
+                float width = Convert.ToSingle(Bolum1Coordinates.Obj(data, "measurement")["width_m"]);
+                box.center = new Vector3(center.x, center.y, (body.max.z + rear) * 0.5f);
+                box.size = new Vector3(width, size.y, body.max.z - rear);
+            }
 
             var follower = root.AddComponent<LaneFollower>();
             follower.cruiseSpeed = 12f;
@@ -224,6 +249,16 @@ public static class Bolum1AmbulanceBuilder
             amb.rearStep = Find("SM_Ambulance_Step_Rear");
             amb.loadPoint = Find("LoadPoint");
             amb.patientSlots = new[] { LieFrame(Find("PatientSlot_01"), root.transform), LieFrame(Find("PatientSlot_02"), root.transform) };
+            if (fbx != null)
+            {
+                float surface = Convert.ToSingle(Bolum1Coordinates.Obj(Bolum1Coordinates.LoadJson(AmbulanceMetaPath), "beds")["surface_z_m"]);
+                foreach (var frame in amb.patientSlots)
+                {
+                    Vector3 p = root.transform.InverseTransformPoint(frame.position);
+                    p.y = surface;
+                    frame.position = root.transform.TransformPoint(p);
+                }
+            }
             amb.flashLeft = Renderers(Find("SM_Ambulance_Lightbar")).Concat(Renderers(Find("SM_Ambulance_Light_RearL"))).ToArray();
             amb.flashRight = Renderers(Find("SM_Ambulance_Light_RearR")).ToArray();
 
@@ -355,6 +390,13 @@ public static class Bolum1AmbulanceBuilder
             frame.SetParent(anchor, false);
             Vector3 headDir = s.handleFront.position - s.handleRear.position;
             frame.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(headDir, root.transform.up).normalized, root.transform.up);
+            if (fbx != null)
+            {
+                float surface = Convert.ToSingle(Bolum1Coordinates.Obj(Bolum1Coordinates.LoadJson("Assets/Models/Props/Stretcher/stretcher_meta.json"), "dimensions")["canvas_centre_height_m"]);
+                Vector3 p = root.transform.InverseTransformPoint(frame.position);
+                p.y = surface;
+                frame.position = root.transform.TransformPoint(p);
+            }
             s.patientAnchor = frame;
             s.colliders = new Collider[] { box };
             Line("Sedye: collider " + V(b.center) + " / " + V(b.size) + ", sap aralığı " + headDir.magnitude.ToString("F2", Inv) + " m");
@@ -417,7 +459,7 @@ public static class Bolum1AmbulanceBuilder
             p.displayName = displayName;
             p.hips = hips;
             p.animator = animator;
-            p.hipsToBack = HipsToBack(go, hips, out string source);
+            p.hipsToBack = HipsToBack(go, hips, type, out string source);
 
             // Yatma pozu klibi (Civilian: kol askılı). Yoksa Animator kapalı, model T-pozda kalır.
             string clipPath = type == "Civilian" ? LiePoseArmSlingPath : LiePosePath;
@@ -433,6 +475,8 @@ public static class Bolum1AmbulanceBuilder
                     ac = AnimatorController.CreateAnimatorControllerAtPath(acPath);
                     ac.layers[0].stateMachine.AddState("Lie").motion = clip;
                 }
+                foreach (var state in ac.layers[0].stateMachine.states)
+                    if (state.state.name == "Lie") state.state.motion = clip;
                 animator.runtimeAnimatorController = ac;
                 animator.enabled = true;
                 p.hasLiePose = true;
@@ -457,15 +501,15 @@ public static class Bolum1AmbulanceBuilder
     }
 
     // Kalçadan sırt yüzeyine uzaklık: patient_meta.json "hips_to_back_m" ya da mesh sınırı.
-    private static float HipsToBack(GameObject character, Transform hips, out string source)
+    private static float HipsToBack(GameObject character, Transform hips, string type, out string source)
     {
         if (File.Exists(PatientMetaPath))
         {
             var meta = Bolum1Coordinates.LoadJson(PatientMetaPath);
-            if (FindNumber(meta, "hips_to_back_m", out double v))
+            if (meta.TryGetValue("hips_to_back_m", out object offsets) && offsets is Dictionary<string, object> variants && variants.TryGetValue(type, out object offset))
             {
                 source = "patient_meta.json";
-                return (float)v;
+                return Convert.ToSingle(offset);
             }
         }
         // Bağ pozunda (T-poz, yüz +Z): kalça hizasından göğse kadar olan bantta en arka (−Z) köşe.
@@ -940,7 +984,7 @@ public static class Bolum1AmbulanceBuilder
         return frame;
     }
 
-    // meta: parts[name].motion.axis (Blender kök uzayı) ve range_deg → Unity kök uzayı ekseni ve açı büyüklüğü.
+    // meta: parts[name].motion.axis ve work_pose_deg → Unity kök uzayı ekseni ve çalışma açısı.
     private static Vector3 HingeAxis(Dictionary<string, object> meta, string part, Vector3 fallback, out float magnitude)
     {
         magnitude = 0f;
@@ -950,9 +994,10 @@ public static class Bolum1AmbulanceBuilder
             var parts = Bolum1Coordinates.Obj(meta, "parts");
             if (!parts.TryGetValue(part, out object po) || !(po is Dictionary<string, object> pd)) return fallback;
             if (!pd.TryGetValue("motion", out object mo) || !(mo is Dictionary<string, object> motion)) return fallback;
-            Vector3 axis = Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(motion, "axis"));
-            if (motion.TryGetValue("range_deg", out object ro) && ro is List<object> range && range.Count == 2)
-                magnitude = Mathf.Max(Mathf.Abs(Convert.ToSingle(range[0])), Mathf.Abs(Convert.ToSingle(range[1])));
+            // Dönüş ekseni sözde vektördür: koordinat dönüşümünde el yönü de ters çevrilir.
+            Vector3 axis = -Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(motion, "axis"));
+            if (motion.TryGetValue("work_pose_deg", out object work))
+                magnitude = Mathf.Abs(Convert.ToSingle(work));
             return axis.normalized;
         }
         catch { return fallback; }
