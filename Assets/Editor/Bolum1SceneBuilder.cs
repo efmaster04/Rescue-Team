@@ -63,6 +63,8 @@ public static class Bolum1SceneBuilder
 
     public static void Build()
     {
+        // Ambulans döngüsü asset ve prefab'ları (yer tutucular dahil) sahneden önce kurulur.
+        Bolum1AmbulanceBuilder.BuildAssets();
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
@@ -131,6 +133,9 @@ public static class Bolum1SceneBuilder
 
         // 5) Test karakteri (oynanmaz): patika üstünde, minibüsün yanında, Idle + ayak IK'sı.
         PlaceCharacter(markers, minivan.transform);
+
+        // 6) Ambulans döngüsü ve hasta taşıma: şerit, durak, hastalar, sedyeler, oyuncu kontrolcüsü, bot, görev, HUD.
+        Bolum1AmbulanceBuilder.SetupScene(markers, minivan, truck, GameObject.Find(CharacterName));
 
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))

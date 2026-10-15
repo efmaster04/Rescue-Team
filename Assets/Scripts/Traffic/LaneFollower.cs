@@ -1,66 +1,136 @@
 using UnityEngine;
 
-namespace RescueTeam.Bolum1
+// Genel şerit takipçisi: bir aracı LanePath üzerinde sürer. İleride bütün trafik araçları bunu kullanacak;
+// araca özel davranış (ambulansın durağı, kornası vb.) ayrı bir sınıfta durur (bkz. AmbulanceController).
+//
+// - Hız, ivme, frenleme ve "s mesafesinde dur" desteği var. Durağa yumuşak frenle yaklaşır.
+// - Konum ve yükseklik polyline'dan, yön şerit teğetinden gelir (kök pivotu = 4 tekerleğin yere değdiği dikdörtgenin merkezi).
+// - Tekerlekler kat edilen yol / yarıçap kadar döner.
+// - Rigidbody kinematiktir: fizik aracı itemez, ama araç önündeki dinamik cisimleri (koni) iter.
+[RequireComponent(typeof(Rigidbody))]
+public class LaneFollower : MonoBehaviour
 {
-    [RequireComponent(typeof(Rigidbody))]
-    public sealed class LaneFollower : MonoBehaviour
+    public LanePath lane;
+
+    [Tooltip("Seyir hızı (m/sn).")]
+    public float cruiseSpeed = 12f;
+    [Tooltip("Hızlanma (m/sn²).")]
+    public float acceleration = 4f;
+    [Tooltip("Frenleme (m/sn²). Durağa bu yavaşlamayla yaklaşır.")]
+    public float braking = 5f;
+
+    [Tooltip("Dönen tekerlek objeleri (pivot aks merkezinde).")]
+    public Transform[] wheels = new Transform[0];
+    [Tooltip("Tekerlek yarıçapı (m).")]
+    public float wheelRadius = 0.38f;
+
+    public float Distance { get; private set; }
+    public float Speed { get; private set; }
+    public bool HasStop { get { return !float.IsPositiveInfinity(stopDistance); } }
+    public float StopDistance { get { return stopDistance; } }
+    // Durak noktasına varıp tamamen durdu mu?
+    public bool AtStop { get { return HasStop && Distance >= stopDistance - 0.0005f && Speed <= 0.0001f; } }
+    // Şeridin sonuna geldi mi?
+    public bool AtEnd { get { return lane != null && Distance >= lane.Length - 0.0005f; } }
+
+    private float stopDistance = float.PositiveInfinity;
+    private Rigidbody body;
+    private Vector3[] wheelAxes; // her tekerleğin kendi yerel uzayında aks ekseni
+
+    private void Awake()
     {
-        public LanePath lane;
-        [Min(0.1f)] public float cruiseSpeed = 12, acceleration = 4, braking = 6;
-        public Transform[] wheels = new Transform[0];
-        public Vector3 wheelAxis = Vector3.right;
-        [Min(0.05f)] public float wheelRadius = 0.36f;
-        public float Distance { get; private set; }
-        public float Speed { get; private set; }
-        public float StopDistance { get; private set; } = float.PositiveInfinity;
-        public bool AtStop => Distance >= StopDistance - 0.001f;
-        public bool AtEnd => lane && Distance >= lane.Length - 0.001f;
-        Rigidbody body;
-        void Awake() { body = GetComponent<Rigidbody>(); body.isKinematic = true; }
-        public void Initialize(LanePath path, float speed)
+        body = GetComponent<Rigidbody>();
+        body.isKinematic = true;
+        CacheWheelAxes();
+    }
+
+    private void CacheWheelAxes()
+    {
+        // Aks ekseni = aracın sağ yönü; tekerleğin kendi uzayına çevrilir (FBX'te tekerlek eksenleri Blender'a göre olabilir).
+        wheelAxes = new Vector3[wheels.Length];
+        for (int i = 0; i < wheels.Length; i++)
+            if (wheels[i] != null)
+                wheelAxes[i] = Quaternion.Inverse(wheels[i].rotation) * transform.right;
+    }
+
+    // Aracı şeridin s noktasına koyar (ışınlama) ve başlangıç hızını verir.
+    public void Place(LanePath path, float s, float startSpeed)
+    {
+        lane = path;
+        if (body == null) body = GetComponent<Rigidbody>();
+        Distance = Mathf.Clamp(s, 0f, lane.Length);
+        Speed = Mathf.Max(0f, startSpeed);
+        Vector3 p = lane.PointAt(Distance);
+        Quaternion r = Quaternion.LookRotation(lane.TangentAt(Distance), Vector3.up);
+        transform.SetPositionAndRotation(p, r);
+        body.position = p;
+        body.rotation = r;
+    }
+
+    public void StopAt(float s) { stopDistance = s; }
+    public void ClearStop() { stopDistance = float.PositiveInfinity; }
+
+    // Tek adımlık hız/konum integratörü. Tahmin (TravelTime) ile gerçek sürüş AYNI fonksiyonu kullanır;
+    // böylece varış zamanı, frenleme dahil, kare kare aynı çıkar.
+    public static void Step(ref float s, ref float v, float stop, float maxSpeed, float accel, float brake, float dt)
+    {
+        float remaining = stop - s;
+        if (remaining <= 0.0005f)
         {
-            lane = path; cruiseSpeed = speed; Distance = 0; Speed = 0;
-            body = GetComponent<Rigidbody>(); body.isKinematic = true;
-            SetDistance(0);
+            s = stop;
+            v = 0f;
+            return;
         }
-        public void StopAt(float s) { StopDistance = Mathf.Clamp(s, Distance, lane.Length); }
-        public void Continue() { StopDistance = float.PositiveInfinity; }
-        public void SetDistance(float s)
+        // Kalan yolda durabileceğimiz en yüksek hız: v² = 2·a·d
+        float target = Mathf.Min(maxSpeed, Mathf.Sqrt(2f * brake * remaining));
+        float next = v > target ? Mathf.Max(target, v - brake * dt) : Mathf.Min(target, v + accel * dt);
+        float move = (v + next) * 0.5f * dt;
+        if (move >= remaining)
         {
-            Distance = Mathf.Clamp(s, 0, lane.Length);
-            Vector3 p = lane.Sample(Distance, out var tangent);
-            body.position = p; body.rotation = Quaternion.LookRotation(tangent, Vector3.up);
-            transform.SetPositionAndRotation(body.position, body.rotation);
+            s = stop;
+            v = 0f;
         }
-        // Tahmin ve gerçek sürüş aynı integratörü kullanır; varış takvimi fren süresini de içerir.
-        static void Integrate(ref float s, ref float v, float stop, float speed, float accel, float brake, float dt)
+        else
         {
-            float remaining = stop - s;
-            if (remaining <= 0.001f) { s = stop; v = 0; return; }
-            float target = Mathf.Min(speed, Mathf.Sqrt(2 * brake * remaining));
-            float next = Mathf.MoveTowards(v, target, (target < v ? brake : accel) * dt);
-            float move = (v + next) * 0.5f * dt;
-            if (move >= remaining || remaining < 0.003f) { s = stop; v = 0; }
-            else { s += move; v = next; }
+            s += move;
+            v = next;
         }
-        public float TravelTime(float stop, float dt = 0.02f)
+    }
+
+    // from → to arasının, startSpeed ile başlayıp to'da durarak kaç saniye süreceği (dt adımlarıyla).
+    public float TravelTime(float from, float to, float startSpeed, float dt)
+    {
+        float s = from, v = startSpeed, t = 0f;
+        while (s < to - 0.0005f && t < 600f)
         {
-            float s = 0, v = 0, elapsed = 0;
-            while (s < stop - 0.001f && elapsed < 600)
-            { Integrate(ref s, ref v, stop, cruiseSpeed, acceleration, braking, dt); elapsed += dt; }
-            return elapsed;
+            Step(ref s, ref v, to, cruiseSpeed, acceleration, braking, dt);
+            t += dt;
         }
-        public void Tick(float dt, float speedFactor = 1)
-        {
-            float old = Distance, s = Distance, v = Speed;
-            float cap = cruiseSpeed * Mathf.Clamp(speedFactor, 0.05f, 1);
-            if (speedFactor < 1) v = Mathf.Min(v, cap);
-            Integrate(ref s, ref v, Mathf.Min(lane.Length, StopDistance), cap, acceleration, braking, dt);
-            Distance = s; Speed = v;
-            Vector3 p = lane.Sample(s, out var tangent);
-            body.MovePosition(p); body.MoveRotation(Quaternion.LookRotation(tangent, Vector3.up));
-            float degrees = (s - old) / wheelRadius * Mathf.Rad2Deg;
-            foreach (var wheel in wheels) if (wheel) wheel.Rotate(wheelAxis, degrees, Space.Self);
-        }
+        return t;
+    }
+
+    // Fizik adımında çağrılır. speedLimit: bu adım için üst hız sınırı (m/sn), ör. önde yaya varsa düşük.
+    public void Tick(float dt, float speedLimit)
+    {
+        if (lane == null) return;
+        float old = Distance;
+        float s = Distance, v = Speed;
+        float stop = HasStop ? stopDistance : float.PositiveInfinity;
+        Step(ref s, ref v, stop, Mathf.Min(cruiseSpeed, speedLimit), acceleration, braking, dt);
+        if (s > lane.Length) s = lane.Length;
+        Distance = s;
+        Speed = v;
+
+        Vector3 p = lane.PointAt(s);
+        Quaternion r = Quaternion.LookRotation(lane.TangentAt(s), Vector3.up);
+        body.MovePosition(p);
+        body.MoveRotation(r);
+
+        // Tekerlekler: kat edilen yol / yarıçap (radyan → derece).
+        float degrees = (s - old) / Mathf.Max(0.05f, wheelRadius) * Mathf.Rad2Deg;
+        if (wheelAxes == null || wheelAxes.Length != wheels.Length) CacheWheelAxes();
+        for (int i = 0; i < wheels.Length; i++)
+            if (wheels[i] != null)
+                wheels[i].localRotation = wheels[i].localRotation * Quaternion.AngleAxis(degrees, wheelAxes[i]);
     }
 }

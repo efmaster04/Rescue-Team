@@ -1,12 +1,22 @@
 using UnityEngine;
-namespace RescueTeam.Bolum1
+
+// Ambulans takvimi (kullanıcı kararı 1). Bütün süreler görev başlangıcından itibaren saniye.
+// Zamanlama DURAĞA VARIŞ anına göredir: spawn zamanı = varış zamanı − şeritteki yolculuk süresi.
+[CreateAssetMenu(menuName = "Rescue Team/Bölüm 1/Ambulans Takvimi", fileName = "AmbulanceSchedule")]
+public class AmbulanceSchedule : ScriptableObject
 {
-    [CreateAssetMenu(menuName = "Rescue Team/Ambulans takvimi")]
-    public sealed class AmbulanceSchedule : ScriptableObject
+    [Tooltip("İki varış arasındaki süre (sn).")]
+    [Min(1f)] public float interval = 180f;
+
+    [Tooltip("Durakta bekleme süresi (sn).")]
+    [Min(2f)] public float wait = 15f;
+
+    [Tooltip("İlk varış zamanı (sn).")]
+    [Min(0f)] public float firstArrival = 180f;
+
+    // k. varışın (0'dan başlar) planlanan zamanı
+    public float ArrivalTime(int k)
     {
-        [Min(1)] public float interval = 180;
-        [Min(2)] public float wait = 15;
-        [Min(1)] public float firstArrival = 180;
-        [Min(1)] public float cruiseSpeed = 12;
+        return firstArrival + k * interval;
     }
 }

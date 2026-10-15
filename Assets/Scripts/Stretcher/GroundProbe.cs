@@ -1,0 +1,34 @@
+using UnityEngine;
+
+// Zemin bulma: bir noktanın altındaki yürünebilir yüzeyi raycast'le bulur.
+// Hareketli oyun objeleri (taşıyıcılar, sedyeler, hastalar, ambulans) ve dinamik cisimler (koni, ragdoll) zemin sayılmaz.
+public static class GroundProbe
+{
+    private static readonly RaycastHit[] hits = new RaycastHit[32];
+
+    // from: ışının başladığı nokta (aranan zeminin üstünde olmalı). maxDistance: aşağı doğru en fazla.
+    public static bool Find(Vector3 from, float maxDistance, out RaycastHit ground)
+    {
+        int n = Physics.RaycastNonAlloc(from, Vector3.down, hits, maxDistance, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        ground = default;
+        for (int i = 0; i < n; i++)
+        {
+            var h = hits[i];
+            if (h.distance >= best || IsMovingGameObject(h.collider)) continue;
+            best = h.distance;
+            ground = h;
+        }
+        return best < float.MaxValue;
+    }
+
+    public static bool IsMovingGameObject(Collider c)
+    {
+        if (c is CharacterController) return true;
+        var rb = c.attachedRigidbody;
+        if (rb != null && !rb.isKinematic) return true;
+        return c.GetComponentInParent<StretcherController>() != null
+            || c.GetComponentInParent<Patient>() != null
+            || c.GetComponentInParent<AmbulanceController>() != null;
+    }
+}

@@ -1,40 +1,131 @@
 using UnityEngine;
-namespace RescueTeam.Bolum1
+
+// Oyuncu hareketi (kullanıcı kararı 15): CharacterController tabanlı 3. şahıs.
+// Girdi bu sınıfa dışarıdan verilir (PlayerInputReader); böylece oyun durumu ile girdi ayrı kalır (ileride ağ senkronu).
+// Koşma tuşu, ragdoll ya da başka yetenek YOK.
+[RequireComponent(typeof(CharacterController))]
+public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 {
-    [RequireComponent(typeof(CharacterController))]
-    public sealed class ThirdPersonPlayer : CarrierActor
+    [Tooltip("Hareket yönü bu kameranın yatay bakışına göre hesaplanır.")]
+    public Transform cameraTransform;
+    public Animator animator;
+    public CarryRules rules;
+    [Tooltip("Animator'daki hız parametresi (bekleme / yürüme / koşma blend'i).")]
+    public string speedParameter = "Speed";
+
+    [Tooltip("Yürüme hızı (m/sn).")]
+    public float moveSpeed = 2.4f;
+    [Tooltip("Dönüş hızı (derece/sn).")]
+    public float turnSpeed = 600f;
+    [Tooltip("Zıplama yüksekliği (m).")]
+    public float jumpHeight = 0.8f;
+    public float gravity = -20f;
+
+    public Transform Root { get { return transform; } }
+    public StretcherController HeldStretcher { get; set; }
+
+    // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13).
+    public bool HasControl { get { return Time.time >= controlLostUntil; } }
+    public Vector3 HorizontalVelocity { get; private set; }
+
+    private CharacterController controller;
+    private Vector2 moveInput;
+    private bool jumpRequested;
+    private float verticalSpeed;
+    private float controlLostUntil = -1f;
+    private Vector3 knockRemaining;     // itilme yer değiştirmesi (kısa sürede uygulanır)
+    private float knockTimeLeft;
+
+    private void Awake()
     {
-        public Transform view;
-        public Animator animator;
-        public float moveSpeed = 3.5f, jumpHeight = 0.8f;
-        public bool InputEnabled = true;
-        public float ControlLostUntil { get; private set; }
-        CharacterController controller;
-        Vector2 move;
-        bool jump;
-        float vertical;
-        Vector3 push;
-        void Awake() { controller = GetComponent<CharacterController>(); }
-        public void SetInput(Vector2 movement, bool jumpPressed) { move = movement; jump |= jumpPressed; }
-        public void KnockAside(Vector3 direction)
-        { push = direction.normalized * 5; ControlLostUntil = Time.time + 1; }
-        public void Teleport(Vector3 position)
+        controller = GetComponent<CharacterController>();
+    }
+
+    private void OnEnable() { CarrierRegistry.Add(this); }
+
+    private void OnDisable()
+    {
+        if (HeldStretcher != null) HeldStretcher.Release(this);
+        CarrierRegistry.Remove(this);
+    }
+
+    // ---- Girdi (PlayerInputReader ya da test çağırır) ----
+    public void SetMoveInput(Vector2 move) { moveInput = Vector2.ClampMagnitude(move, 1f); }
+    public void RequestJump() { jumpRequested = true; }
+
+    public Vector3 GetHandPoint(Vector3 towards)
+    {
+        return CarrierRegistry.HandPoint(transform, rules != null ? rules.handHeight : 0.72f, rules != null ? rules.handReach : 0.3f, towards);
+    }
+
+    // Işınlama (test ve yeniden doğma).
+    public void Teleport(Vector3 position, Quaternion rotation)
+    {
+        controller.enabled = false;
+        transform.SetPositionAndRotation(position, rotation);
+        controller.enabled = true;
+        verticalSpeed = 0f;
+        Physics.SyncTransforms();
+    }
+
+    // Ambulans teması: oyuncu verilen yer değiştirme kadar (şerit dışına) itilir ve kontrolü bir süre kaybeder.
+    public void KnockAside(Vector3 displacement, float controlLossSeconds)
+    {
+        displacement.y = 0f;
+        knockRemaining = displacement;
+        knockTimeLeft = 0.25f;
+        controlLostUntil = Time.time + controlLossSeconds;
+    }
+
+    private void Update()
+    {
+        float dt = Time.deltaTime;
+        if (dt <= 0f) return;
+
+        // Kameraya göre yatay hareket yönü
+        Vector3 forward = Vector3.forward;
+        if (cameraTransform != null)
         {
-            controller.enabled = false; transform.position = position; controller.enabled = true; vertical = 0;
+            forward = cameraTransform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 1e-4f) forward = cameraTransform.up;
+            forward.y = 0f;
+            forward.Normalize();
         }
-        void Update()
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        Vector3 wish = HasControl ? (forward * moveInput.y + right * moveInput.x) * moveSpeed : Vector3.zero;
+
+        if (wish.sqrMagnitude > 0.01f)
         {
-            Vector3 forward = view ? Vector3.ProjectOnPlane(view.forward, Vector3.up).normalized : Vector3.forward;
-            Vector3 right = Vector3.Cross(Vector3.up, forward);
-            Vector3 velocity = (forward * move.y + right * move.x) * moveSpeed;
-            if (!InputEnabled || Time.time < ControlLostUntil) velocity = Vector3.zero;
-            if (velocity.sqrMagnitude > 0.01f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(velocity), 12 * Time.deltaTime);
-            if (controller.isGrounded && vertical < 0) vertical = -2;
-            if (jump && controller.isGrounded && InputEnabled && Time.time >= ControlLostUntil) vertical = Mathf.Sqrt(2 * 20 * jumpHeight);
-            jump = false; vertical -= 20 * Time.deltaTime;
-            if (controller.enabled) controller.Move((velocity + Vector3.up * vertical + push) * Time.deltaTime);
-            push = Vector3.MoveTowards(push, Vector3.zero, 6 * Time.deltaTime);
-            if (animator) animator.SetFloat("Speed", velocity.magnitude, 0.1f, Time.deltaTime);
+            Quaternion target = Quaternion.LookRotation(wish.normalized, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * dt);
         }
+
+        // Yerçekimi ve zıplama
+        if (controller.isGrounded && verticalSpeed < 0f) verticalSpeed = -2f; // zemine bastır (rampada kopmasın)
+        if (jumpRequested && controller.isGrounded && HasControl)
+            verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
+        jumpRequested = false;
+        verticalSpeed += gravity * dt;
+
+        // İtilme
+        Vector3 knock = Vector3.zero;
+        if (knockTimeLeft > 0f)
+        {
+            float part = Mathf.Min(1f, dt / knockTimeLeft);
+            knock = knockRemaining * part;
+            knockRemaining -= knock;
+            knockTimeLeft -= dt;
+        }
+
+        Vector3 before = transform.position;
+        if (controller.enabled)
+            controller.Move(wish * dt + knock + Vector3.up * verticalSpeed * dt);
+        Vector3 moved = transform.position - before;
+        moved.y = 0f;
+        HorizontalVelocity = moved / dt;
+
+        if (animator != null && animator.runtimeAnimatorController != null)
+            animator.SetFloat(speedParameter, wish.magnitude, 0.1f, dt);
     }
 }
