@@ -44,11 +44,18 @@ public class PlayerInteraction : MonoBehaviour
     private bool targetFront;
     private bool interactHeld;
 
+    private CrewAnimation crewAnimation;
+
+    private void Awake() { crewAnimation = GetComponent<CrewAnimation>(); }
+
     private void Update()
     {
         Evaluate();
         if (interactHeld && action == Action.Revive && ReviveTarget != null && player != null && player.HasControl)
+        {
+            if (crewAnimation != null) crewAnimation.MarkReviving(); // Revive_Helper
             ReviveTarget.TryRevive(player, Time.deltaTime);
+        }
     }
 
     // E basılı mı (her kare girdi okuyucusu ya da test verir). Kaldırma yalnız basılıyken ilerler.

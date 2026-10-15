@@ -279,6 +279,8 @@ public static class Bolum1AnimBuilder
         float getUp = Clip("GetUp_FromBack").length / AuthoredSpeed("GetUp_FromBack");
 
         // Oyuncu
+        // Ekran dışındayken de kemikler yazılsın (kalkış, kaldırma ve ölçümler; batchmode'da kamera render etmiyor)
+        animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         var crew = character.AddComponent<CrewAnimation>();
         crew.animator = animator;
         crew.player = player;
@@ -296,6 +298,7 @@ public static class Bolum1AnimBuilder
         // Bot: ragdoll (şef kararı 6) + animasyon
         var bot = UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>();
         var botAnimator = bot.GetComponent<Animator>();
+        botAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         var botCrew = bot.gameObject.AddComponent<CrewAnimation>();
         botCrew.animator = botAnimator;
         botCrew.bot = bot;

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 // Ekip karakterinin (oyuncu ve test botu) prosedürel animasyonlarını tetikler. Oyun durumunu DEĞİŞTİRMEZ, yalnız okur:
@@ -57,9 +58,23 @@ public class CrewAnimation : MonoBehaviour
     // GetUp klibinin süresi (sn); Animator'dan okunur, yoksa klip süresi
     public float getUpSeconds = 1.6f;
 
+    // Bağ pozundaki yerel konumlar: ragdoll eklemleri kemikleri biraz kaydırır, Humanoid animasyon ise (kalça hariç)
+    // yalnız dönüş yazar. Kalkışta konumlar bağ pozuna döner, yoksa bacaklar uzamış/kaymış kalır.
+    private Transform[] bindBones;
+    private Vector3[] bindPositions;
+
     private void Awake()
     {
         if (animator == null) animator = GetComponent<Animator>();
+        bindBones = GetComponentsInChildren<Transform>(true);
+        bindPositions = bindBones.Select(t => t.localPosition).ToArray();
+    }
+
+    private void RestoreBindPositions()
+    {
+        var hips = animator != null ? animator.GetBoneTransform(HumanBodyBones.Hips) : null;
+        for (int i = 1; i < bindBones.Length; i++)
+            if (bindBones[i] != null && bindBones[i] != hips) bindBones[i].localPosition = bindPositions[i];
     }
 
     private void OnEnable()
@@ -180,6 +195,7 @@ public class CrewAnimation : MonoBehaviour
     public void BeginGetUp(PoseSnapshot from, Action<Vector3, Quaternion> place)
     {
         if (animator == null) return;
+        RestoreBindPositions();
         foreach (var b in disableDuringGetUp) if (b != null) b.enabled = false;
         foreach (var t in new[] { TriggerPickUp, TriggerPutDown, TriggerJump, TriggerStartled, TriggerCelebrate }) animator.ResetTrigger(t);
         Carry = CurrentCarry();
