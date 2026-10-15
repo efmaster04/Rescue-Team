@@ -1,7 +1,10 @@
 using UnityEngine;
 
-// E tuşu etkileşimleri (kullanıcı kararları 8, 9, 10). Her karede o an ne yapılabileceğini bulur (ipucu metni),
-// Interact() çağrılınca onu yapar. Öncelik: tutuyorsan bırak → hastayı sedyeye al → sedye ucunu tut.
+// E tuşu etkileşimleri (kullanıcı kararları 8, 9, 10; trafik 4, 6). Her karede o an ne yapılabileceğini bulur (ipucu metni),
+// Interact() (E'ye basıldı) ya da SetInteractHeld (E basılı) çağrılınca onu yapar.
+// Öncelik: sedye tutuyorsan bırak → koni tutuyorsan koy → düşmüş arkadaşı kaldır (basılı tut) → hastayı sedyeye al →
+// en yakın sedye ucu ya da koni.
+// Elde 1 şey: koni tutan sedye tutamaz, sedye tutan koni alamaz (tutarken öncelik hep "bırak / koy").
 public class PlayerInteraction : MonoBehaviour
 {
     public ThirdPersonPlayer player;
@@ -16,32 +19,50 @@ public class PlayerInteraction : MonoBehaviour
     public float patientRange = 2f;
     [Tooltip("Sedyenin (PatientAnchor) hastaya en fazla uzaklığı (m).")]
     public float stretcherToPatientRange = 1.5f;
+    [Tooltip("Koni alma menzili: oyuncu kökünden koni tabanına yatay uzaklık (m).")]
+    public float coneRange = 1.5f;
+    [Tooltip("Koni, oyuncunun bu kadar önüne konur (m).")]
+    public float conePlaceDistance = 1.0f;
 
     public const string HintGrab = "E: Sedyeyi tut";
     public const string HintRelease = "E: Bırak";
     public const string HintLoadPatient = "E: Hastayı sedyeye al";
+    public const string HintPickCone = "E: Koniyi al";
+    public const string HintPlaceCone = "E: Koniyi koy";
+    public const string HintRevive = "E (basılı tut): Arkadaşını kaldır";
 
     public string CurrentHint { get; private set; } = "";
+    // Kaldırılmakta olan arkadaş (HUD ilerleme çubuğu için)
+    public PlayerKnockdown ReviveTarget { get; private set; }
 
-    private enum Action { None, Release, PlacePatient, Grab }
+    private enum Action { None, Release, PlaceCone, Revive, PlacePatient, Grab, PickCone }
 
     private Action action;
     private StretcherController targetStretcher;
     private Patient targetPatient;
+    private TrafficCone targetCone;
     private bool targetFront;
+    private bool interactHeld;
 
     private void Update()
     {
         Evaluate();
+        if (interactHeld && action == Action.Revive && ReviveTarget != null && player != null && player.HasControl)
+            ReviveTarget.TryRevive(player, Time.deltaTime);
     }
+
+    // E basılı mı (her kare girdi okuyucusu ya da test verir). Kaldırma yalnız basılıyken ilerler.
+    public void SetInteractHeld(bool held) { interactHeld = held; }
 
     private void Evaluate()
     {
         action = Action.None;
         targetStretcher = null;
         targetPatient = null;
+        targetCone = null;
+        ReviveTarget = null;
         CurrentHint = "";
-        if (player == null) return;
+        if (player == null || player.IsDown) return;
 
         if (player.HeldStretcher != null)
         {
@@ -49,8 +70,26 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = HintRelease;
             return;
         }
+        if (player.HeldCone != null)
+        {
+            action = Action.PlaceCone;
+            CurrentHint = HintPlaceCone;
+            return;
+        }
 
         Vector3 me = player.transform.position;
+
+        // Düşmüş takım arkadaşı (yanında)
+        foreach (var c in CarrierRegistry.All)
+        {
+            var mate = c as ThirdPersonPlayer;
+            if (mate == null || mate == player || !mate.IsDown) continue;
+            if (!mate.knockdown.InReviveRange(player)) continue;
+            ReviveTarget = mate.knockdown;
+            action = Action.Revive;
+            CurrentHint = HintRevive;
+            return;
+        }
 
         // Yerdeki sedyeye yakın hasta
         float bestPatient = float.MaxValue;
@@ -76,7 +115,7 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // En yakın boş sap
+        // En yakın boş sap ya da koni
         float best = float.MaxValue;
         foreach (var s in StretcherController.All)
         {
@@ -95,7 +134,24 @@ public class PlayerInteraction : MonoBehaviour
                 targetFront = front;
             }
         }
-        if (targetStretcher != null)
+        foreach (var c in TrafficCone.All)
+        {
+            if (c == null || c.IsHeld) continue;
+            Vector3 flat = c.BasePoint - me;
+            float dy = flat.y;
+            flat.y = 0f;
+            float d = flat.magnitude;
+            if (d > coneRange || dy > grabMaxHeight || dy < -1f || d >= best) continue;
+            best = d;
+            targetCone = c;
+        }
+        if (targetCone != null)
+        {
+            targetStretcher = null;
+            action = Action.PickCone;
+            CurrentHint = HintPickCone;
+        }
+        else if (targetStretcher != null)
         {
             action = Action.Grab;
             CurrentHint = HintGrab;
@@ -117,6 +173,9 @@ public class PlayerInteraction : MonoBehaviour
                 s.Release(player);
                 break;
             }
+            case Action.PlaceCone:
+                PlaceCone();
+                break;
             case Action.PlacePatient:
                 targetStretcher.PlacePatient(targetPatient);
                 break;
@@ -128,7 +187,25 @@ public class PlayerInteraction : MonoBehaviour
                     targetStretcher.NotifyIfUnderstaffed();
                 }
                 break;
+            case Action.PickCone:
+                player.HeldCone = targetCone;
+                targetCone.PickUp(player);
+                break;
         }
         Evaluate();
+    }
+
+    // Koni oyuncunun baktığı yere (önüne), zemine dik konur. Zemin bulunamazsa elde kalır.
+    private void PlaceCone()
+    {
+        var cone = player.HeldCone;
+        Vector3 fwd = player.transform.forward;
+        fwd.y = 0f;
+        if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
+        fwd.Normalize();
+        Vector3 at = player.transform.position + fwd * conePlaceDistance;
+        if (!GroundProbe.Find(at + Vector3.up * 1.5f, 4f, out RaycastHit hit)) return;
+        player.HeldCone = null;
+        cone.PlaceAt(hit.point, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg);
     }
 }

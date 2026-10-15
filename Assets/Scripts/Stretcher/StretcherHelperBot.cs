@@ -8,8 +8,10 @@ using UnityEngine;
 [DefaultExecutionOrder(50)] // oyuncu hareket ettikten sonra, sedye çözümünden önce
 public class StretcherHelperBot : MonoBehaviour, ICarrier
 {
-    [Tooltip("Açıkken oyuncu sedye tutunca bot öbür ucu tutar. Kapatınca oyuncu tek başına kalır.")]
+    [Tooltip("Açıkken oyuncu sedye tutunca bot öbür ucu tutar ve araç çarpıp düşen oyuncuyu kaldırır. Kapatınca oyuncu tek başına kalır.")]
     public bool assistEnabled = true;
+    [Tooltip("Oyuncu düştükten bu kadar sonra (sn) bot yanına ışınlanır ve kaldırmaya başlar (kaldırma süresi PlayerKnockdown'da).")]
+    public float reviveDelay = 3f;
     public CarryRules rules;
     public Animator animator;
     [Tooltip("Animator'daki hız parametresi.")]
@@ -62,9 +64,56 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         leader = null;
     }
 
+    // Araç çarptı: taşıdığı sedyeyi bırakmış sayılır ve şeridin dışına itilir (botta ragdoll yok).
+    public void HitByVehicle(LanePath lane, Vector3 velocity)
+    {
+        ReleaseHeld();
+        Vector3 p = transform.position;
+        if (lane != null)
+        {
+            float s = lane.Project(p, out float lateral, out _);
+            float side = Vector3.Dot(velocity, lane.RightAt(s)) >= 0f ? 1f : -1f;
+            float target = side * (lane.width * 0.5f + 0.8f);
+            p += lane.RightAt(s) * (target - lateral);
+        }
+        if (GroundProbe.Find(p + Vector3.up * 1.5f, 6f, out RaycastHit hit)) p.y = hit.point.y;
+        transform.position = p;
+        lastPosition = p;
+    }
+
+    // Araç çarpıp düşen oyuncu (kullanıcı kararı 6): reviveDelay sonra yanına ışınlanır, sedye tutuyorsa önce güvenle
+    // bırakır, sonra E basılı tutar gibi kaldırır (2 sn).
+    private bool ReviveDownedPlayer(float dt)
+    {
+        if (!assistEnabled || !isActiveAndEnabled) return false;
+        PlayerKnockdown target = null;
+        foreach (var c in CarrierRegistry.All)
+        {
+            var p = c as ThirdPersonPlayer;
+            if (p != null && p.IsDown && Time.time - p.knockdown.DownSince >= reviveDelay) { target = p.knockdown; break; }
+        }
+        if (target == null) return false;
+        if (HeldStretcher != null) ReleaseHeld(); // tek tutan bot: sedye güvenle yere iner
+        if (!target.InReviveRange(this))
+        {
+            Vector3 hips = target.GroundPosition;
+            Vector3 dir = transform.position - hips;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-4f) dir = Vector3.right;
+            Vector3 pos = hips + dir.normalized * 0.9f;
+            if (GroundProbe.Find(new Vector3(pos.x, hips.y + 1.5f, pos.z), 6f, out RaycastHit hit)) pos.y = hit.point.y;
+            Vector3 look = hips - pos; look.y = 0f;
+            transform.SetPositionAndRotation(pos, look.sqrMagnitude > 1e-6f ? Quaternion.LookRotation(look.normalized, Vector3.up) : transform.rotation);
+            lastPosition = pos;
+        }
+        target.TryRevive(this, dt);
+        return true;
+    }
+
     private void LateUpdate()
     {
-        if (HeldStretcher != null)
+        bool reviving = ReviveDownedPlayer(Time.deltaTime);
+        if (!reviving && HeldStretcher != null)
         {
             // Lider bıraktıysa ya da yardım kapatıldıysa bot da bırakır.
             if (!assistEnabled || leader == null || leader.HeldStretcher != HeldStretcher)

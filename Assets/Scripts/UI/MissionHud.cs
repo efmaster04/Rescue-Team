@@ -8,6 +8,7 @@ using UnityEngine.UI;
 //  - Alt orta: etkileşim ipucu ve kısa uyarılar ("İki kişi gerekli", "Ambulans dolu")
 //  - Orta: görev sonu mesajı ve "R: Yeniden başlat"
 //  - Her hastanın başının üstünde 3 kutucuklu kaçırma göstergesi (MissIndicator)
+//  - Kaldırma ilerlemesi (trafik kararı 6): arkadaş E'yi basılı tutarken "Kaldırılıyor [||||....] %60"
 // Arayüz yalnız okur; oyun durumunu değiştirmez.
 public class MissionHud : MonoBehaviour
 {
@@ -27,6 +28,7 @@ public class MissionHud : MonoBehaviour
     public Text HintText { get; private set; }
     public Text NoticeText { get; private set; }
     public Text ResultText { get; private set; }
+    public Text ReviveText { get; private set; }
     public readonly List<MissIndicator> Indicators = new List<MissIndicator>();
 
     private string notice;
@@ -76,6 +78,8 @@ public class MissionHud : MonoBehaviour
         NoticeText.color = new Color(1f, 0.55f, 0.45f);
         HintText = MakeText("Hint", new Vector2(0.5f, 0f), new Vector2(0f, 120f), new Vector2(1200f, 60f), 34, TextAnchor.MiddleCenter);
         ResultText = MakeText("Result", new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(1600f, 220f), 54, TextAnchor.MiddleCenter);
+        ReviveText = MakeText("Revive", new Vector2(0.5f, 0f), new Vector2(0f, 260f), new Vector2(1200f, 60f), 38, TextAnchor.MiddleCenter);
+        ReviveText.color = new Color(0.65f, 0.95f, 1f);
     }
 
     private Text MakeText(string name, Vector2 anchor, Vector2 position, Vector2 size, int fontSize, TextAnchor align)
@@ -98,6 +102,18 @@ public class MissionHud : MonoBehaviour
         outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
         outline.effectDistance = new Vector2(2f, -2f);
         return text;
+    }
+
+    // Kaldırma ilerlemesi: kendi oyuncumuz yerdeyse onun, arkadaşı kaldırıyorsak arkadaşın ilerlemesi.
+    private string ReviveLine()
+    {
+        if (interaction == null || interaction.player == null) return "";
+        var own = interaction.player.knockdown;
+        PlayerKnockdown k = own != null && own.IsDown ? own : interaction.ReviveTarget;
+        if (k == null || !k.IsDown) return "";
+        if (k.ReviveProgress <= 0f) return k == own ? "Yerdesin: arkadaşın kaldırabilir" : "";
+        int filled = Mathf.Clamp(Mathf.FloorToInt(k.ReviveProgress * 10f), 0, 10);
+        return "Kaldırılıyor [" + new string('|', filled * 2) + new string('.', (10 - filled) * 2) + "] %" + Mathf.RoundToInt(k.ReviveProgress * 100f);
     }
 
     private void LateUpdate()
@@ -127,6 +143,7 @@ public class MissionHud : MonoBehaviour
         RadioLabel.text = Time.time < radioUntil ? RadioText : "";
 
         HintText.text = interaction != null && !mission.IsFinished ? interaction.CurrentHint : "";
+        ReviveText.text = ReviveLine();
         NoticeText.text = Time.time < noticeUntil ? notice : "";
         ResultText.text = mission.IsFinished ? mission.ResultMessage + "\n" + RestartText : "";
         ResultText.color = mission.Succeeded ? new Color(0.6f, 1f, 0.6f) : new Color(1f, 0.6f, 0.55f);

@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 734194872cb714e4eab4970b2ed09f42, type: 3}
+  m_Name: TrafficSettings
+  m_EditorClassIdentifier: Assembly-CSharp::TrafficSettings
+  calmSeconds: {x: 20, y: 40}
+  calmSingleVehicleChance: 0.5
+  waveSize: {x: 3, y: 4}
+  waveGapSeconds: {x: 2, y: 4}
+  types:
+  - type: 0
+    weight: 27.5
+    cruiseSpeed: 12
+  - type: 1
+    weight: 27.5
+    cruiseSpeed: 12
+  - type: 2
+    weight: 15
+    cruiseSpeed: 11
+  - type: 3
+    weight: 15
+    cruiseSpeed: 10
+  - type: 4
+    weight: 15
+    cruiseSpeed: 7
+  timeHeadway: 2
+  minGap: 4
+  acceleration: 3
+  braking: 6
+  coneWaitSeconds: 20
+  coneStopMargin: 1.2
+  coneUprightMaxAngle: 30
+  lookAhead: 14
+  yieldSpeedFactor: 0.4
+  hitSpeedMultiplier: 1.2
+  hitMinSpeed: 3
+  hitUpSpeed: 1.5
+  hitSideSpeed: 1.5
+  ambulanceClearSeconds: 20
+  useFixedSeed: 0
+  seed: 12345

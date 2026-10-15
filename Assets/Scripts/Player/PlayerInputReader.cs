@@ -48,6 +48,7 @@ public class PlayerInputReader : MonoBehaviour
         }
         if (orbitCamera != null) orbitCamera.Rotate(look.ReadValue<Vector2>());
         if (interact.WasPressedThisFrame() && interaction != null) interaction.Interact();
+        if (interaction != null) interaction.SetInteractHeld(interact.IsPressed()); // basılı tutma (arkadaşı kaldırma)
         if (restart.WasPressedThisFrame() && MissionDirector.Instance != null) MissionDirector.Instance.RequestRestart();
     }
 }

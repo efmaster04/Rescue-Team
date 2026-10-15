@@ -65,6 +65,8 @@ public static class Bolum1SceneBuilder
     {
         // Ambulans döngüsü asset ve prefab'ları (yer tutucular dahil) sahneden önce kurulur.
         Bolum1AmbulanceBuilder.BuildAssets();
+        // Trafik ayarı ve araç prefab'ları (yer tutucular dahil).
+        Bolum1TrafficBuilder.BuildAssets();
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
@@ -136,6 +138,9 @@ public static class Bolum1SceneBuilder
 
         // 6) Ambulans döngüsü ve hasta taşıma: şerit, durak, hastalar, sedyeler, oyuncu kontrolcüsü, bot, görev, HUD.
         Bolum1AmbulanceBuilder.SetupScene(markers, minivan, truck, GameObject.Find(CharacterName));
+
+        // 7) Trafik: WestBound şeridi, trafik yönetmeni, koniler, oyuncu ragdoll'u (düşme/kaldırma).
+        Bolum1TrafficBuilder.SetupScene(markers, truck, GameObject.Find(CharacterName));
 
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))

@@ -137,6 +137,17 @@ public class Patient : MonoBehaviour
         SetState(PatientState.Ragdoll);
     }
 
+    // Trafik aracı çarptı (kullanıcı kararı 7): sedyedeki ya da yerdeki hasta ragdoll olur, araç itkisiyle savrulur.
+    // Ceza yok; hasta mevcut kuralla (ragdoll'dan) tekrar sedyeye alınabilir.
+    public void HitByVehicle(Vector3 velocity)
+    {
+        if (State != PatientState.LyingGround && State != PatientState.OnStretcher) return;
+        if (State == PatientState.OnStretcher)
+            foreach (var s in StretcherController.All)
+                if (s != null && s.Passenger == this) s.TakePatient();
+        Fall(velocity);
+    }
+
     // Ambulans duraktan ayrılırken hasta ambulansta değilse çağrılır (kullanıcı kararı 5).
     public void AddMissedAmbulance()
     {

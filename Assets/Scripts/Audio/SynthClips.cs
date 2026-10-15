@@ -79,6 +79,65 @@ public static class SynthClips
         return Make("Synth_Horn", data);
     }
 
+    // ---- Trafik (kullanıcı kararı 9) ----
+
+    // Trafik motoru: Engine ile aynı desen, temel frekans tipe göre (kamyonda daha kalın). 1 sn döngü.
+    // Temel frekans tam sayı Hz olmalı: 1 sn'lik döngü tıkırtısız birleşir.
+    public static AudioClip TrafficEngine(float baseHz)
+    {
+        baseHz = Mathf.Max(10f, Mathf.Round(baseHz));
+        var clip = Engine(baseHz);
+        clip.name = "Synth_TrafficEngine_" + baseHz.ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
+        return clip;
+    }
+
+    // Trafik kornası: tek uzun korna (iki tonlu akor). Perde tipe göre: lowHz/highHz.
+    public static AudioClip TrafficHorn(float lowHz, float highHz, float seconds = 0.45f)
+    {
+        int honk = Mathf.RoundToInt(seconds * SampleRate);
+        int n = honk + Mathf.RoundToInt(0.05f * SampleRate);
+        var data = new float[n];
+        for (int i = 0; i < honk; i++)
+        {
+            float t = (float)i / SampleRate;
+            float env = Mathf.Clamp01(i / (0.01f * SampleRate)) * Mathf.Clamp01((honk - i) / (0.03f * SampleRate));
+            data[i] = 0.35f * (SoftSaw(t * lowHz) + SoftSaw(t * highHz)) * env;
+        }
+        return Make("Synth_TrafficHorn_" + Mathf.RoundToInt(lowHz), data);
+    }
+
+    // Koni çarpması: plastik "tok" vuruş (kısa gürültü + 180 Hz gövde sesi) ve kısa sekme.
+    public static AudioClip ConeHit()
+    {
+        int n = Mathf.RoundToInt(0.4f * SampleRate);
+        var data = new float[n];
+        var rng = new System.Random(29);
+        float lowpass = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = (float)i / SampleRate;
+            float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+            lowpass += 0.4f * (noise - lowpass);
+            float knock = lowpass * Mathf.Exp(-t * 35f) * 0.9f;
+            float body = Mathf.Sin(2f * Mathf.PI * 180f * t) * Mathf.Exp(-t * 18f) * 0.6f;
+            float tt = t - 0.14f;
+            float bounce = tt > 0f ? Mathf.Sin(2f * Mathf.PI * 240f * tt) * Mathf.Exp(-tt * 30f) * 0.3f : 0f;
+            data[i] = Mathf.Clamp(knock + body + bounce, -1f, 1f) * Fade(i, n, 0.003f);
+        }
+        return Make("Synth_ConeHit", data);
+    }
+
+    // Paylaşılan klipler: her araç için yeniden üretilmez (bellek). Sahne boyunca yaşar.
+    private static readonly System.Collections.Generic.Dictionary<string, AudioClip> cache = new System.Collections.Generic.Dictionary<string, AudioClip>();
+
+    public static AudioClip Cached(string key, System.Func<AudioClip> create)
+    {
+        if (cache.TryGetValue(key, out AudioClip c) && c != null) return c;
+        c = create();
+        cache[key] = c;
+        return c;
+    }
+
     // RMS (karekök ortalama kare): klibin sessiz olmadığını doğrulamak için.
     public static float Rms(AudioClip clip)
     {

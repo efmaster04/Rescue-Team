@@ -46,6 +46,8 @@ public class MissionDirector : MonoBehaviour
     // Bir sonraki varışın planlanan zamanı.
     public float NextArrivalTime { get { return active != null ? active.ArrivalTime(ArrivalCount) : float.PositiveInfinity; } }
     public AmbulanceSchedule ActiveSchedule { get { return active; } }
+    // Bir sonraki ambulansın doğma zamanı (trafik, bundan önceki 20 sn'de EastBound'a araç çıkarmaz). Görev bitince yok.
+    public float NextAmbulanceSpawnTime { get { return active != null && !IsFinished ? Mathf.Max(0f, active.ArrivalTime(spawnIndex) - TravelTime) : float.PositiveInfinity; } }
 
     private void Awake()
     {

@@ -29,6 +29,8 @@ public static class GroundProbe
         if (rb != null && !rb.isKinematic) return true;
         return c.GetComponentInParent<StretcherController>() != null
             || c.GetComponentInParent<Patient>() != null
-            || c.GetComponentInParent<AmbulanceController>() != null;
+            || c.GetComponentInParent<AmbulanceController>() != null
+            || c.GetComponentInParent<LaneFollower>() != null      // trafik araçları
+            || c.GetComponentInParent<PlayerKnockdown>() != null;  // düşmüş oyuncunun ragdoll'u
     }
 }

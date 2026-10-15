@@ -24,6 +24,14 @@ public class LaneFollower : MonoBehaviour
     [Tooltip("Tekerlek yarıçapı (m).")]
     public float wheelRadius = 0.38f;
 
+    [Tooltip("Kökten ön tampona / arka tampona uzaklık (m). Şerit doluluk servisi (araç takibi) kullanır.")]
+    public float frontOverhang = 2.5f;
+    public float rearOverhang = 2.5f;
+
+    // Şerit üzerinde ön ve arka tamponun s değeri
+    public float FrontS { get { return Distance + frontOverhang; } }
+    public float RearS { get { return Distance - rearOverhang; } }
+
     public float Distance { get; private set; }
     public float Speed { get; private set; }
     public bool HasStop { get { return !float.IsPositiveInfinity(stopDistance); } }
@@ -43,6 +51,10 @@ public class LaneFollower : MonoBehaviour
         body.isKinematic = true;
         CacheWheelAxes();
     }
+
+    // Şerit doluluk servisine kayıt: aynı şeritteki araçlar birbirini (ambulans dahil) buradan görür.
+    private void OnEnable() { LaneOccupancy.Register(this); }
+    private void OnDisable() { LaneOccupancy.Unregister(this); }
 
     private void CacheWheelAxes()
     {

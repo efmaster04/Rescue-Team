@@ -2,7 +2,7 @@ using UnityEngine;
 
 // Oyuncu hareketi (kullanıcı kararı 15): CharacterController tabanlı 3. şahıs.
 // Girdi bu sınıfa dışarıdan verilir (PlayerInputReader); böylece oyun durumu ile girdi ayrı kalır (ileride ağ senkronu).
-// Koşma tuşu, ragdoll ya da başka yetenek YOK.
+// Koşma tuşu YOK. Araç çarpınca düşme ve kaldırılma PlayerKnockdown'da (ragdoll).
 [RequireComponent(typeof(CharacterController))]
 public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 {
@@ -20,12 +20,17 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     [Tooltip("Zıplama yüksekliği (m).")]
     public float jumpHeight = 0.8f;
     public float gravity = -20f;
+    [Tooltip("Araç çarpınca düşme ve arkadaş kaldırması (ragdoll).")]
+    public PlayerKnockdown knockdown;
 
     public Transform Root { get { return transform; } }
     public StretcherController HeldStretcher { get; set; }
+    // Elde taşınan koni (en fazla 1). Yalnız PlayerInteraction yazar.
+    public TrafficCone HeldCone { get; set; }
+    public bool IsDown { get { return knockdown != null && knockdown.IsDown; } }
 
-    // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13).
-    public bool HasControl { get { return Time.time >= controlLostUntil; } }
+    // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13); araç çarpıp düşünce kaldırılana kadar kontrol yok.
+    public bool HasControl { get { return Time.time >= controlLostUntil && !IsDown; } }
     public Vector3 HorizontalVelocity { get; private set; }
 
     private CharacterController controller;
@@ -77,10 +82,33 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         controlLostUntil = Time.time + controlLossSeconds;
     }
 
+    // Araç çarptı (kullanıcı kararları 5, 7): sedyeyi bırakmış sayılır, elindeki koni düşer, ragdoll olup savrulur.
+    public void KnockDown(Vector3 velocity)
+    {
+        if (knockdown == null || knockdown.IsDown) return;
+        if (HeldStretcher != null) HeldStretcher.Release(this);
+        if (HeldCone != null)
+        {
+            var cone = HeldCone;
+            HeldCone = null;
+            cone.Drop(velocity * 0.5f);
+        }
+        moveInput = Vector2.zero;
+        knockRemaining = Vector3.zero;
+        knockTimeLeft = 0f;
+        verticalSpeed = 0f;
+        knockdown.KnockDown(velocity);
+    }
+
     private void Update()
     {
         float dt = Time.deltaTime;
         if (dt <= 0f) return;
+        if (IsDown)
+        {
+            HorizontalVelocity = Vector3.zero;
+            return;
+        }
 
         // Kameraya göre yatay hareket yönü
         Vector3 forward = Vector3.forward;

@@ -222,11 +222,15 @@ public static class Bolum1AmbulanceBuilder
             }
 
             var follower = root.AddComponent<LaneFollower>();
+            // Şerit doluluk servisi (trafik takibi) için tampon uzaklıkları: gövde collider'ından.
             follower.cruiseSpeed = 12f;
             follower.acceleration = 4f;
             follower.braking = 6f;
             follower.wheels = new[] { "FL", "FR", "RL", "RR" }.Select(w => Find("SM_Ambulance_Wheel_" + w)).ToArray();
             follower.wheelRadius = WheelRadius(follower.wheels[0]);
+
+            follower.frontOverhang = box.center.z + box.size.z * 0.5f;
+            follower.rearOverhang = -(box.center.z - box.size.z * 0.5f);
 
             var audio = root.AddComponent<AmbulanceAudio>();
             audio.siren = Find("SirenPoint").gameObject.AddComponent<AudioSource>();
@@ -488,7 +492,7 @@ public static class Bolum1AmbulanceBuilder
                 p.hasLiePose = false;
             }
 
-            BuildRagdoll(animator, p, 50f);
+            BuildRagdoll(animator, 50f, out p.ragdollBodies, out p.ragdollColliders);
             Line("Hasta " + type + " (" + displayName + "): " + (placeholder ? "yer tutucu " + PlaceholderPatientModel + " (gri)" : modelPath)
                 + ", yatma klibi " + (clip != null ? clip.name : "YOK (T-poz, Animator kapalı)")
                 + ", hipsToBack " + p.hipsToBack.ToString("F3", Inv) + " m (" + source + "), ragdoll " + p.ragdollBodies.Length + " gövde");
@@ -546,8 +550,8 @@ public static class Bolum1AmbulanceBuilder
     }
 
     // Ragdoll: kemiklere collider + Rigidbody + CharacterJoint (Ragdoll Wizard'ın sade karşılığı).
-    // Varsayılan kapalı (kinematik, collider'lar kapalı); Patient.Fall açar.
-    private static void BuildRagdoll(Animator a, Patient p, float totalMass)
+    // Varsayılan kapalı (kinematik, collider'lar kapalı); Patient.Fall ve PlayerKnockdown açar (trafik builder'ı da kullanır).
+    public static void BuildRagdoll(Animator a, float totalMass, out Rigidbody[] ragdollBodies, out Collider[] ragdollColliders)
     {
         var bodies = new List<Rigidbody>();
         var colliders = new List<Collider>();
@@ -636,8 +640,8 @@ public static class Bolum1AmbulanceBuilder
             AddBody(B(side.Item2), 0.06f, up);
             Capsule(B(side.Item2), B(side.Item3), 0.055f);
         }
-        p.ragdollBodies = bodies.ToArray();
-        p.ragdollColliders = colliders.ToArray();
+        ragdollBodies = bodies.ToArray();
+        ragdollColliders = colliders.ToArray();
     }
 
     // =====================================================================================
