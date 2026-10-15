@@ -1,0 +1,322 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEngine;
+
+// Bölüm 1 prosedürel animasyonları (Assets/Animations/Procedural, 11 klip): Animator durumları ve sahne bağlantıları.
+//  - AddCrewStates: AC_Crew_Locomotion'a (oyuncu + bot) taşıma, alma/bırakma, zıplama, irkilme, kalkış, kaldırma, kutlama.
+//  - PatientController: hasta Animator'ı (yerde Lying_HelpWave ↔ Lying_Groan; Civilian: askılı kol pozu + maskeli Lying_Groan).
+//  - SetupScene: oyuncu ve botta CrewAnimation, bot ragdoll'u (şef kararı 6), oyuncu yeniden doğma (şef kararı 8).
+// Bolum1AmbulanceBuilder.BuildLocomotionController / BuildPatientPrefab ve Bolum1SceneBuilder.Build içinden çağrılır.
+public static class Bolum1AnimBuilder
+{
+    public const string AnimationFolder = Bolum1AmbulanceBuilder.AnimationFolder;
+    public const string PatientLyingControllerPath = AnimationFolder + "/AC_Patient_Lying.controller";
+    public const string PatientSlingControllerPath = AnimationFolder + "/AC_Patient_Lying_ArmSling.controller";
+    public const string NoArmsMaskPath = AnimationFolder + "/AM_Patient_NoArms.mask";
+    public const string ReportPath = "Captures/Bolum1/anim_build_report.txt";
+
+    // Taşıma döngülerinin yürüme hızındaki oynatma hızı ve hız 0'daki (bekleme) yavaşlatılmış hızı (yazıldığı hıza göre).
+    // Klibin adımı kısa (~0.19 m, kalça 0.44 m): 2.4 m/sn'de kaymasız oynatma ~×8.6 ister; ×3 telaşlı, komik bir
+    // seğirtme verir, kalan kayma kabul edildi (rapor: AÇIK SORU). Ölçüm: Bolum1AnimVerify (b) ayak kayması.
+    public const float CarryWalkScale = 3f;
+    public const float CarryIdleScale = 0.25f;
+    public const string ClipsMetaPath = ProceduralAnimImportSettings.Folder + "clips_meta.json";
+
+    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+    private static readonly StringBuilder report = new StringBuilder();
+
+    // FBX'ler 24 kare/sn işaretli, klipler 30 kare/sn yazılmış (clips_meta.json): Unity'de klip 1.25 kat uzun okunur.
+    // Durum hızı = Unity klip süresi / yazılan süre; böylece klip yazıldığı hızda oynar (kaynak düzeltilene kadar).
+    public static float AuthoredSpeed(string name)
+    {
+        var clip = Clip(name);
+        try
+        {
+            var meta = Bolum1Coordinates.LoadJson(ClipsMetaPath);
+            var c = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(meta, "clips"), name);
+            float d = Convert.ToSingle(c["duration_s"], Inv);
+            return d > 0.05f ? clip.length / d : 1f;
+        }
+        catch { return 1f; }
+    }
+
+    // İlk importta kaynak Avatar henüz yoksa klip kendi Avatar'ıyla kalmış olabilir: ayar tutmayanları yeniden import et.
+    public static void EnsureClipImports()
+    {
+        foreach (var n in ProceduralAnimImportSettings.ClipNames)
+        {
+            var imp = AssetImporter.GetAtPath(ProceduralAnimImportSettings.ClipPath(n)) as ModelImporter;
+            if (imp == null) throw new Exception("Prosedürel klip yok: " + ProceduralAnimImportSettings.ClipPath(n));
+            if (!ProceduralAnimImportSettings.IsApplied(imp, out _)) imp.SaveAndReimport();
+        }
+    }
+
+    public static AnimationClip Clip(string name)
+    {
+        var c = ProceduralAnimImportSettings.LoadClip(name);
+        if (c == null) throw new Exception("Prosedürel klip bulunamadı: " + ProceduralAnimImportSettings.ClipPath(name));
+        return c;
+    }
+
+    // =====================================================================================
+    // Ekip Animator'ı
+    // =====================================================================================
+
+    public static void AddCrewStates(AnimatorController ac, AnimatorState locomotion, float walkSpeed)
+    {
+        report.Length = 0;
+        EnsureClipImports();
+        // Hasta Animator'ı da her kurulumda baştan kurulur (ilk PatientController çağrısı oluşturur).
+        if (AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientLyingControllerPath) != null) AssetDatabase.DeleteAsset(PatientLyingControllerPath);
+        ac.AddParameter(CrewAnimation.ParamCarry, AnimatorControllerParameterType.Int);
+        ac.AddParameter(CrewAnimation.ParamReviving, AnimatorControllerParameterType.Bool);
+        foreach (var t in new[] { CrewAnimation.TriggerPickUp, CrewAnimation.TriggerPutDown, CrewAnimation.TriggerJump, CrewAnimation.TriggerStartled, CrewAnimation.TriggerCelebrate })
+            ac.AddParameter(t, AnimatorControllerParameterType.Trigger);
+
+        var sm = ac.layers[0].stateMachine;
+        locomotion.name = CrewAnimation.StateLocomotion;
+        var carryStretcher = CarryState(ac, sm, CrewAnimation.StateCarryStretcher, "Carry_Stretcher_Walk", walkSpeed, new Vector3(300f, 120f));
+        var carryCone = CarryState(ac, sm, CrewAnimation.StateCarryCone, "Carry_OneHand_Walk", walkSpeed, new Vector3(300f, 220f));
+        var loops = new[] { locomotion, carryStretcher, carryCone };
+
+        // Döngüler arası (Carry değişince; AnyState tetikleyicileri önceliklidir)
+        for (int a = 0; a < 3; a++)
+            for (int b = 0; b < 3; b++)
+            {
+                if (a == b) continue;
+                var t = loops[a].AddTransition(loops[b]);
+                t.hasExitTime = false;
+                t.duration = 0.2f;
+                t.hasFixedDuration = true;
+                t.AddCondition(AnimatorConditionMode.Equals, b, CrewAnimation.ParamCarry);
+            }
+
+        var pickUp = OneShot(sm, CrewAnimation.StatePickUp, "PickUp", 1f, new Vector3(560f, 0f));
+        AnyTo(sm, pickUp, CrewAnimation.TriggerPickUp, 0.12f);
+        ReturnByCarry(pickUp, loops, 0.85f, 0.15f);
+
+        var putDown = OneShot(sm, CrewAnimation.StatePutDown, "PutDown", 1f, new Vector3(560f, 60f));
+        AnyTo(sm, putDown, CrewAnimation.TriggerPutDown, 0.12f);
+        ReturnByCarry(putDown, loops, 0.85f, 0.15f);
+
+        var jump = OneShot(sm, CrewAnimation.StateJump, "Jump", 1f, new Vector3(560f, 120f));
+        AnyTo(sm, jump, CrewAnimation.TriggerJump, 0.08f);
+        ReturnByCarry(jump, loops, 0.85f, 0.15f);
+
+        var startled = OneShot(sm, CrewAnimation.StateStartled, "Startled", 1f, new Vector3(560f, 180f));
+        AnyTo(sm, startled, CrewAnimation.TriggerStartled, 0.08f);
+        ReturnByCarry(startled, loops, 0.85f, 0.15f);
+
+        var celebrate = OneShot(sm, CrewAnimation.StateCelebrate, "Celebrate", 1f, new Vector3(560f, 240f));
+        AnyTo(sm, celebrate, CrewAnimation.TriggerCelebrate, 0.15f);
+        ReturnByCarry(celebrate, loops, 0.9f, 0.2f);
+
+        // Kalkış: yalnız kodla (CrewAnimation.BeginGetUp → Animator.Play); geçiş ragdoll pozundan kodda yapılır.
+        var getUp = OneShot(sm, CrewAnimation.StateGetUp, "GetUp_FromBack", 1f, new Vector3(560f, 300f));
+        ReturnByCarry(getUp, loops, 0.9f, 0.15f);
+
+        // Kaldıran taraf: Reviving açıkken (her kare işaretlenir)
+        var revive = sm.AddState(CrewAnimation.StateRevive, new Vector3(560f, 360f));
+        revive.motion = Clip("Revive_Helper");
+        revive.speed = AuthoredSpeed("Revive_Helper");
+        var toRevive = sm.AddAnyStateTransition(revive);
+        toRevive.canTransitionToSelf = false;
+        toRevive.hasExitTime = false;
+        toRevive.duration = 0.25f;
+        toRevive.hasFixedDuration = true;
+        toRevive.AddCondition(AnimatorConditionMode.If, 0f, CrewAnimation.ParamReviving);
+        for (int c = 0; c < 3; c++)
+        {
+            var t = revive.AddTransition(loops[c]);
+            t.hasExitTime = false;
+            t.duration = 0.3f;
+            t.hasFixedDuration = true;
+            t.AddCondition(AnimatorConditionMode.IfNot, 0f, CrewAnimation.ParamReviving);
+            t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+        }
+        EditorUtility.SetDirty(ac);
+        Line("Ekip Animator'ı: " + AssetDatabase.GetAssetPath(ac) + " → " + string.Join(", ", sm.states.Select(s => s.state.name))
+            + "; klip hızı düzeltmesi (24→30 kare/sn) ×" + AuthoredSpeed("PickUp").ToString("F3", Inv)
+            + "; taşıma döngüsü " + walkSpeed.ToString(Inv) + " m/sn'de ×" + CarryWalkScale.ToString(Inv) + ", beklemede ×" + CarryIdleScale.ToString(Inv));
+    }
+
+    // Taşıma döngüsü: aynı klibin iki çocuğu (hız 0'da yavaşlatılmış, yürüme hızında tam) Speed ile karışır.
+    private static AnimatorState CarryState(AnimatorController ac, AnimatorStateMachine sm, string name, string clipName, float walkSpeed, Vector3 pos)
+    {
+        var clip = Clip(clipName);
+        float f = AuthoredSpeed(clipName);
+        var tree = new BlendTree { name = name + "_Blend", blendType = BlendTreeType.Simple1D, blendParameter = "Speed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
+        AssetDatabase.AddObjectToAsset(tree, ac);
+        tree.children = new[]
+        {
+            new ChildMotion { motion = clip, threshold = 0f, timeScale = CarryIdleScale * f },
+            new ChildMotion { motion = clip, threshold = walkSpeed, timeScale = CarryWalkScale * f },
+        };
+        var st = sm.AddState(name, pos);
+        st.motion = tree;
+        return st;
+    }
+
+    private static AnimatorState OneShot(AnimatorStateMachine sm, string name, string clipName, float speed, Vector3 pos)
+    {
+        var st = sm.AddState(name, pos);
+        st.motion = Clip(clipName);
+        st.speed = speed * AuthoredSpeed(clipName);
+        return st;
+    }
+
+    private static void AnyTo(AnimatorStateMachine sm, AnimatorState st, string trigger, float duration)
+    {
+        var t = sm.AddAnyStateTransition(st);
+        t.canTransitionToSelf = false;
+        t.hasExitTime = false;
+        t.duration = duration;
+        t.hasFixedDuration = true;
+        t.AddCondition(AnimatorConditionMode.If, 0f, trigger);
+    }
+
+    private static void ReturnByCarry(AnimatorState from, AnimatorState[] loops, float exitTime, float duration)
+    {
+        for (int c = 0; c < loops.Length; c++)
+        {
+            var t = from.AddTransition(loops[c]);
+            t.hasExitTime = true;
+            t.exitTime = exitTime;
+            t.duration = duration;
+            t.hasFixedDuration = true;
+            t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+        }
+    }
+
+    // =====================================================================================
+    // Hasta Animator'ları
+    // =====================================================================================
+
+    // Civilian: askılı kol pozu (Patient_LiePose_ArmSling) taban katmanda; Lying_Groan kolsuz maskeyle üstte (kol askıda kalır).
+    // Diğerleri: Groan (varsayılan) ↔ HelpWave, Wave parametresiyle (Patient.cs yerde 5–10 sn'de bir değiştirir).
+    public static RuntimeAnimatorController PatientController(string type, AnimationClip liePose, out bool canWave)
+    {
+        var groan = Clip("Lying_Groan");
+        if (type == "Civilian")
+        {
+            canWave = false;
+            if (AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientSlingControllerPath) != null) AssetDatabase.DeleteAsset(PatientSlingControllerPath);
+            var ac = AnimatorController.CreateAnimatorControllerAtPath(PatientSlingControllerPath);
+            var lie = ac.layers[0].stateMachine.AddState("Lie");
+            lie.motion = liePose;
+            ac.AddLayer("Groan");
+            var layers = ac.layers;
+            layers[1].defaultWeight = 1f;
+            layers[1].blendingMode = AnimatorLayerBlendingMode.Override;
+            layers[1].avatarMask = NoArmsMask();
+            ac.layers = layers;
+            var gs = ac.layers[1].stateMachine.AddState("Groan");
+            gs.motion = groan;
+            gs.speed = AuthoredSpeed("Lying_Groan");
+            EditorUtility.SetDirty(ac);
+            Line("Hasta " + type + ": " + PatientSlingControllerPath + " (taban: " + (liePose != null ? liePose.name : "-") + ", üst katman Lying_Groan, maske: kollar hariç)");
+            return ac;
+        }
+        canWave = true;
+        if (AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientLyingControllerPath) == null)
+        {
+            var ac = AnimatorController.CreateAnimatorControllerAtPath(PatientLyingControllerPath);
+            ac.AddParameter(Patient.WaveParameter, AnimatorControllerParameterType.Bool);
+            var sm = ac.layers[0].stateMachine;
+            var g = sm.AddState("Groan");
+            g.motion = groan;
+            g.speed = AuthoredSpeed("Lying_Groan");
+            var w = sm.AddState("HelpWave");
+            w.motion = Clip("Lying_HelpWave");
+            w.speed = AuthoredSpeed("Lying_HelpWave");
+            sm.defaultState = g;
+            var t1 = g.AddTransition(w);
+            t1.hasExitTime = false; t1.duration = 0.5f; t1.hasFixedDuration = true;
+            t1.AddCondition(AnimatorConditionMode.If, 0f, Patient.WaveParameter);
+            var t2 = w.AddTransition(g);
+            t2.hasExitTime = false; t2.duration = 0.5f; t2.hasFixedDuration = true;
+            t2.AddCondition(AnimatorConditionMode.IfNot, 0f, Patient.WaveParameter);
+            EditorUtility.SetDirty(ac);
+            Line("Hasta Animator'ı: " + PatientLyingControllerPath + " (Groan varsayılan ↔ HelpWave, " + Patient.WaveParameter + ")");
+        }
+        Line("Hasta " + type + ": " + PatientLyingControllerPath);
+        return AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientLyingControllerPath);
+    }
+
+    private static AvatarMask NoArmsMask()
+    {
+        var m = AssetDatabase.LoadAssetAtPath<AvatarMask>(NoArmsMaskPath);
+        if (m == null)
+        {
+            m = new AvatarMask();
+            AssetDatabase.CreateAsset(m, NoArmsMaskPath);
+        }
+        for (int i = 0; i < (int)AvatarMaskBodyPart.LastBodyPart; i++)
+        {
+            var part = (AvatarMaskBodyPart)i;
+            bool arm = part == AvatarMaskBodyPart.LeftArm || part == AvatarMaskBodyPart.RightArm || part == AvatarMaskBodyPart.LeftFingers
+                || part == AvatarMaskBodyPart.RightFingers || part == AvatarMaskBodyPart.LeftHandIK || part == AvatarMaskBodyPart.RightHandIK;
+            m.SetHumanoidBodyPartActive(part, !arm);
+        }
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    // =====================================================================================
+    // Sahne
+    // =====================================================================================
+
+    public static void SetupScene(Dictionary<string, object> markers, GameObject character)
+    {
+        var player = character.GetComponent<ThirdPersonPlayer>();
+        var animator = character.GetComponent<Animator>();
+        float getUp = Clip("GetUp_FromBack").length / AuthoredSpeed("GetUp_FromBack");
+
+        // Oyuncu
+        var crew = character.AddComponent<CrewAnimation>();
+        crew.animator = animator;
+        crew.player = player;
+        crew.getUpSeconds = getUp;
+        var ik = character.GetComponent<FootGroundingIK>();
+        crew.disableDuringGetUp = ik != null ? new Behaviour[] { ik } : new Behaviour[0];
+        player.knockdown.crewAnimation = crew;
+
+        // Oyuncu yeniden doğma (şef kararı 8)
+        var respawn = character.AddComponent<PlayerFallRespawn>();
+        respawn.player = player;
+        respawn.spawnPoint = GameObject.Find("PlayerSpawn").transform;
+        respawn.killBelowY = GameObject.Find("FallRespawnPlane").transform.position.y;
+
+        // Bot: ragdoll (şef kararı 6) + animasyon
+        var bot = UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>();
+        var botAnimator = bot.GetComponent<Animator>();
+        var botCrew = bot.gameObject.AddComponent<CrewAnimation>();
+        botCrew.animator = botAnimator;
+        botCrew.bot = bot;
+        botCrew.getUpSeconds = getUp;
+        bot.crewAnimation = botCrew;
+        bot.hips = botAnimator.GetBoneTransform(HumanBodyBones.Hips);
+        Bolum1AmbulanceBuilder.BuildRagdoll(botAnimator, 70f, out bot.ragdollBodies, out bot.ragdollColliders);
+
+        Line("Oyuncu: CrewAnimation (irkilme " + crew.startleRadius.ToString(Inv) + " m, kalkış " + getUp.ToString("F2", Inv) + " sn, ayak IK'sı kalkışta kapalı), "
+            + "yeniden doğma: FallRespawnPlane y < " + respawn.killBelowY.ToString("F1", Inv) + " → PlayerSpawn " + V(respawn.spawnPoint.position));
+        Line("Bot: CrewAnimation, ragdoll " + bot.ragdollBodies.Length + " gövde (70 kg), çarpılınca " + bot.getUpDelay.ToString(Inv) + " sn sonra kendi kalkar");
+        WriteReport();
+    }
+
+    private static void WriteReport()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(ReportPath));
+        File.WriteAllText(ReportPath, report.ToString());
+        Debug.Log(report.ToString());
+    }
+
+    private static void Line(string s) { report.AppendLine(s); }
+    private static string V(Vector3 v) { return "(" + v.x.ToString("F2", Inv) + ", " + v.y.ToString("F2", Inv) + ", " + v.z.ToString("F2", Inv) + ")"; }
+}

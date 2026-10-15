@@ -142,6 +142,9 @@ public static class Bolum1SceneBuilder
         // 7) Trafik: WestBound şeridi, trafik yönetmeni, koniler, oyuncu ragdoll'u (düşme/kaldırma).
         Bolum1TrafficBuilder.SetupScene(markers, truck, GameObject.Find(CharacterName));
 
+        // 8) Prosedürel animasyonlar (oyuncu, bot), bot ragdoll'u, oyuncu yeniden doğma.
+        Bolum1AnimBuilder.SetupScene(markers, GameObject.Find(CharacterName));
+
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))
             throw new Exception("Sahne kaydedilemedi: " + ScenePath);

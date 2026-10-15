@@ -154,6 +154,7 @@ public class TrafficVehicle : MonoBehaviour
     {
         var player = c as ThirdPersonPlayer;
         if (player != null && player.knockdown != null && player.knockdown.IsDown) return player.knockdown.GroundPosition;
+        if (c is StretcherHelperBot bot && bot.IsDown) return bot.GroundPosition;
         return c.Root.position;
     }
 
@@ -164,6 +165,7 @@ public class TrafficVehicle : MonoBehaviour
             if (c == null || c.Root == null) continue;
             var player = c as ThirdPersonPlayer;
             if (player != null && (player.knockdown == null || player.knockdown.IsDown)) continue;
+            if (c is StretcherHelperBot downBot && downBot.IsDown) continue; // yerdeki botu araç gövdesi (fizik) iter
             Vector3 root = c.Root.position;
             bool touch = Touches(root + Vector3.up * 0.3f, 0.3f) || Touches(root + Vector3.up * 0.9f, 0.3f) || Touches(root + Vector3.up * 1.4f, 0.3f);
             if (!touch) continue;

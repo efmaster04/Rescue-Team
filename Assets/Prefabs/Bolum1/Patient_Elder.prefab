@@ -340,7 +340,7 @@ Animator:
   m_GameObject: {fileID: 781787128254017875}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: dc2738c8db66e0f449e74d082e006664, type: 3}
-  m_Controller: {fileID: 9100000, guid: 4daaffa565b9bb843a4d7ec92b7505ea, type: 2}
+  m_Controller: {fileID: 9100000, guid: a654f37e9b24c6246b18405fe7a2d79c, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -369,6 +369,8 @@ MonoBehaviour:
   hipsToBack: 0.13899992
   animator: {fileID: 8066135845815425108}
   hasLiePose: 1
+  canWave: 1
+  waveSwitchSeconds: {x: 5, y: 10}
   ragdollBodies:
   - {fileID: 905464317697713446}
   - {fileID: 3649318702023812284}

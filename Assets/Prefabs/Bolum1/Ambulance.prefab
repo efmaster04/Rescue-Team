@@ -443,7 +443,7 @@ MonoBehaviour:
   loadPoint: {fileID: 322847339309097780}
   patientSlots:
   - {fileID: 485475943289218731}
-  - {fileID: 2792189758838742719}
+  - {fileID: 2269147045331526340}
   flashLeft:
   - {fileID: 216884021857928518}
   - {fileID: 7568207879574539507}
@@ -468,8 +468,10 @@ MonoBehaviour:
   knockControlLoss: 1
   flashHz: 2
   flashColor: {r: 0.6, g: 2.1, b: 6, a: 6}
+  followMinGap: 4
+  followTimeHeadway: 2
   sound: {fileID: 4574328361352750669}
---- !u!1 &6485261927012391608
+--- !u!1 &4244507669980259014
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -477,7 +479,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2792189758838742719}
+  - component: {fileID: 2269147045331526340}
   m_Layer: 0
   m_Name: LieFrame
   m_TagString: Untagged
@@ -485,13 +487,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2792189758838742719
+--- !u!4 &2269147045331526340
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6485261927012391608}
+  m_GameObject: {fileID: 4244507669980259014}
   serializedVersion: 2
   m_LocalRotation: {x: 0.000000053385083, y: -0.7071068, z: -0.7071067, w: 0.000000053385072}
   m_LocalPosition: {x: -3.6000205e-14, y: 0.00000023841858, z: -0.049999952}
@@ -591,7 +593,7 @@ PrefabInstance:
       addedObject: {fileID: 485475943289218731}
     - targetCorrespondingSourceObject: {fileID: 2001215607458816657, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2792189758838742719}
+      addedObject: {fileID: 2269147045331526340}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8277451755345236158, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1

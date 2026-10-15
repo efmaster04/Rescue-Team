@@ -128,13 +128,13 @@ public class MissionHud : MonoBehaviour
             TimerText.text = "Ambulans bekliyor: " + Mathf.CeilToInt(waiting.WaitRemaining);
         else
         {
-            float left = Mathf.Max(0f, mission.NextArrivalTime - mission.Elapsed);
+            float left = Mathf.Max(0f, mission.EstimatedNextArrival - mission.Elapsed); // gecikmede gerçek tahmin
             int secs = Mathf.CeilToInt(left);
             TimerText.text = "Ambulans: " + (secs / 60) + ":" + (secs % 60).ToString("00");
         }
 
         // Telsiz: varıştan 30 sn önce, 4 sn boyunca
-        float toArrival = mission.NextArrivalTime - mission.Elapsed;
+        float toArrival = mission.EstimatedNextArrival - mission.Elapsed;
         if (!mission.IsFinished && waiting == null && toArrival <= radioLeadSeconds && toArrival > 0f && radioShownFor != mission.ArrivalCount)
         {
             radioShownFor = mission.ArrivalCount;

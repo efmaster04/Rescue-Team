@@ -11,14 +11,14 @@ using UnityEngine;
 // oyuncu ragdoll'u). Bolum1SceneBuilder.Build içinden çağrılır (BuildAssets ambulans asset'lerinden sonra,
 // SetupScene ambulans sahne kurulumundan sonra).
 //
-// SÖZLEŞME (modeller Blender'da paralel üretiliyor): Assets/Models/Vehicles/Traffic/SM_<Tip>.fbx + traffic_meta.json.
+// SÖZLEŞME: Assets/Models/Vehicles/Traffic/SM_<Tip>.fbx + <tip>_meta.json (sanat reposu Export/Traffic, kopyası).
 // Kök SM_<Tip> (pivot tekerleklerin yere değdiği dikdörtgenin merkezi, Z=0, burun +ileri). Çocuklar: SM_<Tip>_Body,
 // SM_<Tip>_Glass, SM_<Tip>_Wheel_<konum> (binek FL/FR/RL/RR; kamyon F_L/F_R/R1_L/R1_R/R2_L/R2_R).
 // FBX VARSA o, YOKSA aynı ad ve ölçülerde kutu yer tutucu kullanılır. FBX gelince builder'ı yeniden çalıştırmak yeterli.
 public static class Bolum1TrafficBuilder
 {
     public const string ModelFolder = "Assets/Models/Vehicles/Traffic/";
-    public const string MetaPath = ModelFolder + "traffic_meta.json";
+    public static string MetaPath(TrafficVehicleType t) { return ModelFolder + t.ToString().ToLowerInvariant() + "_meta.json"; }
     public const string PrefabFolder = Bolum1AmbulanceBuilder.PrefabFolder + "/Traffic";
     public const string MaterialFolder = Bolum1AmbulanceBuilder.MaterialFolder;
     public const string SettingsPath = Bolum1AmbulanceBuilder.SettingsFolder + "/TrafficSettings.asset";
@@ -83,8 +83,7 @@ public static class Bolum1TrafficBuilder
         if (Settings == null)
             AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<TrafficSettings>(), SettingsPath); // varsa (kullanıcı ayarı) dokunma
         AssetDatabase.SaveAssets();
-        var meta = File.Exists(MetaPath) ? Bolum1Coordinates.LoadJson(MetaPath) : null;
-        foreach (var t in Types) BuildVehiclePrefab(t, meta);
+        foreach (var t in Types) BuildVehiclePrefab(t, File.Exists(MetaPath(t)) ? Bolum1Coordinates.LoadJson(MetaPath(t)) : null);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
@@ -127,6 +126,9 @@ public static class Bolum1TrafficBuilder
             float bottom = 0.15f;
             var center = new Vector3(b.center.x, (bottom + b.max.y) * 0.5f, b.center.z);
             var size = new Vector3(b.size.x, b.max.y - bottom, b.size.z);
+            // Aynalar gövde ölçüsüne girmez (meta: measurement.width_m / dimensions_m.width): kutu genişliği ölçüye kırpılır.
+            float metaWidth = MetaWidth(meta);
+            if (fbx != null && metaWidth > 0.5f && size.x > metaWidth) { size.x = metaWidth; center.x = 0f; }
 
             var rb = root.AddComponent<Rigidbody>();
             rb.isKinematic = true;
@@ -178,9 +180,29 @@ public static class Bolum1TrafficBuilder
                 v.paintRenderers = bodyPart.GetComponentsInChildren<Renderer>(true).Where(r => fbx != null || r.name != "Trim").ToArray();
                 v.paintMaterialIndex = 0;
                 Color[] colors = null;
-                if (fbx != null && meta != null) colors = MetaColors(meta, type, out v.paintMaterialIndex);
-                colorSource = colors != null ? "traffic_meta.json" : "yer tutucu renkleri";
+                if (fbx != null && meta != null)
+                {
+                    colors = MetaPaints(meta, out string paintMaterial);
+                    // Boya malzemesini taşıyan renderer'lar ve malzeme yuvası (meta paint_material adıyla)
+                    var painted = model.GetComponentsInChildren<Renderer>(true)
+                        .Where(r => r.sharedMaterials.Any(m => m != null && m.name == paintMaterial)).ToArray();
+                    if (painted.Length == 0) throw new Exception(type + ": boya malzemesi " + paintMaterial + " modelde yok");
+                    v.paintRenderers = painted;
+                    v.paintMaterialIndex = Array.FindIndex(painted[0].sharedMaterials, m => m != null && m.name == paintMaterial);
+                    if (painted.Any(r => Array.FindIndex(r.sharedMaterials, m => m != null && m.name == paintMaterial) != v.paintMaterialIndex))
+                        throw new Exception(type + ": boya malzemesi renderer'larda farklı yuvada");
+                    colorSource = MetaPath(type) + " paint_variants (" + paintMaterial + ", yuva " + v.paintMaterialIndex + ", " + painted.Length + " renderer)";
+                }
+                if (colors == null) colorSource = "yer tutucu renkleri";
                 v.paintColors = colors ?? PlaceholderCarColors;
+            }
+
+            // Pikap balyaları (şef kararı 5): kasada bağlı, koni çarpışmasında kopar
+            if (type == TrafficVehicleType.Pickup && fbx != null)
+            {
+                var cargo = root.AddComponent<HayCargo>();
+                cargo.bales = new[] { Find(modelName + "_Hay_01"), Find(modelName + "_Hay_02") };
+                Line("  Pikap balyaları: " + string.Join(", ", cargo.bales.Select(x => x.name + " " + V(root.transform.InverseTransformPoint(x.position)))) + ", " + cargo.baleMass + " kg, ömür " + cargo.lifetime + " sn");
             }
             Line("Araç " + type + ": " + (fbx != null ? ModelPath(type) : "yer tutucu kutular") + ", gövde kutusu merkez " + V(center) + " boyut " + V(size)
                 + ", ön/arka çıkıntı " + follower.frontOverhang.ToString("F2", Inv) + "/" + follower.rearOverhang.ToString("F2", Inv)
@@ -194,63 +216,34 @@ public static class Bolum1TrafficBuilder
         }
     }
 
-    // traffic_meta.json'da tipin renk listesi: biçim henüz kesin değil; tipin altında adında "color" geçen ilk liste aranır.
-    // Elemanlar "#RRGGBB", [r,g,b] (0–1 ya da 0–255) ya da {"hex": ...} / {"rgb": [...]} olabilir.
-    private static Color[] MetaColors(Dictionary<string, object> meta, TrafficVehicleType type, out int materialIndex)
+    // <tip>_meta.json: paint_variants [{name, srgb_hex}] + paint_material. Renkler sRGB; MaterialPropertyBlock.SetColor
+    // lineer projede bir kez lineere çevirir (FBX'teki lineer renkle aynı sonuç; ek telafi yok).
+    private static Color[] MetaPaints(Dictionary<string, object> meta, out string paintMaterial)
     {
-        materialIndex = 0;
-        object node = FindKey(meta, "SM_" + type) ?? FindKey(meta, type.ToString());
-        if (node == null) return null;
-        if (node is Dictionary<string, object> d && d.TryGetValue("paint_material_index", out object idx)) materialIndex = Convert.ToInt32(idx, Inv);
-        var list = FindColorList(node);
-        if (list == null) return null;
+        paintMaterial = meta.TryGetValue("paint_material", out object pm) ? pm as string : null;
+        if (paintMaterial == null || !meta.TryGetValue("paint_variants", out object pv) || !(pv is List<object> list)) return null;
         var colors = new List<Color>();
         foreach (var e in list)
-            if (TryParseColor(e, out Color c)) colors.Add(c);
+            if (e is Dictionary<string, object> d && d.TryGetValue("srgb_hex", out object hex) && ColorUtility.TryParseHtmlString((string)hex, out Color c)) colors.Add(c);
         return colors.Count > 0 ? colors.ToArray() : null;
     }
 
-    private static object FindKey(object node, string key)
+    public static string[] MetaPaintNames(TrafficVehicleType t)
     {
-        if (node is Dictionary<string, object> d)
-        {
-            if (d.TryGetValue(key, out object v)) return v;
-            foreach (var kv in d) { var r = FindKey(kv.Value, key); if (r != null) return r; }
-        }
-        else if (node is List<object> l)
-            foreach (var x in l) { var r = FindKey(x, key); if (r != null) return r; }
-        return null;
+        if (!File.Exists(MetaPath(t))) return new string[0];
+        var meta = Bolum1Coordinates.LoadJson(MetaPath(t));
+        if (!meta.TryGetValue("paint_variants", out object pv) || !(pv is List<object> list)) return new string[0];
+        return list.OfType<Dictionary<string, object>>().Select(d => d.TryGetValue("name", out object n) ? (string)n : "?").ToArray();
     }
 
-    private static List<object> FindColorList(object node)
+    private static float MetaWidth(Dictionary<string, object> meta)
     {
-        if (node is Dictionary<string, object> d)
-        {
-            foreach (var kv in d)
-                if (kv.Key.IndexOf("color", StringComparison.OrdinalIgnoreCase) >= 0 && kv.Value is List<object> l) return l;
-            foreach (var kv in d) { var r = FindColorList(kv.Value); if (r != null) return r; }
-        }
-        return null;
-    }
-
-    private static bool TryParseColor(object e, out Color c)
-    {
-        c = Color.white;
-        if (e is string s) return ColorUtility.TryParseHtmlString(s.StartsWith("#") ? s : "#" + s, out c);
-        if (e is Dictionary<string, object> d)
-        {
-            foreach (var k in new[] { "hex", "color", "rgb", "linear_rgb", "srgb" })
-                if (d.TryGetValue(k, out object v) && TryParseColor(v, out c)) return true;
-            return false;
-        }
-        if (e is List<object> l && l.Count >= 3)
-        {
-            float r = Convert.ToSingle(l[0], Inv), g = Convert.ToSingle(l[1], Inv), b = Convert.ToSingle(l[2], Inv);
-            float k = Mathf.Max(r, g, b) > 1.001f ? 1f / 255f : 1f;
-            c = new Color(r * k, g * k, b * k);
-            return true;
-        }
-        return false;
+        if (meta == null) return 0f;
+        foreach (var k in new[] { "measurement", "dimensions_m" })
+            if (meta.TryGetValue(k, out object o) && o is Dictionary<string, object> d)
+                foreach (var w in new[] { "width_m", "width" })
+                    if (d.TryGetValue(w, out object v)) return Convert.ToSingle(v, Inv);
+        return 0f;
     }
 
     // Yer tutucu: kök SM_<Tip> (pivot = tekerlek dikdörtgeninin merkezi, yerde), ön +Z. Gövde, cam ve tekerlekler ayrı parçalar.

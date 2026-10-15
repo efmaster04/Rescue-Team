@@ -32,6 +32,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13); araç çarpıp düşünce kaldırılana kadar kontrol yok.
     public bool HasControl { get { return Time.time >= controlLostUntil && !IsDown; } }
     public Vector3 HorizontalVelocity { get; private set; }
+    // Zıplama gerçekten başladı (animasyon: Jump).
+    public event System.Action Jumped;
 
     private CharacterController controller;
     private Vector2 moveInput;
@@ -80,6 +82,37 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         knockRemaining = displacement;
         knockTimeLeft = 0.25f;
         controlLostUntil = Time.time + controlLossSeconds;
+    }
+
+    // Yeniden doğma (şef kararı 8): elindekini bırakır, yerdeyse ayağa kalkar, verilen noktaya ışınlanır.
+    public void RespawnAt(Vector3 position, Quaternion rotation)
+    {
+        if (HeldStretcher != null) HeldStretcher.Release(this);
+        if (HeldCone != null)
+        {
+            var cone = HeldCone;
+            HeldCone = null;
+            cone.Drop(Vector3.zero);
+        }
+        if (knockdown != null) knockdown.ResetStanding();
+        moveInput = Vector2.zero;
+        knockRemaining = Vector3.zero;
+        knockTimeLeft = 0f;
+        controlLostUntil = -1f;
+        Teleport(position, rotation);
+    }
+
+    // Kontrolü en az seconds boyunca askıya alır (ör. GetUp_FromBack kalkış animasyonu sürerken).
+    public void SuspendControl(float seconds)
+    {
+        controlLostUntil = Mathf.Max(controlLostUntil, Time.time + seconds);
+    }
+
+    // Saman balyası (pikaptan düşen, Rigidbody) itilir: oyuncu yürüyerek iter (şef kararı 5).
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        var bale = hit.collider != null ? hit.collider.GetComponent<LooseBale>() : null;
+        if (bale != null) bale.PushFrom(hit.moveDirection, HorizontalVelocity.magnitude);
     }
 
     // Araç çarptı (kullanıcı kararları 5, 7): sedyeyi bırakmış sayılır, elindeki koni düşer, ragdoll olup savrulur.
@@ -132,7 +165,10 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         // Yerçekimi ve zıplama
         if (controller.isGrounded && verticalSpeed < 0f) verticalSpeed = -2f; // zemine bastır (rampada kopmasın)
         if (jumpRequested && controller.isGrounded && HasControl)
+        {
             verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
+            Jumped?.Invoke();
+        }
         jumpRequested = false;
         verticalSpeed += gravity * dt;
 

@@ -1,6 +1,8 @@
 using UnityEngine;
 
 // Test botu (kullanıcı kararı 9): multiplayer gelene kadar sedyenin öbür ucunu tutar.
+// Araç çarpınca (şef kararı 6) bot da ragdoll olup düşer ve getUpDelay sn sonra kendi kendine GetUp_FromBack ile kalkar
+// (bot test yardımcısıdır; oyuncunun "yalnız arkadaş kaldırır" kuralı değişmez).
 // Oyuncu bir ucu tutunca bot diğer uca ışınlanır. Sonra "römork" modeliyle izler: sedye ekseni iki taşıyıcı
 // arasındaki çizgidir, bot lidere olan uzaklığı sap aralığında tutar. Y'sini zemine raycast'le bulur, çarpışmaları yok sayar
 // (collider'ı yok). Oyuncu bırakınca bot da AYNI ANDA bırakır (güvenli iniş; bırakmayı PlayerInteraction yapar).
@@ -16,6 +18,23 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     public Animator animator;
     [Tooltip("Animator'daki hız parametresi.")]
     public string speedParameter = "Speed";
+    [Tooltip("Animasyon tetikleyicisi (Revive_Helper, GetUp vb.).")]
+    public CrewAnimation crewAnimation;
+
+    [Header("Ragdoll (şef kararı 6)")]
+    [Tooltip("Kalça kemiği (Humanoid Hips).")]
+    public Transform hips;
+    public Rigidbody[] ragdollBodies = new Rigidbody[0];
+    public Collider[] ragdollColliders = new Collider[0];
+    [Tooltip("Araç çarpınca yerde kalma süresi (sn); sonra kendi kendine kalkar.")]
+    public float getUpDelay = 3f;
+
+    public bool IsDown { get; private set; }
+    public float DownSince { get; private set; } = -1f;
+    public int TimesDowned { get; private set; }
+    public int TimesStoodUp { get; private set; }
+    // Düşmüş botun yeri: kalça (ragdoll kökten ayrılır)
+    public Vector3 GroundPosition { get { return IsDown && hips != null ? hips.position : transform.position; } }
 
     public Transform Root { get { return transform; } }
     public StretcherController HeldStretcher { get; set; }
@@ -23,7 +42,13 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     private ICarrier leader;
     private Vector3 lastPosition;
 
-    public bool CanAssist { get { return assistEnabled && isActiveAndEnabled && HeldStretcher == null; } }
+    public bool CanAssist { get { return assistEnabled && isActiveAndEnabled && HeldStretcher == null && !IsDown; } }
+
+    private void Awake()
+    {
+        if (crewAnimation == null) crewAnimation = GetComponent<CrewAnimation>();
+        SetRagdoll(false);
+    }
 
     private void OnEnable()
     {
@@ -64,10 +89,22 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         leader = null;
     }
 
-    // Araç çarptı: taşıdığı sedyeyi bırakmış sayılır ve şeridin dışına itilir (botta ragdoll yok).
+    // Araç çarptı: taşıdığı sedyeyi bırakmış sayılır, ragdoll olup itkiyle savrulur (şef kararı 6).
+    // Ragdoll kurulmamışsa (eski sahne) şeridin dışına itilir.
     public void HitByVehicle(LanePath lane, Vector3 velocity)
     {
         ReleaseHeld();
+        if (IsDown) return;
+        if (ragdollBodies.Length > 0 && hips != null)
+        {
+            IsDown = true;
+            DownSince = Time.time;
+            TimesDowned++;
+            SetRagdoll(true);
+            foreach (var rb in ragdollBodies)
+                if (rb != null) rb.linearVelocity = velocity;
+            return;
+        }
         Vector3 p = transform.position;
         if (lane != null)
         {
@@ -85,7 +122,8 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     // bırakır, sonra E basılı tutar gibi kaldırır (2 sn).
     private bool ReviveDownedPlayer(float dt)
     {
-        if (!assistEnabled || !isActiveAndEnabled) return false;
+        if (!assistEnabled || !isActiveAndEnabled || IsDown) return false;
+        if (crewAnimation != null && crewAnimation.GettingUp) return false;
         PlayerKnockdown target = null;
         foreach (var c in CarrierRegistry.All)
         {
@@ -97,21 +135,31 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         if (!target.InReviveRange(this))
         {
             Vector3 hips = target.GroundPosition;
-            Vector3 dir = transform.position - hips;
+            // Göğsün yanında diz çöker (Revive_Helper elleri ~0.4 m önde omuzları sarsar)
+            Vector3 chest = target.ChestPosition;
+            Vector3 dir = transform.position - chest;
             dir.y = 0f;
             if (dir.sqrMagnitude < 1e-4f) dir = Vector3.right;
-            Vector3 pos = hips + dir.normalized * 0.9f;
+            Vector3 pos = chest + dir.normalized * 0.55f;
             if (GroundProbe.Find(new Vector3(pos.x, hips.y + 1.5f, pos.z), 6f, out RaycastHit hit)) pos.y = hit.point.y;
-            Vector3 look = hips - pos; look.y = 0f;
+            Vector3 look = chest - pos; look.y = 0f;
             transform.SetPositionAndRotation(pos, look.sqrMagnitude > 1e-6f ? Quaternion.LookRotation(look.normalized, Vector3.up) : transform.rotation);
             lastPosition = pos;
         }
+        if (crewAnimation != null) crewAnimation.MarkReviving();
         target.TryRevive(this, dt);
         return true;
     }
 
     private void LateUpdate()
     {
+        if (IsDown)
+        {
+            if (Time.time - DownSince >= getUpDelay) StandUp();
+            if (animator != null && animator.isActiveAndEnabled && animator.runtimeAnimatorController != null) animator.SetFloat(speedParameter, 0f);
+            lastPosition = transform.position;
+            return;
+        }
         bool reviving = ReviveDownedPlayer(Time.deltaTime);
         if (!reviving && HeldStretcher != null)
         {
@@ -128,6 +176,39 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         if (animator != null && animator.runtimeAnimatorController != null)
             animator.SetFloat(speedParameter, delta.magnitude / dt, 0.1f, dt);
         lastPosition = transform.position;
+    }
+
+    // Kendi kendine kalkış: kök kalçanın altındaki zemine gelir, ragdoll kapanır, GetUp_FromBack ragdoll pozundan oynar.
+    // Kalçanın altında zemin yoksa (uçurum) çarpılmadan önceki yerinde kalkar.
+    private void StandUp()
+    {
+        CrewAnimation.PoseSnapshot pose = animator != null ? CrewAnimation.Capture(animator) : null;
+        Vector3 at = hips.position;
+        Vector3 ground = lastPosition;
+        bool found = GroundProbe.Find(at + Vector3.up * 1.0f, 4f, out RaycastHit hit);
+        if (found) ground = hit.point;
+        SetRagdoll(false);
+        IsDown = false;
+        TimesStoodUp++;
+        transform.position = ground;
+        lastPosition = ground;
+        if (crewAnimation != null)
+            crewAnimation.BeginGetUp(found ? pose : null, (p, r) => transform.SetPositionAndRotation(p, r));
+    }
+
+    private void SetRagdoll(bool on)
+    {
+        foreach (var rb in ragdollBodies)
+        {
+            if (rb == null) continue;
+            if (!on && !rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
+            rb.isKinematic = !on;
+            rb.useGravity = on;
+            rb.interpolation = on ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
+        }
+        foreach (var c in ragdollColliders)
+            if (c != null) c.enabled = on;
+        if (animator != null) animator.enabled = !on;
     }
 
     // Römork modeli: eksen = liderin elinden botun eline (yatay); bot ucu sap aralığı kadar uzakta.

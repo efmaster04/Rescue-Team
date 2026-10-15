@@ -17,12 +17,17 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     public const string AmbulanceFolder = "Assets/Models/Vehicles/Ambulance/";
     public const string PropsFolder = "Assets/Models/Props/Stretcher/";
     public const string PatientFolder = "Assets/Models/Characters/Patient/";
+    public const string TrafficFolder = "Assets/Models/Vehicles/Traffic/";
+    public const string TrafficGlassMaterial = "M_Traffic_Glass";
+    public const string TrafficTrucksGlassMaterial = "M_TrafficTrucks_Glass";
+    public const float TrafficGlassAlpha = 0.30f; // *_meta.json unity_import.glass_note
 
     public static bool IsBolum1Model(string path)
     {
         return path.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)
             && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder) || path.StartsWith(TowTruckFolder)
-                || path.StartsWith(AmbulanceFolder) || path.StartsWith(PropsFolder) || path.StartsWith(PatientFolder));
+                || path.StartsWith(AmbulanceFolder) || path.StartsWith(PropsFolder) || path.StartsWith(PatientFolder)
+                || path.StartsWith(TrafficFolder));
     }
 
     private void OnPreprocessModel()
@@ -40,7 +45,8 @@ internal class Bolum1ImportSettings : AssetPostprocessor
 
     // Postprocessor sürümü: materyal düzeltmesi değişirse artır, Unity ilgili FBX'leri yeniden import eder.
     // v5: renk telafisi kaldırıldı (FBX'ler artık lineer DiffuseColor taşıyor), yalnız cam şeffaflığı kaldı.
-    public override uint GetVersion() { return 6; }
+    // v7: trafik araçları (Assets/Models/Vehicles/Traffic) kapsama alındı, M_Traffic_Glass şeffaf.
+    public override uint GetVersion() { return 7; }
 
     public const string PaintMaterial = "M_Minivan_Paint";
     public const string GlassMaterial = "M_Minivan_Glass";
@@ -57,11 +63,12 @@ internal class Bolum1ImportSettings : AssetPostprocessor
         bool vanGlass = assetPath.StartsWith(VehicleFolder) && description.materialName == GlassMaterial;
         bool truckGlass = assetPath.StartsWith(TowTruckFolder) && description.materialName == TowTruckGlassMaterial;
         bool ambulanceGlass = assetPath.StartsWith(AmbulanceFolder) && description.materialName == "M_Ambulance_Glass";
-        if ((!vanGlass && !truckGlass && !ambulanceGlass) || !material.HasProperty("_BaseColor"))
+        bool trafficGlass = assetPath.StartsWith(TrafficFolder) && (description.materialName == TrafficGlassMaterial || description.materialName == TrafficTrucksGlassMaterial);
+        if ((!vanGlass && !truckGlass && !ambulanceGlass && !trafficGlass) || !material.HasProperty("_BaseColor"))
             return;
 
         Color c = material.GetColor("_BaseColor");
-        c.a = ambulanceGlass ? 0.3f : truckGlass ? TowTruckGlassAlpha : GlassAlpha;
+        c.a = trafficGlass ? TrafficGlassAlpha : ambulanceGlass ? 0.3f : truckGlass ? TowTruckGlassAlpha : GlassAlpha;
         MakeTransparent(material);
         material.SetColor("_BaseColor", c);
         if (material.HasProperty("_Color"))

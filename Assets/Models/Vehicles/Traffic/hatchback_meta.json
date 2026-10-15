@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X",
+    "length_axis": "Y"
+  },
+  "field_descriptions": {
+    "measurement": "Body envelope in metres, excludes mirrors only; height from ground.",
+    "parts": "Direct root children; pivot_m is XYZ in Blender root space.",
+    "axles_y_m": "Front negative Y, rear positive Y; wheel rotation axis +X.",
+    "paint_variants": "sRGB hex values; convert once to linear Base Color for Linear URP.",
+    "bed": "Inner free box, floor top Z, hay bottom-centre positions and XYZ dimensions; all metres.",
+    "palette_samples": "5x5 median on concept; XY uses top-left image origin."
+  },
+  "measurement": {
+    "length_m": 4.0,
+    "width_m": 1.75,
+    "height_m": 1.5,
+    "tolerance_m": 0.05
+  },
+  "wheel_radius_m": 0.31,
+  "wheel_x_m": 0.74,
+  "axles_y_m": {
+    "F": -1.22,
+    "R": 1.22
+  },
+  "wheel_axis": [
+    1,
+    0,
+    0
+  ],
+  "parts": {
+    "SM_Hatchback_Body": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Hatchback",
+      "motion": null
+    },
+    "SM_Hatchback_Glass": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Hatchback",
+      "motion": null
+    },
+    "SM_Hatchback_Interior": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Hatchback",
+      "motion": null
+    },
+    "SM_Hatchback_Wheel_FL": {
+      "pivot_m": [
+        0.74,
+        -1.22,
+        0.31
+      ],
+      "parent": "SM_Hatchback",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.31
+      }
+    },
+    "SM_Hatchback_Wheel_FR": {
+      "pivot_m": [
+        -0.74,
+        -1.22,
+        0.31
+      ],
+      "parent": "SM_Hatchback",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.31
+      }
+    },
+    "SM_Hatchback_Wheel_RL": {
+      "pivot_m": [
+        0.74,
+        1.22,
+        0.31
+      ],
+      "parent": "SM_Hatchback",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.31
+      }
+    },
+    "SM_Hatchback_Wheel_RR": {
+      "pivot_m": [
+        -0.74,
+        1.22,
+        0.31
+      ],
+      "parent": "SM_Hatchback",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.31
+      }
+    }
+  },
+  "mirror_exclusion": {
+    "abs_x_above_m": 0.855,
+    "y_range_m": [
+      -1.02,
+      -0.7799999999999999
+    ],
+    "z_range_m": [
+      0.94,
+      1.1400000000000001
+    ]
+  },
+  "glass_material": "M_Traffic_Glass",
+  "paint_material": "M_Hatchback_Paint_Surface",
+  "paint_variants": [
+    {
+      "name": "Mustard",
+      "srgb_hex": "#95713C"
+    },
+    {
+      "name": "Sage",
+      "srgb_hex": "#506056"
+    },
+    {
+      "name": "Burgundy",
+      "srgb_hex": "#4D2731"
+    },
+    {
+      "name": "Charcoal",
+      "srgb_hex": "#545252"
+    }
+  ],
+  "default_paint": "Sage",
+  "materials": {
+    "M_Traffic_Trim": "#85868A",
+    "M_Traffic_Tire": "#292C30",
+    "M_Traffic_Rim": "#777A80",
+    "M_Traffic_Glass": "#A3BBC0",
+    "M_Traffic_Interior": "#4B5053",
+    "M_Traffic_Seat": "#737276",
+    "M_Traffic_Driver": "#3E514D",
+    "M_Traffic_Headlight": "#E6DEB9",
+    "M_Traffic_Tail": "#943D3C",
+    "M_Traffic_Amber": "#BE9450",
+    "M_Traffic_Hay": "#BDA666",
+    "M_Traffic_HayDark": "#95804C",
+    "M_Traffic_Strap": "#5B5141",
+    "M_Hatchback_Paint_Surface": "#506056"
+  },
+  "palette_samples": {
+    "Mustard": {
+      "srgb_hex": "#95713C",
+      "source_pixel_xy_top_left": [
+        170,
+        620
+      ],
+      "median_patch_px": 5
+    },
+    "Sage": {
+      "srgb_hex": "#506056",
+      "source_pixel_xy_top_left": [
+        413,
+        620
+      ],
+      "median_patch_px": 5
+    },
+    "Burgundy": {
+      "srgb_hex": "#4D2731",
+      "source_pixel_xy_top_left": [
+        652,
+        613
+      ],
+      "median_patch_px": 5
+    },
+    "Charcoal": {
+      "srgb_hex": "#545252",
+      "source_pixel_xy_top_left": [
+        262,
+        570
+      ],
+      "median_patch_px": 5
+    }
+  },
+  "palette_reference": "ArtSource/Traffic/references/01_traffic_lineup.jpg",
+  "bed": null,
+  "unity_import": {
+    "scale_factor": 1,
+    "bake_axis_conversion": false,
+    "color_note": "sRGB hex -> linear Base Color -> FBX DiffuseColor unchanged.",
+    "glass_note": "URP transparent, alpha 0.30; separate glass object."
+  }
+}

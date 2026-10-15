@@ -157,6 +157,8 @@ public static class Bolum1AmbulanceBuilder
         tree.AddChild(walk, WalkThreshold);
         tree.AddChild(run, RunThreshold);
         ac.layers[0].stateMachine.defaultState = state;
+        // Prosedürel animasyonlar: taşıma, alma/bırakma, zıplama, irkilme, kalkış, kaldırma, kutlama
+        Bolum1AnimBuilder.AddCrewStates(ac, state, PlayerMoveSpeed);
         EditorUtility.SetDirty(ac);
         Line("Animator: " + LocomotionControllerPath + " (Speed: " + idle.name + " 0, " + walk.name + " " + WalkThreshold.ToString(Inv) + ", " + run.name + " " + RunThreshold.ToString(Inv) + " m/sn)");
     }
@@ -481,7 +483,8 @@ public static class Bolum1AmbulanceBuilder
                 }
                 foreach (var state in ac.layers[0].stateMachine.states)
                     if (state.state.name == "Lie") state.state.motion = clip;
-                animator.runtimeAnimatorController = ac;
+                // Prosedürel yatma klipleri (Lying_HelpWave / Lying_Groan); Civilian: askılı kol + maskeli inleme
+                animator.runtimeAnimatorController = Bolum1AnimBuilder.PatientController(type, clip, out p.canWave);
                 animator.enabled = true;
                 p.hasLiePose = true;
             }

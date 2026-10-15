@@ -46,6 +46,19 @@ public class MissionDirector : MonoBehaviour
     // Bir sonraki varışın planlanan zamanı.
     public float NextArrivalTime { get { return active != null ? active.ArrivalTime(ArrivalCount) : float.PositiveInfinity; } }
     public AmbulanceSchedule ActiveSchedule { get { return active; } }
+
+    // Gerçek tahmini varış (şef kararı 7): yoldaki ambulans araç arkasında gecikiyorsa plandan geç olur, plandan erken olmaz.
+    public float EstimatedNextArrival
+    {
+        get
+        {
+            float planned = NextArrivalTime;
+            foreach (var a in Ambulances)
+                if (a != null && a.Phase == AmbulancePhase.Approaching)
+                    return Mathf.Max(planned, Elapsed + a.EstimatedSecondsToStop());
+            return planned;
+        }
+    }
     // Bir sonraki ambulansın doğma zamanı (trafik, bundan önceki 20 sn'de EastBound'a araç çıkarmaz). Görev bitince yok.
     public float NextAmbulanceSpawnTime { get { return active != null && !IsFinished ? Mathf.Max(0f, active.ArrivalTime(spawnIndex) - TravelTime) : float.PositiveInfinity; } }
 

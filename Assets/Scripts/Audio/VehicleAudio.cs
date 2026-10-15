@@ -19,6 +19,8 @@ public class VehicleAudio : MonoBehaviour
 
     // Kaç kez korna çalındı (test; batchmode'da isPlaying güvenilmez).
     public int HornPlays { get; private set; }
+    // Korna çalındı (kaynak, konum): yakındaki karakterler irkilir (CrewAnimation). Ses çalmasından bağımsız.
+    public static event System.Action<VehicleAudio, Vector3> HornPlayed;
 
     private float nextHornTime;
 
@@ -57,6 +59,7 @@ public class VehicleAudio : MonoBehaviour
         nextHornTime = Time.time + hornCooldown;
         horn.Play();
         HornPlays++;
+        HornPlayed?.Invoke(this, transform.position);
         return true;
     }
 }

@@ -27,6 +27,17 @@ public class Patient : MonoBehaviour
     public Animator animator;
     public bool hasLiePose;
 
+    [Header("Yatma animasyonu (Lying_HelpWave / Lying_Groan)")]
+    [Tooltip("Yerde beklerken el sallama ile inleme arasında geçiş yapar mı (Civilian: askılı kol, yalnız inleme).")]
+    public bool canWave = true;
+    [Tooltip("Yerde el sallama / inleme geçişi aralığı (sn), bu aralıkta rastgele.")]
+    public Vector2 waveSwitchSeconds = new Vector2(5f, 10f);
+    public const string WaveParameter = "Wave";
+    // Şu an el sallıyor mu (Animator parametresi; test ve hata ayıklama)
+    public bool Waving { get; private set; }
+    public int WaveSwitches { get; private set; }
+    private float nextWaveSwitch = -1f;
+
     [Tooltip("Ragdoll kemik gövdeleri ve collider'ları (editor betiği kurar).")]
     public Rigidbody[] ragdollBodies = new Rigidbody[0];
     public Collider[] ragdollColliders = new Collider[0];
@@ -67,6 +78,32 @@ public class Patient : MonoBehaviour
     }
 
     private void OnEnable() { if (!All.Contains(this)) All.Add(this); }
+
+    // Yerde: rastgele 5–10 sn'de bir el sallama ↔ inleme. Sedyede, ambulansta ve ragdoll'da el sallamaz (inleme).
+    private void Update()
+    {
+        if (animator == null || !animator.isActiveAndEnabled || animator.runtimeAnimatorController == null) return;
+        bool ground = canWave && State == PatientState.LyingGround;
+        if (!ground)
+        {
+            SetWave(false);
+            nextWaveSwitch = -1f;
+            return;
+        }
+        if (nextWaveSwitch < 0f) nextWaveSwitch = Time.time + UnityEngine.Random.Range(waveSwitchSeconds.x, waveSwitchSeconds.y);
+        if (Time.time >= nextWaveSwitch)
+        {
+            SetWave(!Waving);
+            WaveSwitches++;
+            nextWaveSwitch = Time.time + UnityEngine.Random.Range(waveSwitchSeconds.x, waveSwitchSeconds.y);
+        }
+    }
+
+    private void SetWave(bool on)
+    {
+        Waving = on;
+        if (canWave) animator.SetBool(WaveParameter, on);
+    }
     private void OnDisable() { All.Remove(this); }
 
     // Verilen yatma çerçevesinde kökün yerel pozu (çerçeve uzayında).

@@ -13,6 +13,8 @@ public enum AmbulancePhase { Approaching, Waiting, Departing }
 //   t=W−1      kapılar kapanmaya başlar, yükleme biter
 //   t=W        kalkış (Departed olayı → görev, ambulansta olmayan hastaların sayacını artırır)
 // Şeridin sonunda (TrafficDespawn_East) kaybolur, içindeki hastalar "Rescued" olur.
+// Araç takibi (şef kararı 7): aynı şeritteki ARAÇLARIN arkasında trafikle aynı kurala uyar (en az minGap boşluk +
+// 2 sn kuralı), araçlara girmez. Koniye ve oyuncuya karşı önceliği değişmez (konileri iter, oyuncuya %40'a yavaşlar).
 [RequireComponent(typeof(LaneFollower))]
 public class AmbulanceController : MonoBehaviour
 {
@@ -61,6 +63,11 @@ public class AmbulanceController : MonoBehaviour
     public float flashHz = 2f;
     [ColorUsage(false, true)] public Color flashColor = new Color(0.1f, 0.35f, 1f) * 6f;
 
+    [Header("Araç takibi (şef kararı 7)")]
+    [Tooltip("Trafik ayarı yoksa: öndeki araçla en küçük boşluk (m) ve zaman aralığı (sn). Trafik varsa TrafficSettings'ten okunur.")]
+    public float followMinGap = 4f;
+    public float followTimeHeadway = 2f;
+
     public AmbulanceAudio sound;
 
     public LaneFollower Follower { get; private set; }
@@ -77,6 +84,10 @@ public class AmbulanceController : MonoBehaviour
     public float DoorOpenAmount { get; private set; }
     // Bu fizik adımında önde (şeritte) taşıyıcı var mıydı (hız düşürme + korna)
     public bool YieldingToCarrier { get; private set; }
+    // Bu fizik adımında öndeki aracı takip ediyor muydu (araç durağın önünde ya da yakın)
+    public bool FollowingVehicle { get; private set; }
+    public float GapToLeader { get; private set; } = float.PositiveInfinity;
+    public float StationDistance { get { return stationS; } }
     // Kökten arka tampona uzaklık (m)
     public float RearOverhang { get { return -(bodyCenter.z - bodySize.z * 0.5f); } }
     public float FrontOverhang { get { return bodyCenter.z + bodySize.z * 0.5f; } }
@@ -87,6 +98,7 @@ public class AmbulanceController : MonoBehaviour
     public event Action<AmbulanceController, Patient> PatientLoaded;
 
     private readonly List<Patient> passengers = new List<Patient>();
+    private float stationS = float.PositiveInfinity;
     private Quaternion closedLeft, closedRight, closedStep;
     private Vector3 axisLeftLocal, axisRightLocal, axisStepLocal;
     private bool hornDone, closingStarted;
@@ -133,6 +145,7 @@ public class AmbulanceController : MonoBehaviour
         WaitDuration = waitDuration;
         Phase = AmbulancePhase.Approaching;
         Follower.Place(lane, 0f, startSpeed);
+        stationS = stopDistance;
         Follower.StopAt(stopDistance);
         SetDoors(0f);
     }
@@ -176,10 +189,11 @@ public class AmbulanceController : MonoBehaviour
             YieldingToCarrier = CarrierAhead();
             float limit = YieldingToCarrier ? Follower.cruiseSpeed * yieldSpeedFactor : float.PositiveInfinity;
             if (YieldingToCarrier && sound != null) sound.PlayHorn();
+            limit = Mathf.Min(limit, FollowLeader());
             Follower.Tick(dt, limit);
             PushPlayersOnContact();
 
-            if (Phase == AmbulancePhase.Approaching && Follower.AtStop)
+            if (Phase == AmbulancePhase.Approaching && Follower.AtStop && Follower.StopDistance >= stationS - 0.001f)
             {
                 Phase = AmbulancePhase.Waiting;
                 WaitTime = 0f;
@@ -204,6 +218,47 @@ public class AmbulanceController : MonoBehaviour
         bool leftOn = Mathf.Repeat(Time.time * flashHz, 1f) < 0.5f;
         foreach (var m in leftMats) m.SetColor("_EmissionColor", leftOn ? flashColor : Color.black);
         foreach (var m in rightMats) m.SetColor("_EmissionColor", leftOn ? Color.black : flashColor);
+    }
+
+    private float MinGap { get { var t = TrafficDirector.Instance; return t != null && t.Active != null ? t.Active.minGap : followMinGap; } }
+    private float Headway { get { var t = TrafficDirector.Instance; return t != null && t.Active != null ? t.Active.timeHeadway : followTimeHeadway; } }
+
+    // Öndeki araç: durma noktası = durak ya da aracın minGap gerisi (hangisi yakınsa); hız sınırı = boşluk / 2 sn.
+    private float FollowLeader()
+    {
+        float station = Phase == AmbulancePhase.Approaching ? stationS : float.PositiveInfinity;
+        float stop = station;
+        float limit = float.PositiveInfinity;
+        var leader = LaneOccupancy.Leader(Follower);
+        GapToLeader = float.PositiveInfinity;
+        FollowingVehicle = false;
+        if (leader != null)
+        {
+            float gap = leader.RearS - Follower.FrontS;
+            GapToLeader = gap;
+            float carStop = leader.RearS - MinGap - Follower.frontOverhang;
+            limit = Mathf.Max(0f, gap) / Headway;
+            if (carStop < stop) stop = Mathf.Max(carStop, Follower.Distance);
+            FollowingVehicle = limit < Follower.cruiseSpeed || stop < station;
+        }
+        if (float.IsPositiveInfinity(stop)) Follower.ClearStop();
+        else Follower.StopAt(stop);
+        return limit;
+    }
+
+    // Durağa tahmini kalan süre (sn): kendi sürüşü (aynı integratör) ve öndeki araç durağı geçene kadar onun seyir hızı.
+    // HUD sayacı varış gecikince bunu gösterir (şef kararı 7).
+    public float EstimatedSecondsToStop()
+    {
+        if (Phase != AmbulancePhase.Approaching || Follower == null || Follower.lane == null) return 0f;
+        float own = Follower.TravelTime(Follower.Distance, stationS, Follower.Speed, Time.fixedDeltaTime);
+        var leader = LaneOccupancy.Leader(Follower);
+        if (leader != null)
+        {
+            float need = stationS + Follower.frontOverhang + MinGap - leader.RearS; // liderin arka tamponunun açması gereken yol
+            if (need > 0f) own = Mathf.Max(own, need / Mathf.Max(1f, leader.cruiseSpeed) + 1f);
+        }
+        return own;
     }
 
     // Kapı ve basamak açıklığı (0 = kapalı, 1 = açık).
