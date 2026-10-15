@@ -272,7 +272,8 @@ public class AmbulanceController : MonoBehaviour
             if (player == null || !player.HasControl) continue;
             var lane = Follower.lane;
             float s = lane.Project(player.transform.position, out float lateral, out _);
-            float side = lateral >= 0f ? 1f : -1f;
+            // Gövdenin sağ yarısının dışındaysa sağa (banket), değilse sola (karşı şerit, açık yol) itilir.
+            float side = lateral > bodySize.x * 0.5f ? 1f : -1f;
             float target = side * (lane.width * 0.5f + knockClearance);
             player.KnockAside(lane.RightAt(s) * (target - lateral), knockControlLoss);
         }

@@ -17,7 +17,7 @@ public class LaneFollower : MonoBehaviour
     [Tooltip("Hızlanma (m/sn²).")]
     public float acceleration = 4f;
     [Tooltip("Frenleme (m/sn²). Durağa bu yavaşlamayla yaklaşır.")]
-    public float braking = 5f;
+    public float braking = 6f;
 
     [Tooltip("Dönen tekerlek objeleri (pivot aks merkezinde).")]
     public Transform[] wheels = new Transform[0];

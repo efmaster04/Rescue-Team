@@ -199,7 +199,7 @@ public static class Bolum1AmbulanceBuilder
             var follower = root.AddComponent<LaneFollower>();
             follower.cruiseSpeed = 12f;
             follower.acceleration = 4f;
-            follower.braking = 5f;
+            follower.braking = 6f;
             follower.wheels = new[] { "FL", "FR", "RL", "RR" }.Select(w => Find("SM_Ambulance_Wheel_" + w)).ToArray();
             follower.wheelRadius = WheelRadius(follower.wheels[0]);
 
@@ -518,7 +518,7 @@ public static class Bolum1AmbulanceBuilder
             rb.mass = totalMass * massFraction;
             rb.isKinematic = true;
             rb.useGravity = false;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.interpolation = RigidbodyInterpolation.None; // ragdoll açılınca Patient Interpolate yapar;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             rb.linearDamping = 0.05f;
             rb.angularDamping = 0.5f;

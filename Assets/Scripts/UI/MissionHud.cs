@@ -119,7 +119,7 @@ public class MissionHud : MonoBehaviour
 
         // Telsiz: varıştan 30 sn önce, 4 sn boyunca
         float toArrival = mission.NextArrivalTime - mission.Elapsed;
-        if (!mission.IsFinished && toArrival <= radioLeadSeconds && toArrival > 0f && radioShownFor != mission.ArrivalCount)
+        if (!mission.IsFinished && waiting == null && toArrival <= radioLeadSeconds && toArrival > 0f && radioShownFor != mission.ArrivalCount)
         {
             radioShownFor = mission.ArrivalCount;
             radioUntil = Time.time + radioShowSeconds;

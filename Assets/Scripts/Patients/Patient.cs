@@ -165,6 +165,8 @@ public class Patient : MonoBehaviour
             if (rb == null) continue;
             rb.isKinematic = !on;
             rb.useGravity = on;
+            // Kinematikken interpolasyon kapalı: yoksa kemikler ebeveynle (sedye) birlikte hareket etmez, eski fizik pozunda kalır.
+            rb.interpolation = on ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
         }
         foreach (var c in ragdollColliders)
             if (c != null) c.enabled = on;

@@ -15,6 +15,9 @@ public class AmbulanceAudio : MonoBehaviour
 
     private float nextHornTime;
 
+    // Kaç kez korna çalındı (test ve hata ayıklama; ses aygıtı olmayan batchmode'da isPlaying güvenilmez).
+    public int HornPlays { get; private set; }
+
     private void Awake()
     {
         siren = Ensure(siren, "Siren", SynthClips.Siren(), true, 0.55f);
@@ -55,6 +58,7 @@ public class AmbulanceAudio : MonoBehaviour
         if (Time.time < nextHornTime) return false;
         nextHornTime = Time.time + hornCooldown;
         horn.Play();
+        HornPlays++;
         return true;
     }
 
