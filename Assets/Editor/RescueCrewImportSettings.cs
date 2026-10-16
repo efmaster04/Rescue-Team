@@ -111,6 +111,60 @@ internal class RescueCrewImportSettings : AssetPostprocessor
         return true;
     }
 
+    // Avatar iskeletini (humanDescription.skeleton) güncel modelin kemik konumlarıyla eşitler.
+    // NEDEN: Avatar ilk importta kurulur ve model FBX'i değişince (v5/v6: diz/ayak düzeltmesi) kendiliğinden yenilenmez.
+    // Eski iskelette incik 0.163 m kalmıştı (model 0.214 m); Humanoid bu boyu kullandığından ayak ~5 cm yukarıda,
+    // adımlar ~%85 kısa oynuyordu. YALNIZ konumlar (kemik boyları) yazılır: dönüşler (T-poz) ve kas limitleri aynen kalır.
+    // Batchmode: Unity.exe -batchmode -projectPath ... -executeMethod RescueCrewImportSettings.SyncAvatarSkeletonBatch -logFile <dosya>
+    public static void SyncAvatarSkeletonBatch()
+    {
+        try
+        {
+            foreach (string guid in AssetDatabase.FindAssets("t:Model SK_RescueCrew_", new[] { CharacterFolder.TrimEnd('/') }))
+                Debug.Log(SyncAvatarSkeleton(AssetDatabase.GUIDToAssetPath(guid)));
+            // Avatarı RescueCrew'dan kopyalayan klipler (Humanoid kas eğrileri kaynak avatara göre çıkarılır) yeniden import edilir.
+            foreach (string guid in AssetDatabase.FindAssets("t:Model"))
+            {
+                string p = AssetDatabase.GUIDToAssetPath(guid);
+                var imp = AssetImporter.GetAtPath(p) as ModelImporter;
+                if (imp == null || imp.sourceAvatar == null || !AssetDatabase.GetAssetPath(imp.sourceAvatar).StartsWith(CharacterFolder)) continue;
+                AssetDatabase.ImportAsset(p, ImportAssetOptions.ForceUpdate);
+                Debug.Log("AVATAR SYNC yeniden import: " + p);
+            }
+            EditorApplication.Exit(0);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("AVATAR SYNC FAILED: " + e);
+            EditorApplication.Exit(1);
+        }
+    }
+
+    public static string SyncAvatarSkeleton(string path)
+    {
+        var importer = (ModelImporter)AssetImporter.GetAtPath(path);
+        var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        var byName = new Dictionary<string, Transform>();
+        foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            if (!byName.ContainsKey(t.name)) byName[t.name] = t;
+        HumanDescription description = importer.humanDescription;
+        SkeletonBone[] skeleton = description.skeleton;
+        var changes = new List<string>();
+        for (int i = 0; i < skeleton.Length; i++)
+        {
+            if (!byName.TryGetValue(skeleton[i].name, out Transform t) || t == model.transform) continue;
+            Vector3 old = skeleton[i].position;
+            if ((old - t.localPosition).sqrMagnitude < 1e-10f) continue;
+            changes.Add(skeleton[i].name + " " + old.ToString("F4") + "→" + t.localPosition.ToString("F4"));
+            skeleton[i].position = t.localPosition;
+        }
+        if (changes.Count == 0) return "AVATAR SYNC " + path + ": güncel";
+        description.skeleton = skeleton;
+        importer.humanDescription = description;
+        importer.SaveAndReimport();
+        return "AVATAR SYNC " + path + ": " + changes.Count + " kemik konumu güncellendi: " + string.Join("; ", changes);
+    }
+
     private void OnPreprocessAnimation()
     {
         if (!assetPath.StartsWith(AnimationFolder))

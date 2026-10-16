@@ -342,7 +342,7 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:Hips
       parentName: RescueCrew_Rig
-      position: {x: 0, y: 0, z: 0.4076595}
+      position: {x: -0, y: 0, z: 0.45714286}
       rotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 0.99999994, z: 0.99999994}
     - name: mixamorig:Spine
@@ -467,12 +467,12 @@ ModelImporter:
       scale: {x: 1, y: 1.0000015, z: 1.0000015}
     - name: mixamorig:LeftFoot
       parentName: mixamorig:LeftLeg
-      position: {x: 0.000000014901161, y: 0.16290805, z: 9.397009e-10}
+      position: {x: -0, y: 0.21427017, z: 2.4272806e-12}
       rotation: {x: -0.49237072, y: -0.22348803, z: 0.24571347, w: 0.80451787}
       scale: {x: 0.9999986, y: 1.0000081, z: 0.99999374}
     - name: mixamorig:LeftToeBase
       parentName: mixamorig:LeftFoot
-      position: {x: -0.000000007450581, y: 0.17891, z: 0.0000000037252903}
+      position: {x: -0, y: 0.12780423, z: 0.0000000018626451}
       rotation: {x: -0.0000007660135, y: 0.9055675, z: -0.26386648, w: -0.33214766}
       scale: {x: 1.0000126, y: 0.99997383, z: 1.0000168}
     - name: mixamorig:RightUpLeg
@@ -487,12 +487,12 @@ ModelImporter:
       scale: {x: 1, y: 1.0000015, z: 1.0000015}
     - name: mixamorig:RightFoot
       parentName: mixamorig:RightLeg
-      position: {x: -0.000000014901161, y: 0.16290805, z: 9.397009e-10}
+      position: {x: -0, y: 0.21427017, z: 2.4272806e-12}
       rotation: {x: -0.49237072, y: 0.22348803, z: -0.24571347, w: 0.80451787}
       scale: {x: 0.9999986, y: 1.0000081, z: 0.99999374}
     - name: mixamorig:RightToeBase
       parentName: mixamorig:RightFoot
-      position: {x: 0.000000007450581, y: 0.17891, z: 0.0000000037252903}
+      position: {x: -0, y: 0.12780423, z: 0.0000000018626451}
       rotation: {x: 0.0000007660135, y: 0.9055675, z: -0.26386648, w: 0.33214766}
       scale: {x: 1.0000126, y: 0.99997383, z: 1.0000168}
     - name: SK_RescueCrew_Body
