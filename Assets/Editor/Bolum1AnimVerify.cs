@@ -933,7 +933,8 @@ public static class Bolum1AnimVerify
             Vector3 mid = (e.transform.position + w.transform.position) * 0.5f;
             Vector3 lt = Flat(traffic.eastBound.TangentAt(traffic.eastBound.Project(mid))).normalized;
             Vector3 right = traffic.eastBound.RightAt(traffic.eastBound.Project(mid));
-            yield return Capture("trafik_araclar", mid - right * 13f + lt * 9f + Vector3.up * 6f, mid + Vector3.up * 0.8f, 45f);
+            // Vadi tarafından (EastBound'un sağı), yükseltilmiş; dağ tarafındaki kayalar kadrajı kapatmasın
+            yield return Capture("trafik_araclar", mid + right * 15f - lt * 6f + Vector3.up * 7f, mid + Vector3.up * 0.8f, 50f);
             captured = true;
             Time.timeScale = 6f;
         }

@@ -742,6 +742,9 @@ public static class Bolum1TrafficVerify
             + ", arkadaş ipucu şimdi \"" + mateI.CurrentHint + "\", kontrol " + mate.HasControl + ", ilerleme %" + (kd.ReviveProgress * 100f).ToString("F0", Inv);
         mateI.SetInteractHeld(false);
         yield return Seconds(0.3f);
+        // Kalkış animasyonu (GetUp_FromBack) bitince kontrol geri gelir
+        float waitControl = Time.time;
+        yield return (Func<bool>)(() => Player.HasControl || Time.time - waitControl > 2.5f);
         bool stoodUp = !Player.IsDown && Player.HasControl && Player.GetComponent<CharacterController>().enabled && kd.ragdollBodies.All(b => b.isKinematic);
         mateGo.SetActive(false);
         Check("(f2) arkadaş (ikinci test taşıyıcısı) E basılı 2 sn ile kaldırıyor; oyuncu ayağa kalkıp kontrolü geri alıyor",
@@ -851,12 +854,17 @@ public static class Bolum1TrafficVerify
         Check("(g) sedye taşırken çarpılan taşıyıcı sedyeyi bırakıyor; hasta Ragdoll ve itkiyle ≥ 0.5 m savruluyor",
             released && releasedAtHit && patientRagdoll && flung >= 0.5f,
             "taşıyıcı düştü " + Player.IsDown + ", sedyeyi bıraktı " + released + " (çarpma anında " + releasedAtHit + "); hasta " + tourist.State + ", 1.5 sn'de " + M(flung) + " savruldu");
-        yield return Until(() => !Player.IsDown, 8f, "bot oyuncuyu kaldırdı");
+        // Şef kararı 6: bot da çarpılıp düşer (3 sn), GetUp_FromBack ile kalkar (1.6 sn), sonra oyuncuyu kaldırır (2 sn)
+        var botG = Bot;
+        yield return Until(() => !Player.IsDown, 15f, "bot oyuncuyu kaldırdı (bot yerde " + botG.IsDown + ", düşme " + botG.TimesDowned + ", kalkma " + botG.TimesStoodUp + ")");
     }
 
     // ---------- yardımcılar (Bolum1AmbulanceVerify ile aynı) ----------
     private static IEnumerator PutPatientOnStretcher(Patient p, StretcherController s)
     {
+        // Kalkış animasyonu (GetUp_FromBack) sürüyorsa kontrol dönene kadar bekle
+        float waitControl = Time.time;
+        yield return (Func<bool>)(() => Player.HasControl || Time.time - waitControl > 3f);
         if (Player.HeldStretcher != null) { Interaction.Interact(); yield return Seconds(0.5f); }
         Vector3 hips = p.Position;
         Vector3 side = Vector3.back;

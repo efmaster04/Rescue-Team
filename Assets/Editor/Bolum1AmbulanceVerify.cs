@@ -673,7 +673,8 @@ public static class Bolum1AmbulanceVerify
             "RL " + a1.doorL.ToString("F1", Inv) + "°, RR " + a1.doorR.ToString("F1", Inv) + "°, basamak " + a1.step.ToString("F1", Inv)
             + "°; son 0.15 sn'de en büyük açı " + a1.closedBeforeDeparture.ToString("F1", Inv) + "°");
 
-        float coneMoved = Vector3.Distance(Flat(cone.position), Flat(coneStart));
+        // İtilen koni uçurumdan düşüp yok olduysa (FallRespawnPlane) itilmiş sayılır
+        float coneMoved = cone == null ? float.PositiveInfinity : Vector3.Distance(Flat(cone.position), Flat(coneStart));
         int zero = records.Sum(r => r.zeroSpeedFrames);
         float minMoving = records.Min(r => r.minMovingSpeed);
         float cruise = a1.amb != null ? a1.amb.Follower.cruiseSpeed : 12f;
@@ -682,7 +683,7 @@ public static class Bolum1AmbulanceVerify
         bool pushed = knocked && Mathf.Abs(playerLateral) > lane.width * 0.5f;
         Check("(h) öncelik: koni itiliyor, hız durak dışında hiç 0 olmuyor; şeritteki oyuncu için hız ≤ %40 ama > 0, korna çalıyor",
             coneMoved > 0.5f && zero == 0 && minMoving > 0f && yieldOk && horn && pushed,
-            "koni " + M(coneMoved) + " itildi; durak dışı en düşük hız " + minMoving.ToString("F2", Inv) + " m/sn (0 olan kare " + zero + ")"
+            "koni " + (cone == null ? "itilip uçurumdan düştü (yok oldu)" : M(coneMoved) + " itildi") + "; durak dışı en düşük hız " + minMoving.ToString("F2", Inv) + " m/sn (0 olan kare " + zero + ")"
             + (a2 != null ? "; oyuncu önündeyken " + a2.yieldFrames + " kare, en düşük hız " + a2.minYieldSpeed.ToString("F2", Inv) + " m/sn (sınır " + (0.4f * cruise).ToString("F2", Inv)
             + "), korna isPlaying " + a2.hornPlayingFrames + " kare, PlayHorn " + (a2.hornPlays - a2.hornPlaysAtStart) + " kez" : "")
             + "; temas: kontrol kaybı " + knocked + ", itildikten sonra şerit merkezine " + M(Mathf.Abs(playerLateral)) + " (şerit yarı genişliği " + M(lane.width * 0.5f) + ")");
