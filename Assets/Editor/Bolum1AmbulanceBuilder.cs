@@ -57,6 +57,8 @@ public static class Bolum1AmbulanceBuilder
 
     public const float StopRearOffset = 4f;     // arka tampon, rampa ağzının bu kadar doğusunda (m)
     public const float PlayerMoveSpeed = 2.4f;
+    // Sedye taşırken yürüme hızı (şef kararı: taşıma ağır, ekip yük altında sendeler). Carry_Stretcher_Walk bu hız için yazıldı.
+    public const float PlayerCarryStretcherSpeed = 1.4f;
     public const float WalkThreshold = 1.2f, RunThreshold = 3.0f;
 
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
@@ -158,7 +160,7 @@ public static class Bolum1AmbulanceBuilder
         tree.AddChild(run, RunThreshold);
         ac.layers[0].stateMachine.defaultState = state;
         // Prosedürel animasyonlar: taşıma, alma/bırakma, zıplama, irkilme, kalkış, kaldırma, kutlama
-        Bolum1AnimBuilder.AddCrewStates(ac, state, PlayerMoveSpeed);
+        Bolum1AnimBuilder.AddCrewStates(ac, state, PlayerMoveSpeed, PlayerCarryStretcherSpeed);
         EditorUtility.SetDirty(ac);
         Line("Animator: " + LocomotionControllerPath + " (Speed: " + idle.name + " 0, " + walk.name + " " + WalkThreshold.ToString(Inv) + ", " + run.name + " " + RunThreshold.ToString(Inv) + " m/sn)");
     }
@@ -939,12 +941,15 @@ public static class Bolum1AmbulanceBuilder
         cc.center = new Vector3(0f, 0.75f + cc.skinWidth, 0f);
         cc.slopeLimit = 45f;
         cc.stepOffset = 0.3f;
+        // Varsayılan 1 mm eşiği yüksek kare hızında (batchmode ~2 ms/kare) 1.4 m/sn sedye yürüyüşünün kare başı hareketini yutuyordu.
+        cc.minMoveDistance = 0f;
 
         var player = character.AddComponent<ThirdPersonPlayer>();
         player.animator = animator;
         player.rules = rules;
         player.cameraTransform = cam.transform;
         player.moveSpeed = PlayerMoveSpeed;
+        player.carryStretcherSpeed = PlayerCarryStretcherSpeed;
         var interaction = character.AddComponent<PlayerInteraction>();
         interaction.player = player;
         var orbit = cam.gameObject.AddComponent<OrbitCamera>();
@@ -955,7 +960,7 @@ public static class Bolum1AmbulanceBuilder
         input.orbitCamera = orbit;
         cam.transform.position = spawn + Vector3.up * 2.6f - dir * 4.2f;
         cam.transform.LookAt(spawn + Vector3.up * 1.3f);
-        Line("Oyuncu (" + character.name + "): PlayerSpawn Unity " + V(spawn) + ", hız " + PlayerMoveSpeed.ToString(Inv) + " m/sn, CharacterController 1.5 m, eğim sınırı 45°");
+        Line("Oyuncu (" + character.name + "): PlayerSpawn Unity " + V(spawn) + ", hız " + PlayerMoveSpeed.ToString(Inv) + " m/sn (sedyeyle " + PlayerCarryStretcherSpeed.ToString(Inv) + "), CharacterController 1.5 m, eğim sınırı 45°");
         return player;
     }
 

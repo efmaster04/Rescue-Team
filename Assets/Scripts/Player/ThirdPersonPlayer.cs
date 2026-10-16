@@ -15,6 +15,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 
     [Tooltip("Yürüme hızı (m/sn).")]
     public float moveSpeed = 2.4f;
+    [Tooltip("Sedye taşırken yürüme hızı (m/sn). Taşıma ağır: ekip yük altında sendeler. Koni taşırken moveSpeed geçerli.")]
+    public float carryStretcherSpeed = 1.4f;
     [Tooltip("Dönüş hızı (derece/sn).")]
     public float turnSpeed = 600f;
     [Tooltip("Zıplama yüksekliği (m).")]
@@ -154,7 +156,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             forward.Normalize();
         }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
-        Vector3 wish = HasControl ? (forward * moveInput.y + right * moveInput.x) * moveSpeed : Vector3.zero;
+        float speed = HeldStretcher != null ? carryStretcherSpeed : moveSpeed;
+        Vector3 wish = HasControl ? (forward * moveInput.y + right * moveInput.x) * speed : Vector3.zero;
 
         if (wish.sqrMagnitude > 0.01f)
         {

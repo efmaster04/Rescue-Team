@@ -9,27 +9,35 @@
   "clips": {
     "Carry_Stretcher_Walk": {
       "file": "Carry_Stretcher_Walk.fbx",
-      "duration_s": 1.0,
-      "frames": 31,
+      "duration_s": 0.5,
+      "frames": 16,
       "loop": true,
       "in_place": true,
       "root_motion": false,
       "character": "RescueCrew",
       "preview_mesh": "SK_RescueCrew_Blue",
-      "description": "İki el önde bel hizasında sedye saplarında, kollar gergin; kalça sallanan ağır yürüyüş.",
-      "action_sha256": "c9aae9e3ceb443838a242ebc8166aa132b413ef8dee4432fd88fe956d3292a13"
+      "description": "İki el önde sedye saplarında, kollar gergin; dizler kırık, kalça sallanan, yük altında sendeleyen ağır paytak yürüyüş (1.4 m/sn).",
+      "action_sha256": "8ea7f250c1139e36386a5e2fb7c57954c7ba82eda288c04f9d64255a7b82fc8d",
+      "target_speed_mps": 1.4,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.35,
+      "stance_travel_m": 0.35
     },
     "Carry_OneHand_Walk": {
       "file": "Carry_OneHand_Walk.fbx",
-      "duration_s": 0.9,
-      "frames": 28,
+      "duration_s": 0.4,
+      "frames": 13,
       "loop": true,
       "in_place": true,
       "root_motion": false,
       "character": "RescueCrew",
       "preview_mesh": "SK_RescueCrew_Blue",
-      "description": "Sağ el yanda koni tutuyor, sol kol serbest sallanıyor; seğirten yürüyüş.",
-      "action_sha256": "f9c352d0f560e73141cb3d424dd44540f429cd8b303fbc12e0f49419e68b39cb"
+      "description": "Sağ el yanda koni tutuyor, sol kol serbest sallanıyor; alçak, uçuş fazlı telaşlı seğirtme (2.4 m/sn).",
+      "action_sha256": "6fba176c1cbd3816eca16450033dd62aa2fe63c380109bb65fa17d87d7816aeb",
+      "target_speed_mps": 2.4,
+      "stance_ratio": 0.4,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.384
     },
     "PickUp": {
       "file": "PickUp.fbx",
@@ -140,5 +148,5 @@
       "action_sha256": "3aa6305a49b83ad7f646023ef118623a8bf8cea9b5d0cdb3bda889679b0b5cc1"
     }
   },
-  "actions_sha256": "3a5c57900f533780603dff495e7a8cb01607e601b668d540831cdc771c3c51c1"
+  "actions_sha256": "3453a28dfd5b7dbb468237822c3eea385fa096af305a8d9816c1b9a79872216c"
 }

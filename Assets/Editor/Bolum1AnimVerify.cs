@@ -96,10 +96,15 @@ public static class Bolum1AnimVerify
             bool human = clip != null && clip.isHumanMotion;
             bool c = applied && avatar && loop && human;
             ok &= c;
-            parts.Add(n + (c ? "" : "[HATA]") + " " + (clip != null ? (clip.length / Bolum1AnimBuilder.AuthoredSpeed(n)).ToString("F2", Inv) + " sn" : "-") + (clip != null && clip.isLooping ? " loop" : ""));
+            // FBX'ler 30 kare/sn işaretli: Unity klip süresi yazılan süreyle aynı olmalı (durum hızı yaması yok).
+            float authored = Bolum1AnimBuilder.MetaFloat(n, "duration_s", -1f);
+            bool length = clip != null && Mathf.Abs(clip.length - authored) < 0.02f;
+            c &= length;
+            ok &= length;
+            parts.Add(n + (c ? "" : "[HATA]") + " " + (clip != null ? clip.length.ToString("F2", Inv) + "/" + authored.ToString("F2", Inv) + " sn" : "-") + (clip != null && clip.isLooping ? " loop" : ""));
         }
         Check("(a) 11 klip Humanoid, Avatar = SK_RescueCrew_Blue kopyası (geçerli), döngüler loop, kök pozda (Original; Jump: Feet)", ok,
-            string.Join(", ", parts) + "; FBX 24 kare/sn işaretli → durum hızı ×" + Bolum1AnimBuilder.AuthoredSpeed("PickUp").ToString("F2", Inv));
+            string.Join(", ", parts) + " (Unity/yazılan süre; FBX 30 kare/sn)");
     }
 
     private static void CheckControllers()
@@ -552,19 +557,26 @@ public static class Bolum1AnimVerify
         yield return Seconds(1.2f);
         bool carryIdle = PlayerAnim.InState(CrewAnimation.StateCarryStretcher) && BotAnim.InState(CrewAnimation.StateCarryStretcher);
         bool raised = s1.IsRaised;
-        // Yürü: kameranın baktığı yöne (girdi kamera göreli) 2.5 sn
+        // Yürü: kameranın baktığı yöne (girdi kamera göreli) 2.6 sn; hız oturunca (0.8 sn) ayak kayması ölçülür
         var cam = Player.cameraTransform;
         Player.SetMoveInput(new Vector2(0f, 1f));
-        float slideSum = 0f; int slideN = 0;
+        var meter = new FootSlideMeter(Player.animator, Player.transform);
         float t0 = Time.time;
         bool walkState = false;
         bool capturedCarry = false;
+        float maxSpeed = 0f;
         while (Time.time - t0 < 2.6f)
         {
             yield return null;
-            walkState |= PlayerAnim.InState(CrewAnimation.StateCarryStretcher) && Player.animator.GetFloat("Speed") > 1.5f;
+            walkState |= PlayerAnim.InState(CrewAnimation.StateCarryStretcher) && Player.animator.GetFloat("Speed") > 1.0f;
+            if (Time.time - t0 > 0.8f)
+            {
+                meter.Sample();
+                maxSpeed = Mathf.Max(maxSpeed, Player.HorizontalVelocity.magnitude);
+            }
             if (!capturedCarry && Time.time - t0 > 1.4f)
             {
+                meter.Break();
                 capturedCarry = true;
                 Vector3 c = s1.transform.position;
                 Vector3 fwd = Flat(Player.transform.forward).normalized;
@@ -585,6 +597,8 @@ public static class Bolum1AnimVerify
             pickUp && botPickUp && carryIdle && raised && walkState && carryAfter && putDown && botPutDown && backToLoco && groanOnStretcher && capturedCarry,
             "PickUp oyuncu/bot " + pickUp + "/" + botPickUp + "; taşıma beklemesi " + carryIdle + " (sedye kalktı " + raised + "); yürürken CarryStretcher " + walkState
             + "; durunca " + carryAfter + "; PutDown oyuncu/bot " + putDown + "/" + botPutDown + "; sonra Locomotion " + backToLoco + "; sedyedeki hasta Groan " + groanOnStretcher);
+        CheckFootSlide("(b1s) sedye taşırken hız " + Player.carryStretcherSpeed.ToString("F1", Inv) + " m/sn ve ayak kayması", meter,
+            Mathf.Abs(maxSpeed - Player.carryStretcherSpeed) < 0.15f, "en yüksek yatay hız " + maxSpeed.ToString("F2", Inv) + " m/sn");
         // hasta yere geri (sonraki testler için)
         yield return Seconds(0.5f);
     }
@@ -609,7 +623,18 @@ public static class Bolum1AnimVerify
         yield return Seconds(1.2f);
         bool carry = PlayerAnim.InState(CrewAnimation.StateCarryCone);
         Player.SetMoveInput(new Vector2(0f, 1f));
-        yield return Seconds(1.0f);
+        var meter = new FootSlideMeter(Player.animator, Player.transform);
+        float maxSpeed = 0f;
+        float tw = Time.time;
+        while (Time.time - tw < 1.6f)
+        {
+            yield return null;
+            if (Time.time - tw > 0.6f)
+            {
+                meter.Sample();
+                maxSpeed = Mathf.Max(maxSpeed, Player.HorizontalVelocity.magnitude);
+            }
+        }
         bool walk = PlayerAnim.InState(CrewAnimation.StateCarryCone) && Player.animator.GetFloat("Speed") > 1.5f;
         Player.SetMoveInput(Vector2.zero);
         yield return Seconds(0.5f);
@@ -620,6 +645,8 @@ public static class Bolum1AnimVerify
         bool loco = PlayerAnim.InState(CrewAnimation.StateLocomotion);
         Check("(b2) koni al → PickUp sonra Carry_OneHand_Walk; koy → PutDown → hareket", pickUp && carry && walk && putDown && loco,
             "PickUp " + pickUp + ", CarryCone (beklerken " + carry + ", yürürken " + walk + "), PutDown " + putDown + ", sonra Locomotion " + loco);
+        CheckFootSlide("(b2s) koni taşırken hız " + Player.moveSpeed.ToString("F1", Inv) + " m/sn ve ayak kayması", meter,
+            Mathf.Abs(maxSpeed - Player.moveSpeed) < 0.15f, "en yüksek yatay hız " + maxSpeed.ToString("F2", Inv) + " m/sn");
         c3.PlaceAt(parkPosition + new Vector3(2f, 0f, 0f), 0f);
     }
 
@@ -1268,6 +1295,107 @@ public static class Bolum1AnimVerify
 
     private static void Line(string s) { report.AppendLine(s); }
     private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
+
+    // ---- Taşırken ayak kayması ----
+    // Ayak bileği kök yüksekliğine göre en alçak bandındayken (ContactBand) yere basıyor sayılır; her basışta bileğin
+    // yatay dünya konumunun yayılımı (xz sınır kutusu köşegeni) bir "adım kayması"dır. Ölçümün başında ve
+    // kesintilerde (Break) yarım kalan basışlar sayılmaz. Sınır: kaynak verify ile aynı, 3 cm/adım.
+    private const float FootSlideLimit = 0.03f;
+
+    private sealed class FootSlideMeter
+    {
+        private const float ContactBand = 0.015f;
+        private readonly Transform root;
+        private readonly Transform[] feet;
+        private readonly List<Vector3>[] samples = { new List<Vector3>(), new List<Vector3>() };
+        private readonly Animator animator;
+        // Tanı: son kesintisiz ölçüm dilimindeki ortalama hız, yön sapması ve klibin gerçek oynatma hızı
+        private float runT0 = -1f, runNt0, runT1, runNt1, runLen;
+        private Vector3 runP0, runP1;
+        public float MaxFacingError { get; private set; }
+
+        public FootSlideMeter(Animator animator, Transform root)
+        {
+            this.root = root;
+            this.animator = animator;
+            feet = new[] { animator.GetBoneTransform(HumanBodyBones.LeftFoot), animator.GetBoneTransform(HumanBodyBones.RightFoot) };
+        }
+
+        public void Sample()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                if (feet[i] == null) continue;
+                Vector3 p = feet[i].position;
+                samples[i].Add(new Vector3(p.x, p.y - root.position.y, p.z));
+            }
+            var info = animator.GetCurrentAnimatorStateInfo(0);
+            if (runT0 < 0f) { runT0 = Time.time; runNt0 = info.normalizedTime; runP0 = root.position; }
+            runT1 = Time.time; runNt1 = info.normalizedTime; runP1 = root.position; runLen = info.length;
+            var move = Flat(runP1 - runP0);
+            if (move.magnitude > 0.2f) MaxFacingError = Mathf.Max(MaxFacingError, Vector3.Angle(Flat(root.forward), move));
+        }
+
+        public void Break()
+        {
+            for (int i = 0; i < 2; i++) samples[i].Add(new Vector3(0f, float.NaN, 0f));
+            runT0 = -1f;
+        }
+
+        public string Diagnostics()
+        {
+            float dt = runT1 - runT0;
+            if (runT0 < 0f || dt <= 0f) return "tanı yok";
+            float speed = Flat(runP1 - runP0).magnitude / dt;
+            // info.length durumun (hız çarpanlı) bir döngü süresidir: oynatılan klip saniyesi / gerçek saniye
+            float rate = (runNt1 - runNt0) * runLen / dt;
+            return "ortalama hız " + speed.ToString("F2", Inv) + " m/sn, yön sapması en çok " + MaxFacingError.ToString("F0", Inv) + "°, döngü " + runLen.ToString("F2", Inv) + " sn, oran " + rate.ToString("F2", Inv);
+        }
+
+        public List<float> Slides()
+        {
+            var result = new List<float>();
+            for (int i = 0; i < 2; i++)
+            {
+                var s = samples[i];
+                var valid = s.Where(p => !float.IsNaN(p.y)).ToList();
+                if (valid.Count < 3) continue;
+                float lo = valid.Min(p => p.y);
+                var seg = new List<Vector3>();
+                bool started = false;
+                foreach (var p in s)
+                {
+                    if (float.IsNaN(p.y)) { seg.Clear(); started = false; continue; }
+                    if (p.y <= lo + ContactBand)
+                    {
+                        if (started) seg.Add(p);
+                        continue;
+                    }
+                    if (seg.Count > 0) result.Add(Spread(seg));
+                    seg.Clear();
+                    started = true;
+                }
+            }
+            return result;
+        }
+
+        private static float Spread(List<Vector3> seg)
+        {
+            float dx = seg.Max(p => p.x) - seg.Min(p => p.x);
+            float dz = seg.Max(p => p.z) - seg.Min(p => p.z);
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+    }
+
+    private static void CheckFootSlide(string title, FootSlideMeter meter, bool speedOk, string speedText)
+    {
+        var slides = meter.Slides();
+        slides.Sort();
+        float worst = slides.Count > 0 ? slides[slides.Count - 1] : float.PositiveInfinity;
+        float median = slides.Count > 0 ? slides[slides.Count / 2] : float.PositiveInfinity;
+        Check(title + " < " + (FootSlideLimit * 100f).ToString("F0", Inv) + " cm/adım", speedOk && slides.Count >= 2 && worst < FootSlideLimit,
+            speedText + " (" + meter.Diagnostics() + "); " + slides.Count + " basış, kayma ortanca " + (median * 100f).ToString("F1", Inv) + " cm, en kötü " + (worst * 100f).ToString("F1", Inv) + " cm");
+    }
     private static string V(Vector3 v) { return "(" + v.x.ToString("F2", Inv) + ", " + v.y.ToString("F2", Inv) + ", " + v.z.ToString("F2", Inv) + ")"; }
     private static string M(float m) { return m.ToString("F2", Inv) + " m"; }
     private static string S(float s) { return s.ToString("F2", Inv) + " sn"; }

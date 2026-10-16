@@ -1,4 +1,4 @@
-# Prosedürel animasyon klipleri (r1)
+# Prosedürel animasyon klipleri (r2)
 
 Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen klipler. Hepsi RescueCrew / Patient ortak
 31 kemikli `mixamorig:` iskeleti için, 30 fps, her karede anahtar (bake). Ton: Dear Passengers gibi abartılı ve komik.
@@ -10,8 +10,8 @@ Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen kliple
 
 | Klip | Süre | Döngü | Not |
 |---|---|---|---|
-| Carry_Stretcher_Walk | 1.0 sn | evet | Eller önde sedye saplarında (x ±0.30 m), ağır, kalça sallanan yürüyüş |
-| Carry_OneHand_Walk | 0.9 sn | evet | Sağ el yanda koni tutar, sol kol sallanır |
+| Carry_Stretcher_Walk | 0.5 sn | evet | Eller önde sedye saplarında (x ±0.30 m), dizler kırık, yük altında sendeleyen paytak yürüyüş; **1.4 m/sn** için (adım 0.35 m) |
+| Carry_OneHand_Walk | 0.4 sn | evet | Sağ el yanda koni tutar, sol kol sallanır; uçuş fazlı telaşlı seğirtme; **2.4 m/sn** için (adım 0.48 m) |
 | PickUp | 1.0 sn | hayır | Önde taşıma pozunda biter (Carry'ye geçiş) |
 | PutDown | 0.9 sn | hayır | Önde taşıma pozundan başlar, rahat duruşta biter |
 | GetUp_FromBack | 1.6 sn | hayır | Kalça yerden (z≈0.14, yatay) ayağa kalkar; **kök hareketi var** |
@@ -41,3 +41,11 @@ Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen kliple
 (her kare). İçe girme, kemik ekseninden dışa doğru yöne göre en yakın yüzeyin altında kalan köşe derinliğidir;
 omuz eklemine 9 cm, kalça eklemine 7 cm yakın köşeler ve gövde ağırlığıyla karışık köşeler deri katlanma bölgesi
 sayıldığından ölçüme katılmaz. Kol–kafa teması ölçülmez.
+
+## r2 değişiklikleri
+- FBX'ler artık **30 kare/sn** işaretli (GlobalSettings TimeMode 30). r1'de karakter FBX'inin içe aktarımı sahneyi 24'e
+  çektiği için klipler 24 işaretlenmişti; Unity'de durum hızı yaması (×1.25) gerekmez.
+- Taşıma döngüleri **oynatma hızı 1.0** iken hedef hızda ayak kaydırmaz (`clips_meta.json`: `target_speed_mps`,
+  `step_length_m`, `stance_travel_m`). Ayak yerdeyken yerel olarak tam hedef hızla geriye kayar.
+- verify ek kontrolleri: FBX kare hızı 30; taşıma kliplerinde klip hedef hızla ileri taşınmış sayılıp her yere basışta
+  ayak bileğinin yatay kayması < 3 cm (bilek en alçak yüksekliğe 1.5 cm yakınken yerde sayılır).

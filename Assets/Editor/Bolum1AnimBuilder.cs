@@ -21,29 +21,26 @@ public static class Bolum1AnimBuilder
     public const string NoArmsMaskPath = AnimationFolder + "/AM_Patient_NoArms.mask";
     public const string ReportPath = "Captures/Bolum1/anim_build_report.txt";
 
-    // Taşıma döngülerinin yürüme hızındaki oynatma hızı ve hız 0'daki (bekleme) yavaşlatılmış hızı (yazıldığı hıza göre).
-    // Klibin adımı kısa (~0.19 m, kalça 0.44 m): 2.4 m/sn'de kaymasız oynatma ~×8.6 ister; ×3 telaşlı, komik bir
-    // seğirtme verir, kalan kayma kabul edildi (rapor: AÇIK SORU). Ölçüm: Bolum1AnimVerify (b) ayak kayması.
-    public const float CarryWalkScale = 3f;
+    // Taşıma döngülerinin hedef hızdaki oynatma hızı ve hız 0'daki (bekleme) yavaşlatılmış hızı (yazıldığı hıza göre).
+    // Klipler hedef hızda (clips_meta.json target_speed_mps: sedye 1.4, koni 2.4 m/sn) ×1 oynarken ayak kaymayacak
+    // adımla yazıldı. Ölçüm: Bolum1AnimVerify (b1s)/(b2s) taşırken ayak kayması.
+    public const float CarryWalkScale = 1f;
     public const float CarryIdleScale = 0.25f;
     public const string ClipsMetaPath = ProceduralAnimImportSettings.Folder + "clips_meta.json";
 
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     private static readonly StringBuilder report = new StringBuilder();
 
-    // FBX'ler 24 kare/sn işaretli, klipler 30 kare/sn yazılmış (clips_meta.json): Unity'de klip 1.25 kat uzun okunur.
-    // Durum hızı = Unity klip süresi / yazılan süre; böylece klip yazıldığı hızda oynar (kaynak düzeltilene kadar).
-    public static float AuthoredSpeed(string name)
+    // clips_meta.json'dan bir klibin sayı alanı (yoksa fallback).
+    public static float MetaFloat(string name, string key, float fallback)
     {
-        var clip = Clip(name);
         try
         {
             var meta = Bolum1Coordinates.LoadJson(ClipsMetaPath);
             var c = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(meta, "clips"), name);
-            float d = Convert.ToSingle(c["duration_s"], Inv);
-            return d > 0.05f ? clip.length / d : 1f;
+            return Convert.ToSingle(c[key], Inv);
         }
-        catch { return 1f; }
+        catch { return fallback; }
     }
 
     // İlk importta kaynak Avatar henüz yoksa klip kendi Avatar'ıyla kalmış olabilir: ayar tutmayanları yeniden import et.
@@ -68,7 +65,8 @@ public static class Bolum1AnimBuilder
     // Ekip Animator'ı
     // =====================================================================================
 
-    public static void AddCrewStates(AnimatorController ac, AnimatorState locomotion, float walkSpeed)
+    // walkSpeed: normal yürüme (koni taşırken de); carryStretcherSpeed: sedye taşırken yürüme hızı (m/sn).
+    public static void AddCrewStates(AnimatorController ac, AnimatorState locomotion, float walkSpeed, float carryStretcherSpeed)
     {
         report.Length = 0;
         EnsureClipImports();
@@ -81,7 +79,7 @@ public static class Bolum1AnimBuilder
 
         var sm = ac.layers[0].stateMachine;
         locomotion.name = CrewAnimation.StateLocomotion;
-        var carryStretcher = CarryState(ac, sm, CrewAnimation.StateCarryStretcher, "Carry_Stretcher_Walk", walkSpeed, new Vector3(300f, 120f));
+        var carryStretcher = CarryState(ac, sm, CrewAnimation.StateCarryStretcher, "Carry_Stretcher_Walk", carryStretcherSpeed, new Vector3(300f, 120f));
         var carryCone = CarryState(ac, sm, CrewAnimation.StateCarryCone, "Carry_OneHand_Walk", walkSpeed, new Vector3(300f, 220f));
         var loops = new[] { locomotion, carryStretcher, carryCone };
 
@@ -124,7 +122,6 @@ public static class Bolum1AnimBuilder
         // Kaldıran taraf: Reviving açıkken (her kare işaretlenir)
         var revive = sm.AddState(CrewAnimation.StateRevive, new Vector3(560f, 360f));
         revive.motion = Clip("Revive_Helper");
-        revive.speed = AuthoredSpeed("Revive_Helper");
         var toRevive = sm.AddAnyStateTransition(revive);
         toRevive.canTransitionToSelf = false;
         toRevive.hasExitTime = false;
@@ -142,21 +139,20 @@ public static class Bolum1AnimBuilder
         }
         EditorUtility.SetDirty(ac);
         Line("Ekip Animator'ı: " + AssetDatabase.GetAssetPath(ac) + " → " + string.Join(", ", sm.states.Select(s => s.state.name))
-            + "; klip hızı düzeltmesi (24→30 kare/sn) ×" + AuthoredSpeed("PickUp").ToString("F3", Inv)
-            + "; taşıma döngüsü " + walkSpeed.ToString(Inv) + " m/sn'de ×" + CarryWalkScale.ToString(Inv) + ", beklemede ×" + CarryIdleScale.ToString(Inv));
+            + "; taşıma döngüleri sedye " + carryStretcherSpeed.ToString(Inv) + " m/sn, koni " + walkSpeed.ToString(Inv) + " m/sn'de ×" + CarryWalkScale.ToString(Inv)
+            + ", beklemede ×" + CarryIdleScale.ToString(Inv));
     }
 
-    // Taşıma döngüsü: aynı klibin iki çocuğu (hız 0'da yavaşlatılmış, yürüme hızında tam) Speed ile karışır.
+    // Taşıma döngüsü: aynı klibin iki çocuğu (hız 0'da yavaşlatılmış, hedef hızda tam) Speed ile karışır.
     private static AnimatorState CarryState(AnimatorController ac, AnimatorStateMachine sm, string name, string clipName, float walkSpeed, Vector3 pos)
     {
         var clip = Clip(clipName);
-        float f = AuthoredSpeed(clipName);
         var tree = new BlendTree { name = name + "_Blend", blendType = BlendTreeType.Simple1D, blendParameter = "Speed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
         AssetDatabase.AddObjectToAsset(tree, ac);
         tree.children = new[]
         {
-            new ChildMotion { motion = clip, threshold = 0f, timeScale = CarryIdleScale * f },
-            new ChildMotion { motion = clip, threshold = walkSpeed, timeScale = CarryWalkScale * f },
+            new ChildMotion { motion = clip, threshold = 0f, timeScale = CarryIdleScale },
+            new ChildMotion { motion = clip, threshold = walkSpeed, timeScale = CarryWalkScale },
         };
         var st = sm.AddState(name, pos);
         st.motion = tree;
@@ -167,7 +163,7 @@ public static class Bolum1AnimBuilder
     {
         var st = sm.AddState(name, pos);
         st.motion = Clip(clipName);
-        st.speed = speed * AuthoredSpeed(clipName);
+        st.speed = speed;
         return st;
     }
 
@@ -218,7 +214,6 @@ public static class Bolum1AnimBuilder
             ac.layers = layers;
             var gs = ac.layers[1].stateMachine.AddState("Groan");
             gs.motion = groan;
-            gs.speed = AuthoredSpeed("Lying_Groan");
             EditorUtility.SetDirty(ac);
             Line("Hasta " + type + ": " + PatientSlingControllerPath + " (taban: " + (liePose != null ? liePose.name : "-") + ", üst katman Lying_Groan, maske: kollar hariç)");
             return ac;
@@ -231,10 +226,8 @@ public static class Bolum1AnimBuilder
             var sm = ac.layers[0].stateMachine;
             var g = sm.AddState("Groan");
             g.motion = groan;
-            g.speed = AuthoredSpeed("Lying_Groan");
             var w = sm.AddState("HelpWave");
             w.motion = Clip("Lying_HelpWave");
-            w.speed = AuthoredSpeed("Lying_HelpWave");
             sm.defaultState = g;
             var t1 = g.AddTransition(w);
             t1.hasExitTime = false; t1.duration = 0.5f; t1.hasFixedDuration = true;
@@ -276,7 +269,7 @@ public static class Bolum1AnimBuilder
     {
         var player = character.GetComponent<ThirdPersonPlayer>();
         var animator = character.GetComponent<Animator>();
-        float getUp = Clip("GetUp_FromBack").length / AuthoredSpeed("GetUp_FromBack");
+        float getUp = Clip("GetUp_FromBack").length;
 
         // Oyuncu
         // Ekran dışındayken de kemikler yazılsın (kalkış, kaldırma ve ölçümler; batchmode'da kamera render etmiyor)
