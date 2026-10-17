@@ -692,7 +692,7 @@ public static class Bolum1AmbulanceBuilder
         // 3) Hastalar
         var patients = PlacePatients(markers, minivan, root);
 
-        // 4) Sedyeler: çekicinin kasasında
+        // 4) Sedyeler: çekicinin arkasında, bankette yerde
         PlaceStretchers(truck, root);
 
         // 5) Oyuncu ve 6) test botu
