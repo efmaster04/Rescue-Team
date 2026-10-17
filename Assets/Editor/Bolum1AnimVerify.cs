@@ -20,7 +20,7 @@ using UnityEngine;
 // Ayarlar test içinde geçici kopyalarla değiştirilir (TrafficSettings, AmbulanceSchedule); asset dosyaları değişmez.
 // Senaryo kare kare ilerleyen bir IEnumerator'dır (Bolum1TrafficVerify ile aynı desen).
 [InitializeOnLoad]
-public static class Bolum1AnimVerify
+public static partial class Bolum1AnimVerify
 {
     private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1AnimVerify.Stage";
@@ -446,6 +446,8 @@ public static class Bolum1AnimVerify
         yield return Seconds(1f);
         refAnkle = AnkleHeight(Player.GetComponent<Animator>(), Player.transform.position);
 
+        yield return PhaseCorrections();
+        ParkCarriersOffLane();
         yield return PhasePatients();
         yield return PhaseStretcher();
         yield return PhaseCone();
@@ -847,6 +849,8 @@ public static class Bolum1AnimVerify
         yield return Seconds(1f);
         float flung = Vector3.Distance(bot.hips.position, hips0);
         bool stillDown = bot.IsDown;
+        // Kalkış kabulünü ikinci bir çarpma veya korna ile yarışa sokma; ilk çarpma ve savrulma ölçüldü.
+        traffic.ClearVehicles();
         yield return Until(() => !bot.IsDown, 5f, "bot kalktı");
         float upAfter = Time.time - downAt;
         yield return null;
@@ -913,7 +917,7 @@ public static class Bolum1AnimVerify
             for (float d = 0f; d <= 90f; d += 1f)
             {
                 Vector3 q = lane.PointAt(s1) + o * d + Vector3.up * 20f;
-                bool hit = Physics.Raycast(q, Vector3.down, out RaycastHit h, 20f - respawn.killBelowY + 20f, ~0, QueryTriggerInteraction.Ignore) && !GroundProbe.IsMovingGameObject(h.collider) && h.point.y > respawn.killBelowY;
+                bool hit = GroundProbe.Find(q, 20f - respawn.killBelowY + 20f, out RaycastHit h) && h.point.y > respawn.killBelowY;
                 if (hit) { lastGround = h.point; haveGround = true; continue; }
                 if (haveGround) { edge = lastGround + Vector3.up * 0.05f; outward = o; voidAt = d; }
                 break;
@@ -1107,6 +1111,8 @@ public static class Bolum1AnimVerify
         Time.timeScale = 1f;
         TrafficVehicle truck = null;
         yield return Until(() => truck != null || (truck = traffic.ForceSpawn(true, TrafficVehicleType.BoxTruck)) != null, 5f, "ambulans önündeki kamyon");
+        // Gecikme/HUD senaryosu kasıtlı yavaş lider ister; gerçek seyir hızı ayrı testte 10 m/sn doğrulanır.
+        truck.Follower.cruiseSpeed = 7f;
         yield return Until(() => mission.Ambulances.Count > 0, 10f, "ambulans doğdu");
         ambWatch = mission.Ambulances[0];
         ambLeader = truck;
@@ -1121,7 +1127,7 @@ public static class Bolum1AnimVerify
         ambWatch = null;
         Check("(7) ambulans aynı şeritteki aracı takip ediyor (girmiyor, en az boşluk ~4 m); varış gecikince HUD gerçek tahmini gösteriyor",
             ambOverlap == 0 && ambMinGap >= 3.8f && ambFollowFrames > 0 && delay > 2f && hudChecks > 0 && hudBad == 0 && !float.IsNaN(estErr) && Mathf.Abs(estErr) <= 2f,
-            "kamyon önde (7 m/sn); ambulans–kamyon en küçük boşluk " + M(ambMinGap) + ", kesişen kare " + ambOverlap + ", takip " + ambFollowFrames + " kare; varış " + S(arrival)
+            "test kamyonu önde (7 m/sn); ambulans–kamyon en küçük boşluk " + M(ambMinGap) + ", kesişen kare " + ambOverlap + ", takip " + ambFollowFrames + " kare; varış " + S(arrival)
             + " (plan " + S(schedule.firstArrival) + ", gecikme " + S(delay) + ", tahminin plandan en çok ilerisi " + S(maxEstimateLead) + "); HUD " + (hudChecks - hudBad) + "/" + hudChecks + " " + hudInfo
             + "; varıştan 10 sn önceki tahmin hatası " + (float.IsNaN(estErr) ? "-" : S(estErr)));
         // Ambulans gitsin, kamyon kaybolsun

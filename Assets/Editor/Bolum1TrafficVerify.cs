@@ -302,6 +302,7 @@ public static class Bolum1TrafficVerify
         ParkCarriersOffLane();
         mission.missLimit = 999; // test: görev kaçırma yüzünden bitmesin (geçici)
 
+        yield return PhaseSpeedSettings();
         yield return PhaseSimulation();
         yield return PhaseDeterminism();
         yield return PhaseAmbulanceQueue();
@@ -314,6 +315,21 @@ public static class Bolum1TrafficVerify
             overlapFrames == 0 && minFollowGap >= 3.8f,
             sampledFrames + " kare örneklendi, kesişen kare " + overlapFrames + (overlapInfo.Length > 0 ? " (ilk: " + overlapInfo + ")" : "")
             + "; en küçük takip mesafesi (ön tampon → öndeki arka tampon) " + M(minFollowGap) + " " + minFollowInfo);
+    }
+
+    private static IEnumerator PhaseSpeedSettings()
+    {
+        Mission.Begin(TestSchedule(99999f, 99999f));
+        Traffic.Begin(TestSettings(false));
+        float[] speeds = { 13f, 13f, 12f, 11.5f, 10f };
+        foreach (TrafficVehicleType type in Enum.GetValues(typeof(TrafficVehicleType)))
+        {
+            var v = Traffic.ForceSpawn(true, type);
+            Check("(düzeltme 3) seyir hızı " + type, v != null && Mathf.Abs(v.Follower.cruiseSpeed - speeds[(int)type]) < .001f,
+                v != null ? v.Follower.cruiseSpeed + " m/sn" : "doğmadı");
+            Traffic.ClearVehicles();
+            yield return null;
+        }
     }
 
     private static TrafficSettings TestSettings(bool natural)

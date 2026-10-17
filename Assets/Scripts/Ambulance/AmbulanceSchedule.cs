@@ -6,13 +6,13 @@ using UnityEngine;
 public class AmbulanceSchedule : ScriptableObject
 {
     [Tooltip("İki varış arasındaki süre (sn).")]
-    [Min(1f)] public float interval = 180f;
+    [Min(1f)] public float interval = 120f;
 
     [Tooltip("Durakta bekleme süresi (sn).")]
     [Min(2f)] public float wait = 15f;
 
     [Tooltip("İlk varış zamanı (sn).")]
-    [Min(0f)] public float firstArrival = 180f;
+    [Min(0f)] public float firstArrival = 120f;
 
     // k. varışın (0'dan başlar) planlanan zamanı
     public float ArrivalTime(int k)

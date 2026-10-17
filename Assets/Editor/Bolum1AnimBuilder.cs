@@ -154,6 +154,8 @@ public static class Bolum1AnimBuilder
             new ChildMotion { motion = clip, threshold = 0f, timeScale = CarryIdleScale },
             new ChildMotion { motion = clip, threshold = walkSpeed, timeScale = CarryWalkScale },
         };
+        if (name == CrewAnimation.StateCarryCone)
+            tree.children = new[] { tree.children[0], tree.children[1], new ChildMotion { motion = clip, threshold = 3.2f, timeScale = CarryWalkScale * 3.2f / walkSpeed } };
         var st = sm.AddState(name, pos);
         st.motion = tree;
         return st;

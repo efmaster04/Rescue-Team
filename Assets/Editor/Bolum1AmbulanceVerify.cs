@@ -337,6 +337,21 @@ public static class Bolum1AmbulanceVerify
         yield return Capture("hastalar_yakin", patientsCenter + new Vector3(0f, 5f, -4f), patientsCenter, 52f, false);
         yield return Bolum1AmbulanceModelChecks.CheckPoses(Check);
         parkPosition = PatientOf("Tourist").Position + new Vector3(-2.5f, 0f, -1.8f);
+        Player.GetComponent<PlayerInputReader>().enabled = false;
+        ParkCarriersOffLane();
+        records.Clear();
+        Hook();
+        var schedulePatients = Mission.patients;
+        Mission.patients = new Patient[0];
+        Mission.missLimit = 999;
+        Mission.Begin(UnityEngine.Object.Instantiate(Bolum1AmbulanceBuilder.Schedule));
+        Time.timeScale = 5f;
+        yield return Until(() => records.Count >= 2 && records[1].arrival > 0f, 245f, "120/240 gerçek takvim");
+        Time.timeScale = 1f;
+        Check("(düzeltme 7) gerçek takvim 120/240 sn, bekleme 15 sn", Mathf.Abs(records[0].arrival - 120f) <= .5f && Mathf.Abs(records[1].arrival - 240f) <= .5f
+            && Mathf.Abs(records[0].departure - records[0].arrival - 15f) <= .1f, records[0].arrival + "/" + records[1].arrival + " sn");
+        Mission.patients = schedulePatients;
+        Mission.missLimit = 3;
         records.Clear();
         var test = ScriptableObject.CreateInstance<AmbulanceSchedule>();
         test.interval = TestInterval; test.wait = TestWait; test.firstArrival = TestFirst;

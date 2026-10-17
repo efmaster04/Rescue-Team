@@ -111,6 +111,12 @@ public static partial class Bolum1Verify
             var minivan = GameObject.Find(Bolum1SceneBuilder.MinivanName);
             var character = GameObject.Find(Bolum1SceneBuilder.CharacterName);
             CheckCharacter(character);                         // (e)
+            var player = character.GetComponent<ThirdPersonPlayer>();
+            var bodies = UnityEngine.Object.FindObjectsByType<NpcBody>(FindObjectsSortMode.None);
+            Check("oynanış düzeltmeleri Play'de kurulu", player != null && Mathf.Approximately(player.runSpeed, 3.2f)
+                && Mathf.Approximately(player.hardLandingHeight, 3f) && bodies.Length >= 4
+                && bodies.All(b => b.Body != null && b.Body.enabled),
+                "koşu " + player.runSpeed + ", düşüş eşiği " + player.hardLandingHeight + ", katı NPC bedenleri " + bodies.Length);
 
             Capture("overview", Bolum1Coordinates.ToUnity(new Vector3(-25f, -75f, 25f)), Bolum1Coordinates.ToUnity(new Vector3(0f, 5f, -6f)), 50f);
             Vector3 vanLook = minivan.transform.position + Vector3.up * 0.3f;

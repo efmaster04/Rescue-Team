@@ -2,7 +2,7 @@ using UnityEngine;
 
 // Oyuncu hareketi (kullanıcı kararı 15): CharacterController tabanlı 3. şahıs.
 // Girdi bu sınıfa dışarıdan verilir (PlayerInputReader); böylece oyun durumu ile girdi ayrı kalır (ileride ağ senkronu).
-// Koşma tuşu YOK. Araç çarpınca düşme ve kaldırılma PlayerKnockdown'da (ragdoll).
+// Shift koşar; sedye taşırken hız sabittir. Düşme ve kaldırılma PlayerKnockdown'da.
 [RequireComponent(typeof(CharacterController))]
 public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 {
@@ -15,6 +15,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 
     [Tooltip("Yürüme hızı (m/sn).")]
     public float moveSpeed = 2.4f;
+    [Min(0f)] public float runSpeed = 3.2f;
+    [Min(0f)] public float hardLandingHeight = 3f;
     [Tooltip("Sedye taşırken yürüme hızı (m/sn). Taşıma ağır: ekip yük altında sendeler. Koni taşırken moveSpeed geçerli.")]
     public float carryStretcherSpeed = 1.4f;
     [Tooltip("Dönüş hızı (derece/sn).")]
@@ -40,6 +42,13 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     private CharacterController controller;
     private Vector2 moveInput;
     private bool jumpRequested;
+    private bool runHeld;
+    private float lastGroundHeight;
+    private bool airborne;
+    private Vector3 steepNormal;
+    private float steepUntil;
+    public float LastLandingDrop { get; private set; }
+    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : runHeld ? runSpeed : moveSpeed;
     private float verticalSpeed;
     private float controlLostUntil = -1f;
     private Vector3 knockRemaining;     // itilme yer değiştirmesi (kısa sürede uygulanır)
@@ -48,6 +57,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        lastGroundHeight = transform.position.y;
     }
 
     private void OnEnable() { CarrierRegistry.Add(this); }
@@ -61,6 +71,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // ---- Girdi (PlayerInputReader ya da test çağırır) ----
     public void SetMoveInput(Vector2 move) { moveInput = Vector2.ClampMagnitude(move, 1f); }
     public void RequestJump() { jumpRequested = true; }
+    public void SetRunInput(bool held) { runHeld = held; }
 
     public Vector3 GetHandPoint(Vector3 towards)
     {
@@ -74,6 +85,9 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         transform.SetPositionAndRotation(position, rotation);
         controller.enabled = true;
         verticalSpeed = 0f;
+        lastGroundHeight = position.y;
+        airborne = true;
+        steepUntil = -1f;
         Physics.SyncTransforms();
     }
 
@@ -113,6 +127,13 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // Saman balyası (pikaptan düşen, Rigidbody) itilir: oyuncu yürüyerek iter (şef kararı 5).
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
+        if (!GroundProbe.IsMovingGameObject(hit.collider) && hit.normal.y > 0.01f
+            && hit.normal.y < Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad)
+            && hit.point.y < transform.position.y + controller.radius + 0.15f)
+        {
+            steepNormal = hit.normal;
+            steepUntil = Time.time + 0.15f;
+        }
         var bale = hit.collider != null ? hit.collider.GetComponent<LooseBale>() : null;
         if (bale != null) bale.PushFrom(hit.moveDirection, HorizontalVelocity.magnitude);
     }
@@ -156,7 +177,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             forward.Normalize();
         }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
-        float speed = HeldStretcher != null ? carryStretcherSpeed : moveSpeed;
+        float speed = RequestedSpeed;
         Vector3 wish = HasControl ? (forward * moveInput.y + right * moveInput.x) * speed : Vector3.zero;
 
         if (wish.sqrMagnitude > 0.01f)
@@ -166,14 +187,31 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         }
 
         // Yerçekimi ve zıplama
-        if (controller.isGrounded && verticalSpeed < 0f) verticalSpeed = -2f; // zemine bastır (rampada kopmasın)
-        if (jumpRequested && controller.isGrounded && HasControl)
+        bool supported = controller.isGrounded && Time.time >= steepUntil;
+        if (supported && verticalSpeed <= 0f)
+        {
+            lastGroundHeight = transform.position.y;
+            airborne = false;
+            verticalSpeed = -2f;
+        }
+        else airborne = true;
+        if (jumpRequested && supported && HasControl)
         {
             verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
+            airborne = true;
             Jumped?.Invoke();
         }
         jumpRequested = false;
         verticalSpeed += gravity * dt;
+
+        // Dik yüzeye havada temas da tırmanış sayılır; yeniden zıplamaya dayanak olmaz.
+        if (Time.time < steepUntil)
+        {
+            Vector3 outward = Vector3.ProjectOnPlane(steepNormal, Vector3.up).normalized;
+            wish -= outward * Mathf.Min(0f, Vector3.Dot(wish, outward));
+            wish += outward * 2f;
+            verticalSpeed = Mathf.Min(verticalSpeed, -2f);
+        }
 
         // İtilme
         Vector3 knock = Vector3.zero;
@@ -186,8 +224,30 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         }
 
         Vector3 before = transform.position;
+        Vector3 horizontal = NpcBody.RestrictMotion(this, wish * dt + knock, controller.radius);
         if (controller.enabled)
-            controller.Move(wish * dt + knock + Vector3.up * verticalSpeed * dt);
+        {
+            controller.Move(horizontal + Vector3.up * verticalSpeed * dt);
+            if (Time.time < steepUntil && transform.position.y > before.y)
+            {
+                // Fizik çözümünün eğime bastırarak verdiği yukarı adımı geri al.
+                Vector3 corrected = before + Vector3.ProjectOnPlane(steepNormal, Vector3.up).normalized * dt * 2f;
+                controller.enabled = false;
+                transform.position = corrected;
+                controller.enabled = true;
+                verticalSpeed = Mathf.Min(verticalSpeed, -2f);
+            }
+            if (airborne && controller.isGrounded && verticalSpeed < 0f && Time.time >= steepUntil)
+            {
+                LastLandingDrop = lastGroundHeight - transform.position.y;
+                airborne = false;
+                if (LastLandingDrop > hardLandingHeight)
+                {
+                    KnockDown(wish + Vector3.down * 2f);
+                    return;
+                }
+            }
+        }
         Vector3 moved = transform.position - before;
         moved.y = 0f;
         HorizontalVelocity = moved / dt;

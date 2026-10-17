@@ -75,6 +75,7 @@ public class Patient : MonoBehaviour
         }
         hipsInRoot = hips != null ? transform.InverseTransformPoint(hips.position) : new Vector3(0f, 0.75f, 0f);
         SetRagdoll(false);
+        if (GetComponent<NpcBody>() == null) gameObject.AddComponent<NpcBody>();
     }
 
     private void OnEnable() { if (!All.Contains(this)) All.Add(this); }
@@ -203,6 +204,12 @@ public class Patient : MonoBehaviour
     private void SetState(PatientState s)
     {
         State = s;
+        var body = GetComponent<NpcBody>();
+        if (body != null)
+        {
+            body.Refresh();
+            if (s == PatientState.LyingGround) body.ResetPushOrigin();
+        }
         StateChanged?.Invoke(this);
     }
 

@@ -10,10 +10,12 @@ public class PlayerInputReader : MonoBehaviour
     public PlayerInteraction interaction;
     public OrbitCamera orbitCamera;
 
-    private InputAction move, look, jump, interact, restart;
+    private InputAction move, look, jump, interact, restart, run;
 
     private void Awake()
     {
+        run = new InputAction("Run", InputActionType.Button, "<Keyboard>/leftShift");
+        run.AddBinding("<Keyboard>/rightShift");
         move = new InputAction("Move", InputActionType.Value);
         move.AddCompositeBinding("2DVector")
             .With("Up", "<Keyboard>/w").With("Down", "<Keyboard>/s")
@@ -26,17 +28,18 @@ public class PlayerInputReader : MonoBehaviour
 
     private void OnEnable()
     {
-        move.Enable(); look.Enable(); jump.Enable(); interact.Enable(); restart.Enable();
+        run.Enable(); move.Enable(); look.Enable(); jump.Enable(); interact.Enable(); restart.Enable();
     }
 
     private void OnDisable()
     {
-        move.Disable(); look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
+        run.Disable(); move.Disable();
+        if (player != null) player.SetRunInput(false); look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
     }
 
     private void OnDestroy()
     {
-        move.Dispose(); look.Dispose(); jump.Dispose(); interact.Dispose(); restart.Dispose();
+        run.Dispose(); move.Dispose(); look.Dispose(); jump.Dispose(); interact.Dispose(); restart.Dispose();
     }
 
     private void Update()
@@ -44,6 +47,7 @@ public class PlayerInputReader : MonoBehaviour
         if (player != null)
         {
             player.SetMoveInput(move.ReadValue<Vector2>());
+            player.SetRunInput(run.IsPressed());
             if (jump.WasPressedThisFrame()) player.RequestJump();
         }
         if (orbitCamera != null) orbitCamera.Rotate(look.ReadValue<Vector2>());

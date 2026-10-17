@@ -168,7 +168,7 @@ public class TrafficVehicle : MonoBehaviour
             if (c is StretcherHelperBot downBot && downBot.IsDown) continue; // yerdeki botu araç gövdesi (fizik) iter
             Vector3 root = c.Root.position;
             bool touch = Touches(root + Vector3.up * 0.3f, 0.3f) || Touches(root + Vector3.up * 0.9f, 0.3f) || Touches(root + Vector3.up * 1.4f, 0.3f);
-            if (!touch) continue;
+            if (!touch || ApproachSpeed(root) <= settings.knockdownSpeedThreshold) continue;
             Vector3 v = HitVelocity(root);
             if (player != null)
             {
@@ -181,13 +181,24 @@ public class TrafficVehicle : MonoBehaviour
         foreach (var p in Patient.All.ToArray())
         {
             if (p == null || (p.State != PatientState.LyingGround && p.State != PatientState.OnStretcher)) continue;
-            if (!Touches(p.Position, 0.3f)) continue;
+            if (!Touches(p.Position, 0.3f) || ApproachSpeed(p.Position) <= settings.knockdownSpeedThreshold) continue;
             p.HitByVehicle(HitVelocity(p.Position));
             HitPatient?.Invoke(this, p);
         }
     }
 
     // Nokta (r yarıçaplı küre) gövde kutusuna değiyor mu?
+    public float ApproachSpeed(Vector3 target)
+    {
+        Vector3 local = transform.InverseTransformPoint(target) - bodyCenter;
+        Vector3 closest = new Vector3(Mathf.Clamp(local.x, -bodySize.x * .5f, bodySize.x * .5f),
+            local.y, Mathf.Clamp(local.z, -bodySize.z * .5f, bodySize.z * .5f));
+        Vector3 normal = local - closest;
+        normal.y = 0f;
+        if (normal.sqrMagnitude < .0001f) normal = local.z >= 0f ? Vector3.forward : Vector3.back;
+        return Mathf.Max(0f, Vector3.Dot(Vector3.forward * Follower.Speed, normal.normalized));
+    }
+
     public bool Touches(Vector3 world, float r)
     {
         Vector3 l = transform.InverseTransformPoint(world) - bodyCenter;

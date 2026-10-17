@@ -4,8 +4,9 @@ using UnityEngine;
 // Araç çarpınca (şef kararı 6) bot da ragdoll olup düşer ve getUpDelay sn sonra kendi kendine GetUp_FromBack ile kalkar
 // (bot test yardımcısıdır; oyuncunun "yalnız arkadaş kaldırır" kuralı değişmez).
 // Oyuncu bir ucu tutunca bot diğer uca ışınlanır. Sonra "römork" modeliyle izler: sedye ekseni iki taşıyıcı
-// arasındaki çizgidir, bot lidere olan uzaklığı sap aralığında tutar. Y'sini zemine raycast'le bulur, çarpışmaları yok sayar
-// (collider'ı yok). Oyuncu bırakınca bot da AYNI ANDA bırakır (güvenli iniş; bırakmayı PlayerInteraction yapar).
+// arasındaki çizgidir, bot lidere olan uzaklığı sap aralığında tutar. Y'sini zemine raycast'le bulur.
+// Ayakta NpcBody teması engeller ve yürüyen oyuncudan sınırlı itme alır.
+// Oyuncu bırakınca bot da AYNI ANDA bırakır (güvenli iniş; bırakmayı PlayerInteraction yapar).
 // İleride ikinci oyuncu bu botun yerine geçecek: ikisi de ICarrier.
 [DefaultExecutionOrder(50)] // oyuncu hareket ettikten sonra, sedye çözümünden önce
 public class StretcherHelperBot : MonoBehaviour, ICarrier
@@ -48,6 +49,7 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     {
         if (crewAnimation == null) crewAnimation = GetComponent<CrewAnimation>();
         SetRagdoll(false);
+        if (GetComponent<NpcBody>() == null) gameObject.AddComponent<NpcBody>();
     }
 
     private void OnEnable()

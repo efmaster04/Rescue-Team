@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1962ad21616c72a4ab12a9eff1272489, type: 3}
   m_Name: AmbulanceSchedule
   m_EditorClassIdentifier: Assembly-CSharp::AmbulanceSchedule
-  interval: 180
+  interval: 120
   wait: 15
-  firstArrival: 180
+  firstArrival: 120

@@ -32,11 +32,11 @@ public class TrafficSettings : ScriptableObject
     [Header("Araç tipleri")]
     public TypeEntry[] types =
     {
-        new TypeEntry { type = TrafficVehicleType.Sedan, weight = 27.5f, cruiseSpeed = 12f },
-        new TypeEntry { type = TrafficVehicleType.Hatchback, weight = 27.5f, cruiseSpeed = 12f },
-        new TypeEntry { type = TrafficVehicleType.Pickup, weight = 15f, cruiseSpeed = 11f },
-        new TypeEntry { type = TrafficVehicleType.PanelVan, weight = 15f, cruiseSpeed = 10f },
-        new TypeEntry { type = TrafficVehicleType.BoxTruck, weight = 15f, cruiseSpeed = 7f },
+        new TypeEntry { type = TrafficVehicleType.Sedan, weight = 27.5f, cruiseSpeed = 13f },
+        new TypeEntry { type = TrafficVehicleType.Hatchback, weight = 27.5f, cruiseSpeed = 13f },
+        new TypeEntry { type = TrafficVehicleType.Pickup, weight = 15f, cruiseSpeed = 12f },
+        new TypeEntry { type = TrafficVehicleType.PanelVan, weight = 15f, cruiseSpeed = 11.5f },
+        new TypeEntry { type = TrafficVehicleType.BoxTruck, weight = 15f, cruiseSpeed = 10f },
     };
 
     [Header("Takip (kullanıcı kararı 3)")]
@@ -63,6 +63,8 @@ public class TrafficSettings : ScriptableObject
     [Tooltip("Çarpılan oyuncuya / hastaya verilen itki: aracın hızına çarpan ve en az hız (m/sn).")]
     public float hitSpeedMultiplier = 1.2f;
     public float hitMinSpeed = 3f;
+    [Tooltip("Düşürmek için hedefe doğru asgari araç hızı (m/sn).")]
+    [Min(0f)] public float knockdownSpeedThreshold = 1f;
     public float hitUpSpeed = 1.5f;
     public float hitSideSpeed = 1.5f;
 

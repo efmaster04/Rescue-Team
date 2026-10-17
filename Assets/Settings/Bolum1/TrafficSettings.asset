@@ -19,19 +19,19 @@ MonoBehaviour:
   types:
   - type: 0
     weight: 27.5
-    cruiseSpeed: 12
+    cruiseSpeed: 13
   - type: 1
     weight: 27.5
-    cruiseSpeed: 12
+    cruiseSpeed: 13
   - type: 2
     weight: 15
-    cruiseSpeed: 11
+    cruiseSpeed: 12
   - type: 3
     weight: 15
-    cruiseSpeed: 10
+    cruiseSpeed: 11.5
   - type: 4
     weight: 15
-    cruiseSpeed: 7
+    cruiseSpeed: 10
   timeHeadway: 2
   minGap: 4
   acceleration: 3
@@ -42,6 +42,7 @@ MonoBehaviour:
   lookAhead: 14
   yieldSpeedFactor: 0.4
   hitSpeedMultiplier: 1.2
+  knockdownSpeedThreshold: 1
   hitMinSpeed: 3
   hitUpSpeed: 1.5
   hitSideSpeed: 1.5

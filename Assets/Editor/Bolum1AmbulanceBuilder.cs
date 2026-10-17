@@ -861,63 +861,27 @@ public static class Bolum1AmbulanceBuilder
         return false;
     }
 
-    // Sedyeler: çekici kasasının koni tutucusu olmayan yarısında (çekici kökünde Blender X < 0.6), yan yana, boylamasına.
-    // Yer, çekici mesh'lerine geçici MeshCollider eklenip ızgara raycast'le doğrulanır (ilk çarpma kasa yüzeyi olmalı).
-    private static StretcherController[] PlaceStretchers(GameObject truck, Transform parent)
+    // Sedyeler çekicinin arkasında bankette, yan yana ve yerden alınabilir yükseklikte.
+    public static StretcherController[] PlaceStretchers(GameObject truck, Transform parent)
     {
-        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(StretcherPrefabPath);
-        var temp = new List<MeshCollider>();
-        foreach (var mf in truck.GetComponentsInChildren<MeshFilter>())
+        var result = new List<StretcherController>();
+        Vector3 forward = Vector3.ProjectOnPlane(truck.transform.TransformDirection(new Vector3(0f, -1f, 0f)), Vector3.up).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        for (int i = 0; i < 2; i++)
         {
-            if (mf.GetComponent<Collider>() != null) continue;
-            var mc = mf.gameObject.AddComponent<MeshCollider>();
-            mc.sharedMesh = mf.sharedMesh;
-            temp.Add(mc);
+            var existing = GameObject.Find(StretcherNames[i]);
+            var go = existing != null ? existing : (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(StretcherPrefabPath));
+            go.name = StretcherNames[i];
+            go.transform.SetParent(parent, true);
+            Vector3 at = truck.transform.position - forward * 5.55f + right * (i == 0 ? -.52f : .52f);
+            if (!GroundProbe.Find(at + Vector3.up * 5f, 10f, out var hit)) throw new Exception("Sedye arkasında banket bulunamadı");
+            at.y = hit.point.y + .025f;
+            go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(Vector3.ProjectOnPlane(forward, hit.normal), hit.normal));
+            PrefabUtility.RecordPrefabInstancePropertyModifications(go.transform);
+            result.Add(go.GetComponent<StretcherController>());
+            Line("Sedye " + go.name + ": çekicinin arkasında yerde " + V(at));
         }
         Physics.SyncTransforms();
-        var result = new List<StretcherController>();
-        try
-        {
-            Vector3 L(float bx, float by, float bz) { return truck.transform.TransformPoint(new Vector3(-bx, by, bz)); }
-            Vector3 fwd = truck.transform.TransformDirection(new Vector3(0f, -1f, 0f)).normalized;
-            Vector3 up = truck.transform.TransformDirection(new Vector3(0f, 0f, 1f)).normalized;
-            float[] xs = { -0.85f, -0.2f };
-            for (int i = 0; i < 2; i++)
-            {
-                Vector3 c = L(xs[i], 0.8f, 1.75f);
-                float worst = 0f;
-                string blocker = "";
-                for (float a = -1.05f; a <= 1.051f; a += 0.15f)
-                    for (float s = -0.275f; s <= 0.276f; s += 0.1375f)
-                    {
-                        Vector3 q = c + fwd * a + Vector3.Cross(up, fwd) * s;
-                        if (!Physics.Raycast(q + up * 1.0f, -up, out RaycastHit h, 1.5f)) { worst = 99f; blocker = "boş"; continue; }
-                        float d = Vector3.Dot(h.point - c, up);
-                        if (Mathf.Abs(d) > Mathf.Abs(worst)) { worst = d; blocker = h.collider.name; }
-                    }
-                if (Mathf.Abs(worst) > 0.03f)
-                    throw new Exception("Çekici kasasında sedye yeri dolu: " + blocker + " " + worst.ToString("F3", Inv));
-                var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-                go.name = StretcherNames[i];
-                go.transform.SetParent(parent, true);
-                go.transform.SetPositionAndRotation(c, Quaternion.LookRotation(fwd, up));
-                result.Add(go.GetComponent<StretcherController>());
-                Line("Sedye " + go.name + ": çekici kasasında, Unity " + V(c) + " (çekici kökü Blender " + xs[i].ToString("F2", Inv)
-                    + ", 0.80, 1.75), kasa yüzeyi sapması " + (worst * 100f).ToString("F1", Inv) + " cm");
-            }
-        }
-        finally
-        {
-            foreach (var mc in temp) UnityEngine.Object.DestroyImmediate(mc);
-            Physics.SyncTransforms();
-        }
-        foreach (var s in result)
-        {
-            var box = s.GetComponent<BoxCollider>();
-            foreach (var c in Physics.OverlapBox(s.transform.TransformPoint(box.center), box.size * 0.5f, s.transform.rotation))
-                if (c.attachedRigidbody != null && !c.attachedRigidbody.isKinematic)
-                    throw new Exception("Sedye koniyle çakışıyor: " + c.name);
-        }
         return result.ToArray();
     }
 
