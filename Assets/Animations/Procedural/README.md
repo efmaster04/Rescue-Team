@@ -1,4 +1,4 @@
-# Prosedürel animasyon klipleri (r2)
+# Prosedürel animasyon klipleri (r3)
 
 Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen klipler. Hepsi RescueCrew / Patient ortak
 31 kemikli `mixamorig:` iskeleti için, 30 fps, her karede anahtar (bake). Ton: Dear Passengers gibi abartılı ve komik.
@@ -49,3 +49,56 @@ sayıldığından ölçüme katılmaz. Kol–kafa teması ölçülmez.
   `step_length_m`, `stance_travel_m`). Ayak yerdeyken yerel olarak tam hedef hızla geriye kayar.
 - verify ek kontrolleri: FBX kare hızı 30; taşıma kliplerinde klip hedef hızla ileri taşınmış sayılıp her yere basışta
   ayak bileğinin yatay kayması < 3 cm (bilek en alçak yüksekliğe 1.5 cm yakınken yerde sayılır).
+
+## r3: minibüsten çıkarma, halat, sırtta taşıma (13 klip)
+
+| Klip | Süre | Döngü | Karakter | Not |
+|---|---|---|---|---|
+| Patient_SitDazed | 2.0 sn | evet | Hasta | Koltukta sersem: kafa daire çizer, eller kucakta, kısa bacaklar sarkar. Koltuk yüzeyi kök z=0.262 |
+| Patient_SitDazed_ArmSling | 2.0 sn | evet | Hasta (Civilian) | Aynısı, sağ kol askıda |
+| Patient_DraggedOut | 1.5 sn | hayır | Hasta | Oturuştan geriye (+Y) çekilip sırt üstü düşer, bacaklar havada; **kök hareketi** (kalça +0.86 m Y, sonda z≈0.14 fiziksel yatış) |
+| Piggyback_Rider | 1.0 sn | evet | Hasta | Sırttaki hasta; kök taşıyanın Spine1 soketine bağlanır |
+| Extract_Pull | 1.5 sn | hayır | Kurtarıcı | Eğilip içeriden tutar, iki küçük + bir büyük çekiş, eller boşalır, geri sendeler |
+| Rope_Descend | 1.0 sn | evet | Kurtarıcı | Halatta iniş, ayak başına döngüde 2 tıpış adım; kök hızı **-0.6 m/sn** |
+| Rope_Climb | 1.0 sn | evet | Kurtarıcı | Elden ele tırmanış; kök hızı **0.3 m/sn** |
+| Rope_Hang_Idle | 1.5 sn | evet | Kurtarıcı | Halatta asılı bekleme, sallanma, ürkek bakış |
+| Piggyback_PickUp | 1.5 sn | hayır | Kurtarıcı | "Hadi bin!" çömelme; binen **kare 17**'den itibaren sırtta |
+| Piggyback_Rope_Climb | 1.0 sn | evet | Kurtarıcı | Sırtta yükle tırmanış, öne eğik; kök hızı **0.25 m/sn** |
+| Piggyback_Walk | 0.8 sn | evet | Kurtarıcı | Sırtta yükle ağır yürüyüş, **1.2 m/sn** (adım 0.48 m) |
+| Piggyback_PutDown | 1.2 sn | hayır | Kurtarıcı | Binen **kare 16**'ya kadar sırtta; sonra bel ağrısıyla doğrulma |
+| Rope_Pull | 1.0 sn | evet | Kurtarıcı | Kazık yanında ayaklar açık, halatı göğüs hizasında elden ele çeker (~0.25 m/sn halat) |
+
+Önizleme şeritlerindeki koltuk, kaya duvarı, halat ve kazık yalnız render içindir; FBX'lerde yoktur.
+
+### Halat (Unity LineRenderer)
+- `clips_meta.json` → `rope_grip`: tutan kemikler `mixamorig:LeftHand` / `mixamorig:RightHand`, tutma noktası el kemiğinin
+  ~5 cm ilerisi (avuç, el yerel `(0, 0.05, 0)`).
+- Halat klipleri (Rope_Descend/Climb/Hang_Idle, Piggyback_Rope_Climb): halat kök yerelinde **x=0, y=-0.29** dikey çizgisi;
+  kaya duvarı düzlemi **y=-0.36** (ayak tabanları). Kökü duvara göre bu ofsetle yerleştirin, dikey hızı `vertical_speed_mps`
+  ile sürün (oynatma 1.0'da duvardaki ayak kaymaz). Halat: kazık → üstteki el → alttaki el → aşağı sarkan uç.
+- Rope_Pull: halat önden (-Y, uçurum kenarı) gelir, kök yerelinde x=0, z≈0.80 çizgisinde y=-0.40 → -0.26 arası elden ele
+  çekilir; halat: kenar → öndeki el → arkadaki el → kazık (`SM_RopeAnchor` → `RopeAttach`).
+
+### Sırtta taşıma (Piggyback_*)
+- Binen hasta `Piggyback_Rider` oynatır ve taşıyanın `mixamorig:Spine1` kemiğine **rijit** bağlanır: taşıyan bağ pozundayken
+  soket taşıyan kökünün 0.312 m arkasında (Blender +Y = Unity -Z), 0.292 m yukarısında, dönüşü kökle aynı.
+  Unity: taşıyan T-pozdayken Spine1 altına boş `PiggybackSocket` koyup hastayı ona sıfır yerel dönüşümle bağlayın.
+- Taşıyanın elleri binenin diz dışını/altını kavrar (binen döngüsünün t=0 pozuna göre). Binen döngüsü (1.0 sn) taşıyan
+  kliplerinden bağımsız döner.
+- PickUp/PutDown'da binenin bağlı olduğu kareler `rider_attached_frames`; bağlı değilken hasta yerde yatar (DraggedOut sonu).
+
+### Unity import (r3 ekleri)
+- Rig ve Bake Into Pose ayarları r2 ile aynı (Humanoid, Copy From Other Avatar → SK_RescueCrew_Blue; Original).
+- **Loop Time + Loop Pose açık:** Patient_SitDazed(_ArmSling), Piggyback_Rider, Rope_Descend, Rope_Climb, Rope_Hang_Idle,
+  Piggyback_Rope_Climb, Piggyback_Walk, Rope_Pull. Diğerleri tek sefer.
+- Patient_DraggedOut: kalça hem öteler hem yatar. Root Transform Rotation **Bake Into Pose açık** (yoksa obje devrilir);
+  hareketin objeyi gerçekten taşıması istenirse Position (XZ) kapatılır (+0.86 m geriye). Minibüs zemini ile yol arasındaki
+  yükseklik farkını oyun kodu kökü indirerek karşılar.
+- Extract_Pull t≈0.45 sn'de Patient_DraggedOut başlatılırsa büyük çekiş ile hastanın devrilmesi eşleşir.
+
+### Doğrulama (r3 ekleri)
+24 dosya. Yeni kliplerde de kare sayısı, döngü eşitliği, 30 fps, kemik adları/bağ pozu, kol–gövde ≤ 3 cm;
+Piggyback_Walk'ta 1.2 m/sn'de ayak kayması < 3 cm/adım; Piggyback_* kurtarıcı klipleri Piggyback_Rider ile birlikte
+(soket üzerinden) oynatılıp iki mesh'in iç içe geçmesi ≤ 4 cm (yalnız binenin bağlı olduğu karelerde). İç içe geçme: bir
+mesh'in köşesi öbürünün en yakın yüzeyinin hem yüz normaline hem iskelet ekseninden dışa yönüne göre içeride kalıyor ve
+normal yönünde atılan ışın o yüzeyden çıkıyorsa, yüzeye uzaklığı derinlik sayılır (Tourist'in fotoğraf makinesi dahil).

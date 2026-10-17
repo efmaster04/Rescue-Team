@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-// Prosedürel animasyon klipleri (Assets/Animations/Procedural, 11 FBX) için README'deki import önerileri.
+// Prosedürel animasyon klipleri (Assets/Animations/Procedural, 24 FBX; r3 ile 13 yeni) için README'deki import önerileri.
 // Kaynak: sanat reposu Export/Animations/Procedural/README.md (kopyası aynı klasörde).
 //  - Humanoid, Avatar = Copy From Other (SK_RescueCrew_Blue'nun Avatar'ı; aynı 31 kemikli iskelet).
 //  - Scale 1, Convert Units açık, Bake Axis Conversion kapalı.
@@ -21,9 +21,15 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
     {
         "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "PickUp", "PutDown", "GetUp_FromBack", "Revive_Helper",
         "Jump", "Startled", "Lying_HelpWave", "Lying_Groan", "Celebrate",
+        // r3: minibüsten çıkarma, halat, sırtta taşıma
+        "Patient_SitDazed", "Patient_SitDazed_ArmSling", "Patient_DraggedOut", "Piggyback_Rider", "Extract_Pull",
+        "Rope_Descend", "Rope_Climb", "Rope_Hang_Idle", "Piggyback_PickUp", "Piggyback_Rope_Climb", "Piggyback_Walk",
+        "Piggyback_PutDown", "Rope_Pull",
     };
 
-    public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan" };
+    public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan",
+        "Patient_SitDazed", "Patient_SitDazed_ArmSling", "Piggyback_Rider", "Rope_Descend", "Rope_Climb", "Rope_Hang_Idle",
+        "Piggyback_Rope_Climb", "Piggyback_Walk", "Rope_Pull" };
 
     public static string ClipPath(string clip) { return Folder + clip + ".fbx"; }
     public static bool IsLoop(string clip) { return LoopClips.Contains(clip); }
@@ -34,7 +40,7 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
     }
 
     // Sürüm: ayar değişirse artır, Unity klasördeki FBX'leri yeniden import eder.
-    public override uint GetVersion() { return 2; }
+    public override uint GetVersion() { return 3; }
 
     // Fizik zıplamasıyla birlikte oynayan klipler: yükseklik ayaklara göre (Feet).
     public static bool HeightFromFeet(string clip) { return clip == "Jump"; }
@@ -52,6 +58,11 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         importer.importAnimation = true;
         importer.importBlendShapes = false;
         importer.materialImportMode = ModelImporterMaterialImportMode.None; // yalnız iskelet + 1 mm bağ çapası
+        // Kök neden (D2 madde 7): temiz import'ta (Library yok) klasördeki bazı klipler SK_RescueCrew_Blue'dan ÖNCE
+        // import ediliyordu; kaynak Avatar bulunamayınca klip kendi Avatar'ıyla (kol limitleri 0) import ediliyor ve bu
+        // ayar .meta'ya yazılıyordu, kaynak sonradan gelince de yeniden import olmuyordu. Bağımlılık bildirimi kaynağın
+        // önce import edilmesini ve kaynak değişince klibin yeniden import edilmesini sağlar.
+        context.DependsOnArtifact(SourceAvatarPath);
         var source = AssetDatabase.LoadAssetAtPath<Avatar>(SourceAvatarPath);
         if (source != null)
         {

@@ -358,7 +358,16 @@
     "M_Ambulance_Headlight": "#C3C4CD",
     "M_Ambulance_Amber": "#AF8D7A",
     "M_Ambulance_Metal": "#5B5964",
-    "M_Ambulance_Driver": "#49565E"
+    "M_Ambulance_Suit": "#1F4D3A",
+    "M_Ambulance_StripeYellow": "#F1C52D",
+    "M_Ambulance_StripeSilver": "#C7C9BF",
+    "M_Ambulance_Skin": "#BD865A",
+    "M_Ambulance_SkinLight": "#CD9670",
+    "M_Ambulance_HairDark": "#302823",
+    "M_Ambulance_HairBrown": "#6E4732",
+    "M_Ambulance_EyeWhite": "#F2EFE5",
+    "M_Ambulance_Pupil": "#151412",
+    "M_Ambulance_Mouth": "#59382A"
   },
   "palette_samples": {
     "Paint": {
@@ -465,8 +474,44 @@
       "hex": "#AAB3B8",
       "source": "neutral brief assumption"
     },
-    "Driver": {
-      "hex": "#49565E",
+    "Suit": {
+      "hex": "#1F4D3A",
+      "source": "neutral brief assumption"
+    },
+    "StripeYellow": {
+      "hex": "#F1C52D",
+      "source": "neutral brief assumption"
+    },
+    "StripeSilver": {
+      "hex": "#C7C9BF",
+      "source": "neutral brief assumption"
+    },
+    "Skin": {
+      "hex": "#BD865A",
+      "source": "neutral brief assumption"
+    },
+    "SkinLight": {
+      "hex": "#CD9670",
+      "source": "neutral brief assumption"
+    },
+    "HairDark": {
+      "hex": "#302823",
+      "source": "neutral brief assumption"
+    },
+    "HairBrown": {
+      "hex": "#6E4732",
+      "source": "neutral brief assumption"
+    },
+    "EyeWhite": {
+      "hex": "#F2EFE5",
+      "source": "neutral brief assumption"
+    },
+    "Pupil": {
+      "hex": "#151412",
+      "source": "neutral brief assumption"
+    },
+    "Mouth": {
+      "hex": "#59382A",
       "source": "neutral brief assumption"
     }
   },

@@ -1,0 +1,65 @@
+{
+  "name": "SM_RopeAnchor",
+  "units": "meters",
+  "forward": "-Y",
+  "up": "Z",
+  "file": "SM_RopeAnchor.fbx",
+  "triangles": 440,
+  "vertices": 241,
+  "pivot": "Kazığın zemine girdiği nokta (0, 0, 0); zemin z=0. Kazığın 0.10 m'si zemin altında.",
+  "bounds_min_m": [
+    -0.04,
+    -0.126,
+    -0.1
+  ],
+  "bounds_max_m": [
+    0.35,
+    0.166,
+    0.33
+  ],
+  "stake": {
+    "radius_m": 0.022,
+    "top_z_m": 0.33,
+    "buried_m": 0.1
+  },
+  "rope_coil": {
+    "center_xy_m": [
+      0.21,
+      0.02
+    ],
+    "outer_radius_m": 0.146,
+    "height_m": 0.125
+  },
+  "empties": {
+    "RopeAttach": {
+      "position_m": [
+        0.0,
+        0.0,
+        0.27
+      ],
+      "parent": "SM_RopeAnchor",
+      "note": "Halatın bağlandığı yaka, kazık tepesinin hemen altı. Unity LineRenderer halatı bu noktadan başlatır (Unity: yerel (0, 0.27, 0))."
+    }
+  },
+  "materials": {
+    "M_RopeAnchor_Metal": {
+      "srgb": [
+        0.3,
+        0.31,
+        0.33
+      ],
+      "metallic": 0.8
+    },
+    "M_RopeAnchor_Rope": {
+      "srgb": [
+        0.95,
+        0.62,
+        0.12
+      ],
+      "metallic": 0.0
+    }
+  },
+  "textures": "yok (düz renk)",
+  "unity_import": "Scale Factor 1, Convert Units açık, Bake Axis Conversion kapalı; Materials: Import via MaterialDescription. Collider gerekmez (dekor); istenirse kazığa CapsuleCollider (r 0.03, h 0.33).",
+  "mesh_sha256": "861db6e1b6fc6149102b22564f0f4d4dff3fee0f849f3037cb75ab1005da9d15"
+}

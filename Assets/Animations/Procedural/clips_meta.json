@@ -146,7 +146,355 @@
       "preview_mesh": "SK_RescueCrew_Blue",
       "description": "Zıplayıp iki yumruk havaya, kalça sallama.",
       "action_sha256": "3aa6305a49b83ad7f646023ef118623a8bf8cea9b5d0cdb3bda889679b0b5cc1"
+    },
+    "Patient_SitDazed": {
+      "file": "Patient_SitDazed.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Koltukta oturan sersem hasta: kafa yavaş daireler çizip öne düşer, eller kucakta, kısa bacaklar sarkıp sallanır.",
+      "action_sha256": "bc7e6ad830b312f1ea9cac09afc4b068a59b70ccd36dcf0d836184b799f9c9ef",
+      "seat_surface_root_local_z": 0.262
+    },
+    "Patient_SitDazed_ArmSling": {
+      "file": "Patient_SitDazed_ArmSling.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Civilian",
+      "description": "Patient_SitDazed ile aynı; sağ kol askı pozunda (SK_Patient_Civilian için).",
+      "action_sha256": "2a48766db8b8d459a4c25703a434dc597f5312a59068a29131919cfc39c27484",
+      "seat_surface_root_local_z": 0.262
+    },
+    "Patient_DraggedOut": {
+      "file": "Patient_DraggedOut.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": false,
+      "root_motion": true,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Oturuştan geriye (+Y) çekilip sırt üstü yatışa: kollar yel değirmeni, bacaklar havada çırpınır, sonra düşer. Kök hareketi var; sonda fiziksel olarak yatık (kalça z≈0.14, GetUp_FromBack başlangıcı gibi), uzuvlar Patient_LiePose düzeninde.",
+      "action_sha256": "12cd5c2b568a1114ecb4ec494fb1537cb6e68da22f1ebb28ea04074666bc57b4",
+      "hips_displacement_m": [
+        0.0,
+        0.86,
+        -0.227
+      ],
+      "start_pose": "Patient_SitDazed t=0 (oturuş)",
+      "end_pose": "fiziksel sırt üstü yatış (kalça z≈0.14, gövde yatay); kollar yanda, bacaklar düz (Patient_LiePose düzeni). Dik tanımlı Lying_* kliplerine geçerken obje -90° X döndürülür.",
+      "sync": "Extract_Pull t≈0.45 sn (kare 14) anında başlatılırsa büyük çekişle eşleşir."
+    },
+    "Piggyback_Rider": {
+      "file": "Piggyback_Rider.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Sırttaki hasta: kollar taşıyanın omuzlarında, bacaklar yanlarda sallanır, kafa sersem sallanır. Kök, taşıyanın Spine1 soketine bağlanır (bkz. piggyback_socket).",
+      "action_sha256": "016a42f859f03f3db333b001781b825d244572f02fd9aae945fd027aff56fc94",
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      }
+    },
+    "Extract_Pull": {
+      "file": "Extract_Pull.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Arka kapıda öne eğilip içeriden iki elle tutar; iki küçük, bir büyük çekiş; son çekişte eller boşalır, geri sendeleyip toparlanır.",
+      "action_sha256": "c0126d8617067a1bbab52c668b133f8edb200d8f894e3bc4710c363243f49a3a",
+      "grab_time_s": 0.42,
+      "big_pull_time_s": [
+        0.8,
+        1.0
+      ],
+      "hands_inside_root_local_m": [
+        0.13,
+        -0.48,
+        0.6
+      ],
+      "sync": "Patient_DraggedOut bu klibin t≈0.45 sn anında başlatılır."
+    },
+    "Rope_Descend": {
+      "file": "Rope_Descend.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halatta iniş: eller halatta (sol üstte), ayaklar duvarda döngüde ayak başına iki tıpış adım; kafa yukarı, gözler kenarda.",
+      "action_sha256": "33769e244fcc511ced5a2751ea61f0fffa7ca23e333e470642f22de179226195",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "Left": 1.03,
+          "Right": 0.92
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36,
+      "vertical_speed_mps": -0.6
+    },
+    "Rope_Climb": {
+      "file": "Rope_Climb.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halatta elden ele tırmanış: üstteki el tutup aşağı çeker, alttaki bırakıp yukarı uzanır; ayaklar duvarda adımlar.",
+      "action_sha256": "22676c28bd6cad17e6c244fa8b23b3387f44fa09cec4444efaf1d014d765a1b1",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "range": [
+            0.89,
+            1.07
+          ]
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36,
+      "vertical_speed_mps": 0.3
+    },
+    "Rope_Hang_Idle": {
+      "file": "Rope_Hang_Idle.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halatta asılı bekleme: hafif sarkaç sallanması, aşağıya ürkek bakışlar, titreyen dizler.",
+      "action_sha256": "b3f471af6517022867016ecbe18b36dbe37c3300d0f86579b87a3de8c91800fd",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "Left": 1.03,
+          "Right": 0.91
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36
+    },
+    "Piggyback_PickUp": {
+      "file": "Piggyback_PickUp.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırtı dönük çömelip \"hadi bin!\" diye ellerini arkada sallar, diz altlarını kavrar, yük altında titreyerek doğrulur.",
+      "action_sha256": "488e637244e21103af9d8759ba71bdf934a5835fb9af8224c878ac2012130ed8",
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      },
+      "rider_attached_frames": [
+        17,
+        "son"
+      ]
+    },
+    "Piggyback_Rope_Climb": {
+      "file": "Piggyback_Rope_Climb.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırtta hastayla halatta tırmanış: öne eğik, çene yukarı, titreyerek zorlanan elden ele çekiş.",
+      "action_sha256": "aedf48601704832bfbc42da377c2a28d12eaf254fb980c389ab655cda81ed77f",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "range": [
+            0.92,
+            1.07
+          ]
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36,
+      "vertical_speed_mps": 0.25,
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      }
+    },
+    "Piggyback_Walk": {
+      "file": "Piggyback_Walk.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırtta hastayla çömelmiş, öne eğik, sallanan ağır yürüyüş; eller binenin diz altlarında (1.2 m/sn).",
+      "action_sha256": "9f3555ce362a7e923dad829c81a6f1415a26b87e9f325552dc89c3f091a15ef1",
+      "target_speed_mps": 1.2,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.48,
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      }
+    },
+    "Piggyback_PutDown": {
+      "file": "Piggyback_PutDown.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Çömelip sırttakini bırakır, elleri belinde bel ağrısıyla geriye kaykılır, doğrulur.",
+      "action_sha256": "c5ed5b1a5e629f9b28a293cd20cc332a6f2e3924d28f30b9bbf699c24558fce1",
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      },
+      "rider_attached_frames": [
+        1,
+        16
+      ]
+    },
+    "Rope_Pull": {
+      "file": "Rope_Pull.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kazığın yanında, ayaklar açık, dizler kırık: halatı elden ele çeker; her çekişte gövde geriye kaykılır, dizler titrer.",
+      "action_sha256": "6d72e16134d6af06f77b62352b3b42b04cb014f57bc854326dc67654f6985bc9",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "z": 0.8,
+          "y_from": -0.4,
+          "y_to": -0.26
+        },
+        "note": "Halat önden (-Y, uçurum kenarı) gelir; kök yerel x=0, z≈0.80 yatay çizgisinde elden ele çekilir: her el y=-0.40 noktasında tutar, y=-0.26 noktasına çeker, bırakıp öne uzanır (iki el yarım faz kaydırmalı). LineRenderer: uçurumdan öndeki ele, iki el arası, arkadaki elden kazığa. Tutma noktası el kemiğinin ~5 cm ilerisi (avuç)."
+      },
+      "rope_speed_mps": 0.255
     }
   },
-  "actions_sha256": "3453a28dfd5b7dbb468237822c3eea385fa096af305a8d9816c1b9a79872216c"
+  "actions_sha256": "f43ac1f381068444ee3c64ec3213fa1e226da4e328835bac49fdd05dfde27488"
 }
