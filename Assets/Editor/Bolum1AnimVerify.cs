@@ -860,7 +860,8 @@ public static partial class Bolum1AnimVerify
         bool loco = BotAnim.InState(CrewAnimation.StateLocomotion);
         Check("(6) bot çarpılınca ragdoll olup düşüyor, 3 sn sonra kendi kendine GetUp_FromBack ile kalkıyor",
             bot.TimesDowned == downs + 1 && ragdoll && stillDown && Mathf.Abs(upAfter - bot.getUpDelay) <= 0.1f && getUp && kinematic && loco,
-            "ragdoll " + ragdoll + ", 1 sn'de kalça " + M(flung) + " savruldu; kalkış düşmeden " + S(upAfter) + " sonra (beklenen " + S(bot.getUpDelay) + "), GetUp " + getUp + ", sonra Locomotion " + loco);
+            "ragdoll " + ragdoll + ", 1 sn'de kalça " + M(flung) + " savruldu; kalkış düşmeden " + S(upAfter) + " sonra (beklenen " + S(bot.getUpDelay) + "), GetUp " + getUp + ", sonra Locomotion " + loco
+            + " (Startled " + BotAnim.InState(CrewAnimation.StateStartled) + ", GetUp " + BotAnim.InState(CrewAnimation.StateGetUp) + ", araç " + traffic.Vehicles.Count + ")");
         Time.timeScale = 4f;
         yield return Until(() => traffic.Vehicles.Count == 0, 60f, "bot aracı kayboldu");
         Time.timeScale = 1f;
