@@ -76,16 +76,21 @@ public static class Bolum1AnimBuilder
         ac.AddParameter(CrewAnimation.ParamReviving, AnimatorControllerParameterType.Bool);
         foreach (var t in new[] { CrewAnimation.TriggerPickUp, CrewAnimation.TriggerPutDown, CrewAnimation.TriggerJump, CrewAnimation.TriggerStartled, CrewAnimation.TriggerCelebrate })
             ac.AddParameter(t, AnimatorControllerParameterType.Trigger);
+        ac.AddParameter(CrewAnimation.ParamRope, AnimatorControllerParameterType.Int);
+        ac.AddParameter(CrewAnimation.ParamPulling, AnimatorControllerParameterType.Bool);
+        ac.AddParameter(CrewAnimation.ParamAction, AnimatorControllerParameterType.Bool);
 
         var sm = ac.layers[0].stateMachine;
         locomotion.name = CrewAnimation.StateLocomotion;
         var carryStretcher = CarryState(ac, sm, CrewAnimation.StateCarryStretcher, "Carry_Stretcher_Walk", carryStretcherSpeed, new Vector3(300f, 120f));
         var carryCone = CarryState(ac, sm, CrewAnimation.StateCarryCone, "Carry_OneHand_Walk", walkSpeed, new Vector3(300f, 220f));
-        var loops = new[] { locomotion, carryStretcher, carryCone };
+        // D2: sırtta hastayla yürüyüş (Piggyback_Walk 1.2 m/sn'de ×1, beklerken yavaşlatılmış)
+        var carryPiggyback = CarryState(ac, sm, CrewAnimation.StateCarryPiggyback, "Piggyback_Walk", PiggybackSpeed, new Vector3(300f, 320f));
+        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback };
 
         // Döngüler arası (Carry değişince; AnyState tetikleyicileri önceliklidir)
-        for (int a = 0; a < 3; a++)
-            for (int b = 0; b < 3; b++)
+        for (int a = 0; a < loops.Length; a++)
+            for (int b = 0; b < loops.Length; b++)
             {
                 if (a == b) continue;
                 var t = loops[a].AddTransition(loops[b]);
@@ -128,7 +133,7 @@ public static class Bolum1AnimBuilder
         toRevive.duration = 0.25f;
         toRevive.hasFixedDuration = true;
         toRevive.AddCondition(AnimatorConditionMode.If, 0f, CrewAnimation.ParamReviving);
-        for (int c = 0; c < 3; c++)
+        for (int c = 0; c < loops.Length; c++)
         {
             var t = revive.AddTransition(loops[c]);
             t.hasExitTime = false;
@@ -137,10 +142,71 @@ public static class Bolum1AnimBuilder
             t.AddCondition(AnimatorConditionMode.IfNot, 0f, CrewAnimation.ParamReviving);
             t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
         }
+        AddRescueStates(sm, loops);
         EditorUtility.SetDirty(ac);
         Line("Ekip Animator'ı: " + AssetDatabase.GetAssetPath(ac) + " → " + string.Join(", ", sm.states.Select(s => s.state.name))
             + "; taşıma döngüleri sedye " + carryStretcherSpeed.ToString(Inv) + " m/sn, koni " + walkSpeed.ToString(Inv) + " m/sn'de ×" + CarryWalkScale.ToString(Inv)
             + ", beklemede ×" + CarryIdleScale.ToString(Inv));
+    }
+
+    // Sırtta taşıma yürüyüş hızı (Piggyback_Walk target_speed_mps).
+    public const float PiggybackSpeed = 1.2f;
+    // Rope_Pull halatı 0.255 m/sn çeker, halattaki Piggyback_Rope_Climb 0.25 m/sn tırmanır: çekme hızı 0.25'e eşitlenir,
+    // Rope_Pull oynatması 0.25 / 0.255 = 0.98 olur (iki klip aynı halat hızında).
+    public const float RopePullSpeed = 0.25f;
+    public static float RopePullPlayback { get { return RopePullSpeed / MetaFloat("Rope_Pull", "rope_speed_mps", 0.255f); } }
+
+    // D2: çekme, sırta alma/bırakma (PlayAction ile), halat durumları (Rope parametresi), halatı çekme (Pulling).
+    private static void AddRescueStates(AnimatorStateMachine sm, AnimatorState[] loops)
+    {
+        var extract = OneShot(sm, CrewAnimation.StateExtract, "Extract_Pull", 1f, new Vector3(820f, 0f));
+        var pick = OneShot(sm, CrewAnimation.StatePiggybackPickUp, "Piggyback_PickUp", 1f, new Vector3(820f, 60f));
+        var put = OneShot(sm, CrewAnimation.StatePiggybackPutDown, "Piggyback_PutDown", 1f, new Vector3(820f, 120f));
+        var hang = OneShot(sm, CrewAnimation.StateRopeHang, "Rope_Hang_Idle", 1f, new Vector3(820f, 200f));
+        var climb = OneShot(sm, CrewAnimation.StateRopeClimb, "Rope_Climb", 1f, new Vector3(820f, 260f));
+        var descend = OneShot(sm, CrewAnimation.StateRopeDescend, "Rope_Descend", 1f, new Vector3(820f, 320f));
+        var pclimb = OneShot(sm, CrewAnimation.StateRopePiggybackClimb, "Piggyback_Rope_Climb", 1f, new Vector3(820f, 380f));
+        var pull = OneShot(sm, CrewAnimation.StateRopePull, "Rope_Pull", RopePullPlayback, new Vector3(820f, 440f));
+        var ropes = new[] { hang, climb, descend, pclimb };
+        foreach (var a in new[] { extract, pick, put })
+        {
+            // Eylem bitince: halatta değilse taşımaya göre döngüye (halattaysa Action kapanınca AnyState halat durumuna geçer)
+            for (int c = 0; c < loops.Length; c++)
+            {
+                var t = a.AddTransition(loops[c]);
+                t.hasExitTime = true; t.exitTime = 0.95f; t.duration = 0.15f; t.hasFixedDuration = true;
+                t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+                t.AddCondition(AnimatorConditionMode.Equals, 0, CrewAnimation.ParamRope);
+            }
+        }
+        for (int k = 0; k < ropes.Length; k++)
+        {
+            var t = sm.AddAnyStateTransition(ropes[k]);
+            t.canTransitionToSelf = false;
+            t.hasExitTime = false; t.duration = 0.2f; t.hasFixedDuration = true;
+            t.AddCondition(AnimatorConditionMode.Equals, k + 1, CrewAnimation.ParamRope);
+            t.AddCondition(AnimatorConditionMode.IfNot, 0f, CrewAnimation.ParamAction);
+            for (int c = 0; c < loops.Length; c++)
+            {
+                var back = ropes[k].AddTransition(loops[c]);
+                back.hasExitTime = false; back.duration = 0.2f; back.hasFixedDuration = true;
+                back.AddCondition(AnimatorConditionMode.Equals, 0, CrewAnimation.ParamRope);
+                back.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+            }
+        }
+        var toPull = sm.AddAnyStateTransition(pull);
+        toPull.canTransitionToSelf = false;
+        toPull.hasExitTime = false; toPull.duration = 0.25f; toPull.hasFixedDuration = true;
+        toPull.AddCondition(AnimatorConditionMode.If, 0f, CrewAnimation.ParamPulling);
+        for (int c = 0; c < loops.Length; c++)
+        {
+            var t = pull.AddTransition(loops[c]);
+            t.hasExitTime = false; t.duration = 0.3f; t.hasFixedDuration = true;
+            t.AddCondition(AnimatorConditionMode.IfNot, 0f, CrewAnimation.ParamPulling);
+            t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+        }
+        Line("D2 durumları: " + string.Join(", ", new[] { extract, pick, put, hang, climb, descend, pclimb, pull }.Select(s => s.name + " (" + s.motion.name + " x" + s.speed.ToString("F3", Inv) + ")"))
+            + "; sırtta yürüyüş " + PiggybackSpeed.ToString(Inv) + " m/sn, çekme " + RopePullSpeed.ToString(Inv) + " m/sn");
     }
 
     // Taşıma döngüsü: aynı klibin iki çocuğu (hız 0'da yavaşlatılmış, hedef hızda tam) Speed ile karışır.
@@ -189,6 +255,7 @@ public static class Bolum1AnimBuilder
             t.duration = duration;
             t.hasFixedDuration = true;
             t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+            t.AddCondition(AnimatorConditionMode.Equals, 0, CrewAnimation.ParamRope);
         }
     }
 
@@ -216,6 +283,7 @@ public static class Bolum1AnimBuilder
             ac.layers = layers;
             var gs = ac.layers[1].stateMachine.AddState("Groan");
             gs.motion = groan;
+            AddPatientRescueStates(ac.layers[0].stateMachine, "Patient_SitDazed_ArmSling");
             EditorUtility.SetDirty(ac);
             Line("Hasta " + type + ": " + PatientSlingControllerPath + " (taban: " + (liePose != null ? liePose.name : "-") + ", üst katman Lying_Groan, maske: kollar hariç)");
             return ac;
@@ -237,11 +305,20 @@ public static class Bolum1AnimBuilder
             var t2 = w.AddTransition(g);
             t2.hasExitTime = false; t2.duration = 0.5f; t2.hasFixedDuration = true;
             t2.AddCondition(AnimatorConditionMode.IfNot, 0f, Patient.WaveParameter);
+            AddPatientRescueStates(sm, "Patient_SitDazed");
             EditorUtility.SetDirty(ac);
             Line("Hasta Animator'ı: " + PatientLyingControllerPath + " (Groan varsayılan ↔ HelpWave, " + Patient.WaveParameter + ")");
         }
         Line("Hasta " + type + ": " + PatientLyingControllerPath);
         return AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientLyingControllerPath);
+    }
+
+    // D2: koltukta oturma, arka kapıdan çekilme, sırtta binme. Patient.cs Animator.Play ile geçer (geçişsiz durumlar).
+    private static void AddPatientRescueStates(AnimatorStateMachine sm, string sitClip)
+    {
+        sm.AddState(Patient.StateSit, new Vector3(500f, 0f)).motion = Clip(sitClip);
+        sm.AddState(Patient.StateDraggedOut, new Vector3(500f, 60f)).motion = Clip("Patient_DraggedOut");
+        sm.AddState(Patient.StateRider, new Vector3(500f, 120f)).motion = Clip("Piggyback_Rider");
     }
 
     private static AvatarMask NoArmsMask()
@@ -283,6 +360,9 @@ public static class Bolum1AnimBuilder
         var ik = character.GetComponent<FootGroundingIK>();
         crew.disableDuringGetUp = ik != null ? new Behaviour[] { ik } : new Behaviour[0];
         player.knockdown.crewAnimation = crew;
+        // D2: sırt soketi (Spine1 altında, clips_meta piggyback_socket)
+        player.piggybackSocket = Bolum1RescueBuilder.SetupPiggybackSocket(character);
+        Line("Oyuncu sırt soketi: " + player.piggybackSocket.parent.name + "/" + player.piggybackSocket.name + " kökten " + V(character.transform.InverseTransformPoint(player.piggybackSocket.position)) + " (bağ pozu)");
 
         // Oyuncu yeniden doğma (şef kararı 8)
         var respawn = character.AddComponent<PlayerFallRespawn>();

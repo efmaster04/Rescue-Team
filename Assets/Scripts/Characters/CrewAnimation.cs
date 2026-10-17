@@ -24,8 +24,19 @@ public class CrewAnimation : MonoBehaviour
     public const string StateGetUp = "GetUp";
     public const string StateRevive = "ReviveHelper";
     public const string StateCelebrate = "Celebrate";
+    // D2: minibüsten çekme, sırtta taşıma, halat
+    public const string StateExtract = "ExtractPull";
+    public const string StatePiggybackPickUp = "PiggybackPickUp";
+    public const string StatePiggybackPutDown = "PiggybackPutDown";
+    public const string StateCarryPiggyback = "CarryPiggyback";
+    public const string StateRopeHang = "RopeHang", StateRopeClimb = "RopeClimb", StateRopeDescend = "RopeDescend";
+    public const string StateRopePiggybackClimb = "RopePiggybackClimb", StateRopePull = "RopePull";
+    public const string ParamRope = "Rope";        // int: 0 yok, 1 asılı, 2 tırmanış, 3 iniş, 4 sırtta yükle tırmanış (çekiliyor)
+    public const string ParamPulling = "Pulling";  // bool: halatı çekiyor (Rope_Pull)
+    public const string ParamAction = "Action";    // bool: tek seferlik D2 eylemi sürüyor (halat durumlarına geçiş bekler)
+    public const int CarryPiggyback = 3;
 
-    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni
+    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni, 3 sırtta hasta (D2)
     public const string ParamReviving = "Reviving";  // bool
     public const string TriggerPickUp = "PickUp", TriggerPutDown = "PutDown", TriggerJump = "Jump", TriggerStartled = "Startled", TriggerCelebrate = "Celebrate";
 
@@ -51,6 +62,10 @@ public class CrewAnimation : MonoBehaviour
     // Görev sonu kutlaması, hangi görevden (sahnede tek)
     private MissionDirector mission;
     private float lastReviveMark = -100f;
+    private float lastPullMark = -100f;
+    private float actionUntil = -1f;
+    public string LastAction { get; private set; } = "";
+    public int RopeMode { get; private set; }
     private float getUpStart = -1f, getUpEnd = -1f;
     private bool getUpPending;
     private PoseSnapshot getUpFrom;
@@ -105,7 +120,7 @@ public class CrewAnimation : MonoBehaviour
 
     private int CurrentCarry()
     {
-        if (player != null) return player.HeldStretcher != null ? 1 : player.HeldCone != null ? 2 : 0;
+        if (player != null) return player.HeldStretcher != null ? 1 : player.HeldCone != null ? 2 : player.Piggyback != null ? CarryPiggyback : 0;
         if (bot != null) return bot.HeldStretcher != null ? 1 : 0;
         return 0;
     }
@@ -125,16 +140,44 @@ public class CrewAnimation : MonoBehaviour
         }
         if (carry != Carry)
         {
-            if (Carry == 0 && carry != 0) animator.SetTrigger(TriggerPickUp);
-            else if (carry == 0) animator.SetTrigger(TriggerPutDown);
+            // Sırta alma / bırakma kendi klibini PlayAction ile oynatır (genel PickUp/PutDown tetiklenmez)
+            if (carry != CarryPiggyback && Carry != CarryPiggyback)
+            {
+                if (Carry == 0 && carry != 0) animator.SetTrigger(TriggerPickUp);
+                else if (carry == 0) animator.SetTrigger(TriggerPutDown);
+            }
             Carry = carry;
         }
         animator.SetInteger(ParamCarry, carry);
         animator.SetBool(ParamReviving, Time.time - lastReviveMark < 0.2f);
+        animator.SetBool(ParamPulling, Time.time - lastPullMark < 0.2f);
+        animator.SetBool(ParamAction, Time.time < actionUntil);
+        RopeMode = 0;
+        if (player != null && player.Rope != null)
+        {
+            float v = player.Rope.VerticalSpeed;
+            RopeMode = v > 0.01f ? (player.Piggyback != null ? 4 : 2) : v < -0.01f ? 3 : 1;
+        }
+        animator.SetInteger(ParamRope, RopeMode);
     }
 
     // Kaldıran taraf her kare çağırır.
     public void MarkReviving() { lastReviveMark = Time.time; }
+    // Halatı çeken taraf her kare çağırır (D2).
+    public void MarkPulling() { lastPullMark = Time.time; }
+    public bool Pulling { get { return Time.time - lastPullMark < 0.2f; } }
+
+    // Tek seferlik D2 eylemi (ExtractPull, PiggybackPickUp, PiggybackPutDown): doğrudan geçiş, süre boyunca Action açık.
+    public void PlayAction(string state)
+    {
+        LastAction = state;
+        if (!Ready) return;
+        float seconds = state == StatePiggybackPutDown ? 1.2f : 1.5f;
+        actionUntil = Time.time + seconds;
+        animator.SetBool(ParamAction, true);
+        animator.CrossFadeInFixedTime(state, 0.1f, 0, 0f);
+    }
+    public bool InAction { get { return Time.time < actionUntil; } }
 
     private void OnJumped()
     {
@@ -144,7 +187,7 @@ public class CrewAnimation : MonoBehaviour
     private void OnHorn(VehicleAudio source, Vector3 at)
     {
         if (!Ready || IsDown || GettingUp) return;
-        if (CurrentCarry() != 0) return; // taşırken irkilme atlanır
+        if (CurrentCarry() != 0 || InAction || (player != null && player.Rope != null) || Pulling) return; // taşırken / halatta irkilme atlanır
         Vector3 d = at - transform.position;
         if (d.magnitude > startleRadius) return;
         animator.SetTrigger(TriggerStartled);

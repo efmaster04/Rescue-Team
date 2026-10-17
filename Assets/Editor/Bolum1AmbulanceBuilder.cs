@@ -690,7 +690,7 @@ public static class Bolum1AmbulanceBuilder
             + " = ağız ortası + " + (rearS - mouth).ToString("F1", Inv) + " m, boşluğun doğu ucundan " + (rearS - gapEnd).ToString("F1", Inv) + " m doğuda");
 
         // 3) Hastalar
-        var patients = PlacePatients(markers, minivan, root);
+        var patients = Bolum1RescueBuilder.PlacePatients(markers, minivan, root);
 
         // 4) Sedyeler: çekicinin arkasında, bankette yerde
         PlaceStretchers(truck, root);
@@ -751,54 +751,39 @@ public static class Bolum1AmbulanceBuilder
         }
     }
 
-    // Hastalar: patikada, minibüsün batısında (rampaya doğru), sırt üstü. Konum raycast'le seçilir:
+    // Eski (D2 öncesi) patika yatış yerleri: patikada, minibüsün batısında (rampaya doğru), raycast'le seçilir:
     // patika zemini, birbirinden ≥ 1.5 m, uçurum kenarından ≥ 1.5 m, minibüse/çantalara/kayalara değmez.
-    private static Patient[] PlacePatients(Dictionary<string, object> markers, GameObject minivan, Transform parent)
+    // D2'den sonra hastalar burada başlamaz (Bolum1RescueBuilder); eski taşıma doğrulamaları hastaları test başında
+    // bu noktalara yatırır (baş batıya, Unity +X).
+    public static List<Vector3> PathLyingSpots(Dictionary<string, object> markers, Transform minivan, int count, out List<Vector3> normals)
     {
         var groundRoot = GameObject.Find("SM_B1_Ground").transform;
         var path = ((List<object>)Bolum1Coordinates.Obj(markers, "geometry_probes")["path"]).Select(Bolum1Coordinates.Vec3).OrderBy(v => v.x).ToList();
         Vector3 vanBlender = Bolum1Coordinates.Vec3(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(markers, "markers"), "MinivanPlacement"), "position");
         var chosen = new List<Vector3>();
-        var result = new List<Patient>();
-
-        for (int i = 0; i < PatientTypes.Length; i++)
+        normals = new List<Vector3>();
+        for (int i = 0; i < count; i++)
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PatientPrefabPath(PatientTypes[i]));
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            go.transform.SetParent(parent, true);
-            go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-            var patient = go.GetComponent<Patient>();
-            Vector3 hipsInRoot = go.transform.InverseTransformPoint(patient.hips.position);
-
             bool placed = false;
-            // Minibüsün batısından rampaya doğru tara: X (Blender) −2 → −10.5, patika orta çizgisi ± 1 m.
             for (float bx = Mathf.Min(vanBlender.x - 6f, -2f); bx >= -10.5f && !placed; bx -= 0.25f)
             {
                 Vector3 center = PathCenter(path, bx);
                 foreach (float off in new[] { 0f, 0.5f, -0.5f, 1f, -1f })
                 {
                     Vector3 u = Bolum1Coordinates.ToUnity(new Vector3(bx, center.y + off, center.z));
-                    if (!TryLyingSpot(u, groundRoot, minivan.transform, chosen, out Vector3 point, out Vector3 normal, out float cliff)) continue;
-                    // Baş batıya (rampaya doğru): Blender −X = Unity +X
-                    Patient.LiePoseInFrame(hipsInRoot, patient.hipsToBack, out Vector3 lp, out Quaternion lr);
-                    Quaternion frame = Quaternion.LookRotation(Vector3.ProjectOnPlane(Vector3.right, normal).normalized, normal);
-                    go.transform.SetPositionAndRotation(point + frame * lp, frame * lr);
+                    if (!TryLyingSpot(u, groundRoot, minivan, chosen, out Vector3 point, out Vector3 normal, out _)) continue;
                     chosen.Add(point);
+                    normals.Add(normal);
                     placed = true;
-                    Line("Hasta " + PatientTypes[i] + ": kalça altı zemin Unity " + V(point) + " (Blender X " + (-point.x).ToString("F2", Inv)
-                        + ", Y " + (-point.z).ToString("F2", Inv) + "), uçurum kenarına " + (cliff > 3.5f ? "> 3.5" : cliff.ToString("F2", Inv)) + " m");
                     break;
                 }
             }
-            if (!placed) throw new Exception("Hasta için uygun yer bulunamadı: " + PatientTypes[i]);
-            go.name = "Patient_" + PatientTypes[i];
-            result.Add(patient);
+            if (!placed) throw new Exception("Patikada yatış yeri bulunamadı (" + i + ")");
         }
-        for (int a = 0; a < chosen.Count; a++)
-            for (int b = a + 1; b < chosen.Count; b++)
-                Line("  hasta arası " + PatientTypes[a] + "–" + PatientTypes[b] + ": " + Vector3.Distance(chosen[a], chosen[b]).ToString("F2", Inv) + " m");
-        return result.ToArray();
+        return chosen;
     }
+
+    public static void ReportLine(string s) { Line(s); }
 
     private static Vector3 PathCenter(List<Vector3> path, float bx)
     {
@@ -844,8 +829,8 @@ public static class Bolum1AmbulanceBuilder
         // Çakışma: minibüs, çantalar, kayalar (mekân zemini/yol/korkuluk hariç her collider).
         var env = new[] { "SM_B1_Ground", "SM_B1_Road", "SM_B1_Guardrail" }.Select(n => GameObject.Find(n).transform).ToArray();
         foreach (var c in Physics.OverlapBox(point + Vector3.up * 0.35f, new Vector3(1.0f, 0.3f, 0.5f), Quaternion.identity))
-            if (!env.Any(e => c.transform.IsChildOf(e))) return false;
-        foreach (var c in minivan.GetComponentsInChildren<Collider>())
+            if (!env.Any(e => c.transform.IsChildOf(e)) && !GroundProbe.IsMovingGameObject(c)) return false; // taşıyıcılar, hastalar, sedyeler (test sırasında) sayılmaz
+        foreach (var c in minivan.GetComponentsInChildren<Collider>().Where(c => c.enabled && c.GetComponentInParent<Patient>() == null))
             if (Vector3.Distance(c.ClosestPoint(point + Vector3.up * 0.3f), point + Vector3.up * 0.3f) < 1f) return false;
         return true;
     }

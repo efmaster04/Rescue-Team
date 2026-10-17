@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaneFollower
   lane: {fileID: 0}
-  cruiseSpeed: 12
+  cruiseSpeed: 13
   acceleration: 3
   braking: 6
   wheels:
@@ -132,7 +132,7 @@ MonoBehaviour:
   hornHighHz: 590
   engineIdlePitch: 0.7
   enginePitchRange: 0.8
-  referenceSpeed: 12
+  referenceSpeed: 13
   hornCooldown: 1.5
 --- !u!82 &9020042339054835156
 AudioSource:

@@ -1617,6 +1617,8 @@ MonoBehaviour:
   - {fileID: 7350746413763163825}
   - {fileID: 3471221737957905475}
   - {fileID: 6022599764092338641}
+  startSeated: 0
+  onLedge: 0
 --- !u!1 &4163318339132610071
 GameObject:
   m_ObjectHideFlags: 0

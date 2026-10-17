@@ -26,11 +26,20 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public float gravity = -20f;
     [Tooltip("Araç çarpınca düşme ve arkadaş kaldırması (ragdoll).")]
     public PlayerKnockdown knockdown;
+    [Header("D2: sırtta taşıma ve halat")]
+    [Tooltip("Sırtta hastayla yürüme hızı (m/sn; Piggyback_Walk target_speed_mps). Koşulamaz.")]
+    public float piggybackSpeed = 1.2f;
+    [Tooltip("Sırttaki hastanın bağlandığı boş obje (Spine1 altında, clips_meta piggyback_socket).")]
+    public Transform piggybackSocket;
 
     public Transform Root { get { return transform; } }
     public StretcherController HeldStretcher { get; set; }
     // Elde taşınan koni (en fazla 1). Yalnız PlayerInteraction yazar.
     public TrafficCone HeldCone { get; set; }
+    // Sırttaki hasta (D2). Yalnız PlayerInteraction yazar (SetPiggyback).
+    public Patient Piggyback { get; private set; }
+    // Bağlı olunan halat (D2); halattayken CharacterController kapalı, konum halattan gelir.
+    public RopeAnchor Rope { get; private set; }
     public bool IsDown { get { return knockdown != null && knockdown.IsDown; } }
 
     // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13); araç çarpıp düşünce kaldırılana kadar kontrol yok.
@@ -48,7 +57,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     private Vector3 steepNormal;
     private float steepUntil;
     public float LastLandingDrop { get; private set; }
-    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : runHeld ? runSpeed : moveSpeed;
+    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : runHeld ? runSpeed : moveSpeed;
     private float verticalSpeed;
     private float controlLostUntil = -1f;
     private Vector3 knockRemaining;     // itilme yer değiştirmesi (kısa sürede uygulanır)
@@ -83,7 +92,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     {
         controller.enabled = false;
         transform.SetPositionAndRotation(position, rotation);
-        controller.enabled = true;
+        controller.enabled = Rope == null;
         verticalSpeed = 0f;
         lastGroundHeight = position.y;
         airborne = true;
@@ -103,6 +112,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // Yeniden doğma (şef kararı 8): elindekini bırakır, yerdeyse ayağa kalkar, verilen noktaya ışınlanır.
     public void RespawnAt(Vector3 position, Quaternion rotation)
     {
+        DropPiggyback(Vector3.zero);
+        if (Rope != null) { var r = Rope; Rope = null; r.Detach(this, position, rotation); }
         if (HeldStretcher != null) HeldStretcher.Release(this);
         if (HeldCone != null)
         {
@@ -142,6 +153,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public void KnockDown(Vector3 velocity)
     {
         if (knockdown == null || knockdown.IsDown) return;
+        DropPiggyback(velocity * 0.5f);
         if (HeldStretcher != null) HeldStretcher.Release(this);
         if (HeldCone != null)
         {
@@ -156,6 +168,45 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         knockdown.KnockDown(velocity);
     }
 
+    // ---- D2: sırtta taşıma ----
+    public void SetPiggyback(Patient p)
+    {
+        Piggyback = p;
+        if (p != null && piggybackSocket != null) p.AttachToBack(piggybackSocket);
+    }
+
+    public Patient ReleasePiggyback()
+    {
+        var p = Piggyback;
+        Piggyback = null;
+        return p;
+    }
+
+    // Araç çarpması / yeniden doğma: sırttaki hasta düşer (ragdoll), sonra sedyeyle alınır.
+    private void DropPiggyback(Vector3 velocity)
+    {
+        if (Piggyback == null) return;
+        var p = ReleasePiggyback();
+        p.Fall(velocity);
+    }
+
+    // ---- D2: halat ----
+    public void AttachRope(RopeAnchor rope)
+    {
+        Rope = rope;
+        controller.enabled = false;
+        verticalSpeed = 0f;
+        jumpRequested = false;
+        transform.SetPositionAndRotation(rope.ClimbPoint(rope.T), rope.ClimbRotation);
+        HorizontalVelocity = Vector3.zero;
+    }
+
+    public void DetachRope(Vector3 position, Quaternion rotation)
+    {
+        Rope = null;
+        Teleport(position, rotation);
+    }
+
     private void Update()
     {
         float dt = Time.deltaTime;
@@ -163,6 +214,16 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         if (IsDown)
         {
             HorizontalVelocity = Vector3.zero;
+            return;
+        }
+        if (Rope != null)
+        {
+            // Halatta: konum halattan; W/S yalnız kontrol varken (sırta alma / çekme animasyonu sürerken yok)
+            jumpRequested = false;
+            Vector3 at = Rope.Step(this, moveInput, HasControl, dt);
+            if (Rope != null) transform.SetPositionAndRotation(at, Rope.ClimbRotation);
+            HorizontalVelocity = Vector3.zero;
+            if (animator != null && animator.runtimeAnimatorController != null) animator.SetFloat(speedParameter, 0f);
             return;
         }
 
@@ -195,7 +256,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             verticalSpeed = -2f;
         }
         else airborne = true;
-        if (jumpRequested && supported && HasControl)
+        if (jumpRequested && supported && HasControl && Piggyback == null) // sırtta hastayla zıplanmaz (D2, sade seçim)
         {
             verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
             airborne = true;

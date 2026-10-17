@@ -69,7 +69,7 @@ public class NpcBody : MonoBehaviour
 
     private void Push(Vector3 direction, float distance)
     {
-        if (!Solid || (bot != null && bot.HeldStretcher != null)) return;
+        if (!Solid || (bot != null && (bot.HeldStretcher != null || bot.Pulling))) return; // halatı çeken bot itilmez (D2)
         Vector3 delta = direction * Mathf.Min(distance, pushSpeed * Time.deltaTime);
         if (patient != null)
         {

@@ -163,6 +163,8 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
             return;
         }
         bool reviving = ReviveDownedPlayer(Time.deltaTime);
+        if (!reviving && HeldStretcher == null) PullRope(Time.deltaTime);
+        else Pulling = false;
         if (!reviving && HeldStretcher != null)
         {
             // Lider bıraktıysa ya da yardım kapatıldıysa bot da bırakır.
@@ -178,6 +180,27 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         if (animator != null && animator.runtimeAnimatorController != null)
             animator.SetFloat(speedParameter, delta.magnitude / dt, 0.1f, dt);
         lastPosition = transform.position;
+    }
+
+    // D2 kararı 4: sırtında hastayla halatta olan arkadaşı yukarı çeker (multiplayer gelene kadar). Kazığın arkasına
+    // (pullerStand) ışınlanır, E basılı tutar gibi her kare çeker (Rope_Pull). Yardım kapalıysa çekmez, halattaki aşağıda kalır.
+    public bool Pulling { get; private set; }
+    private bool PullRope(float dt)
+    {
+        Pulling = false;
+        if (!assistEnabled || !isActiveAndEnabled || IsDown) return false;
+        if (crewAnimation != null && crewAnimation.GettingUp) return false;
+        foreach (var rope in RopeAnchor.All)
+        {
+            if (rope == null || !rope.NeedsPull || rope.pullerStand == null) continue;
+            transform.SetPositionAndRotation(rope.pullerStand.position, rope.pullerStand.rotation);
+            lastPosition = transform.position;
+            if (!rope.Pull(transform, animator, dt)) continue;
+            if (crewAnimation != null) crewAnimation.MarkPulling();
+            Pulling = true;
+            return true;
+        }
+        return false;
     }
 
     // Kendi kendine kalkış: kök kalçanın altındaki zemine gelir, ragdoll kapanır, GetUp_FromBack ragdoll pozundan oynar.
