@@ -111,7 +111,7 @@ public static partial class Bolum1AnimVerify
     private static void CheckControllers()
     {
         var ac = AssetDatabase.LoadAssetAtPath<AnimatorController>(Bolum1AmbulanceBuilder.LocomotionControllerPath);
-        var want = new[] { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryCone, CrewAnimation.StatePickUp, CrewAnimation.StatePutDown,
+        var want = new[] { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCone, CrewAnimation.StatePickUp, CrewAnimation.StatePutDown,
             CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate };
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
@@ -442,8 +442,10 @@ public static partial class Bolum1AnimVerify
         mission.Begin(TestSchedule(99999f, 99999f)); // ambulans gelmesin (ambulans testinde yeniden)
         traffic.Begin(TestSettings(false));           // doğal trafik yok
         // D2: minibüs, halat, sırtta taşıma (taze sahnede), sonra eski fazlar için hastalar patikaya
+        yield return PhaseE2IndicatorInVehicle(); // E2: hastalar minibüsteyken gösterge
         yield return PhaseRescue();
         Bolum1TestPatients.LayOnPath(mission.patients);
+        CheckE2IndicatorOutside();
         var tourist = PatientNamed("Tourist");
         parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
         ParkCarriersOffLane();
@@ -454,6 +456,10 @@ public static partial class Bolum1AnimVerify
         ParkCarriersOffLane();
         yield return PhasePatients();
         yield return PhaseStretcher();
+        yield return PhaseE2Carry();
+        yield return PhaseE2RampStretcher();
+        yield return PhaseE2Slope();
+        yield return PhaseE2GlassRender();
         yield return PhaseCone();
         yield return PhaseJump();
         yield return PhaseHorn();
@@ -561,7 +567,7 @@ public static partial class Bolum1AnimVerify
         bool pickUp = PlayerAnim.InState(CrewAnimation.StatePickUp);
         bool botPickUp = BotAnim.InState(CrewAnimation.StatePickUp);
         yield return Seconds(1.2f);
-        bool carryIdle = PlayerAnim.InState(CrewAnimation.StateCarryStretcher) && BotAnim.InState(CrewAnimation.StateCarryStretcher);
+        bool carryIdle = PlayerAnim.InState(CrewAnimation.StateCarryStretcher) && BotAnim.InState(CrewAnimation.StateCarryStretcherFront); // E2: bot ön uçta
         bool raised = s1.IsRaised;
         // Yürü: kameranın baktığı yöne (girdi kamera göreli) 2.6 sn; hız oturunca (0.8 sn) ayak kayması ölçülür
         var cam = Player.cameraTransform;

@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &55189820216495927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7496299952714766370}
+  m_Layer: 0
+  m_Name: LieFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7496299952714766370
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 55189820216495927}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000053385083, y: -0.7071068, z: -0.7071067, w: 0.000000053385072}
+  m_LocalPosition: {x: -3.6000205e-14, y: 0.00000023841858, z: -0.049999952}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4177769785836843742}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3205057087821168264
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,7 +474,7 @@ MonoBehaviour:
   loadPoint: {fileID: 322847339309097780}
   patientSlots:
   - {fileID: 34453078158910074}
-  - {fileID: 3096070738077185196}
+  - {fileID: 7496299952714766370}
   flashLeft:
   - {fileID: 216884021857928518}
   - {fileID: 7568207879574539507}
@@ -501,37 +532,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3941439107393867660}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &9030678877241160350
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3096070738077185196}
-  m_Layer: 0
-  m_Name: LieFrame
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3096070738077185196
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9030678877241160350}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.000000053385083, y: -0.7071068, z: -0.7071067, w: 0.000000053385072}
-  m_LocalPosition: {x: -3.6000205e-14, y: 0.00000023841858, z: -0.049999952}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4177769785836843742}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2467925874065199183
 PrefabInstance:
@@ -593,7 +593,7 @@ PrefabInstance:
       addedObject: {fileID: 34453078158910074}
     - targetCorrespondingSourceObject: {fileID: 2001215607458816657, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3096070738077185196}
+      addedObject: {fileID: 7496299952714766370}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8277451755345236158, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1

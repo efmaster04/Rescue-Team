@@ -311,6 +311,10 @@ public class PlayerInteraction : MonoBehaviour
             case Action.Grab:
                 if (targetStretcher.Grab(player, targetFront, false))
                 {
+                    // E2: iki taşıyıcı da sedyenin baş yönüne bakar (öndeki kollar arkada çeker, arkadaki önünde tutar).
+                    Vector3 heading = targetStretcher.handleFront.position - targetStretcher.handleRear.position;
+                    heading.y = 0f;
+                    if (heading.sqrMagnitude > 1e-4f) player.transform.rotation = Quaternion.LookRotation(heading.normalized, Vector3.up);
                     if (helper != null && helper.CanAssist)
                         helper.Assist(player, targetStretcher, targetFront);
                     targetStretcher.NotifyIfUnderstaffed();

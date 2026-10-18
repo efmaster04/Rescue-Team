@@ -252,10 +252,10 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         // Eğimde iki sapın gerçek mesafesini koru; yatay mesafeyi yükseklik farkından çöz.
         for (int i = 0; i < 4; i++)
         {
-            root = leaderHand + axis * horizontalSpan - forward * (front ? -0.19f : 0.252f);
+            root = leaderHand + axis * horizontalSpan - forward * StretcherHandIK.MarkerAhead(front);
             root.y = leader.Root.position.y;
             if (GroundProbe.Find(root + Vector3.up * 2f, 8f, out RaycastHit ground)) root.y = ground.point.y;
-            float dy = root.y + 0.665f - leaderHand.y;
+            float dy = root.y + StretcherHandIK.HandleHeight - leaderHand.y;
             horizontalSpan = Mathf.Sqrt(Mathf.Max(0.01f, s.HandleSpan * s.HandleSpan - dy * dy));
         }
         transform.SetPositionAndRotation(root, Quaternion.LookRotation(forward, Vector3.up));

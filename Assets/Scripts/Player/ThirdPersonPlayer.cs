@@ -68,7 +68,6 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-        controller.slopeLimit = 35f;
         lastGroundHeight = transform.position.y;
     }
 

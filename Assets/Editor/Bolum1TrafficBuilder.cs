@@ -100,9 +100,23 @@ public static class Bolum1TrafficBuilder
         material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
         material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
         material.SetFloat("_ZWrite", 0f);
-        material.SetFloat("_Smoothness", 0.65f);
-        material.SetFloat("_Metallic", 0.05f);
+        // Cam mesh'inin normalleri içe bakıyor (ölçüm: arka yüz kesmede cam dışarıdan hiç çizilmiyordu); iki yüz de çizilir.
+        material.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Off);
+        // Yansıma da opaklıkla çarpılır ("Preserve Specular" kapalı); yoksa gökyüzü yansıması camı açık gri-maviye boyuyordu.
+        material.SetFloat("_BlendModePreserveSpecular", 0f);
+        material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        material.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+        material.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        // Hafif yansıma. Cam normalleri içe baktığı için dışarıdan bakışta Fresnel en yüksek çıkıyor; parlaklık 0.5 iken
+        // yansıma camı açık griye boyuyordu (ölçüm: ekranda parlaklık 0.32). 0.1 ile yansıma hafif kalır (ölçüm: 5 araçta ekranda parlaklık ≤ 0.2).
+        material.SetFloat("_Smoothness", 0.1f);
+        material.SetFloat("_EnvironmentReflections", 1f);
+        material.DisableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+        material.SetFloat("_Metallic", 0f);
+        material.SetOverrideTag("RenderType", "Transparent");
         material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        material.SetShaderPassEnabled("DepthOnly", false);
+        material.SetShaderPassEnabled("ShadowCaster", false); // cam gölge düşürmesin
         material.renderQueue = 3000;
         EditorUtility.SetDirty(material);
         return material;
