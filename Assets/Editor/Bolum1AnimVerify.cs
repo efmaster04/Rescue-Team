@@ -445,11 +445,11 @@ public static partial class Bolum1AnimVerify
         yield return PhaseE2IndicatorInVehicle(); // E2: hastalar minibüsteyken gösterge
         yield return PhaseRescue();
         Bolum1TestPatients.LayOnPath(mission.patients);
-        CheckE2IndicatorOutside();
         var tourist = PatientNamed("Tourist");
         parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
         ParkCarriersOffLane();
         yield return Seconds(1f);
+        CheckE2IndicatorOutside(); // E2: dışarıdaki hastaların göstergesi başlarının üstünde
         refAnkle = AnkleHeight(Player.GetComponent<Animator>(), Player.transform.position);
 
         yield return PhaseCorrections();

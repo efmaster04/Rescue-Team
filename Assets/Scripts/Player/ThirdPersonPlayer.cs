@@ -61,6 +61,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public int SlideStarts { get; private set; }
     public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : runHeld ? runSpeed : moveSpeed;
     private float verticalSpeed;
+    private Vector3 moveWish; // bu karenin yatay hareket isteği (OnControllerColliderHit okur)
+    private bool walkableUnderNow; // bu karede ayağın altı yürünebilir zemin (OnControllerColliderHit okur)
     private float controlLostUntil = -1f;
     private Vector3 knockRemaining;     // itilme yer değiştirmesi (kısa sürede uygulanır)
     private float knockTimeLeft;
@@ -144,7 +146,11 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     {
         if (!GroundProbe.IsMovingGameObject(hit.collider) && hit.normal.y > 0.01f
             && hit.normal.y < Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad)
-            && hit.point.y < transform.position.y + controller.radius + 0.15f)
+            && hit.point.y < transform.position.y + controller.radius + 0.15f
+            // E2: ayak yürünebilir zemindeyken (ör. patikada dik banka değerken) yan temas sayılmaz; yükselirken yalnız
+            // yüzeye doğru itiyorsa sayılır (dik yamaca zıplayarak tırmanma yine engellenir).
+            && !walkableUnderNow
+            && (verticalSpeed <= 0f || Vector3.Dot(moveWish, -Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized) > 0.1f))
         {
             steepNormal = hit.normal;
             steepUntil = Time.time + 0.15f;
@@ -256,7 +262,12 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         bool groundFound = GroundProbe.Find(transform.position + Vector3.up * 0.2f, 0.55f, out RaycastHit support);
         bool steepGround = groundFound && support.normal.y < Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad);
         if (steepGround) { steepNormal = support.normal; steepUntil = Time.time + 0.08f; }
-        bool sliding = Time.time < steepUntil;
+        // E2: ayağın altı yürünebilir zeminse (ör. patikada dik banka yaslanmış) yandaki dik temas kaydırmaz.
+        bool walkableUnder = groundFound && !steepGround && support.distance <= 0.35f; // 0.2 ışın başı + deri payı
+        walkableUnderNow = walkableUnder;
+        bool sliding = Time.time < steepUntil && !walkableUnder;
+        // Yerinde zıplarken yükselişte kayma yok; dik yüzeye doğru itiyorsa var (zıplayarak tırmanma engellenir).
+        if (sliding && verticalSpeed > 0f && Vector3.Dot(wish, -Vector3.ProjectOnPlane(steepNormal, Vector3.up).normalized) <= 0.1f) sliding = false;
         if (sliding && !IsSliding) SlideStarts++;
         IsSliding = sliding;
         bool supported = controller.isGrounded && !sliding;
@@ -283,7 +294,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         verticalSpeed += gravity * dt;
 
         // Dik yüzeye havada temas da tırmanış sayılır; yeniden zıplamaya dayanak olmaz.
-        if (Time.time < steepUntil)
+        if (sliding)
         {
             Vector3 outward = Vector3.ProjectOnPlane(steepNormal, Vector3.up).normalized;
             wish = outward * 2f;
@@ -301,11 +312,12 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         }
 
         Vector3 before = transform.position;
+        moveWish = wish;
         Vector3 horizontal = NpcBody.RestrictMotion(this, wish * dt + knock, controller.radius);
         if (controller.enabled)
         {
             controller.Move(horizontal + Vector3.up * verticalSpeed * dt);
-            if (Time.time < steepUntil && transform.position.y > before.y)
+            if (sliding && transform.position.y > before.y)
             {
                 // Fizik çözümünün eğime bastırarak verdiği yukarı adımı geri al.
                 Vector3 corrected = before + Vector3.ProjectOnPlane(steepNormal, Vector3.up).normalized * dt * 2f;
@@ -314,7 +326,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
                 controller.enabled = true;
                 verticalSpeed = Mathf.Min(verticalSpeed, -2f);
             }
-            if (airborne && controller.isGrounded && verticalSpeed < 0f && Time.time >= steepUntil)
+            if (airborne && controller.isGrounded && verticalSpeed < 0f && !sliding)
             {
                 LastLandingDrop = lastGroundHeight - transform.position.y;
                 airborne = false;

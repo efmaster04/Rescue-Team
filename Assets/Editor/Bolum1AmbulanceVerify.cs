@@ -704,7 +704,8 @@ public static class Bolum1AmbulanceVerify
         Vector3 bPos = lp - back * 1.3f;
         if (GroundProbe.Find(pPos + Vector3.up * 1.5f, 5f, out RaycastHit g)) pPos.y = g.point.y + 0.02f;
         if (GroundProbe.Find(bPos + Vector3.up * 1.5f, 5f, out g)) bPos.y = g.point.y;
-        Player.Teleport(pPos, Quaternion.LookRotation(back));
+        // E2: arka taşıyıcı sedyenin baş yönüne (ambulansa) bakar; sedye önünde, bot ambulans tarafında.
+        Player.Teleport(pPos, Quaternion.LookRotation(-back));
         bot.transform.position = bPos;
         var patient = s.Passenger;
         if (expectLoad)

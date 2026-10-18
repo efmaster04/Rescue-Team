@@ -198,7 +198,12 @@ public static partial class Bolum1AnimVerify
         bot.assistEnabled = true;
         var s = Stretcher(0);
         var p = PatientNamed("Tourist");
+        // Patikada, hastanın yatış yönünde (yol boyunca) taze başlangıç: önceki fazın bıraktığı yön yamaca dönük olabilir.
+        if (Player.HeldStretcher != null) { Interaction.Interact(); yield return Seconds(1f); }
+        Bolum1TestPatients.LayOnPath(Mission.patients);
+        yield return Seconds(0.5f);
         yield return PutPatientOnStretcher(p, s);
+        yield return Seconds(0.5f);
         Vector3 startPos = s.transform.position;
         Quaternion startRot = s.transform.rotation;
         Transform oldCam = Player.cameraTransform;
@@ -218,19 +223,23 @@ public static partial class Bolum1AnimVerify
             float t0 = Time.time;
             int frames = 0, clipOk = 0, unreachable = 0;
             float worstPlayer = 0f, worstBot = 0f, worstShoulder = 0f;
+            string worstInfo = "";
             bool captured = playerFront;
             while (Time.time - t0 < 2.4f)
             {
                 yield return null;
-                if (Time.time - t0 > 0.6f && Time.time - t0 < 1.4f) Drive(Quaternion.Euler(0f, 25f, 0f) * heading); // hafif dönüş de ölçülsün
-                else Drive(heading);
+                Drive(heading);
                 if (pik.Weight < 1f || bik.Weight < 1f) continue;
                 frames++;
                 bool pState = PlayerAnim.InState(playerFront ? CrewAnimation.StateCarryStretcherFront : CrewAnimation.StateCarryStretcher);
                 bool bState = BotAnim.InState(playerFront ? CrewAnimation.StateCarryStretcher : CrewAnimation.StateCarryStretcherFront);
                 if (pState && bState) clipOk++;
-                worstPlayer = Mathf.Max(worstPlayer, GripError(Player, pik));
-                worstBot = Mathf.Max(worstBot, GripError(bot, bik));
+                float ep = GripError(Player, pik), eb = GripError(bot, bik);
+                if (Mathf.Max(ep, eb) > Mathf.Max(worstPlayer, worstBot))
+                    worstInfo = " (en kötü kare t=" + (Time.time - t0).ToString("F2", Inv) + " sn, sedye " + s.CurrentMode + ", tutan oyuncu/bot " + (Player.HeldStretcher == s) + "/" + (bot.HeldStretcher == s)
+                        + ", sap–işaret oyuncu " + M(Vector3.Distance(s.HandleFor(Player).position, StretcherHandIK.MarkerPoint(Player))) + " bot " + M(Vector3.Distance(s.HandleFor(bot).position, StretcherHandIK.MarkerPoint(bot))) + ", bot düştü " + bot.IsDown + ")";
+                worstPlayer = Mathf.Max(worstPlayer, ep);
+                worstBot = Mathf.Max(worstBot, eb);
                 unreachable += pik.UnreachableHands + bik.UnreachableHands;
                 worstShoulder = Mathf.Max(worstShoulder, Mathf.Max(pik.MaximumShoulderDistance, bik.MaximumShoulderDistance));
                 if (!captured && Time.time - t0 > 1.6f)
@@ -248,7 +257,7 @@ public static partial class Bolum1AnimVerify
             Check("(E2-1) " + role + ": klip ataması ve el–sap ≤ 3 cm (her kare)",
                 frames > 30 && clipOk == frames && worstPlayer <= E2GripTolerance && worstBot <= E2GripTolerance && unreachable == 0,
                 "kare " + frames + ", doğru klip " + clipOk + "; en kötü el–sap oyuncu " + (worstPlayer * 100f).ToString("F2", Inv) + " cm, bot "
-                + (worstBot * 100f).ToString("F2", Inv) + " cm; ulaşılamayan el " + unreachable + "; omuz→hedef en çok " + M(worstShoulder));
+                + (worstBot * 100f).ToString("F2", Inv) + " cm; ulaşılamayan el " + unreachable + "; omuz→hedef en çok " + M(worstShoulder) + worstInfo);
             // Bırak: IK birkaç karede yumuşakça kapanır
             Interaction.Interact();
             var weights = new List<float>();
