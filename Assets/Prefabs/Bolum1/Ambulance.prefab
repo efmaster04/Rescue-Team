@@ -442,8 +442,8 @@ MonoBehaviour:
   rearStep: {fileID: 6177171324180793513}
   loadPoint: {fileID: 322847339309097780}
   patientSlots:
-  - {fileID: 190757884010273865}
   - {fileID: 34453078158910074}
+  - {fileID: 3096070738077185196}
   flashLeft:
   - {fileID: 216884021857928518}
   - {fileID: 7568207879574539507}
@@ -500,9 +500,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4177769785836843742}
+  m_Father: {fileID: 3941439107393867660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5853100316102449165
+--- !u!1 &9030678877241160350
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -510,7 +510,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 190757884010273865}
+  - component: {fileID: 3096070738077185196}
   m_Layer: 0
   m_Name: LieFrame
   m_TagString: Untagged
@@ -518,20 +518,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &190757884010273865
+--- !u!4 &3096070738077185196
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5853100316102449165}
+  m_GameObject: {fileID: 9030678877241160350}
   serializedVersion: 2
   m_LocalRotation: {x: 0.000000053385083, y: -0.7071068, z: -0.7071067, w: 0.000000053385072}
   m_LocalPosition: {x: -3.6000205e-14, y: 0.00000023841858, z: -0.049999952}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3941439107393867660}
+  m_Father: {fileID: 4177769785836843742}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2467925874065199183
 PrefabInstance:
@@ -590,10 +590,10 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1480866781712981955, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 190757884010273865}
+      addedObject: {fileID: 34453078158910074}
     - targetCorrespondingSourceObject: {fileID: 2001215607458816657, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 34453078158910074}
+      addedObject: {fileID: 3096070738077185196}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8277451755345236158, guid: b72384eb2c8e92840bd28d3d00c791f5, type: 3}
       insertIndex: -1

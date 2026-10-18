@@ -61,7 +61,7 @@ public static class Bolum1SceneBuilder
         }
     }
 
-    public static void Build(bool updateBuildSettings = true)
+    public static void Build()
     {
         // Ambulans döngüsü asset ve prefab'ları (yer tutucular dahil) sahneden önce kurulur.
         Bolum1AmbulanceBuilder.BuildAssets();
@@ -153,7 +153,7 @@ public static class Bolum1SceneBuilder
         var entry = buildScenes.Find(s => s.path == ScenePath);
         if (entry == null) buildScenes.Add(new EditorBuildSettingsScene(ScenePath, true));
         else entry.enabled = true;
-        if (updateBuildSettings) EditorBuildSettings.scenes = buildScenes.ToArray();
+        EditorBuildSettings.scenes = buildScenes.ToArray();
         AssetDatabase.SaveAssets();
     }
 
