@@ -31,6 +31,14 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public float piggybackSpeed = 1.2f;
     [Tooltip("Sırttaki hastanın bağlandığı boş obje (Spine1 altında, clips_meta piggyback_socket).")]
     public Transform piggybackSocket;
+    [Header("E4: taşıma yön kilidi")]
+    [Tooltip("Açıkken sedye taşırken yardımcı botun hedefi dik yüzeye (bank, yamaç, duvar) ya da collider içine düşecekse o yöne dönüş ve yürüyüş durur (yerinde kalır, başka yöne dönebilir). Yalnız taşıma sırasında; görünmez duvar değildir.")]
+    public bool stretcherWallGuard = true;
+    // E4 ölçüm: engellenen dönüş / yürüyüş kare sayısı ve son kare engelli miydi
+    public int CarryTurnBlocks { get; private set; }
+    public int CarryMoveBlocks { get; private set; }
+    public bool CarryBlockedNow { get; private set; }
+    public string LastCarryBlockReason { get; private set; } = "";
 
     public Transform Root { get { return transform; } }
     public StretcherController HeldStretcher { get; set; }
@@ -90,6 +98,18 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     {
         if (HeldStretcher != null) return StretcherHandIK.MarkerPoint(this);
         return CarrierRegistry.HandPoint(transform, rules != null ? rules.handHeight : 0.72f, rules != null ? rules.handReach : 0.3f, towards);
+    }
+
+    // E4: tuttuğum sedyenin öbür ucunu izleyen yardımcı bot (yoksa null; sedye kalkık değilse kilit yok).
+    private StretcherHelperBot FollowerBot()
+    {
+        if (HeldStretcher == null || !HeldStretcher.IsRaised) return null;
+        foreach (var c in CarrierRegistry.All)
+        {
+            var b = c as StretcherHelperBot;
+            if (b != null && b.HeldStretcher == HeldStretcher && b.Leader == (ICarrier)this) return b;
+        }
+        return null;
     }
 
     // Işınlama (test ve yeniden doğma).
@@ -251,10 +271,20 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         float speed = RequestedSpeed;
         Vector3 wish = HasControl ? (forward * moveInput.y + right * moveInput.x) * speed : Vector3.zero;
 
+        // E4: taşırken yön kilidi — botun aday pozda gömülmeden izleyemeyeceği dönüş/yürüyüş yapılmaz.
+        // "Mevcut poz zaten engelliyse kilidi kaldır" kuralı denendi ve kaldırıldı: sınırda cırcır etkisi yapıp oyuncuyu
+        // yarım hızla duvara sokuyordu (ölçüldü: duvarda bot gövdesi 38.6 cm içeride).
+        StretcherHelperBot follower = stretcherWallGuard ? FollowerBot() : null;
+        CarryBlockedNow = false;
         if (wish.sqrMagnitude > 0.01f)
         {
             Quaternion target = Quaternion.LookRotation(wish.normalized, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * dt);
+            // Dönüş İSTENEN SON yöne göre sınanır: o yönde sedye dik yüzeye bakacaksa dönüş hiç başlamaz. Ara adımlar
+            // sınanmaz; yoksa dar rampada 180° dönüşte 2.1 m'lik süpürme yayı her iki yanda da bankı kestiğinden dönüş
+            // imkânsızlaşıyordu (ölçüldü: 86.849 engelli kare, çıkış 30 sn 0 m/sn). Süpürme sırasında botu E3 kuralı düz tutar.
+            if (follower == null || follower.CanFollowFrom(transform.position, target))
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * dt);
+            else { CarryTurnBlocks++; CarryBlockedNow = true; LastCarryBlockReason = follower.LastBlockReason; }
         }
 
         // Yerçekimi ve zıplama
@@ -312,6 +342,14 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         }
 
         Vector3 before = transform.position;
+        // E4: bu yöndeki adım botu dik yüzeye/collider içine sokacaksa yatay istek sıfırlanır (itilme kalır).
+        if (follower != null && !sliding && wish.sqrMagnitude > 0.01f && !follower.CanFollowFrom(before + wish * dt, transform.rotation))
+        {
+            wish = Vector3.zero;
+            CarryMoveBlocks++;
+            CarryBlockedNow = true;
+            LastCarryBlockReason = follower.LastBlockReason;
+        }
         moveWish = wish;
         Vector3 horizontal = NpcBody.RestrictMotion(this, wish * dt + knock, controller.radius);
         if (controller.enabled)

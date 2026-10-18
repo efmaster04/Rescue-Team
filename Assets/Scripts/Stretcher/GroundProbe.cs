@@ -22,6 +22,18 @@ public static class GroundProbe
         return best < float.MaxValue;
     }
 
+    // E4: a→b doğru parçasını statik bir collider kesiyor mu?
+    public static bool LineBlocked(Vector3 a, Vector3 b)
+    {
+        Vector3 d = b - a;
+        float len = d.magnitude;
+        if (len < 1e-4f) return false;
+        int n = Physics.RaycastNonAlloc(a, d / len, hits, len, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+            if (!IsMovingGameObject(hits[i].collider)) return true;
+        return false;
+    }
+
     public static bool IsMovingGameObject(Collider c)
     {
         if (c is CharacterController) return true;

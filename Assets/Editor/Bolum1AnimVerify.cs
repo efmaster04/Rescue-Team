@@ -458,7 +458,7 @@ public static partial class Bolum1AnimVerify
         yield return PhaseStretcher();
         yield return PhaseE2Carry();
         yield return PhaseE3PatientOffset(); // E3: hasta ayak tarafına, ön taşıyıcının sırtına girmez
-        yield return PhaseE3BotBank();       // E3: bot dik banka tırmanmaz
+        yield return PhaseE4CarryGuard();    // E3/E4: bot dik banka tırmanmaz; oyuncu sedyeyi dik yüzeye çeviremez
         yield return PhaseE2RampStretcher();
         yield return PhaseE2Slope();
         yield return PhaseE2GlassRender();
@@ -579,9 +579,12 @@ public static partial class Bolum1AnimVerify
         bool walkState = false;
         bool capturedCarry = false;
         float maxSpeed = 0f;
+        int guardBlocks0 = Player.CarryTurnBlocks + Player.CarryMoveBlocks; // E4: patikada yanlış engelleme ölçümü
+        string guardReason = "";
         while (Time.time - t0 < 2.6f)
         {
             yield return null;
+            if (Player.CarryBlockedNow && guardReason == "") guardReason = Player.LastCarryBlockReason + " @" + V(Player.transform.position);
             walkState |= PlayerAnim.InState(CrewAnimation.StateCarryStretcher) && Player.animator.GetFloat("Speed") > 1.0f;
             if (Time.time - t0 > 0.8f)
             {
@@ -612,7 +615,8 @@ public static partial class Bolum1AnimVerify
             "PickUp oyuncu/bot " + pickUp + "/" + botPickUp + "; taşıma beklemesi " + carryIdle + " (sedye kalktı " + raised + "); yürürken CarryStretcher " + walkState
             + "; durunca " + carryAfter + "; PutDown oyuncu/bot " + putDown + "/" + botPutDown + "; sonra Locomotion " + backToLoco + "; sedyedeki hasta Groan " + groanOnStretcher);
         CheckFootSlide("(b1s) sedye taşırken hız " + Player.carryStretcherSpeed.ToString("F1", Inv) + " m/sn ve ayak kayması", meter,
-            Mathf.Abs(maxSpeed - Player.carryStretcherSpeed) < 0.15f, "en yüksek yatay hız " + maxSpeed.ToString("F2", Inv) + " m/sn");
+            Mathf.Abs(maxSpeed - Player.carryStretcherSpeed) < 0.15f, "en yüksek yatay hız " + maxSpeed.ToString("F2", Inv) + " m/sn; E4 yön kilidi engelleme "
+            + (Player.CarryTurnBlocks + Player.CarryMoveBlocks - guardBlocks0) + " kare" + (guardReason != "" ? " (ilk: " + guardReason + ")" : ""));
         // hasta yere geri (sonraki testler için)
         yield return Seconds(0.5f);
     }

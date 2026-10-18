@@ -15,7 +15,8 @@ using UnityEngine;
 //  (E2-5) trafik camı koyu füme (renk/opaklık ölçümü), ambulans ve minibüs camı değişmemiş
 // E3 (üçüncü tur, iki küçük düzeltme):
 //  (E3-1) sedyedeki hasta ayak tarafına kaydırıldı: başı/gövdesi öndeki taşıyıcının gövdesine girmiyor, kanvastan taşmıyor
-//  (E3-2) yardımcı bot dik banka (50°) tırmanmıyor; kural kapalı/açık karşılaştırması
+//  (E4) taşıma yön kilidi: 50° bank ve 1.5 m düz duvarda oyuncu sedyeyi çeviremez (kilit kapalı/açık), bot gömülmez;
+//       düz zeminde 360° dönüş ve rampa taşıması (E4-4) engellenmez
 public static partial class Bolum1AnimVerify
 {
     private const float E2GripTolerance = 0.03f;
@@ -296,6 +297,9 @@ public static partial class Bolum1AnimVerify
         yield return Until(() => s.IsRaised, 2f, "rampada sedye kalktı");
         yield return Seconds(0.8f);
         int slides0 = Player.SlideStarts;
+        int blocks0 = Player.CarryTurnBlocks + Player.CarryMoveBlocks; // E4: rampada yanlış engelleme olmamalı
+        int blocksSettled = 0; // E2-3 ölçüm penceresinde (dönüş sonrası) engellenen kare
+        var blockReasons = new Dictionary<string, int>();
         var pik = HandIK(Player);
         var bik = HandIK(bot);
         var results = new List<string>();
@@ -316,6 +320,12 @@ public static partial class Bolum1AnimVerify
                 Drive(target - Player.transform.position);
                 yield return null;
                 if (Player.IsDown || bot.IsDown || Player.HeldStretcher != s) break;
+                if (Player.CarryBlockedNow)
+                {
+                    blockReasons.TryGetValue(Player.LastCarryBlockReason, out int n);
+                    blockReasons[Player.LastCarryBlockReason] = n + 1;
+                    if (Time.time - t0 >= settle) blocksSettled++;
+                }
                 float a = Along(ramp, Player.transform.position);
                 if (goingDown ? a >= endAlong : a <= endAlong) break;
                 if (Time.time - t0 < settle) continue;
@@ -345,6 +355,12 @@ public static partial class Bolum1AnimVerify
         Check("(E2-3) rampada hastalı sedye iniş + çıkış akıcı, ragdoll/kayma yok, sedye zemine girmiyor", allGood && noSlide && noPen,
             string.Join("; ", results) + "; kayma " + (Player.SlideStarts - slides0) + "; sedye alt yüzü–zemin en kötü " + (worstPen * 100f).ToString("F1", Inv)
             + " cm (+ = gömülme); rampada el–sap en kötü " + (worstGrip * 100f).ToString("F2", Inv) + " cm");
+        int blocks = Player.CarryTurnBlocks + Player.CarryMoveBlocks - blocks0;
+        // Ölçüt E2-3 ile aynı pencere: iniş tamamı + çıkışta 1.2 sn dönüş sonrası. Rampa dibindeki 180° dönüşte botun
+        // ayak izi bir an patika kenarındaki 57° kayaya değebilir; o birkaç kare ayrıca raporlanır.
+        Check("(E4-4) rampada hastalı sedye taşınırken yön kilidi yanlış engelleme yapmıyor (ölçüm penceresinde 0)", blocksSettled == 0,
+            "ölçüm penceresinde engellenen kare " + blocksSettled + ", dönüş dâhil toplam " + blocks + " (yön kilidi " + (Player.stretcherWallGuard ? "açık" : "kapalı") + ")"
+            + (blockReasons.Count > 0 ? "; nedenler: " + string.Join(", ", blockReasons.Select(kv => kv.Key + " ×" + kv.Value)) : ""));
         Interaction.Interact();
         yield return Seconds(0.8f);
         Bolum1TestPatients.LayOnPath(Mission.patients);
@@ -839,9 +855,30 @@ public static partial class Bolum1AnimVerify
     }
 
     // =====================================================================================
-    // (E3-2) yardımcı bot dik banka tırmanmaz: oyuncu sedyeyle 50° banka dönünce bot yükselmez (kural kapalı/açık)
+    // (E4) taşıma yön kilidi: oyuncu sedyeyi dik yüzeye çeviremez. İki engel: 50° bank (E3 kuralı botu tutar ama
+    // gömülürdü) ve 1.5 m üstü düz duvar (E3 açığı: ışın tepeyi bulur, bot çıkardı). Kilit kapalı = önceki davranış.
+    // Düz zeminde 360° dönüş ve rampa taşıması (E4-4) engellenmemeli.
     // =====================================================================================
-    private static IEnumerator PhaseE3BotBank()
+    private const float E4BodyLift = 0.30f;                                   // bot gövde kutusu: diz üstü (eğim payı)
+    private static readonly Vector3 E4BodyHalf = new Vector3(0.30f, 0.60f, 0.30f); // NpcBody kutusuyla aynı taban (0.6 × 0.6)
+
+    // Bir karede: bot gövde kutusunun (diz üstü, kilit kontrolüyle aynı hacim) ve tüm NpcBody kutusunun engele
+    // gömülmesi (ComputePenetration), sedye hattının engel kesmesi, engel içindeki sap sayısı.
+    private static void E4Penetration(StretcherHelperBot bot, StretcherController s, BoxCollider probe, Collider obstacle,
+        out float bodyPen, out float fullPen, out bool lineHit, out int handlesIn)
+    {
+        Quaternion rot = Quaternion.LookRotation(Flat(bot.transform.forward).normalized, Vector3.up);
+        Vector3 root = bot.transform.position;
+        bodyPen = Physics.ComputePenetration(probe, root + Vector3.up * (E4BodyLift + E4BodyHalf.y), rot, obstacle, obstacle.transform.position, obstacle.transform.rotation, out _, out float d1) ? d1 : 0f;
+        var body = bot.GetComponent<NpcBody>().Body;
+        fullPen = body != null && body.enabled && Physics.ComputePenetration(body, body.transform.position, body.transform.rotation, obstacle, obstacle.transform.position, obstacle.transform.rotation, out _, out float d2) ? d2 : 0f;
+        lineHit = GroundProbe.LineBlocked(s.handleFront.position, s.handleRear.position);
+        handlesIn = 0;
+        foreach (var h in new[] { s.handleFront, s.handleRear })
+            if ((obstacle.ClosestPoint(h.position) - h.position).sqrMagnitude < 1e-6f) handlesIn++;
+    }
+
+    private static IEnumerator PhaseE4CarryGuard()
     {
         var bot = Bot;
         bot.assistEnabled = true;
@@ -852,62 +889,126 @@ public static partial class Bolum1AnimVerify
         Transform oldCam = Player.cameraTransform;
         Player.cameraTransform = null;
         Vector3 origin = new Vector3(400f, 0f, 400f);
-        var floor = TestBox("E3Floor", origin + Vector3.down * .5f, new Vector3(30f, 1f, 30f), Quaternion.identity);
-        const float angle = 50f;
-        float rad = angle * Mathf.Deg2Rad;
-        // Bank yüzeyi z = 3'te zemine kenarsız birleşir, 50° ile yükselir (yürünebilir sınır 35°'nin üstünde).
-        Vector3 dir = new Vector3(0f, Mathf.Sin(rad), Mathf.Cos(rad)), nrm = new Vector3(0f, Mathf.Cos(rad), -Mathf.Sin(rad));
-        var bank = TestBox("E3Bank", origin + new Vector3(0f, 0f, 3f) + dir * 3f - nrm * 0.1f, new Vector3(12f, .2f, 8f), Quaternion.Euler(-angle, 0f, 0f));
-        float slopeLimit0 = bot.walkableSlopeLimit;
+        var floor = TestBox("E4Floor", origin + Vector3.down * .5f, new Vector3(40f, 1f, 40f), Quaternion.identity);
+        // Ölçüm kutusu (kilit kontrolüyle aynı hacim); fizikten uzakta durur, konumu ComputePenetration'a verilir.
+        var probeGo = new GameObject("E4_BodyProbe");
+        probeGo.transform.position = origin + Vector3.up * 50f;
+        var probe = probeGo.AddComponent<BoxCollider>();
+        probe.size = E4BodyHalf * 2f;
+        bool guard0 = Player.stretcherWallGuard;
         var pik = HandIK(Player);
         var bik = HandIK(bot);
         var lines = new List<string>();
-        float riseBefore = 0f, riseAfter = 0f, gripAfter = 0f;
-        bool downAny = false;
-        foreach (bool ruleOn in new[] { false, true })
+        bool ok = true;
+        for (int o = 0; o < 2; o++)
         {
-            bot.walkableSlopeLimit = ruleOn ? slopeLimit0 : 89f; // kapalı: eski davranış (her zemine oturur)
-            s.Teleport(origin, Quaternion.LookRotation(Vector3.right, Vector3.up)); // ön sap +x
-            TeleportPlayerToHandle(s, false); // oyuncu arkada (-x), +x'e bakar; bot önde
-            yield return null; yield return null;
-            Interaction.Interact();
-            yield return Until(() => s.IsRaised, 2f, "E3 bankta sedye kalktı");
-            yield return Seconds(0.8f);
-            float rise = 0f, playerRise = 0f, grip = 0f, slip = 0f, underAngle = 0f;
-            int frames = 0;
-            float t0 = Time.time;
-            bool captured = !ruleOn;
-            while (Time.time - t0 < 2.2f)
+            bool isBank = o == 0;
+            GameObject obstacle;
+            if (isBank)
             {
-                // Oyuncu +z'ye (banka doğru) döner ve 1.5 sn yürür: bot sedyenin öbür ucuyla bankın üstüne savrulur.
-                if (Time.time - t0 < 1.5f) Drive(Vector3.forward); else Player.SetMoveInput(Vector2.zero);
-                yield return null;
-                frames++;
-                rise = Mathf.Max(rise, bot.transform.position.y - origin.y);
-                playerRise = Mathf.Max(playerRise, Player.transform.position.y - origin.y);
-                if (pik.Weight >= 1f && bik.Weight >= 1f) grip = Mathf.Max(grip, Mathf.Max(GripError(Player, pik), GripError(bot, bik)));
-                slip = Mathf.Max(slip, Vector3.Distance(s.HandleFor(bot).position, StretcherHandIK.MarkerPoint(bot)));
-                if (GroundProbe.Find(bot.transform.position + Vector3.up * 2f, 8f, out RaycastHit g)) underAngle = Mathf.Max(underAngle, Vector3.Angle(g.normal, Vector3.up));
-                if (!captured && Time.time - t0 > 1.7f)
-                {
-                    captured = true;
-                    Vector3 c = (Player.transform.position + bot.transform.position) * 0.5f;
-                    yield return Capture("e3_bot_bank", c + Vector3.right * 6.5f + Vector3.up * 2.2f - Vector3.forward * 0.8f, c + Vector3.up * 0.6f, 50f);
-                }
+                const float angle = 50f;
+                float rad = angle * Mathf.Deg2Rad;
+                // Bank yüzeyi z = 3'te zemine kenarsız birleşir, 50° ile yükselir (yürünebilir sınır 35°'nin üstünde).
+                Vector3 dir = new Vector3(0f, Mathf.Sin(rad), Mathf.Cos(rad)), nrm = new Vector3(0f, Mathf.Cos(rad), -Mathf.Sin(rad));
+                obstacle = TestBox("E4Bank", origin + new Vector3(0f, 0f, 3f) + dir * 3f - nrm * 0.1f, new Vector3(12f, .2f, 8f), Quaternion.Euler(-angle, 0f, 0f));
             }
-            Player.SetMoveInput(Vector2.zero);
-            downAny |= bot.IsDown || Player.IsDown;
-            if (ruleOn) { riseAfter = rise; gripAfter = grip; } else riseBefore = rise;
-            lines.Add((ruleOn ? "kural açık" : "kural kapalı") + ": bot yükselmesi " + M(rise) + ", oyuncu " + M(playerRise) + ", botun üstündeki yüzey en dik " + underAngle.ToString("F0", Inv)
-                + "°, el–sap " + (grip * 100f).ToString("F2", Inv) + " cm, sap–işaret " + (slip * 100f).ToString("F2", Inv) + " cm, kare " + frames + ", sedye " + s.CurrentMode);
-            Interaction.Interact();
-            yield return Seconds(1.0f);
+            else
+                obstacle = TestBox("E4Wall", origin + new Vector3(0f, 0.75f, 4f), new Vector3(12f, 1.5f, 3f), Quaternion.identity); // ön yüz z = 2.5, üstü düz 1.5 m
+            var obstacleCollider = obstacle.GetComponent<Collider>();
+            foreach (bool guardOn in new[] { false, true })
+            {
+                Player.stretcherWallGuard = guardOn;
+                s.Teleport(origin, Quaternion.LookRotation(Vector3.right, Vector3.up)); // ön sap +x
+                TeleportPlayerToHandle(s, false); // oyuncu arkada (-x), +x'e bakar; bot önde
+                yield return null; yield return null;
+                Interaction.Interact();
+                yield return Until(() => s.IsRaised, 2f, "E4 engel önünde sedye kalktı");
+                yield return Seconds(0.8f);
+                int tb0 = Player.CarryTurnBlocks, mb0 = Player.CarryMoveBlocks;
+                float rise = 0f, bodyPen = 0f, fullPen = 0f, grip = 0f, toObstacle = 180f;
+                int frames = 0, lineFrames = 0, handlesIn = 0;
+                string reason = "", worstInfo = "";
+                // Teşhis: sürüş başında engele dönük son poz kilitli mi?
+                string startCheck = bot.CanFollowFrom(Player.transform.position, Quaternion.LookRotation(Vector3.forward, Vector3.up)) ? "serbest" : "kilitli (" + bot.LastBlockReason + ")";
+                startCheck += " @oyuncu " + V(Player.transform.position) + " bot " + V(bot.transform.position) + " kalkık " + s.IsRaised;
+                float t0 = Time.time;
+                bool captured = !(isBank && guardOn);
+                while (Time.time - t0 < 2.2f)
+                {
+                    // Oyuncu +z'ye (engele doğru) dönmeye ve 1.5 sn yürümeye çalışır: bot sedyenin öbür ucuyla engele savrulur.
+                    if (Time.time - t0 < 1.5f) Drive(Vector3.forward); else Player.SetMoveInput(Vector2.zero);
+                    yield return null;
+                    frames++;
+                    rise = Mathf.Max(rise, bot.transform.position.y - origin.y);
+                    E4Penetration(bot, s, probe, obstacleCollider, out float bp, out float fp, out bool lh, out int hi);
+                    if (bp > bodyPen)
+                        worstInfo = "en kötü kare t=" + (Time.time - t0).ToString("F2", Inv) + ": oyuncu " + V(Player.transform.position) + " bakış→engel "
+                            + Vector3.Angle(Flat(Player.transform.forward), Vector3.forward).ToString("F0", Inv) + "°, bot " + V(bot.transform.position) + ", engelli " + Player.CarryBlockedNow
+                            + ", kalkık " + s.IsRaised + ", bot önde " + s.HoldsFront(bot);
+                    bodyPen = Mathf.Max(bodyPen, bp);
+                    fullPen = Mathf.Max(fullPen, fp);
+                    if (lh) lineFrames++;
+                    handlesIn = Mathf.Max(handlesIn, hi);
+                    if (pik.Weight >= 1f && bik.Weight >= 1f) grip = Mathf.Max(grip, Mathf.Max(GripError(Player, pik), GripError(bot, bik)));
+                    toObstacle = Mathf.Min(toObstacle, Vector3.Angle(Flat(Player.transform.forward), Vector3.forward));
+                    if (Player.CarryBlockedNow && reason == "") reason = bot.LastBlockReason;
+                    if (!captured && Time.time - t0 > 1.7f)
+                    {
+                        captured = true;
+                        Vector3 c = (Player.transform.position + bot.transform.position) * 0.5f;
+                        yield return Capture("e4_bank_donus", c + Vector3.right * 6.5f + Vector3.up * 2.2f - Vector3.forward * 0.8f, c + Vector3.up * 0.6f, 50f);
+                    }
+                }
+                Player.SetMoveInput(Vector2.zero);
+                int tb = Player.CarryTurnBlocks - tb0, mb = Player.CarryMoveBlocks - mb0;
+                bool good = !guardOn || (rise <= 0.3f && bodyPen <= 0.03f && lineFrames == 0 && handlesIn == 0 && grip <= E2GripTolerance && !bot.IsDown && !Player.IsDown);
+                // Kilit kapalı = referans: bankta bot gömülür (> 3 cm), düz duvarda bot tepeye çıkar (> 0.3 m) — test engeli gerçekten zorluyor.
+                bool reference = guardOn || (isBank ? fullPen > 0.03f : rise > 0.3f);
+                ok &= good && reference;
+                lines.Add((isBank ? "50° bank" : "1.5 m düz duvar") + " / kilit " + (guardOn ? "açık" : "kapalı") + ": bot yükselmesi " + M(rise)
+                    + ", bot gövdesi engele diz üstü " + (bodyPen * 100f).ToString("F1", Inv) + " cm / tüm kutu " + (fullPen * 100f).ToString("F1", Inv) + " cm"
+                    + ", sedye hattı engel kesen kare " + lineFrames + "/" + frames + ", engel içindeki sap " + handlesIn
+                    + ", oyuncunun engele en yakın bakışı " + toObstacle.ToString("F0", Inv) + "°, engellenen dönüş/yürüyüş karesi " + tb + "/" + mb
+                    + (reason != "" ? " (ilk neden: " + reason + ")" : "") + ", el–sap " + (grip * 100f).ToString("F2", Inv) + " cm"
+                    + (guardOn ? "; başlangıç kontrolü " + startCheck + "; " + worstInfo : "") + (good && reference ? "" : " [HATA]"));
+                Interaction.Interact();
+                yield return Seconds(1.0f);
+            }
+            UnityEngine.Object.Destroy(obstacle);
+            yield return null;
         }
-        bot.walkableSlopeLimit = slopeLimit0;
-        Check("(E3-2) bot 50° banka tırmanmıyor: kural kapalıyken > 0.3 m yükseliyor, açıkken ≤ 0.3 m; el–sap ≤ 3 cm",
-            riseBefore > 0.3f && riseAfter <= 0.3f && gripAfter <= E2GripTolerance && !downAny,
-            string.Join("; ", lines) + "; eğim sınırı " + slopeLimit0.ToString("F0", Inv) + "°");
-        UnityEngine.Object.Destroy(bank);
+        Check("(E4-1/2) taşırken yön kilidi: 50° bankta ve 1.5 m düz duvarda bot ≤ 0.3 m yükseliyor, gövdesi ≤ 3 cm giriyor, sedye engele girmiyor (kilit kapalı/açık)",
+            ok, string.Join("; ", lines));
+
+        // Düz zeminde sedyeyle 360° dönüş (yürüyerek): yanlış engelleme 0
+        Player.stretcherWallGuard = true;
+        Vector3 flat = origin + new Vector3(0f, 0f, -10f);
+        s.Teleport(flat, Quaternion.LookRotation(Vector3.right, Vector3.up));
+        TeleportPlayerToHandle(s, false);
+        yield return null; yield return null;
+        Interaction.Interact();
+        yield return Until(() => s.IsRaised, 2f, "E4 düz zeminde sedye kalktı");
+        yield return Seconds(0.8f);
+        int ftb0 = Player.CarryTurnBlocks, fmb0 = Player.CarryMoveBlocks;
+        float turned = 0f, ft0 = Time.time;
+        Vector3 prevForward = Flat(Player.transform.forward).normalized;
+        while (Time.time - ft0 < 4f)
+        {
+            Drive(Quaternion.Euler(0f, (Time.time - ft0) / 4f * 360f, 0f) * Vector3.right);
+            yield return null;
+            Vector3 f = Flat(Player.transform.forward).normalized;
+            turned += Vector3.Angle(prevForward, f);
+            prevForward = f;
+        }
+        Player.SetMoveInput(Vector2.zero);
+        int ftb = Player.CarryTurnBlocks - ftb0, fmb = Player.CarryMoveBlocks - fmb0;
+        // Sürüş yönü 4 sn'de 360° tarar; oyuncu son karede birkaç derece geride kalır (ölçüldü 349°), eşik 330°.
+        Check("(E4-3) düz zeminde sedyeyle 360° dönüş serbest: yanlış engelleme 0", ftb == 0 && fmb == 0 && turned >= 330f && !bot.IsDown && !Player.IsDown,
+            "dönülen açı " + turned.ToString("F0", Inv) + "°, engellenen dönüş/yürüyüş karesi " + ftb + "/" + fmb);
+        Interaction.Interact();
+        yield return Seconds(1.0f);
+        Player.stretcherWallGuard = guard0;
+        UnityEngine.Object.Destroy(probeGo);
         UnityEngine.Object.Destroy(floor);
         yield return null;
         s.Teleport(keepPos, keepRot);

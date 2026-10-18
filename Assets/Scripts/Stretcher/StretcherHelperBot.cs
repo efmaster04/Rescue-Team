@@ -252,21 +252,33 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     // Römork modeli: eksen = liderin elinden botun eline (yatay); bot ucu sap aralığı kadar uzakta.
     private void Follow()
     {
-        var s = HeldStretcher;
-        Vector3 leaderHand = leader.GetHandPoint(s.transform.position);
-        bool front = s.HoldsFront(this);
         Vector3 forward = Flat(leader.Root.forward, Vector3.forward);
+        Vector3 root = SolveRoot(leader.Root.position, forward, out bool accepted, out _, out _);
+        if (accepted || !hasWalkableY) { lastWalkableY = root.y; hasWalkableY = true; }
+        transform.SetPositionAndRotation(root, Quaternion.LookRotation(forward, Vector3.up));
+    }
+
+    // Liderin verilen (aday) kök konumu ve yatay bakışı için botun kök konumu. Liderin eli = kök + 0.665 yukarı +
+    // kendi sap işareti (StretcherHandIK.MarkerPoint ile aynı). accepted: zemin yürünebilir (E3 kararı 2).
+    private Vector3 SolveRoot(Vector3 leaderPos, Vector3 forward, out bool accepted, out RaycastHit ground, out bool found)
+    {
+        var s = HeldStretcher;
+        bool front = s.HoldsFront(this);
+        Vector3 leaderHand = leaderPos + Vector3.up * StretcherHandIK.HandleHeight + forward * StretcherHandIK.MarkerAhead(!front);
         Vector3 axis = forward * (front ? 1f : -1f);
         float horizontalSpan = s.HandleSpan;
         Vector3 root = transform.position;
+        accepted = false;
+        found = false;
+        ground = default;
         // Eğimde iki sapın gerçek mesafesini koru; yatay mesafeyi yükseklik farkından çöz.
-        bool accepted = false;
         for (int i = 0; i < 4; i++)
         {
             root = leaderHand + axis * horizontalSpan - forward * StretcherHandIK.MarkerAhead(front);
-            root.y = leader.Root.position.y;
+            root.y = leaderPos.y;
             accepted = false;
-            if (GroundProbe.Find(root + Vector3.up * 2f, 8f, out RaycastHit ground))
+            found = GroundProbe.Find(root + Vector3.up * 2f, 8f, out ground);
+            if (found)
             {
                 // E3 kararı 2: yalnız yürünebilir zemin (normal eğimi ≤ walkableSlopeLimit) kabul edilir;
                 // dik bank/yamaç bulunursa bot yükselmez, son yürünebilir yükseklikte kalır.
@@ -276,9 +288,77 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
             float dy = root.y + StretcherHandIK.HandleHeight - leaderHand.y;
             horizontalSpan = Mathf.Sqrt(Mathf.Max(0.01f, s.HandleSpan * s.HandleSpan - dy * dy));
         }
-        if (accepted || !hasWalkableY) { lastWalkableY = root.y; hasWalkableY = true; }
-        transform.SetPositionAndRotation(root, Quaternion.LookRotation(forward, Vector3.up));
+        return root;
     }
+
+    // ---- E4 kararı: oyuncu sedyeyi dik yüzeye çeviremez ----
+    [Header("Taşıma yön kilidi (E4 kararı)")]
+    [Tooltip("Lider→bot zemin profilinde ardışık örnekler arası bu kadardan (m) büyük yukarı basamak (üstü düz bank, duvar) yürünebilir sayılmaz.")]
+    public float maxProfileStep = 0.45f;
+    [Tooltip("Profil basamağında bu boyuttan (sınır kutusu köşegeni, m) küçük collider'lar eşya sayılır ve yok sayılır (valiz, çanta); bank ve duvar büyük collider'dır.")]
+    public float propColliderSize = 1.5f;
+    [Tooltip("Dik zemin kontrolünde botun ayak izi: kök ± bu kadar (m) dört yönde de yoklanır (gövde yarım genişliği).")]
+    public float footprintRadius = 0.25f;
+    // Son CanFollowFrom reddinin nedeni (doğrulama ve hata ayıklama okur)
+    public string LastBlockReason { get; private set; } = "";
+
+    // Lider bu aday poza (kök konumu + dönüş) geçerse bot gömülmeden/yükselmeden izleyebilir mi? Oyuncu (ThirdPersonPlayer)
+    // taşırken dönüş ve yürüyüş adayını bununla sınar; reddedilirse o yöne dönmez / yürümez (görünmez duvar yok,
+    // yalnız sedye taşınırken). Kontroller: (1) bot hedefinin ayak izinde (kök ve ± footprintRadius) zemin normali > eğim
+    // sınırı VE o zemin botun şimdiki yüksekliğinden yukarıda (banka/yamaca tırmanış; uçurum tarafına süpürme serbest,
+    // E3 tutma kuralı botu düz tutar), (2) lider→bot zemin profilinde > maxProfileStep yukarı basamak (üstü düz dik bank,
+    // ışın tepeyi bulsa bile; küçük eşya collider'ları sayılmaz), (3) sedye hattı (el→el) statik collider kesiyor.
+    // Gövde kutusu çakışma kontrolü denendi ve kaldırıldı: dar rampada yan kayayla sürekli yanlış engelleme verdi (ölçüldü).
+    public bool CanFollowFrom(Vector3 leaderPos, Quaternion leaderRot)
+    {
+        LastBlockReason = "";
+        if (HeldStretcher == null || leader == null || IsDown) return true;
+        Vector3 forward = Flat(leaderRot * Vector3.forward, Vector3.forward);
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        Vector3 root = SolveRoot(leaderPos, forward, out _, out _, out _);
+        // (1) Ayak izinde yükselen dik zemin; yan ayak izi zemini kök zemininden basamak kadar yukarıdaysa (yandaki duvar tepesi) de engel.
+        float currentY = transform.position.y + 0.05f;
+        float rootGroundY = float.NaN;
+        for (int i = 0; i < 5; i++)
+        {
+            Vector3 q = root;
+            if (i == 1) q += forward * footprintRadius; else if (i == 2) q -= forward * footprintRadius;
+            else if (i == 3) q += right * footprintRadius; else if (i == 4) q -= right * footprintRadius;
+            if (!GroundProbe.Find(q + Vector3.up * 2f, 8f, out RaycastHit g)) continue;
+            float angle = Vector3.Angle(g.normal, Vector3.up);
+            if (angle > walkableSlopeLimit && g.point.y > currentY) { LastBlockReason = "dik zemin " + angle.ToString("F0") + "°"; return false; }
+            if (i == 0) rootGroundY = g.point.y;
+            else if (!float.IsNaN(rootGroundY) && g.collider.bounds.size.magnitude >= propColliderSize && g.point.y - rootGroundY > maxProfileStep)
+            { LastBlockReason = "basamak (ayak izi) " + (g.point.y - rootGroundY).ToString("F2") + " m"; return false; }
+        }
+        // (2) Zemin profili: lider kökünden botun uzak ayak izi kenarına ≤ 0.25 m aralıkla örnekler; her örnek bir
+        // öncekinden en çok maxProfileStep yukarıda (üstü düz duvar, bot gövdesi değmeden yakalanır). Uzak uç, yakınsamış
+        // kök değil TAM sap mesafesindeki (düz) köktür: duvar tepesinde SolveRoot iterasyonu tepe/yer arasında salınıp
+        // kökü duvarın önüne çekebiliyor ve profil duvara ulaşmıyordu (ölçüldü: kilit kare kare açılıp kapandı, gövde 38 cm içeride).
+        bool front = HeldStretcher.HoldsFront(this);
+        Vector3 leaderHand = leaderPos + Vector3.up * StretcherHandIK.HandleHeight + forward * StretcherHandIK.MarkerAhead(!front);
+        Vector3 flatRoot = leaderHand + forward * ((front ? 1f : -1f) * HeldStretcher.HandleSpan - StretcherHandIK.MarkerAhead(front));
+        flatRoot.y = leaderPos.y;
+        Vector3 away = Flat(flatRoot - leaderPos, forward);
+        Vector3 far = flatRoot + away * footprintRadius;
+        float prevY = leaderPos.y;
+        float top = Mathf.Max(leaderPos.y, root.y) + 2f;
+        int n = Mathf.Max(4, Mathf.CeilToInt(Vector3.Distance(new Vector3(leaderPos.x, 0f, leaderPos.z), new Vector3(far.x, 0f, far.z)) / 0.25f));
+        for (int k = 1; k <= n; k++)
+        {
+            Vector3 q = Vector3.Lerp(leaderPos, far, (float)k / n);
+            if (!GroundProbe.Find(new Vector3(q.x, top, q.z), 8f + top - Mathf.Min(leaderPos.y, root.y), out RaycastHit h)) continue;
+            if (h.collider.bounds.size.magnitude < propColliderSize) continue; // eşya (valiz, çanta): basamak değil
+            if (h.point.y - prevY > maxProfileStep) { LastBlockReason = "basamak " + (h.point.y - prevY).ToString("F2") + " m"; return false; }
+            prevY = h.point.y;
+        }
+        // (3) Sedye hattı: liderin elinden botun eline statik collider kesmesin (sedye duvara girmez).
+        Vector3 botHand = root + Vector3.up * StretcherHandIK.HandleHeight + forward * StretcherHandIK.MarkerAhead(front);
+        if (GroundProbe.LineBlocked(leaderHand, botHand)) { LastBlockReason = "sedye hattı collider kesiyor"; return false; }
+        return true;
+    }
+
+    public ICarrier Leader { get { return leader; } }
 
     // Bot elini leaderHand + axis·span noktasına getirecek yere durur, sedyeye (lidere) bakar.
     private void PlaceAt(Vector3 leaderHand, Vector3 axis, float span)
