@@ -115,8 +115,9 @@ public static partial class Bolum1Verify
             var bodies = UnityEngine.Object.FindObjectsByType<NpcBody>(FindObjectsSortMode.None);
             Check("oynanış düzeltmeleri Play'de kurulu", player != null && Mathf.Approximately(player.runSpeed, 3.2f)
                 && Mathf.Approximately(player.hardLandingHeight, 3f) && bodies.Length >= 4
-                && bodies.All(b => b.Body != null && b.Body.enabled),
-                "koşu " + player.runSpeed + ", düşüş eşiği " + player.hardLandingHeight + ", katı NPC bedenleri " + bodies.Length);
+                && bodies.All(b => b.Body != null && b.Body.enabled == SolidExpected(b)),
+                "koşu " + player.runSpeed + ", düşüş eşiği " + player.hardLandingHeight + ", NPC bedenleri " + bodies.Length + " (katı: "
+                + string.Join(", ", bodies.Select(b => b.name + " " + b.Body.enabled)) + "; D2: koltuktaki hastalar katı değil)");
 
             Capture("overview", Bolum1Coordinates.ToUnity(new Vector3(-25f, -75f, 25f)), Bolum1Coordinates.ToUnity(new Vector3(0f, 5f, -6f)), 50f);
             Vector3 vanLook = minivan.transform.position + Vector3.up * 0.3f;
@@ -523,6 +524,15 @@ public static partial class Bolum1Verify
     {
         allOk &= ok;
         Line((ok ? "[OK]   " : "[FAIL] ") + label + " — " + detail);
+    }
+
+    // NpcBody yalnız yerde yatan hastada ve ayaktaki botta katıdır (D2: minibüs koltuğundaki hasta katı değil).
+    private static bool SolidExpected(NpcBody b)
+    {
+        var p = b.GetComponent<Patient>();
+        if (p != null) return p.State == PatientState.LyingGround;
+        var bot = b.GetComponent<StretcherHelperBot>();
+        return bot != null && !bot.IsDown;
     }
 
     private static void Line(string s) { report.AppendLine(s); }
