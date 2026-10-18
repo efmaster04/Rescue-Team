@@ -56,6 +56,7 @@ public static partial class Bolum1AnimVerify
         {
             EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
             CheckClips();
+            CheckCarryClipMeta(); // D2 madde 7
             CheckControllers();
             CheckVehiclePrefabs();
             CheckScene();
@@ -103,7 +104,7 @@ public static partial class Bolum1AnimVerify
             ok &= length;
             parts.Add(n + (c ? "" : "[HATA]") + " " + (clip != null ? clip.length.ToString("F2", Inv) + "/" + authored.ToString("F2", Inv) + " sn" : "-") + (clip != null && clip.isLooping ? " loop" : ""));
         }
-        Check("(a) 11 klip Humanoid, Avatar = SK_RescueCrew_Blue kopyası (geçerli), döngüler loop, kök pozda (Original; Jump: Feet)", ok,
+        Check("(a) " + ProceduralAnimImportSettings.ClipNames.Length + " klip Humanoid, Avatar = SK_RescueCrew_Blue kopyası (geçerli), döngüler loop, kök pozda (Original; Jump: Feet)", ok,
             string.Join(", ", parts) + " (Unity/yazılan süre; FBX 30 kare/sn)");
     }
 
@@ -440,6 +441,9 @@ public static partial class Bolum1AnimVerify
         mission.missLimit = 999;
         mission.Begin(TestSchedule(99999f, 99999f)); // ambulans gelmesin (ambulans testinde yeniden)
         traffic.Begin(TestSettings(false));           // doğal trafik yok
+        // D2: minibüs, halat, sırtta taşıma (taze sahnede), sonra eski fazlar için hastalar patikaya
+        yield return PhaseRescue();
+        Bolum1TestPatients.LayOnPath(mission.patients);
         var tourist = PatientNamed("Tourist");
         parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
         ParkCarriersOffLane();

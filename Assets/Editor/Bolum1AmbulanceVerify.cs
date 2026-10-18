@@ -333,6 +333,8 @@ public static class Bolum1AmbulanceVerify
 
         // Gerçek klip oynarken üç hastanın patikadaki yakın planı ve yüzey ölçümü.
         yield return null;
+        Bolum1TestPatients.LayOnPath(Mission.patients); // D2: hastalar minibüste/kayada başlar; taşıma kontrolleri patikada yatar bekler
+        yield return null;
         Vector3 patientsCenter = Mission.patients.Aggregate(Vector3.zero, (sum, p) => sum + p.Position) / Mission.patients.Length;
         yield return Capture("hastalar_yakin", patientsCenter + new Vector3(0f, 5f, -4f), patientsCenter, 52f, false);
         yield return Bolum1AmbulanceModelChecks.CheckPoses(Check);
@@ -473,6 +475,12 @@ public static class Bolum1AmbulanceVerify
         var amb1 = records[0].amb;
         yield return Seconds(1.2f);
         yield return CaptureStop(amb1);
+        // D2 kararı 6: arka kapıları açık ekipli ambulans, içeride hemşire görünür
+        {
+            Vector3 back = -amb1.transform.forward;
+            Vector3 rearC = amb1.transform.position + back * 3f;
+            yield return Capture("d2_ambulans_ekip", rearC + back * 3.4f + amb1.transform.right * 0.8f + Vector3.up * 1.7f, amb1.transform.position + back * 0.4f + Vector3.up * 1.2f, 50f, false);
+        }
         yield return LoadAtAmbulance(s1, amb1);
         bool slot1 = tourist.State == PatientState.InAmbulance && tourist.transform.IsChildOf(amb1.patientSlots[0].parent);
         yield return LoadAtAmbulance(s2, amb1);
@@ -561,7 +569,14 @@ public static class Bolum1AmbulanceVerify
         Mission.Begin(test);
         tourist = PatientOf("Tourist"); civilian = PatientOf("Civilian"); elder = PatientOf("Elder");
         s1 = Stretcher(0); s2 = Stretcher(1);
-        bool freshAfterRestart = elder.MissedAmbulances == 0 && elder.State == PatientState.LyingGround;
+        // D2: yeniden başlatılan sahnede hastalar başlangıç yerlerinde (minibüste 2, kayada 1); başarı gerçek akışla:
+        // bagaj kapısı → çekme → sedye → ambulans 1; Yaşlı: kayada sırta alma → halatta bot çeker → yukarıda bırakma → sedye → ambulans 2.
+        bool freshAfterRestart = elder.MissedAmbulances == 0 && elder.State == PatientState.LyingGround && elder.onLedge
+            && tourist.State == PatientState.InVehicle && civilian.State == PatientState.InVehicle;
+        var tg = MinivanTailgate.All[0];
+        yield return D2Extract(tg, tourist);
+        yield return D2Extract(tg, civilian);
+        bool extracted = tourist.State == PatientState.LyingGround && civilian.State == PatientState.LyingGround;
         yield return PutPatientOnStretcher(tourist, s1);
         yield return PutPatientOnStretcher(civilian, s2);
         ParkCarriersOffLane();
@@ -571,6 +586,10 @@ public static class Bolum1AmbulanceVerify
         var r1 = records[0].amb;
         yield return LoadAtAmbulance(s1, r1);
         yield return LoadAtAmbulance(s2, r1);
+        bool d2First = tourist.State == PatientState.InAmbulance && civilian.State == PatientState.InAmbulance;
+        ParkCarriersOffLane();
+        yield return D2RescueElder(elder);
+        bool elderUp = elder.State == PatientState.LyingGround && !elder.onLedge;
         yield return PutPatientOnStretcher(elder, s1);
         ParkCarriersOffLane();
         Time.timeScale = 3f;
@@ -580,9 +599,59 @@ public static class Bolum1AmbulanceVerify
         yield return null;
         hud = UnityEngine.Object.FindAnyObjectByType<MissionHud>();
         string okText = hud.ResultText.text.Replace("\n", " | ");
-        Check("(f2) R yeniden başlatıyor; 3 hasta yüklenince MissionSucceeded",
-            freshAfterRestart && succeeded && Mission.Succeeded && okText.StartsWith(MissionDirector.SuccessText),
-            "yeniden başlatma sonrası sayaçlar sıfır " + freshAfterRestart + "; MissionSucceeded " + succeeded + "; HUD \"" + okText + "\"");
+        Check("(f2 / D2-d) R yeniden başlatıyor (hastalar minibüste ve kayada); gerçek akışla (çekme, halat, sırtta taşıma, sedye) 3 hasta yüklenince MissionSucceeded",
+            freshAfterRestart && extracted && d2First && elderUp && succeeded && Mission.Succeeded && okText.StartsWith(MissionDirector.SuccessText),
+            "yeniden başlatma sonrası başlangıç yerleşimi ve sayaçlar " + freshAfterRestart + "; minibüsten çekildi " + extracted + ", ambulans 1'e yüklendi " + d2First
+            + "; Yaşlı halatla yukarıda " + elderUp + " (sayaç " + elder.MissedAmbulances + "); MissionSucceeded " + succeeded + "; HUD \"" + okText + "\"");
+    }
+
+    // D2: oyuncu hastanın çekme yerine geçer; kapı kapalıysa E ile açar, sonra E ile hastayı patikaya çeker.
+    private static IEnumerator D2Extract(MinivanTailgate tg, Patient p)
+    {
+        Vector3 at = tg.PullerSpot(p, out Quaternion rot);
+        Player.Teleport(at, rot);
+        yield return null; yield return null;
+        if (!tg.IsOpen)
+        {
+            if (Interaction.CurrentHint != PlayerInteraction.HintOpenTailgate) throw new Exception("bagaj kapısı ipucu yok: \"" + Interaction.CurrentHint + "\"");
+            Interaction.Interact();
+            yield return Seconds(1f);
+            Player.Teleport(at, rot);
+            yield return null; yield return null;
+        }
+        if (Interaction.CurrentHint != PlayerInteraction.HintExtract) throw new Exception("çekme ipucu yok: \"" + Interaction.CurrentHint + "\"");
+        Interaction.Interact();
+        yield return Until(() => p.State == PatientState.LyingGround, 5f, "çekme " + p.name);
+        yield return Seconds(1.2f);
+    }
+
+    // D2: Yaşlı kayada; oyuncu halatın dibinde (kayada) yanına gelir, sırtına alır, halata bağlanır; bot kazıktan çeker;
+    // tepede E ile bırakır. (İniş / boşken tırmanış Bolum1AnimVerify'de ölçülür.)
+    private static IEnumerator D2RescueElder(Patient elder)
+    {
+        var rope = RopeAnchor.All[0];
+        var bot = Bot;
+        bot.assistEnabled = true;
+        Vector3 toElder = Flat(elder.Position - rope.climbBottom.position);
+        Vector3 near = rope.climbBottom.position + toElder.normalized * Mathf.Max(0f, toElder.magnitude - 0.9f);
+        if (GroundProbe.Find(near + Vector3.up, 2f, out RaycastHit g)) near.y = g.point.y + 0.02f;
+        Player.Teleport(near, Quaternion.LookRotation(toElder.normalized));
+        yield return null; yield return null;
+        if (Interaction.CurrentHint != PlayerInteraction.HintPiggyback) throw new Exception("sırta alma ipucu yok: \"" + Interaction.CurrentHint + "\"");
+        Interaction.Interact();
+        yield return Seconds(1.7f);
+        if (Player.Piggyback != elder) throw new Exception("Yaşlı sırta alınamadı");
+        yield return null;
+        if (Interaction.CurrentHint != PlayerInteraction.HintAttachRope) throw new Exception("halat ipucu yok: \"" + Interaction.CurrentHint + "\"");
+        Interaction.Interact();
+        Time.timeScale = 3f;
+        yield return Until(() => Player.Rope == null, 40f, "bot çekerek tepeye");
+        Time.timeScale = 1f;
+        yield return Seconds(0.3f);
+        if (Interaction.CurrentHint != PlayerInteraction.HintPutDownBack) throw new Exception("bırakma ipucu yok: \"" + Interaction.CurrentHint + "\"");
+        Interaction.Interact();
+        yield return Until(() => elder.State == PatientState.LyingGround, 3f, "Yaşlı yere bırakıldı");
+        yield return Seconds(0.8f);
     }
 
     // Sedyeyi hastanın yanına koyar, oyuncuyu yaklaştırır, E ile hastayı sedyeye alır.

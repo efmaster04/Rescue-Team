@@ -3,7 +3,7 @@ using UnityEngine;
 
 // D2 (minibüs, halat, sırtta taşıma) öncelikleri: halattaysan sırtına al → dipte halattan çözül; sırtında hasta varsa
 // yalnız "yere bırak" (sedye/koni yok); sonra mevcut sıra, arada: halatı çek (basılı tut) → kayadaki hastayı sırtına al →
-// halata bağlan → minibüsten hastayı çek → bagaj kapısını aç.
+// (hastayı sedyeye al, sap / koni) → halata bağlan → minibüsten hastayı çek → bagaj kapısını aç.
 
 // E tuşu etkileşimleri (kullanıcı kararları 8, 9, 10; trafik 4, 6). Her karede o an ne yapılabileceğini bulur (ipucu metni),
 // Interact() (E'ye basıldı) ya da SetInteractHeld (E basılı) çağrılınca onu yapar.
@@ -53,8 +53,8 @@ public class PlayerInteraction : MonoBehaviour
     public float piggybackAttachTime = 17f / 30f;
     [Tooltip("Bırakma: hasta Piggyback_PutDown'ın bu anına kadar sırtta (kare 16 / 30).")]
     public float piggybackReleaseTime = 16f / 30f;
-    [Tooltip("Bırakılan hastanın kalçası oyuncu kökünün bu kadar arkasına (m) yatar.")]
-    public float putDownBehind = 0.45f;
+    [Tooltip("Bırakılan hastanın kalçası oyuncu kökünün bu kadar arkasına (m) yatar. Hastanın katı gövdesi (NpcBody, kalçadan ayağa 0.78 m) oyuncunun kapsülüne (0.25 m) değmesin diye ≥ 1.03 m.")]
+    public float putDownBehind = 1.05f;
 
     public Patient PiggybackTarget { get; private set; }
     public RopeAnchor PullTarget { get; private set; }
@@ -114,16 +114,18 @@ public class PlayerInteraction : MonoBehaviour
         // ---- D2: halatta ----
         if (player.Rope != null)
         {
-            if (player.Piggyback == null && FindPiggybackPatient())
-            {
-                action = Action.Piggyback;
-                CurrentHint = HintPiggyback;
-            }
-            else if (player.Rope.CanDetachAtBottom(player))
+            // Kayaya basınca önce çözülme (yoksa dipte yanındaki hasta yüzünden halattan hiç inilemez);
+            // halatta (dipte değilken) hastaya ≤ 1.5 m ise sırta alma.
+            if (player.Rope.CanDetachAtBottom(player))
             {
                 action = Action.DetachRope;
                 targetRope = player.Rope;
                 CurrentHint = HintDetachRope;
+            }
+            else if (player.Piggyback == null && FindPiggybackPatient())
+            {
+                action = Action.Piggyback;
+                CurrentHint = HintPiggyback;
             }
             return;
         }
@@ -189,34 +191,6 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = HintPiggyback;
             return;
         }
-        if (FindAttachableRope(out var rope))
-        {
-            targetRope = rope;
-            action = Action.AttachRope;
-            CurrentHint = HintAttachRope;
-            return;
-        }
-        foreach (var tg in MinivanTailgate.All)
-        {
-            if (tg == null) continue;
-            var p = tg.ExtractTarget(me);
-            if (p != null)
-            {
-                targetTailgate = tg;
-                targetPatient = p;
-                action = Action.Extract;
-                CurrentHint = HintExtract;
-                return;
-            }
-            if (tg.CanOpen(me))
-            {
-                targetTailgate = tg;
-                action = Action.OpenTailgate;
-                CurrentHint = HintOpenTailgate;
-                return;
-            }
-        }
-
         // Yerdeki sedyeye yakın hasta
         float bestPatient = float.MaxValue;
         foreach (var p in Patient.All)
@@ -281,6 +255,35 @@ public class PlayerInteraction : MonoBehaviour
         {
             action = Action.Grab;
             CurrentHint = HintGrab;
+        }
+        if (action != Action.None) return;
+        // D2: halata bağlanma, minibüsten çekme, bagaj kapısı (en düşük öncelik: sedye ve koni önce gelir)
+        if (FindAttachableRope(out var rope))
+        {
+            targetRope = rope;
+            action = Action.AttachRope;
+            CurrentHint = HintAttachRope;
+            return;
+        }
+        foreach (var tg in MinivanTailgate.All)
+        {
+            if (tg == null) continue;
+            var p = tg.ExtractTarget(me);
+            if (p != null)
+            {
+                targetTailgate = tg;
+                targetPatient = p;
+                action = Action.Extract;
+                CurrentHint = HintExtract;
+                return;
+            }
+            if (tg.CanOpen(me))
+            {
+                targetTailgate = tg;
+                action = Action.OpenTailgate;
+                CurrentHint = HintOpenTailgate;
+                return;
+            }
         }
     }
 
@@ -377,7 +380,7 @@ public class PlayerInteraction : MonoBehaviour
         point = g.point; normal = g.normal;
         // Gövde boyunca (baş arkaya) ve iki yanda zemin olmalı; uçurum kenarına 1 m'den yakın bırakılmaz.
         Vector3 side = Vector3.Cross(Vector3.up, back);
-        foreach (var o in new[] { back * 1.9f, back * 1.0f, -back * 0.9f, side * 1.0f, -side * 1.0f })
+        foreach (var o in new[] { back * 1.8f, back * 0.9f, -back * 0.8f, side * 0.6f, -side * 0.6f })
             if (!GroundProbe.Find(point + o + Vector3.up * 1f, 2f, out RaycastHit h) || Mathf.Abs(h.point.y - point.y) > 0.5f) return false;
         return true;
     }

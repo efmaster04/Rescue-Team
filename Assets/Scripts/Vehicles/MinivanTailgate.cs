@@ -38,8 +38,8 @@ public class MinivanTailgate : MonoBehaviour
     public Vector3 hipsShiftInRoot = new Vector3(0f, -0.227f, -0.86f);
     [Tooltip("Hastanın yatacağı yer: kalça, arka düzlemden bu kadar geride (m), koltuk hizasında.")]
     public float lieBehindRear = 1.2f;
-    [Tooltip("Çeken oyuncu: arka düzlemden geride (m) ve koltuk hizasından dışa yana kayık (m).")]
-    public float pullerBehindRear = 0.55f, pullerSideOffset = 0.55f;
+    [Tooltip("Çeken oyuncu: arka düzlemden geride (m) ve koltuk hizasından dışa yana kayık (m). Yana kayma, yere yatan hastanın katı gövdesine (yarı genişlik 0.34 m) oyuncu kapsülü (0.25 m) değmesin diye ≥ 0.6 m.")]
+    public float pullerBehindRear = 0.55f, pullerSideOffset = 0.7f;
 
     public bool IsOpen { get; private set; }
     public bool IsOpening { get; private set; }

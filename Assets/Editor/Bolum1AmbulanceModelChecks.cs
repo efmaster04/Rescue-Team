@@ -61,6 +61,19 @@ public static class Bolum1AmbulanceModelChecks
         var glass = materials.FirstOrDefault(m => m.name == "M_Ambulance_Glass");
         check("(k) ambulans camı şeffaf", glass != null && glass.GetFloat("_Surface") == 1f && Mathf.Abs(glass.color.a - 0.3f) < 0.01f && glass.renderQueue == 3000,
             glass == null ? "YOK" : $"alpha={glass.color.a:F2}, queue={glass.renderQueue}");
+        // D2 kararı 6: ekipli ambulans (şoför + hemşire Interior mesh'inde; ~10.3k üçgen; yeşil tulum, ten, saç malzemeleri)
+        var ambFbx = AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.AmbulanceModelPath);
+        int tris = ambFbx.GetComponentsInChildren<MeshFilter>(true).Sum(f => f.sharedMesh.triangles.Length / 3);
+        var interior = ambFbx.GetComponentsInChildren<MeshRenderer>(true).FirstOrDefault(r => r.name == "SM_Ambulance_Interior");
+        var crewMats = new[] { "M_Ambulance_Suit", "M_Ambulance_Skin", "M_Ambulance_SkinLight", "M_Ambulance_StripeYellow", "M_Ambulance_HairDark" };
+        var missingCrew = crewMats.Where(n => interior == null || !interior.sharedMaterials.Any(m => m != null && m.name == n)).ToArray();
+        var suit = materials.FirstOrDefault(m => m.name == "M_Ambulance_Suit");
+        ColorUtility.TryParseHtmlString("#1F4D3A", out Color suitWant);
+        float suitDelta = suit == null ? float.PositiveInfinity : Bolum1ColorProbe.DeltaE(suit.color, suitWant);
+        check("(D2-f) ekipli ambulans: şoför ve hemşire Interior mesh'inde, " + tris + " üçgen (meta 10.348), koyu yeşil tulum",
+            interior != null && missingCrew.Length == 0 && tris >= 9000 && tris <= 10500 && suitDelta < 2f,
+            "Interior malzemeleri " + (interior != null ? interior.sharedMaterials.Length : 0) + ", eksik: " + (missingCrew.Length == 0 ? "yok" : string.Join(",", missingCrew))
+            + "; tulum " + (suit == null ? "YOK" : "#" + ColorUtility.ToHtmlStringRGB(suit.color)) + " (ΔE76 " + suitDelta.ToString("F3") + ")");
         check("Build Settings: Bölüm 1 etkin", EditorBuildSettings.scenes.Any(s => s.enabled && s.path == Bolum1SceneBuilder.ScenePath), Bolum1SceneBuilder.ScenePath);
         // Poz testinin referans çerçevesi gerçek yüzey yüksekliğiyle bağımsız karşılaştırılır.
         var ambulance = AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.AmbulancePrefabPath).GetComponent<AmbulanceController>();

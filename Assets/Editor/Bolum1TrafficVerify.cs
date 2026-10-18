@@ -297,6 +297,7 @@ public static class Bolum1TrafficVerify
 
         var mission = Mission;
         var traffic = Traffic;
+        Bolum1TestPatients.LayOnPath(mission.patients); // D2: hastalar minibüste/kayada başlar; bu test patikada yatar bekler
         var tourist = mission.patients.First(p => p.name == "Patient_Tourist");
         parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
         ParkCarriersOffLane();

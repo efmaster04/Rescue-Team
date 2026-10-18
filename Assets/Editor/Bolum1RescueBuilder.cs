@@ -21,8 +21,9 @@ public static class Bolum1RescueBuilder
     public const float AnchorBlenderX = 0f;
     // Klip sözleşmesi (clips_meta.json rope_grip / wall_plane_root_local_y): kökten duvar düzlemine 0.36 m.
     public const float WallPlane = 0.36f;
-    // Patika kenarına göre: kazık 0.5 m, çeken 1.4 m, bağlanma/çıkış noktası 2.5 m içeride (çıkış yanda 1 m).
-    public const float AnchorInset = 0.5f, PullerInset = 1.4f, StandInset = 2.5f, StandSide = 1.0f;
+    // Patika kenarına göre: kazık 0.5 m, çeken 1.4 m, bağlanma/çıkış noktası 3.3 m içeride (çıkış yanda 1 m; çıkan kişi
+    // patikaya döner, sırtından arkaya bırakılan hasta uçurum kenarına 1 m'den yakın olmaz).
+    public const float AnchorInset = 0.5f, PullerInset = 1.4f, StandInset = 3.3f, StandSide = 1.0f;
     // Tepede asılı kişinin kökü patika yüzeyinin bu kadar altında (eller ~kenar hizasında).
     public const float TopBelowPath = 1.1f;
 
@@ -173,8 +174,24 @@ public static class Bolum1RescueBuilder
         rope.edgePoint = Empty("EdgePoint", new Vector3(x, pathY + 0.04f, edgeZ + 0.05f), Quaternion.identity);
         rope.climbBottom = Empty("ClimbBottom", bottom, faceWall);
         rope.climbTop = Empty("ClimbTop", top, faceWall);
-        Vector3 stand = new Vector3(x + StandSide, 0f, edgeZ - StandInset);
-        stand.y = GroundY(stand, pathY + 3f, 10f, out _) + 0.02f;
+        // Bağlanma/çıkış noktası: patika zemininde (eşyanın üstünde değil), 0.6 m içinde eşya / minibüs yok; tercihen yanda 1 m.
+        var groundT = GameObject.Find("SM_B1_Ground").transform;
+        var envT = new[] { "SM_B1_Ground", "SM_B1_Road", "SM_B1_Guardrail" }.Select(n => GameObject.Find(n).transform).ToArray();
+        Vector3 stand = default;
+        float bestCost = float.MaxValue;
+        for (float sx = -1.5f; sx <= 1.51f; sx += 0.25f)
+            for (float inset = StandInset - 0.3f; inset <= StandInset + 0.51f; inset += 0.1f)
+            {
+                Vector3 c = new Vector3(x + sx, 0f, edgeZ - inset);
+                var hit = Physics.RaycastAll(new Vector3(c.x, pathY + 3f, c.z), Vector3.down, 10f).OrderBy(h => h.distance).FirstOrDefault();
+                if (hit.collider == null || !hit.transform.IsChildOf(groundT) || Mathf.Abs(hit.point.y - pathY) > 0.15f || hit.normal.y < 0.95f) continue;
+                c.y = hit.point.y;
+                if (Physics.OverlapSphere(c + Vector3.up * 0.6f, 0.6f).Any(o => !envT.Any(e => o.transform.IsChildOf(e)))) continue;
+                float cost = Mathf.Abs(sx - StandSide) + Mathf.Abs(inset - StandInset) * 2f;
+                if (cost < bestCost) { bestCost = cost; stand = c; }
+            }
+        if (bestCost == float.MaxValue) throw new Exception("Halat bağlanma/çıkış noktası için boş patika yeri bulunamadı");
+        stand.y += 0.02f;
         rope.topStand = Empty("TopStand", stand, faceWall);
         Vector3 pull = new Vector3(x, 0f, edgeZ - PullerInset);
         pull.y = GroundY(pull, pathY + 3f, 10f, out _);
@@ -243,10 +260,10 @@ public static class Bolum1RescueBuilder
             + ", uçurum kenarı z " + edgeZ.ToString("F2", Inv) + "; 0.6 m içinde engel: " + (clearHits.Length == 0 ? "yok" : string.Join(",", clearHits))
             + "; minibüse en yakın " + vanDist.ToString("F2", Inv) + " m");
         Line("Tırmanış hattı: dip " + V(bottom) + " (kaya, LedgeZone y " + ledgeY.ToString("F2", Inv) + "), tepe " + V(top) + ", boy " + (top.y - bottom.y).ToString("F2", Inv)
-            + " m; kökten duvara (dipten tepeye) " + string.Join(" / ", gaps.Select(g => g.ToString("F2", Inv))) + " m (klip duvar düzlemi " + WallPlane + ")");
+            + " m; kökten duvara (dipten tepeye) " + string.Join(" / ", gaps.Select(g => g.ToString("F2", Inv))) + " m (klip duvar düzlemi " + WallPlane.ToString(Inv) + ")");
         Line("Yaşlı: kaya çıkıntısında " + V(bestPoint) + ", halat dibine " + Vector3.Distance(Flat(bestPoint), Flat(bottom)).ToString("F2", Inv)
             + " m, vadi kenarına en az " + bestClear.ToString("F2", Inv) + " m; LedgeZone sınırı Blender " + V(Bolum1Coordinates.Vec3(ledgeBounds, "min")) + "…" + V(Bolum1Coordinates.Vec3(ledgeBounds, "max")));
-        Line("Bağlanma/çıkış " + V(stand) + ", çeken " + V(pull) + "; hızlar: iniş " + rope.descendSpeed + ", tırmanış " + rope.climbSpeed + ", çekme " + rope.pullSpeed + " m/sn");
+        Line("Bağlanma/çıkış " + V(stand) + ", çeken " + V(pull) + "; hızlar: iniş " + rope.descendSpeed.ToString(Inv) + ", tırmanış " + rope.climbSpeed.ToString(Inv) + ", çekme " + rope.pullSpeed.ToString(Inv) + " m/sn");
     }
 
     // Kaya çıkıntısında yatış yeri: gövde boyunca (+X baş) düz; gövdenin her köşesinden vadi kenarına uzaklık (zemin 0.5 m düşene kadar).
