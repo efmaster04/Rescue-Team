@@ -86,7 +86,8 @@ public static class Bolum1AnimBuilder
         var carryCone = CarryState(ac, sm, CrewAnimation.StateCarryCone, "Carry_OneHand_Walk", walkSpeed, new Vector3(300f, 220f));
         // D2: sırtta hastayla yürüyüş (Piggyback_Walk 1.2 m/sn'de ×1, beklerken yavaşlatılmış)
         var carryPiggyback = CarryState(ac, sm, CrewAnimation.StateCarryPiggyback, "Piggyback_Walk", PiggybackSpeed, new Vector3(300f, 320f));
-        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback };
+        var carryFront = CarryState(ac, sm, CrewAnimation.StateCarryStretcherFront, "Carry_Stretcher_Front_Walk", carryStretcherSpeed, new Vector3(300f, 420f));
+        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback, carryFront };
 
         // Döngüler arası (Carry değişince; AnyState tetikleyicileri önceliklidir)
         for (int a = 0; a < loops.Length; a++)
@@ -356,6 +357,7 @@ public static class Bolum1AnimBuilder
         var crew = character.AddComponent<CrewAnimation>();
         crew.animator = animator;
         crew.player = player;
+        character.AddComponent<StretcherHandIK>();
         crew.getUpSeconds = getUp;
         var ik = character.GetComponent<FootGroundingIK>();
         crew.disableDuringGetUp = ik != null ? new Behaviour[] { ik } : new Behaviour[0];
@@ -377,6 +379,7 @@ public static class Bolum1AnimBuilder
         var botCrew = bot.gameObject.AddComponent<CrewAnimation>();
         botCrew.animator = botAnimator;
         botCrew.bot = bot;
+        bot.gameObject.AddComponent<StretcherHandIK>();
         botCrew.getUpSeconds = getUp;
         bot.crewAnimation = botCrew;
         bot.hips = botAnimator.GetBoneTransform(HumanBodyBones.Hips);

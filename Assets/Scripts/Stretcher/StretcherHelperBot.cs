@@ -66,6 +66,7 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
 
     public Vector3 GetHandPoint(Vector3 towards)
     {
+        if (HeldStretcher != null) return StretcherHandIK.MarkerPoint(this);
         return CarrierRegistry.HandPoint(transform, Height, Reach, towards);
     }
 
@@ -82,7 +83,9 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         Vector3 axis = Flat(otherHandle.position - leaderHandle.position, -leader.Root.forward);
         PlaceAt(leader.GetHandPoint(stretcher.transform.position), axis, stretcher.HandleSpan);
         lastPosition = transform.position;
-        return stretcher.Grab(this, !leaderFront, false);
+        bool grabbed = stretcher.Grab(this, !leaderFront, false);
+        if (grabbed) Follow();
+        return grabbed;
     }
 
     public void ReleaseHeld()
@@ -241,8 +244,21 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     {
         var s = HeldStretcher;
         Vector3 leaderHand = leader.GetHandPoint(s.transform.position);
-        Vector3 axis = Flat(GetHandPoint(s.transform.position) - leaderHand, transform.position - leader.Root.position);
-        PlaceAt(leaderHand, axis, s.HandleSpan);
+        bool front = s.HoldsFront(this);
+        Vector3 forward = Flat(leader.Root.forward, Vector3.forward);
+        Vector3 axis = forward * (front ? 1f : -1f);
+        float horizontalSpan = s.HandleSpan;
+        Vector3 root = transform.position;
+        // Eğimde iki sapın gerçek mesafesini koru; yatay mesafeyi yükseklik farkından çöz.
+        for (int i = 0; i < 4; i++)
+        {
+            root = leaderHand + axis * horizontalSpan - forward * (front ? -0.19f : 0.252f);
+            root.y = leader.Root.position.y;
+            if (GroundProbe.Find(root + Vector3.up * 2f, 8f, out RaycastHit ground)) root.y = ground.point.y;
+            float dy = root.y + 0.665f - leaderHand.y;
+            horizontalSpan = Mathf.Sqrt(Mathf.Max(0.01f, s.HandleSpan * s.HandleSpan - dy * dy));
+        }
+        transform.SetPositionAndRotation(root, Quaternion.LookRotation(forward, Vector3.up));
     }
 
     // Bot elini leaderHand + axis·span noktasına getirecek yere durur, sedyeye (lidere) bakar.

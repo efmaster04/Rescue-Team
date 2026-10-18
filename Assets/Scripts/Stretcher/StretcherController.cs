@@ -70,6 +70,21 @@ public class StretcherController : MonoBehaviour
         return false;
     }
 
+    public bool HoldsFront(ICarrier carrier)
+    {
+        foreach (var grip in grips) if (grip.carrier == carrier) return grip.front;
+        return false;
+    }
+
+    public Transform HandleFor(ICarrier carrier) => HoldsFront(carrier) ? handleFront : handleRear;
+
+    public Vector3 GripPoint(ICarrier carrier, bool left)
+    {
+        Vector3 forward = (handleFront.position - handleRear.position).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+        return HandleFor(carrier).position + right * (left ? -0.293f : 0.293f);
+    }
+
     public int CountAtEnd(bool front)
     {
         int n = 0;

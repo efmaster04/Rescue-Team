@@ -57,6 +57,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     private Vector3 steepNormal;
     private float steepUntil;
     public float LastLandingDrop { get; private set; }
+    public bool IsSliding { get; private set; }
+    public int SlideStarts { get; private set; }
     public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : runHeld ? runSpeed : moveSpeed;
     private float verticalSpeed;
     private float controlLostUntil = -1f;
@@ -66,6 +68,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        controller.slopeLimit = 35f;
         lastGroundHeight = transform.position.y;
     }
 
@@ -84,6 +87,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 
     public Vector3 GetHandPoint(Vector3 towards)
     {
+        if (HeldStretcher != null) return StretcherHandIK.MarkerPoint(this);
         return CarrierRegistry.HandPoint(transform, rules != null ? rules.handHeight : 0.72f, rules != null ? rules.handReach : 0.3f, towards);
     }
 
@@ -97,6 +101,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         lastGroundHeight = position.y;
         airborne = true;
         steepUntil = -1f;
+        IsSliding = false;
         Physics.SyncTransforms();
     }
 
@@ -248,9 +253,22 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         }
 
         // Yerçekimi ve zıplama
-        bool supported = controller.isGrounded && Time.time >= steepUntil;
+        // Kapsül teması seyrekleşse de ayak altındaki dik zemin kaymayı sürdürür.
+        bool groundFound = GroundProbe.Find(transform.position + Vector3.up * 0.2f, 0.55f, out RaycastHit support);
+        bool steepGround = groundFound && support.normal.y < Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad);
+        if (steepGround) { steepNormal = support.normal; steepUntil = Time.time + 0.08f; }
+        bool sliding = Time.time < steepUntil;
+        if (sliding && !IsSliding) SlideStarts++;
+        IsSliding = sliding;
+        bool supported = controller.isGrounded && !sliding;
         if (supported && verticalSpeed <= 0f)
         {
+            if (airborne && lastGroundHeight - transform.position.y > hardLandingHeight)
+            {
+                LastLandingDrop = lastGroundHeight - transform.position.y;
+                KnockDown(wish + Vector3.down * 2f);
+                return;
+            }
             lastGroundHeight = transform.position.y;
             airborne = false;
             verticalSpeed = -2f;
@@ -269,8 +287,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         if (Time.time < steepUntil)
         {
             Vector3 outward = Vector3.ProjectOnPlane(steepNormal, Vector3.up).normalized;
-            wish -= outward * Mathf.Min(0f, Vector3.Dot(wish, outward));
-            wish += outward * 2f;
+            wish = outward * 2f;
             verticalSpeed = Mathf.Min(verticalSpeed, -2f);
         }
 

@@ -16,6 +16,8 @@ public class CrewAnimation : MonoBehaviour
 {
     public const string StateLocomotion = "Locomotion";
     public const string StateCarryStretcher = "CarryStretcher";
+    public const string StateCarryStretcherFront = "CarryStretcherFront";
+    public const int CarryStretcherFront = 4;
     public const string StateCarryCone = "CarryCone";
     public const string StatePickUp = "PickUp";
     public const string StatePutDown = "PutDown";
@@ -120,8 +122,8 @@ public class CrewAnimation : MonoBehaviour
 
     private int CurrentCarry()
     {
-        if (player != null) return player.HeldStretcher != null ? 1 : player.HeldCone != null ? 2 : player.Piggyback != null ? CarryPiggyback : 0;
-        if (bot != null) return bot.HeldStretcher != null ? 1 : 0;
+        if (player != null) return player.HeldStretcher != null ? (player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1) : player.HeldCone != null ? 2 : player.Piggyback != null ? CarryPiggyback : 0;
+        if (bot != null) return bot.HeldStretcher != null ? (bot.HeldStretcher.HoldsFront(bot) ? CarryStretcherFront : 1) : 0;
         return 0;
     }
 

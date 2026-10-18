@@ -21,7 +21,71 @@
       "target_speed_mps": 1.4,
       "stance_ratio": 0.5,
       "step_length_m": 0.35,
-      "stance_travel_m": 0.35
+      "stance_travel_m": 0.35,
+      "handle_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.278,
+            -0.252,
+            0.665
+          ],
+          "Right": [
+            -0.278,
+            -0.252,
+            0.665
+          ]
+        },
+        "grip_z_range_m": {
+          "Left": [
+            0.64,
+            0.682
+          ],
+          "Right": [
+            0.641,
+            0.682
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            0.049,
+            -0.988,
+            -0.148
+          ],
+          "Right": [
+            -0.049,
+            -0.988,
+            -0.148
+          ]
+        },
+        "handle_axis_root_local": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "stretcher_marker": "Handle_Rear",
+        "stretcher_side": "önde (-Y)",
+        "marker_root_local_m": [
+          -0.0,
+          -0.252,
+          0.665
+        ],
+        "stretcher_root_local_m": [
+          -0.0,
+          -1.222,
+          0.535
+        ],
+        "handle_spacing_m": 0.556,
+        "note": "Avuç noktası = el kemiği başı + kemik yönünde 0.05 m (parmaklara doğru). Konumlar kök yerel Blender koordinatı (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)), döngü ortalaması; adım sallantısıyla z aralığında oynar. Sedye taşıyanla aynı yöne bakar (sedye -Y = yürüyüş yönü); Handle_Rear işareti iki avucun ortasına oturur, sap ekseni kök +Y boyunca. Unity IK: iki el hedefini sedyenin sap noktalarına kilitleyin (sol el +X, sağ el -X direği)."
+      }
     },
     "Carry_OneHand_Walk": {
       "file": "Carry_OneHand_Walk.fbx",
@@ -494,7 +558,87 @@
         "note": "Halat önden (-Y, uçurum kenarı) gelir; kök yerel x=0, z≈0.80 yatay çizgisinde elden ele çekilir: her el y=-0.40 noktasında tutar, y=-0.26 noktasına çeker, bırakıp öne uzanır (iki el yarım faz kaydırmalı). LineRenderer: uçurumdan öndeki ele, iki el arası, arkadaki elden kazığa. Tutma noktası el kemiğinin ~5 cm ilerisi (avuç)."
       },
       "rope_speed_mps": 0.255
+    },
+    "Carry_Stretcher_Front_Walk": {
+      "file": "Carry_Stretcher_Front_Walk.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sedyenin ön ucu: kollar arkada, iki el kalçanın arkasında aşağıda sedye saplarında; gövde öne eğik, yük çeker gibi; Carry_Stretcher_Walk ile aynı ritimde sendeleyen paytak yürüyüş (1.4 m/sn).",
+      "action_sha256": "b634dc64006519e07a1a1d19be7d6cc513c337f445d163b22e260fd26ff4b042",
+      "target_speed_mps": 1.4,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.35,
+      "stance_travel_m": 0.35,
+      "handle_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.293,
+            0.19,
+            0.665
+          ],
+          "Right": [
+            -0.293,
+            0.19,
+            0.665
+          ]
+        },
+        "grip_z_range_m": {
+          "Left": [
+            0.657,
+            0.673
+          ],
+          "Right": [
+            0.657,
+            0.673
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            0.114,
+            0.285,
+            -0.952
+          ],
+          "Right": [
+            -0.114,
+            0.285,
+            -0.952
+          ]
+        },
+        "handle_axis_root_local": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "stretcher_marker": "Handle_Front",
+        "stretcher_side": "arkada (+Y)",
+        "marker_root_local_m": [
+          -0.0,
+          0.19,
+          0.665
+        ],
+        "stretcher_root_local_m": [
+          -0.0,
+          1.16,
+          0.535
+        ],
+        "handle_spacing_m": 0.586,
+        "note": "Avuç noktası = el kemiği başı + kemik yönünde 0.05 m (parmaklara doğru). Konumlar kök yerel Blender koordinatı (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)), döngü ortalaması; adım sallantısıyla z aralığında oynar. Sedye taşıyanla aynı yöne bakar (sedye -Y = yürüyüş yönü); Handle_Front işareti iki avucun ortasına oturur, sap ekseni kök +Y boyunca. Unity IK: iki el hedefini sedyenin sap noktalarına kilitleyin (sol el +X, sağ el -X direği)."
+      }
     }
   },
-  "actions_sha256": "f43ac1f381068444ee3c64ec3213fa1e226da4e328835bac49fdd05dfde27488"
+  "actions_sha256": "9b3cf73757b53f786adcf6a5905b323b4c2fc6e0f68312705ca288460b1d3e08"
 }

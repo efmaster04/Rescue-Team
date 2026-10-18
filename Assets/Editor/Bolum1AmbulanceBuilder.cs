@@ -888,7 +888,7 @@ public static class Bolum1AmbulanceBuilder
         cc.radius = 0.25f;
         cc.skinWidth = 0.02f;
         cc.center = new Vector3(0f, 0.75f + cc.skinWidth, 0f);
-        cc.slopeLimit = 45f;
+        cc.slopeLimit = 35f;
         cc.stepOffset = 0.3f;
         // Varsayılan 1 mm eşiği yüksek kare hızında (batchmode ~2 ms/kare) 1.4 m/sn sedye yürüyüşünün kare başı hareketini yutuyordu.
         cc.minMoveDistance = 0f;

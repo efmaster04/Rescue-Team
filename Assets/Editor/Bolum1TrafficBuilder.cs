@@ -88,6 +88,26 @@ public static class Bolum1TrafficBuilder
         AssetDatabase.Refresh();
     }
 
+    public static readonly Color SmokeColor = new Color(0.055f, 0.075f, 0.095f, 0.82f);
+    public static Material SmokeGlass()
+    {
+        string path = MaterialFolder + "/M_Traffic_SmokeGlass.mat";
+        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (material == null) { material = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(material, path); }
+        material.SetColor("_BaseColor", SmokeColor);
+        material.SetFloat("_Surface", 1f);
+        material.SetFloat("_Blend", 0f);
+        material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        material.SetFloat("_ZWrite", 0f);
+        material.SetFloat("_Smoothness", 0.65f);
+        material.SetFloat("_Metallic", 0.05f);
+        material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        material.renderQueue = 3000;
+        EditorUtility.SetDirty(material);
+        return material;
+    }
+
     private static void BuildVehiclePrefab(TrafficVehicleType type, Dictionary<string, object> meta)
     {
         var spec = SpecFor(type);
@@ -117,7 +137,7 @@ public static class Bolum1TrafficBuilder
             }
 
             var bodyPart = Find(modelName + "_Body");
-            Find(modelName + "_Glass");
+            foreach (var renderer in Find(modelName + "_Glass").GetComponentsInChildren<Renderer>(true)) renderer.sharedMaterial = SmokeGlass();
             var wheels = spec.wheelNames.Select(w => Find(modelName + "_Wheel_" + w)).ToArray();
 
             // Gövde kutusu (kök uzayında): gövde + cam sınırları; alt kenar alçak konileri de itsin diye 0.15 m.

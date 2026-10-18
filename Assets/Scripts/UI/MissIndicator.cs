@@ -15,6 +15,28 @@ public class MissIndicator : MonoBehaviour
     public bool Visible { get { return canvasGo != null && canvasGo.activeSelf; } }
 
     private GameObject canvasGo;
+    private MinivanTailgate vehicle;
+    private Renderer[] vehicleRenderers;
+
+    public Vector3 DisplayPosition(Camera cam)
+    {
+        if (patient.State != PatientState.InVehicle) return patient.Position + Vector3.up * height;
+        if (vehicle == null)
+        {
+            vehicle = patient.GetComponentInParent<MinivanTailgate>();
+            if (vehicle == null) vehicle = FindAnyObjectByType<MinivanTailgate>();
+            if (vehicle != null) vehicleRenderers = vehicle.GetComponentsInChildren<Renderer>();
+        }
+        if (vehicle == null) return patient.Position + Vector3.up * height;
+        Bounds bounds = new Bounds(vehicle.transform.position, Vector3.zero);
+        foreach (var r in vehicleRenderers)
+            if (r != null && r.GetComponentInParent<Patient>() == null) bounds.Encapsulate(r.bounds);
+        int index = 0, count = 0;
+        foreach (var p in Patient.All)
+            if (p.startSeated) { if (p == patient) index = count; count++; }
+        Vector3 right = cam != null ? cam.transform.right : Vector3.right;
+        return new Vector3(bounds.center.x, bounds.max.y + 0.4f, bounds.center.z) + right * ((index - (count - 1) * 0.5f) * 0.8f);
+    }
 
     public static MissIndicator Create(Patient p, Transform parent)
     {
@@ -63,8 +85,8 @@ public class MissIndicator : MonoBehaviour
         bool show = !patient.IsAboard && patient.gameObject.activeInHierarchy;
         if (canvasGo.activeSelf != show) canvasGo.SetActive(show);
         if (!show) return;
-        transform.position = patient.Position + Vector3.up * height;
         var cam = Camera.main;
+        transform.position = DisplayPosition(cam);
         if (cam != null) transform.rotation = cam.transform.rotation; // kameraya dön (ekrana paralel)
         for (int i = 0; i < 3; i++)
             Boxes[i].color = i < patient.MissedAmbulances ? filledColor : emptyColor;
@@ -74,7 +96,7 @@ public class MissIndicator : MonoBehaviour
     public void FaceCamera(Camera cam)
     {
         if (patient == null) return;
-        transform.position = patient.Position + Vector3.up * height;
+        transform.position = DisplayPosition(cam);
         transform.rotation = cam.transform.rotation;
     }
 }
