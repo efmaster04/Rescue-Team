@@ -457,6 +457,8 @@ public static partial class Bolum1AnimVerify
         yield return PhasePatients();
         yield return PhaseStretcher();
         yield return PhaseE2Carry();
+        yield return PhaseE3PatientOffset(); // E3: hasta ayak tarafına, ön taşıyıcının sırtına girmez
+        yield return PhaseE3BotBank();       // E3: bot dik banka tırmanmaz
         yield return PhaseE2RampStretcher();
         yield return PhaseE2Slope();
         yield return PhaseE2GlassRender();

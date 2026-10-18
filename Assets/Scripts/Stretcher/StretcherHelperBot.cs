@@ -4,7 +4,8 @@ using UnityEngine;
 // Araç çarpınca (şef kararı 6) bot da ragdoll olup düşer ve getUpDelay sn sonra kendi kendine GetUp_FromBack ile kalkar
 // (bot test yardımcısıdır; oyuncunun "yalnız arkadaş kaldırır" kuralı değişmez).
 // Oyuncu bir ucu tutunca bot diğer uca ışınlanır. Sonra "römork" modeliyle izler: sedye ekseni iki taşıyıcı
-// arasındaki çizgidir, bot lidere olan uzaklığı sap aralığında tutar. Y'sini zemine raycast'le bulur.
+// arasındaki çizgidir, bot lidere olan uzaklığı sap aralığında tutar. Y'sini zemine raycast'le bulur; yalnız
+// yürünebilir zemine (eğim ≤ walkableSlopeLimit) oturur, dik bank/yamaçta yükselmez (E3 kararı 2).
 // Ayakta NpcBody teması engeller ve yürüyen oyuncudan sınırlı itme alır.
 // Oyuncu bırakınca bot da AYNI ANDA bırakır (güvenli iniş; bırakmayı PlayerInteraction yapar).
 // İleride ikinci oyuncu bu botun yerine geçecek: ikisi de ICarrier.
@@ -29,6 +30,15 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     public Collider[] ragdollColliders = new Collider[0];
     [Tooltip("Araç çarpınca yerde kalma süresi (sn); sonra kendi kendine kalkar.")]
     public float getUpDelay = 3f;
+
+    [Header("Takip zemini (E3 kararı 2)")]
+    [Tooltip("Sedye takibinde botun kökü yalnız bu eğime (°) kadar olan zemine oturur (oyuncunun CharacterController.slopeLimit'i ile aynı). Daha dik yüzey (bank, yamaç) bulunursa bot yükselmez, son yürünebilir yükseklikte kalır.")]
+    public float walkableSlopeLimit = 35f;
+    // Son kabul edilen yürünebilir zemin yüksekliği (Assist/PlaceAt kurar, Follow günceller). Kabul kararı geçmişe
+    // bağlı DEĞİLDİR (yalnız o karedeki zemin normali): geçmişe bağlı bir adım kuralı rampa dibindeki 180° dönüşte
+    // botu alçakta kilitliyordu (ölçüldü: E2-3 çıkışta sedye 1.5 m gömülü, oyuncu bota takılıp durdu).
+    private float lastWalkableY;
+    private bool hasWalkableY;
 
     public bool IsDown { get; private set; }
     public float DownSince { get; private set; } = -1f;
@@ -250,14 +260,23 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         float horizontalSpan = s.HandleSpan;
         Vector3 root = transform.position;
         // Eğimde iki sapın gerçek mesafesini koru; yatay mesafeyi yükseklik farkından çöz.
+        bool accepted = false;
         for (int i = 0; i < 4; i++)
         {
             root = leaderHand + axis * horizontalSpan - forward * StretcherHandIK.MarkerAhead(front);
             root.y = leader.Root.position.y;
-            if (GroundProbe.Find(root + Vector3.up * 2f, 8f, out RaycastHit ground)) root.y = ground.point.y;
+            accepted = false;
+            if (GroundProbe.Find(root + Vector3.up * 2f, 8f, out RaycastHit ground))
+            {
+                // E3 kararı 2: yalnız yürünebilir zemin (normal eğimi ≤ walkableSlopeLimit) kabul edilir;
+                // dik bank/yamaç bulunursa bot yükselmez, son yürünebilir yükseklikte kalır.
+                accepted = Vector3.Angle(ground.normal, Vector3.up) <= walkableSlopeLimit;
+                root.y = accepted || !hasWalkableY ? ground.point.y : lastWalkableY;
+            }
             float dy = root.y + StretcherHandIK.HandleHeight - leaderHand.y;
             horizontalSpan = Mathf.Sqrt(Mathf.Max(0.01f, s.HandleSpan * s.HandleSpan - dy * dy));
         }
+        if (accepted || !hasWalkableY) { lastWalkableY = root.y; hasWalkableY = true; }
         transform.SetPositionAndRotation(root, Quaternion.LookRotation(forward, Vector3.up));
     }
 
@@ -269,6 +288,8 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         root.y = hand.y - Height;
         if (GroundProbe.Find(new Vector3(root.x, hand.y + 1.0f, root.z), 40f, out RaycastHit hit))
             root.y = hit.point.y;
+        lastWalkableY = root.y; // takip bu yükseklikten başlar
+        hasWalkableY = true;
         transform.SetPositionAndRotation(root, Quaternion.LookRotation(-axis, Vector3.up));
     }
 

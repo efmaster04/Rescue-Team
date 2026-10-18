@@ -226,7 +226,8 @@ public class Patient : MonoBehaviour
 
     // Hastayı bir yatma çerçevesine (sedye PatientAnchor'ı ya da ambulans PatientSlot'u) yatırır.
     // blendTime > 0 ise kısa bir yumuşak geçişle yerine kayar.
-    public void LieOn(Transform frame, PatientState newState, float blendTime)
+    // frameOffset: çerçeve yerelinde ek kaydırma (E3 kararı 1: sedyede ayak tarafına; +ileri = baş yönü).
+    public void LieOn(Transform frame, PatientState newState, float blendTime, Vector3 frameOffset = default)
     {
         if (blend != null) { StopCoroutine(blend); blend = null; }
         SetRagdoll(false);
@@ -234,6 +235,7 @@ public class Patient : MonoBehaviour
         transform.SetParent(frame, true);
         if (State == PatientState.InVehicle || State == PatientState.OnBack) PlayLieAnimation();
         LiePoseInFrame(out Vector3 targetPos, out Quaternion targetRot);
+        targetPos += frameOffset;
         if (blendTime > 0f && isActiveAndEnabled)
             blend = StartCoroutine(BlendTo(targetPos, targetRot, blendTime));
         else

@@ -28,6 +28,8 @@ public class StretcherController : MonoBehaviour
     public float liftTime = 0.3f;
     [Tooltip("Düşen hastaya verilen küçük yanal itki (m/sn).")]
     public float fallSideSpeed = 1.2f;
+    [Tooltip("E3 kararı 1: sedyedeki hasta çerçeveden ayak tarafına bu kadar kaydırılır (m); başı öndeki taşıyıcının sırtına girmez. Çerçeve, saplar ve el IK'sı değişmez.")]
+    [Min(0f)] public float passengerTowardFeet = 0.18f;
 
     public Mode CurrentMode { get; private set; } = Mode.Resting;
     public bool IsRaised { get { return CurrentMode == Mode.Raised; } }
@@ -153,7 +155,8 @@ public class StretcherController : MonoBehaviour
     public void PlacePatient(Patient p)
     {
         Passenger = p;
-        p.LieOn(patientAnchor, PatientState.OnStretcher, 0f);
+        // Çerçevenin +ileri ekseni baş yönüdür; hasta ayak tarafına (geriye) kaydırılır.
+        p.LieOn(patientAnchor, PatientState.OnStretcher, 0f, Vector3.back * passengerTowardFeet);
     }
 
     // Ambulansa yükleme: hasta sedyeden alınır (sedye taşıyıcılarda kalır).

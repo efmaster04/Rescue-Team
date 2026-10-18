@@ -13,6 +13,9 @@ using UnityEngine;
 //  (E2-3) rampada hastalı sedyeyle iniş/çıkış akıcı (0.5 sn pencerede hız ≥ %70), sedye zemine girmiyor
 //  (E2-4) minibüsteki hastaların göstergesi tavanın üstünde yan yana; dışarıda başın üstünde
 //  (E2-5) trafik camı koyu füme (renk/opaklık ölçümü), ambulans ve minibüs camı değişmemiş
+// E3 (üçüncü tur, iki küçük düzeltme):
+//  (E3-1) sedyedeki hasta ayak tarafına kaydırıldı: başı/gövdesi öndeki taşıyıcının gövdesine girmiyor, kanvastan taşmıyor
+//  (E3-2) yardımcı bot dik banka (50°) tırmanmıyor; kural kapalı/açık karşılaştırması
 public static partial class Bolum1AnimVerify
 {
     private const float E2GripTolerance = 0.03f;
@@ -691,5 +694,225 @@ public static partial class Bolum1AnimVerify
         e2Cam.targetTexture = null;
         UnityEngine.Object.Destroy(rt);
         UnityEngine.Object.Destroy(tex);
+    }
+
+    // =====================================================================================
+    // (E3-1) sedyedeki hasta ayak tarafına kaydırıldı: başı öndeki taşıyıcının sırtına girmez (önce/sonra)
+    // =====================================================================================
+    private const float E3CanvasHalfLength = 0.925f; // stretcher_meta.json canvas_length_m 1.85 / 2
+
+    private static float DistancePointSegment(Vector3 p, Vector3 a, Vector3 b)
+    {
+        Vector3 ab = b - a;
+        float t = ab.sqrMagnitude > 1e-8f ? Mathf.Clamp01(Vector3.Dot(p - a, ab) / ab.sqrMagnitude) : 0f;
+        return Vector3.Distance(p, a + ab * t);
+    }
+
+    // Hastanın verilen mesh parçalarının (pişirilmiş köşeler) taşıyıcının gövde kapsülüne (kalça→baş kemiği, yarıçap r)
+    // en küçük boşluğu (m); eksi = kesişme.
+    private static float CarrierClearance(Component carrier, SkinnedMeshRenderer[] parts, float radius, Mesh baked, out string worstPart)
+    {
+        var a = carrier.GetComponent<Animator>();
+        Vector3 hips = a.GetBoneTransform(HumanBodyBones.Hips).position, head = a.GetBoneTransform(HumanBodyBones.Head).position;
+        float best = float.MaxValue;
+        worstPart = "";
+        foreach (var smr in parts)
+        {
+            smr.BakeMesh(baked);
+            foreach (var v in baked.vertices)
+            {
+                float d = DistancePointSegment(smr.transform.TransformPoint(v), hips, head) - radius;
+                if (d < best) { best = d; worstPart = smr.name; }
+            }
+        }
+        return best;
+    }
+
+    // Hastanın bütün mesh'inin sedye ekseni boyunca kanvas uçlarına payı (m; eksi = taşma). anchor: yatma çerçevesi.
+    private static void CanvasMargins(StretcherController s, SkinnedMeshRenderer[] parts, Mesh baked, out float headMargin, out float feetMargin)
+    {
+        Vector3 axis = (s.handleFront.position - s.handleRear.position).normalized;
+        float max = float.MinValue, min = float.MaxValue;
+        foreach (var smr in parts)
+        {
+            smr.BakeMesh(baked);
+            foreach (var v in baked.vertices)
+            {
+                float along = Vector3.Dot(smr.transform.TransformPoint(v) - s.patientAnchor.position, axis);
+                max = Mathf.Max(max, along);
+                min = Mathf.Min(min, along);
+            }
+        }
+        headMargin = E3CanvasHalfLength - max;
+        feetMargin = E3CanvasHalfLength + min;
+    }
+
+    private static Transform ChestBone(Component c)
+    {
+        var a = c.GetComponent<Animator>();
+        return a.GetBoneTransform(HumanBodyBones.Chest) ?? a.GetBoneTransform(HumanBodyBones.Spine);
+    }
+
+    private static IEnumerator PhaseE3PatientOffset()
+    {
+        var bot = Bot;
+        bot.assistEnabled = true;
+        var s = Stretcher(0);
+        if (Player.HeldStretcher != null) { Interaction.Interact(); yield return Seconds(1f); }
+        var p = s.Passenger;
+        if (p == null) { p = PatientNamed("Tourist"); yield return PutPatientOnStretcher(p, s); yield return Seconds(0.5f); }
+        Vector3 startPos = s.transform.position;
+        Quaternion startRot = s.transform.rotation;
+        float shiftDefault = s.passengerTowardFeet;
+        float radius = Player.GetComponent<CharacterController>().radius;
+        var all = p.GetComponentsInChildren<SkinnedMeshRenderer>();
+        var headTorso = all.Where(r => r.name.Contains("Head") || r.name.Contains("Torso")).ToArray();
+        var baked = new Mesh();
+        Transform oldCam = Player.cameraTransform;
+        Player.cameraTransform = null;
+        var pik = HandIK(Player);
+        var bik = HandIK(bot);
+        var lines = new List<string>();
+        bool ok = headTorso.Length >= 2 && shiftDefault >= 0.15f && shiftDefault <= 0.20f;
+        if (headTorso.Length < 2) lines.Add("hastada Head/Torso mesh parçası bulunamadı");
+        foreach (bool playerFront in new[] { false, true })
+            for (int pass = 0; pass < 2; pass++)
+            {
+                bool after = pass == 1;
+                s.passengerTowardFeet = after ? shiftDefault : 0f;
+                s.Teleport(startPos, playerFront ? startRot * Quaternion.Euler(0f, 180f, 0f) : startRot);
+                s.PlacePatient(p); // yeni kaydırmayla yeniden yatır
+                yield return null;
+                CanvasMargins(s, all, baked, out float headMargin, out float feetMargin);
+                TeleportPlayerToHandle(s, playerFront);
+                yield return null; yield return null;
+                Interaction.Interact();
+                yield return Until(() => s.IsRaised, 2f, "E3 sedye kalktı");
+                yield return Seconds(0.8f);
+                Component frontCarrier = playerFront ? (Component)Player : bot;
+                Transform chest = ChestBone(frontCarrier);
+                Transform spine = frontCarrier.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Spine);
+                Transform patientHead = p.animator.GetBoneTransform(HumanBodyBones.Head);
+                Vector3 heading = Flat(s.handleFront.position - s.handleRear.position).normalized;
+                Drive(heading);
+                float t0 = Time.time;
+                int frames = 0;
+                float minChest = float.MaxValue, minSpine = float.MaxValue, minClear = float.MaxValue, worstGrip = 0f;
+                string worstPart = "";
+                bool captured = !(after && !playerFront);
+                while (Time.time - t0 < 2.0f)
+                {
+                    yield return null;
+                    Drive(heading);
+                    if (!s.IsRaised || pik.Weight < 1f || bik.Weight < 1f) continue;
+                    frames++;
+                    minChest = Mathf.Min(minChest, Vector3.Distance(patientHead.position, chest.position));
+                    minSpine = Mathf.Min(minSpine, Vector3.Distance(patientHead.position, spine.position));
+                    float clear = CarrierClearance(frontCarrier, headTorso, radius, baked, out string part);
+                    if (clear < minClear) { minClear = clear; worstPart = part; }
+                    worstGrip = Mathf.Max(worstGrip, Mathf.Max(GripError(Player, pik), GripError(bot, bik)));
+                    if (!captured && Time.time - t0 > 1.2f)
+                    {
+                        captured = true;
+                        Vector3 c = s.transform.position;
+                        Vector3 side = Vector3.Cross(Vector3.up, heading);
+                        yield return Capture("e3_sedye_hasta", c + side * 3.0f + Vector3.up * 1.0f, c + Vector3.up * 0.6f, 45f);
+                    }
+                }
+                Player.SetMoveInput(Vector2.zero);
+                yield return Seconds(0.3f);
+                bool good = frames > 30 && minClear > 0f && feetMargin >= 0f && headMargin >= 0f && s.Passenger == p && p.State == PatientState.OnStretcher
+                    && worstGrip <= E2GripTolerance;
+                if (after) ok &= good;
+                lines.Add((playerFront ? "oyuncu önde" : "bot önde") + " / kaydırma " + (s.passengerTowardFeet * 100f).ToString("F0", Inv) + " cm: kare " + frames
+                    + ", kafa–Chest en az " + M(minChest) + ", kafa–Spine " + M(minSpine) + ", baş/gövde–taşıyıcı boşluğu " + (minClear * 100f).ToString("F1", Inv) + " cm (" + worstPart + ")"
+                    + ", kanvas payı baş " + (headMargin * 100f).ToString("F1", Inv) + " / ayak " + (feetMargin * 100f).ToString("F1", Inv) + " cm, el–sap " + (worstGrip * 100f).ToString("F2", Inv) + " cm"
+                    + (after && !good ? " [HATA]" : ""));
+                Interaction.Interact();
+                yield return Seconds(1.0f);
+            }
+        s.passengerTowardFeet = shiftDefault;
+        Check("(E3-1) sedyedeki hasta " + (shiftDefault * 100f).ToString("F0", Inv) + " cm ayak tarafına: başı/gövdesi öndeki taşıyıcının gövdesine girmiyor, kanvastan taşmıyor (önce/sonra)",
+            ok, string.Join("; ", lines) + "; taşıyıcı gövde yarıçapı " + M(radius));
+        UnityEngine.Object.Destroy(baked);
+        Player.cameraTransform = oldCam;
+    }
+
+    // =====================================================================================
+    // (E3-2) yardımcı bot dik banka tırmanmaz: oyuncu sedyeyle 50° banka dönünce bot yükselmez (kural kapalı/açık)
+    // =====================================================================================
+    private static IEnumerator PhaseE3BotBank()
+    {
+        var bot = Bot;
+        bot.assistEnabled = true;
+        var s = Stretcher(0);
+        if (Player.HeldStretcher != null) { Interaction.Interact(); yield return Seconds(1f); }
+        Vector3 keepPos = s.transform.position;
+        Quaternion keepRot = s.transform.rotation;
+        Transform oldCam = Player.cameraTransform;
+        Player.cameraTransform = null;
+        Vector3 origin = new Vector3(400f, 0f, 400f);
+        var floor = TestBox("E3Floor", origin + Vector3.down * .5f, new Vector3(30f, 1f, 30f), Quaternion.identity);
+        const float angle = 50f;
+        float rad = angle * Mathf.Deg2Rad;
+        // Bank yüzeyi z = 3'te zemine kenarsız birleşir, 50° ile yükselir (yürünebilir sınır 35°'nin üstünde).
+        Vector3 dir = new Vector3(0f, Mathf.Sin(rad), Mathf.Cos(rad)), nrm = new Vector3(0f, Mathf.Cos(rad), -Mathf.Sin(rad));
+        var bank = TestBox("E3Bank", origin + new Vector3(0f, 0f, 3f) + dir * 3f - nrm * 0.1f, new Vector3(12f, .2f, 8f), Quaternion.Euler(-angle, 0f, 0f));
+        float slopeLimit0 = bot.walkableSlopeLimit;
+        var pik = HandIK(Player);
+        var bik = HandIK(bot);
+        var lines = new List<string>();
+        float riseBefore = 0f, riseAfter = 0f, gripAfter = 0f;
+        bool downAny = false;
+        foreach (bool ruleOn in new[] { false, true })
+        {
+            bot.walkableSlopeLimit = ruleOn ? slopeLimit0 : 89f; // kapalı: eski davranış (her zemine oturur)
+            s.Teleport(origin, Quaternion.LookRotation(Vector3.right, Vector3.up)); // ön sap +x
+            TeleportPlayerToHandle(s, false); // oyuncu arkada (-x), +x'e bakar; bot önde
+            yield return null; yield return null;
+            Interaction.Interact();
+            yield return Until(() => s.IsRaised, 2f, "E3 bankta sedye kalktı");
+            yield return Seconds(0.8f);
+            float rise = 0f, playerRise = 0f, grip = 0f, slip = 0f, underAngle = 0f;
+            int frames = 0;
+            float t0 = Time.time;
+            bool captured = !ruleOn;
+            while (Time.time - t0 < 2.2f)
+            {
+                // Oyuncu +z'ye (banka doğru) döner ve 1.5 sn yürür: bot sedyenin öbür ucuyla bankın üstüne savrulur.
+                if (Time.time - t0 < 1.5f) Drive(Vector3.forward); else Player.SetMoveInput(Vector2.zero);
+                yield return null;
+                frames++;
+                rise = Mathf.Max(rise, bot.transform.position.y - origin.y);
+                playerRise = Mathf.Max(playerRise, Player.transform.position.y - origin.y);
+                if (pik.Weight >= 1f && bik.Weight >= 1f) grip = Mathf.Max(grip, Mathf.Max(GripError(Player, pik), GripError(bot, bik)));
+                slip = Mathf.Max(slip, Vector3.Distance(s.HandleFor(bot).position, StretcherHandIK.MarkerPoint(bot)));
+                if (GroundProbe.Find(bot.transform.position + Vector3.up * 2f, 8f, out RaycastHit g)) underAngle = Mathf.Max(underAngle, Vector3.Angle(g.normal, Vector3.up));
+                if (!captured && Time.time - t0 > 1.7f)
+                {
+                    captured = true;
+                    Vector3 c = (Player.transform.position + bot.transform.position) * 0.5f;
+                    yield return Capture("e3_bot_bank", c + Vector3.right * 6.5f + Vector3.up * 2.2f - Vector3.forward * 0.8f, c + Vector3.up * 0.6f, 50f);
+                }
+            }
+            Player.SetMoveInput(Vector2.zero);
+            downAny |= bot.IsDown || Player.IsDown;
+            if (ruleOn) { riseAfter = rise; gripAfter = grip; } else riseBefore = rise;
+            lines.Add((ruleOn ? "kural açık" : "kural kapalı") + ": bot yükselmesi " + M(rise) + ", oyuncu " + M(playerRise) + ", botun üstündeki yüzey en dik " + underAngle.ToString("F0", Inv)
+                + "°, el–sap " + (grip * 100f).ToString("F2", Inv) + " cm, sap–işaret " + (slip * 100f).ToString("F2", Inv) + " cm, kare " + frames + ", sedye " + s.CurrentMode);
+            Interaction.Interact();
+            yield return Seconds(1.0f);
+        }
+        bot.walkableSlopeLimit = slopeLimit0;
+        Check("(E3-2) bot 50° banka tırmanmıyor: kural kapalıyken > 0.3 m yükseliyor, açıkken ≤ 0.3 m; el–sap ≤ 3 cm",
+            riseBefore > 0.3f && riseAfter <= 0.3f && gripAfter <= E2GripTolerance && !downAny,
+            string.Join("; ", lines) + "; eğim sınırı " + slopeLimit0.ToString("F0", Inv) + "°");
+        UnityEngine.Object.Destroy(bank);
+        UnityEngine.Object.Destroy(floor);
+        yield return null;
+        s.Teleport(keepPos, keepRot);
+        Player.cameraTransform = oldCam;
+        ParkCarriersOffLane();
+        yield return Seconds(0.5f);
     }
 }
