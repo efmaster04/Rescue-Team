@@ -46,6 +46,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public TrafficCone HeldCone { get; set; }
     // U2: iki elle taşınan halat kangalı. Yalnız PlayerInteraction yazar. Taşırken koşu ve zıplama yok.
     public RopeCoil HeldCoil { get; set; }
+    // U3: tek elle taşınan değerli eşya (valiz, hasta eşyası; koni kuralı: koşu serbest). Yalnız PlayerInteraction yazar.
+    public LootItem HeldValuable { get; set; }
     // Sırttaki hasta (D2). Yalnız PlayerInteraction yazar (SetPiggyback).
     public Patient Piggyback { get; private set; }
     // Bağlı olunan halat (D2); halattayken CharacterController kapalı, konum halattan gelir.
@@ -150,6 +152,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             cone.Drop(Vector3.zero);
         }
         DropCoil();
+        DropValuable();
         if (knockdown != null) knockdown.ResetStanding();
         moveInput = Vector2.zero;
         knockRemaining = Vector3.zero;
@@ -195,6 +198,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             cone.Drop(velocity * 0.5f);
         }
         DropCoil();
+        DropValuable();
         moveInput = Vector2.zero;
         knockRemaining = Vector3.zero;
         knockTimeLeft = 0f;
@@ -209,6 +213,15 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         var c = HeldCoil;
         HeldCoil = null;
         c.Drop();
+    }
+
+    // U3: elindeki değerli eşya önüne, yere düşer (çarpılma / can 0 / yeniden doğma).
+    private void DropValuable()
+    {
+        if (HeldValuable == null) return;
+        var v = HeldValuable;
+        HeldValuable = null;
+        v.DropNear(transform.position, transform.forward);
     }
 
     // ---- D2: sırtta taşıma ----

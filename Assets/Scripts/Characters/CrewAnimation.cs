@@ -40,8 +40,10 @@ public class CrewAnimation : MonoBehaviour
     // U2: halat kangalı — dolaptan alma, göğüste taşıma (Carry_Coil_Idle/Walk), kazığa bağlama, atma
     public const string StateCarryCoil = "CarryCoil", StateTakeCoil = "CabinetTakeCoil", StateTieStake = "RopeTieStake", StateRopeThrow = "RopeThrow";
     public const int CarryCoil = 5;
+    // U3: darbe tepkisi (HitReact 0.5 sn; PlayerHealth.TakeDamage → PlayAction)
+    public const string StateHitReact = "HitReact";
 
-    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni, 3 sırtta hasta (D2), 4 sedye ön uç, 5 kangal (U2)
+    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni / değerli eşya (U3), 3 sırtta hasta (D2), 4 sedye ön uç, 5 kangal (U2)
     public const string ParamReviving = "Reviving";  // bool
     public const string TriggerPickUp = "PickUp", TriggerPutDown = "PutDown", TriggerJump = "Jump", TriggerStartled = "Startled", TriggerCelebrate = "Celebrate";
 
@@ -125,7 +127,7 @@ public class CrewAnimation : MonoBehaviour
 
     private int CurrentCarry()
     {
-        if (player != null) return player.HeldStretcher != null ? (player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1) : player.HeldCone != null ? 2 : player.Piggyback != null ? CarryPiggyback : player.HeldCoil != null ? CarryCoil : 0;
+        if (player != null) return player.HeldStretcher != null ? (player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1) : player.HeldCone != null || player.HeldValuable != null ? 2 : player.Piggyback != null ? CarryPiggyback : player.HeldCoil != null ? CarryCoil : 0;
         if (bot != null) return bot.HeldStretcher != null ? (bot.HeldStretcher.HoldsFront(bot) ? CarryStretcherFront : 1) : 0;
         return 0;
     }

@@ -27,6 +27,8 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         "Piggyback_PutDown", "Rope_Pull",
         // U2 (r4): halat zinciri — dolaptan kangal alma, kangal taşıma, kazığa bağlama, atma
         "Cabinet_TakeCoil", "Carry_Coil_Idle", "Carry_Coil_Walk", "Rope_TieStake", "Rope_Throw",
+        // U3 (r4b): darbe tepkisi (can sistemi)
+        "HitReact",
     };
 
     public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan",

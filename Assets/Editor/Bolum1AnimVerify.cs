@@ -113,7 +113,8 @@ public static partial class Bolum1AnimVerify
         var ac = AssetDatabase.LoadAssetAtPath<AnimatorController>(Bolum1AmbulanceBuilder.LocomotionControllerPath);
         var want = new[] { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCone, CrewAnimation.StatePickUp, CrewAnimation.StatePutDown,
             CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate,
-            CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow }; // U2
+            CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow, // U2
+            CrewAnimation.StateHitReact }; // U3
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
         var patients = Bolum1AmbulanceBuilder.PatientTypes.Select(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath(t))).ToList();
@@ -174,10 +175,17 @@ public static partial class Bolum1AnimVerify
         var crew = player.GetComponent<CrewAnimation>();
         var respawn = player.GetComponent<PlayerFallRespawn>();
         var bot = UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>();
+        // U3: can, eşya kaydı, teslim noktası
+        var health = player.GetComponent<PlayerHealth>();
+        var loot = UnityEngine.Object.FindAnyObjectByType<LootRegistry>();
+        var safe = UnityEngine.Object.FindAnyObjectByType<SafeDropPoint>();
+        bool u3 = health != null && health.rules != null && health.respawnPoint != null && loot != null && loot.values != null && safe != null;
         bool ok = crew != null && crew.player != null && player.GetComponent<PlayerKnockdown>().crewAnimation == crew && respawn != null && respawn.spawnPoint != null
-            && bot.crewAnimation != null && bot.ragdollBodies.Length >= 10 && bot.hips != null;
-        Check("(a3) sahne: oyuncu ve botta CrewAnimation, bot ragdoll'u, oyuncu yeniden doğma (FallRespawnPlane → PlayerSpawn)", ok,
-            "bot ragdoll " + bot.ragdollBodies.Length + " gövde, yeniden doğma y < " + (respawn != null ? respawn.killBelowY.ToString("F1", Inv) : "-"));
+            && bot.crewAnimation != null && bot.ragdollBodies.Length >= 10 && bot.hips != null && u3;
+        Check("(a3) sahne: oyuncu ve botta CrewAnimation, bot ragdoll'u, oyuncu yeniden doğma (FallRespawnPlane → PlayerSpawn); U3 can + eşya kaydı + teslim noktası", ok,
+            "bot ragdoll " + bot.ragdollBodies.Length + " gövde, yeniden doğma y < " + (respawn != null ? respawn.killBelowY.ToString("F1", Inv) : "-")
+            + "; PlayerHealth " + (health != null) + " (kurallar " + (health != null && health.rules != null) + ", yeniden doğma noktası " + (health != null && health.respawnPoint != null ? health.respawnPoint.name : "-")
+            + "), LootRegistry " + (loot != null) + ", SafeDropPoint " + (safe != null));
     }
 
     // =====================================================================================
@@ -454,6 +462,8 @@ public static partial class Bolum1AnimVerify
         yield return Seconds(1f);
         CheckE2IndicatorOutside(); // E2: dışarıdaki hastaların göstergesi başlarının üstünde
         refAnkle = AnkleHeight(Player.GetComponent<Animator>(), Player.transform.position);
+        yield return PhaseU3(); // U3: can / düşme / yeniden doğma, değerli eşyalar ve para, çalınan çubuğu, yüz kuralı
+        ParkCarriersOffLane();
 
         yield return PhaseCorrections();
         ParkCarriersOffLane();

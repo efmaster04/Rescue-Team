@@ -123,6 +123,10 @@ public static class Bolum1AnimBuilder
         AnyTo(sm, celebrate, CrewAnimation.TriggerCelebrate, 0.15f);
         ReturnByCarry(celebrate, loops, 0.9f, 0.2f);
 
+        // U3: darbe tepkisi — yalnız kodla (PlayerHealth.TakeDamage → CrewAnimation.PlayAction, 0.5 sn); bitince taşımaya göre döngüye
+        var hitReact = OneShot(sm, CrewAnimation.StateHitReact, "HitReact", 1f, new Vector3(560f, 420f));
+        ReturnByCarry(hitReact, loops, 0.9f, 0.12f);
+
         // Kalkış: yalnız kodla (CrewAnimation.BeginGetUp → Animator.Play); geçiş ragdoll pozundan kodda yapılır.
         var getUp = OneShot(sm, CrewAnimation.StateGetUp, "GetUp_FromBack", 1f, new Vector3(560f, 300f));
         ReturnByCarry(getUp, loops, 0.9f, 0.15f);

@@ -49,6 +49,12 @@ public static partial class Bolum1AnimVerify
 
         // ---- (b) kapı kapalıyken çekme yok; E kapıyı açar; açıkken E hastayı patikaya çeker; sedyeye alınır ----
         Vector3 spot = tg.PullerSpot(tourist, out Quaternion rot);
+        // U3 yüz kuralı: çekme yerinde sırtı kapıya dönükken kapı ipucu ve vurgusu yok
+        Player.Teleport(spot, rot * Quaternion.Euler(0f, 180f, 0f));
+        yield return null; yield return null;
+        string hintBackToGate = Interaction.CurrentHint;
+        Check("(U3-f) yüz kuralı: bagaj kapısına sırtı dönükken kapı ipucu yok, vurgu yok", hintBackToGate != PlayerInteraction.HintOpenTailgate && Highlight.Current == null,
+            "ipucu \"" + hintBackToGate + "\", vurgu " + (Highlight.Current != null ? Highlight.Current.name : "yok"));
         Player.Teleport(spot, rot);
         yield return null; yield return null;
         string hintClosed = Interaction.CurrentHint;

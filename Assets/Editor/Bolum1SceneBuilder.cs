@@ -67,6 +67,8 @@ public static class Bolum1SceneBuilder
         Bolum1AmbulanceBuilder.BuildAssets();
         // Trafik ayarı ve araç prefab'ları (yer tutucular dahil).
         Bolum1TrafficBuilder.BuildAssets();
+        // U3: eşya değerleri ve can kuralları (ScriptableObject'ler; varsa dokunulmaz).
+        Bolum1LootBuilder.BuildAssets();
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
@@ -144,6 +146,9 @@ public static class Bolum1SceneBuilder
 
         // 8) Prosedürel animasyonlar (oyuncu, bot), bot ragdoll'u, oyuncu yeniden doğma.
         Bolum1AnimBuilder.SetupScene(markers, GameObject.Find(CharacterName));
+
+        // 9) U3: oyuncu canı, değerli eşyalar ve para (teslim noktası, çalınan çubuğu kaydı), yeniden doğma noktası.
+        Bolum1LootBuilder.SetupScene(truck, GameObject.Find(CharacterName));
 
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))

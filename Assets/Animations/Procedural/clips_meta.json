@@ -4231,7 +4231,222 @@
       ],
       "preview_flight_speed_mps": 1.8,
       "preview_flight_note": "Şeritte bırakış sonrası balistik uçuş; oyunda aynı olayda fizik devralır."
+    },
+    "Push_Shove": {
+      "file": "Push_Shove.fbx",
+      "duration_s": 0.6,
+      "frames": 19,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki avuçla öne itiş; çömelip yüklenir, hızla toparlanır. Slapstick, temas koddan.",
+      "action_sha256": "d198f3b2bd1f458b2b0463b8a6383abf2413d7148afc8c2ca690432109725b12",
+      "hit_frame": 9
+    },
+    "Tackle_Dive": {
+      "file": "Tackle_Dive.fbx",
+      "duration_s": 0.9,
+      "frames": 28,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Koşu hazırlığından öne sıçrar; kollar açık yüzüstü yere iner. İleri hareket Unity kodundan.",
+      "action_sha256": "11490477ba98bffe261bfa2f74a0bce97428b13c520c9cebe068dad8669d0c7e",
+      "hit_frame": 12,
+      "ground_frame": 22,
+      "vertical_pose_motion": "Kalça yüksekliği klipte; yatay ilerleme Unity kodundan."
+    },
+    "Tackle_GetUp": {
+      "file": "Tackle_GetUp.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Tackle_Dive sonundan avuçlarla yerden iterek diz üstüne, ardından ayağa kalkar.",
+      "action_sha256": "2b549a0e50b4c2108042ffe263ddd0d2efc258db339e268e93ed5f55b3498056",
+      "vertical_pose_motion": "Kalça yüksekliği klipte; yatay ilerleme Unity kodundan."
+    },
+    "Throw_Aim": {
+      "file": "Throw_Aim.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sağ elde yukarı-geride nesne, küçük nişan salınımı; fırlatışa hazır döngü.",
+      "action_sha256": "b0dba6f1bd87fe51aa14f897b15cc8663fd5fa65a2f59dba9a5add9311c47e30",
+      "hold_grip": {
+        "bone": "mixamorig:RightHand",
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ]
+      }
+    },
+    "Throw_Release": {
+      "file": "Throw_Release.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Throw_Aim sınır pozundan omuz üstü fırlatış, kol öne takip eder ve açılır.",
+      "action_sha256": "e2cb2fee746c9547fedce33a25b289734ed7ebc80d6861196eefe327826d81aa",
+      "release_frame": 8
+    },
+    "Whistle_Blow": {
+      "file": "Whistle_Blow.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sağ el ağızda düdük; nefes alır, kollar açılıp öne eğilir, komik titreyerek üfler.",
+      "action_sha256": "572a99753d774cae75ed3c531950000a528ece01f10455e1b0360522bdd36ac1",
+      "blow_frames": [
+        15,
+        27
+      ]
+    },
+    "HitReact": {
+      "file": "HitReact.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Geri kaykılma, savrulan kollar, kısa sendeleme ve toparlanma; kök yerinde.",
+      "action_sha256": "c9473ac766b88f0f06966fb7457906bd2cf135a74af12f9d3b019dcc0c02711b"
+    },
+    "Thief_Sneak_Walk": {
+      "file": "Thief_Sneak_Walk.fbx",
+      "duration_s": 0.6,
+      "frames": 19,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Çömelmiş, parmak ucunda sinsi yürüyüş; önde pati eller, abartılı yan bakışlar (1.6 m/sn).",
+      "action_sha256": "aa2d3bbc3054f375825adabcedb7f4c7cf160cce7faedbd6d63ab42164d96174",
+      "target_speed_mps": 1.6,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.48
+    },
+    "Thief_Run_Carry": {
+      "file": "Thief_Run_Carry.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Ganimeti göğüs önünde iki elle kavrayarak telaşlı kaçış koşusu (3.6 m/sn).",
+      "action_sha256": "3316900500d03279d88e393eaa7bf5a5c49b1f77d74b30ed838509f84b6f008d",
+      "target_speed_mps": 3.6,
+      "stance_ratio": 0.32,
+      "step_length_m": 0.72,
+      "stance_travel_m": 0.4608,
+      "loot_grip": {
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "spacing_m": 0.408,
+        "attachment": "Ganimet merkezi iki avucun ortası; nesne boyutuna göre Unity el IK hedefleri."
+      }
+    },
+    "Thief_Run": {
+      "file": "Thief_Run.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Eller boş, geniş kol salınımlı telaşlı kaçış koşusu (3.6 m/sn).",
+      "action_sha256": "2fb1e4c2239a51811b429aefd315fd4f471d6062f1d2b13777946720fe28c817",
+      "target_speed_mps": 3.6,
+      "stance_ratio": 0.32,
+      "step_length_m": 0.72,
+      "stance_travel_m": 0.4608
+    },
+    "Thief_Grab": {
+      "file": "Thief_Grab.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Öne-aşağı uzanır, ganimeti kapıp göğse çeker; Thief_Run_Carry ilk pozunda biter.",
+      "action_sha256": "b4e1ab9bc74162b6e5d4447ebada5f1117f382a63a98a59221202a762e8a8386",
+      "grab_frame": 11
+    },
+    "Thief_Punch": {
+      "file": "Thief_Punch.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Büyük hazırlık dönüşü ve geniş yandan savurma; komik haymaker, kan/silah yok.",
+      "action_sha256": "2cb620fef523b753fc0e1cdb06eb69496030285b245f92f3c473fac0a5c0e8a6",
+      "hit_frame": 14
+    },
+    "Thief_Stunned": {
+      "file": "Thief_Stunned.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Dizler kırık, kollar sarkık, baş daire çizerken sersem gövde salınımı.",
+      "action_sha256": "2d953dd9c70fc0822c9d7e6b1f0d78eb57fa3b308bfb5c04307d0ba365c488e0"
+    },
+    "Thief_ThrowInVan": {
+      "file": "Thief_ThrowInVan.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Göğüste tuttuğu ganimeti iki elle ileri-yukarı kamyonet kasasına atar.",
+      "action_sha256": "90c18c7fb0875929f5f5ec02070f80c479ec998e692224c66eeee726e01082b3",
+      "release_frame": 14
     }
   },
-  "actions_sha256": "9b3cf73757b53f786adcf6a5905b323b4c2fc6e0f68312705ca288460b1d3e08"
+  "actions_sha256": "9b27956e687026b8c7938b348ec8d1185883e1bb46dec389bfdc2e66e4e0c72e",
+  "source_sha256": "a33cf9b5dea6996d66a7baa66c1b34800ceab3d4069583459007a8e6b65410e3"
 }

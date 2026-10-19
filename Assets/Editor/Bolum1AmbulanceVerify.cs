@@ -690,7 +690,7 @@ public static class Bolum1AmbulanceVerify
         Vector3 outward = Flat(h.position - s.transform.position).normalized;
         Vector3 p = h.position + outward * 0.55f;
         if (GroundProbe.Find(new Vector3(p.x, h.position.y + 1.5f, p.z), 5f, out RaycastHit g)) p.y = g.point.y + 0.02f;
-        Player.Teleport(p, Quaternion.LookRotation(outward));
+        Player.Teleport(p, Quaternion.LookRotation(-outward)); // U3 yüz kuralı: yüz sapa dönük
     }
 
     // Hastalı sedyeyi oyuncu + bot ile kaldırıp LoadPoint'e getirir (ışınlama), yüklemeyi bekler, bırakır.

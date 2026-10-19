@@ -165,6 +165,17 @@ public class MissionDirector : MonoBehaviour
         MissionSucceeded?.Invoke();
     }
 
+    // U3: hasta dışı başarısızlık (çalınan değer %50'ye ulaştı; LootRegistry çağırır). Mevcut sonuç ekranı kullanılır.
+    public void Fail(string message)
+    {
+        if (IsFinished) return;
+        IsFinished = true;
+        Succeeded = false;
+        FailedPatient = null;
+        ResultMessage = message;
+        MissionFailed?.Invoke(null);
+    }
+
     // R tuşu: görev bittiyse sahneyi yeniden başlatır.
     public void RequestRestart()
     {

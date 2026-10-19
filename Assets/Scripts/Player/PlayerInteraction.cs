@@ -10,6 +10,11 @@ using UnityEngine;
 // Öncelik: sedye tutuyorsan bırak → koni tutuyorsan koy → düşmüş arkadaşı kaldır (basılı tut) → hastayı sedyeye al →
 // en yakın sedye ucu ya da koni.
 // Elde 1 şey: koni tutan sedye tutamaz, sedye tutan koni alamaz (tutarken öncelik hep "bırak / koy").
+//
+// U3 (kullanıcı kararı 2026-10-19): BÜTÜN E etkileşimlerinde "yüz dönük" kuralı — hedef, oyuncunun önündeki ~60° koni içinde
+// (yatay ileri yön ile hedefe yön ≤ facingAngle = 30°; U1 halat kuralıyla aynı yardımcı: RopeAnchor.FacingTarget). Mesafeler
+// mevcut değerlerde kalır; hedef ≤ 0.2 m'deyse yön aranmaz. Değerli eşyalar: valiz / hasta eşyası tek elle taşınır (koni kuralı),
+// güvenli yere (çekici arkası teslim noktası ya da durakta bekleyen ambulansın arka kapısı) konunca para yazılır.
 public class PlayerInteraction : MonoBehaviour
 {
     public ThirdPersonPlayer player;
@@ -52,6 +57,24 @@ public class PlayerInteraction : MonoBehaviour
     public const string HintDropCoil = "E: Kangalı bırak";
     public const string HintTieStake = "E: Halatı kazığa bağla";
     public const string HintThrowRope = "E: Halatı at";
+    // U3: değerli eşyalar ve para
+    public const string HintTakeLuggage = "E: Valizi al";
+    public const string HintTakePatientItem = "E: Değerli eşyasını al";
+    public const string HintDropLoot = "E: Eşyayı bırak";
+    public const string HintSecureLoot = "E: Güvenli yere koy";
+
+    [Header("U3: yüz dönük kuralı (bütün E etkileşimleri)")]
+    [Tooltip("Hedef, yatay ileri yönden en fazla bu kadar ° sapabilir (~60° koni).")]
+    public float facingAngle = 30f;
+    [Tooltip("Hedef bundan yakınken (m) yön aranmaz.")]
+    public float facingIgnoreDistance = 0.2f;
+    [Tooltip("Güvenli yer menzili: oyuncu kökünden teslim noktasına / ambulans yükleme noktasına yatay uzaklık (m).")]
+    public float safeDropRange = 1.5f;
+    [Tooltip("Eşya bırakılırken oyuncunun bu kadar önüne (m) konur.")]
+    public float lootPlaceDistance = 0.7f;
+    public LootItem LootTarget { get; private set; }
+    // Yüz kuralı yüzünden gösterilmeyen ipucu sayısı (ölçüm): hedef menzilde ama sırt dönük
+    public int FacingRejections { get; private set; }
 
     [Header("U2: halat zinciri (klip zamanları, clips_meta.json; kare numaraları 1 tabanlı, t = (kare−1)/(kare sayısı−1) × süre)")]
     [Tooltip("Cabinet_TakeCoil süresi (sn) ve kangalın ellere geçtiği an (grab_frame 11 / 43 kare).")]
@@ -103,8 +126,10 @@ public class PlayerInteraction : MonoBehaviour
 
     private enum Action { None, Release, PlaceCone, Revive, PlacePatient, Grab, PickCone,
         OpenTailgate, Extract, AttachRope, DetachRope, Piggyback, PutDownBack, PullRope,
-        OpenLocker, CloseLocker, TakeCoil, DropCoil, TieStake, ThrowRope }
+        OpenLocker, CloseLocker, TakeCoil, DropCoil, TieStake, ThrowRope,
+        TakeLoot, DropLoot, SecureLoot }
     private MinivanTailgate targetTailgate;
+    private Transform targetSafe;   // U3: güvenli yerin vurgu hedefi (halka ya da ambulans kapısı)
     private RopeAnchor targetRope;
     private TowTruckLocker targetLocker;
     private RopeCoil targetCoil;
@@ -172,6 +197,9 @@ public class PlayerInteraction : MonoBehaviour
             case Action.OpenLocker:
             case Action.CloseLocker: return targetLocker != null ? (targetLocker.door != null ? targetLocker.door : targetLocker.transform) : null;
             case Action.TakeCoil: return targetCoil != null ? targetCoil.transform : null;
+            // U3: eşya (valiz prop'u / hasta kutusu) ve güvenli yer işareti; bırakma hedefsiz
+            case Action.TakeLoot: return LootTarget != null ? LootTarget.transform : null;
+            case Action.SecureLoot: return targetSafe;
             default: return null;
         }
     }
@@ -189,6 +217,8 @@ public class PlayerInteraction : MonoBehaviour
         targetCoil = null;
         PiggybackTarget = null;
         PullTarget = null;
+        LootTarget = null;
+        targetSafe = null;
         CurrentHint = "";
         HintIsWarning = false;
         if (player == null || player.IsDown || piggybackBusy || coilBusy) return;
@@ -247,6 +277,22 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = HintPlaceCone;
             return;
         }
+        // ---- U3: değerli eşya elde: güvenli yerdeysen koy, değilse bırak (elde 1 şey kuralı) ----
+        if (player.HeldValuable != null)
+        {
+            if (FindSafeZone(out Transform safeHl))
+            {
+                targetSafe = safeHl;
+                action = Action.SecureLoot;
+                CurrentHint = HintSecureLoot;
+            }
+            else
+            {
+                action = Action.DropLoot;
+                CurrentHint = HintDropLoot;
+            }
+            return;
+        }
         // ---- U2: kangal elde: bağlıysa yalnız at (yüz kenara dönük), değilse kazığa bağla ya da yere bırak ----
         if (player.HeldCoil != null)
         {
@@ -281,6 +327,7 @@ public class PlayerInteraction : MonoBehaviour
             var mate = c as ThirdPersonPlayer;
             if (mate == null || mate == player || !mate.IsDown) continue;
             if (!mate.knockdown.InReviveRange(player)) continue;
+            if (!Facing(mate.knockdown.GroundPosition) && !Facing(mate.knockdown.ChestPosition)) { FacingRejections++; continue; } // U3 yüz kuralı
             ReviveTarget = mate.knockdown;
             action = Action.Revive;
             CurrentHint = HintRevive;
@@ -342,6 +389,7 @@ public class PlayerInteraction : MonoBehaviour
             foreach (var s in StretcherController.All)
             {
                 if (!s.CanAcceptPatient(p, me, stretcherToPatientRange, patientRange)) continue;
+                if (!Facing(p.Position)) { FacingRejections++; continue; } // U3 yüz kuralı
                 float d = Vector3.Distance(me, p.Position);
                 if (d < bestPatient)
                 {
@@ -372,6 +420,7 @@ public class PlayerInteraction : MonoBehaviour
                 flat.y = 0f;
                 float d = flat.magnitude;
                 if (d > grabRange || dy > grabMaxHeight || dy < -1f || d >= best) continue;
+                if (!Facing(h)) { FacingRejections++; continue; } // U3 yüz kuralı
                 best = d;
                 targetStretcher = s;
                 targetFront = front;
@@ -385,6 +434,7 @@ public class PlayerInteraction : MonoBehaviour
             flat.y = 0f;
             float d = flat.magnitude;
             if (d > coneRange || dy > grabMaxHeight || dy < -1f || d >= best) continue;
+            if (!Facing(c.Center)) { FacingRejections++; continue; } // U3 yüz kuralı
             best = d;
             targetCone = c;
         }
@@ -400,6 +450,14 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = HintGrab;
         }
         if (action != Action.None) return;
+        // U3: değerli eşya al (valiz prop'u / hastanın eşyası): ≤ menzil, yüz dönük; sedye ve koniden sonra
+        if (FindLoot(out var loot))
+        {
+            LootTarget = loot;
+            action = Action.TakeLoot;
+            CurrentHint = loot.kind == LootKind.PatientItem ? HintTakePatientItem : HintTakeLuggage;
+            return;
+        }
         // D2: halata bağlanma, minibüsten çekme, bagaj kapısı (en düşük öncelik: sedye ve koni önce gelir)
         if (FindAttachableRope(out var rope))
         {
@@ -412,6 +470,7 @@ public class PlayerInteraction : MonoBehaviour
         {
             if (tg == null) continue;
             var p = tg.ExtractTarget(me);
+            if (p != null && !Facing(p.Position)) { FacingRejections++; p = null; } // U3 yüz kuralı
             if (p != null)
             {
                 targetTailgate = tg;
@@ -420,6 +479,8 @@ public class PlayerInteraction : MonoBehaviour
                 CurrentHint = HintExtract;
                 return;
             }
+            // U3 yüz kuralı: kapı geniş; yüz, kapının oyuncuya en yakın noktasına dönük olmalı
+            if (tg.CanOpen(me) && !Facing(ClosestOnRenderers(tg.tailgate != null ? tg.tailgate : tg.transform, me))) { FacingRejections++; continue; }
             if (tg.CanOpen(me))
             {
                 targetTailgate = tg;
@@ -502,8 +563,109 @@ public class PlayerInteraction : MonoBehaviour
             case Action.ThrowRope:
                 StartCoroutine(ThrowRopeRoutine(targetRope));
                 break;
+            // U3
+            case Action.TakeLoot:
+                if (LootTarget != null && LootTarget.CanPickUp)
+                {
+                    player.HeldValuable = LootTarget;
+                    LootTarget.PickUp(player);
+                }
+                break;
+            case Action.DropLoot:
+                DropLoot();
+                break;
+            case Action.SecureLoot:
+                SecureLoot();
+                break;
         }
         Evaluate();
+    }
+
+    // ---- U3: yüz kuralı ve değerli eşyalar ----
+
+    // Yüz hedefe dönük mü (U1 halat kuralıyla aynı yardımcı; hedef ≤ facingIgnoreDistance ise evet).
+    public bool Facing(Vector3 target)
+    {
+        return RopeAnchor.FacingTarget(player.transform.position, player.transform.forward, target, facingAngle, facingIgnoreDistance);
+    }
+
+    // Geniş hedefler (bagaj kapısı) için: renderer sınırlarının oyuncuya en yakın noktası.
+    private static Vector3 ClosestOnRenderers(Transform t, Vector3 p)
+    {
+        var rs = t.GetComponentsInChildren<Renderer>();
+        if (rs.Length == 0) return t.position;
+        Bounds b = rs[0].bounds;
+        foreach (var r in rs) b.Encapsulate(r.bounds);
+        return b.ClosestPoint(p);
+    }
+
+    // Alınabilir en yakın eşya: menzilde ve yüz dönük.
+    private bool FindLoot(out LootItem best)
+    {
+        best = null;
+        Vector3 me = player.transform.position;
+        float bestD = float.MaxValue;
+        foreach (var l in LootItem.All)
+        {
+            if (l == null || !l.CanPickUp || !l.InRange(me)) continue;
+            if (!Facing(l.Center)) { FacingRejections++; continue; }
+            float d = Vector3.Distance(me, l.Center);
+            if (d < bestD) { bestD = d; best = l; }
+        }
+        return best != null;
+    }
+
+    // Güvenli yer: teslim noktası halkası ya da durakta bekleyen (kapıları açık) ambulansın yükleme noktası; menzilde ve yüz dönük.
+    private bool FindSafeZone(out Transform highlight)
+    {
+        highlight = null;
+        Vector3 me = player.transform.position;
+        foreach (var sp in SafeDropPoint.All)
+        {
+            if (sp == null || !sp.InRange(me)) continue;
+            if (!Facing(sp.Center)) { FacingRejections++; continue; }
+            highlight = sp.HighlightTarget;
+            return true;
+        }
+        var mission = MissionDirector.Instance;
+        var amb = mission != null ? mission.WaitingAmbulance : null;
+        if (amb != null && amb.LoadingOpen && amb.loadPoint != null)
+        {
+            Vector3 d = amb.loadPoint.position - me;
+            float dy = Mathf.Abs(d.y);
+            d.y = 0f;
+            if (d.magnitude <= safeDropRange && dy <= 1.5f && Facing(amb.loadPoint.position))
+            {
+                highlight = amb.doorLeft != null ? amb.doorLeft : amb.transform;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Eşya oyuncunun önüne, zemine konur (zemin yoksa elde kalır).
+    private void DropLoot()
+    {
+        var item = player.HeldValuable;
+        if (item == null) return;
+        Vector3 fwd = Flat(player.transform.forward);
+        fwd = fwd.sqrMagnitude > 1e-6f ? fwd.normalized : Vector3.forward;
+        Vector3 at = player.transform.position + fwd * lootPlaceDistance;
+        if (!GroundProbe.Find(at + Vector3.up * 1.5f, 4f, out RaycastHit hit)) return;
+        player.HeldValuable = null;
+        item.Drop(hit.point, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg);
+    }
+
+    // Güvenli yere koy: eşya kaybolur, para yazılır (LootRegistry).
+    private void SecureLoot()
+    {
+        var item = player.HeldValuable;
+        if (item == null) return;
+        var registry = LootRegistry.Instance;
+        player.HeldValuable = null;
+        if (registry != null) registry.Secure(item);
+        else item.Secure();
+        foreach (var sp in SafeDropPoint.All) if (sp != null && sp.InRange(player.transform.position)) { sp.CountDelivery(); break; }
     }
 
     // ---- U2: halat zinciri ----
@@ -615,7 +777,9 @@ public class PlayerInteraction : MonoBehaviour
         {
             if (p == null || !p.CanPiggyback) continue;
             float d = Vector3.Distance(me, p.Position);
-            if (d <= piggybackRange && d < best) { best = d; PiggybackTarget = p; }
+            if (d > piggybackRange || d >= best) continue;
+            if (player.Rope == null && !Facing(p.Position)) { FacingRejections++; continue; } // U3 yüz kuralı (halattayken yön halattan)
+            best = d; PiggybackTarget = p;
         }
         return PiggybackTarget != null;
     }
