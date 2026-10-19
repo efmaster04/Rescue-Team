@@ -378,70 +378,104 @@ public static class Bolum1ThiefBuilder
         WriteReport();
     }
 
-    // Şerit kenarı dışında, kamyonet ayak izi düz (≤ 20°), statik engel yok, şeride göre yükseklik farkı küçük. Tercih: sağ taraf, çekiciye ~20 m.
+    // Her iki şeridin de dışında (karşı şeridi de kapatmaz), kamyonet ayak izi düz (≤ 20°), statik engel yok, şeride göre yükseklik farkı
+    // küçük. Tercih: kendi şeridinin sağı (banket), çekiciye ~20 m. 15–25 m'de yer yoksa aralık 8–30, sonra 5–40 m'ye genişletilir (rapor edilir).
     private static bool FindVanStop(LanePath[] lanes, Transform truck, Transform ambStop, LanePath east, float halfW, float halfL, float clearance,
         out LanePath bestLane, out float bestS, out float bestLateral, out Vector3 bestPos, out string info)
     {
         bestLane = null; bestS = 0f; bestLateral = 0f; bestPos = Vector3.zero;
         float bestScore = float.MinValue;
         var notes = new List<string>();
-        int tested = 0, flatOk = 0, clearOk = 0;
-        foreach (var lane in lanes)
+        var diag = new Dictionary<string, int>();
+        var blockers = new Dictionary<string, int>();
+        var flatSpots = new List<string>();
+        void Count(string k) { diag[k] = (diag.TryGetValue(k, out int n) ? n : 0) + 1; }
+        int tested = 0;
+        string range = "";
+        foreach (var window in new[] { new Vector2(StopMinFromTruck, StopMaxFromTruck), new Vector2(8f, 30f), new Vector2(5f, 40f) })
         {
-            float truckS = lane.Project(truck.position);
-            float ambS = lane == east ? east.Project(ambStop.position) : -9999f;
-            foreach (float side in new[] { 1f, -1f })
+            range = window.x.ToString("F0", Inv) + "–" + window.y.ToString("F0", Inv) + " m";
+            foreach (var lane in lanes)
             {
-                float lateral = side * (lane.width * 0.5f + clearance + halfW);
-                for (float d = -StopMaxFromTruck; d <= StopMaxFromTruck; d += 0.5f)
-                {
-                    if (Mathf.Abs(d) < StopMinFromTruck) continue;
-                    float s = truckS + d;
-                    if (s < halfL + 2f || s > lane.Length - halfL - 2f) continue;
-                    if (Mathf.Abs(s - ambS) < StopMinFromAmbulance) continue;
-                    tested++;
-                    Vector3 center = lane.PointAt(s) + lane.RightAt(s) * lateral;
-                    Vector3 fwd = Vector3.ProjectOnPlane(lane.TangentAt(s), Vector3.up).normalized;
-                    Vector3 right = Vector3.Cross(Vector3.up, fwd);
-                    // Ayak izi: 6 nokta düz zeminde, şerit yüksekliğine yakın
-                    bool flat = true; float worstNormal = 1f, maxDy = 0f;
-                    foreach (float a in new[] { -halfL, 0f, halfL })
-                        foreach (float b in new[] { -halfW, halfW })
+                float truckS = lane.Project(truck.position);
+                float ambS = lane == east ? east.Project(ambStop.position) : -9999f;
+                foreach (float side in new[] { 1f, -1f })
+                    for (float extra = 0f; extra <= 2.51f; extra += 0.5f) // banket daha dıştaysa yanal ofset artar
+                    {
+                        float lateral = side * (lane.width * 0.5f + clearance + halfW + extra);
+                        for (float d = -window.y; d <= window.y; d += 0.5f)
                         {
-                            Vector3 p = center + fwd * a + right * b;
-                            if (!StaticGround(p, truck, out RaycastHit g)) { flat = false; break; }
-                            worstNormal = Mathf.Min(worstNormal, g.normal.y);
-                            maxDy = Mathf.Max(maxDy, Mathf.Abs(g.point.y - lane.PointAt(s).y));
-                            if (g.normal.y < Mathf.Cos(20f * Mathf.Deg2Rad) || maxDy > 0.6f) { flat = false; break; }
+                            if (Mathf.Abs(d) < window.x) continue;
+                            float s = truckS + d;
+                            if (s < halfL + 2f || s > lane.Length - halfL - 2f) continue;
+                            if (Mathf.Abs(s - ambS) < StopMinFromAmbulance) continue;
+                            tested++;
+                            string tag = lane.name.Replace("TrafficLane_", "") + (side > 0 ? "/sağ" : "/sol");
+                            Vector3 center = lane.PointAt(s) + lane.RightAt(s) * lateral;
+                            Vector3 fwd = Vector3.ProjectOnPlane(lane.TangentAt(s), Vector3.up).normalized;
+                            Vector3 right = Vector3.Cross(Vector3.up, fwd);
+                            // Hiçbir şeridi kapatmaz: gövde köşeleri her şeridin orta çizgisinden en az yarı genişlik + boşluk uzakta
+                            bool offLanes = true;
+                            foreach (var other in lanes)
+                                foreach (float a in new[] { -halfL, halfL })
+                                    foreach (float b in new[] { -halfW, halfW })
+                                    {
+                                        Vector3 corner = center + fwd * a + right * b;
+                                        other.Project(corner, out float lat, out Vector3 on);
+                                        if (Mathf.Abs(lat) < other.width * 0.5f + clearance - 0.05f && Mathf.Abs(corner.y - on.y) < 2f) { offLanes = false; }
+                                    }
+                            if (!offLanes) { Count(tag + " şeritte"); continue; }
+                            // Ayak izi: 6 nokta düz zeminde (≤ 25°), şerit yüksekliğine yakın (≤ 0.8 m)
+                            bool flat = true; float worstNormal = 1f, maxDy = 0f, groundY = center.y; string flatWhy = "";
+                            foreach (float a in new[] { -halfL, 0f, halfL })
+                                foreach (float b in new[] { -halfW, halfW })
+                                {
+                                    Vector3 p = center + fwd * a + right * b;
+                                    if (!StaticGround(p, truck, out RaycastHit g)) { flat = false; flatWhy = "zemin yok"; break; }
+                                    worstNormal = Mathf.Min(worstNormal, g.normal.y);
+                                    maxDy = Mathf.Max(maxDy, Mathf.Abs(g.point.y - lane.PointAt(s).y));
+                                    groundY = Mathf.Max(groundY, g.point.y);
+                                    if (g.normal.y < Mathf.Cos(25f * Mathf.Deg2Rad)) { flat = false; flatWhy = "eğim>25"; break; }
+                                    if (maxDy > 0.8f) { flat = false; flatWhy = "kot>0.8"; break; }
+                                }
+                            if (!flat) { Count(tag + " " + flatWhy); continue; }
+                            // Gövde hacmi (zeminin 0.3 m üstünden başlar): statik engel (korkuluk, çekici, kaya, eşya) yok
+                            Vector3 boxCenter = new Vector3(center.x, groundY + 0.3f + 1.1f, center.z);
+                            var hits = Physics.OverlapBox(boxCenter, new Vector3(halfW + 0.2f, 1.1f, halfL + 0.3f), Quaternion.LookRotation(fwd, Vector3.up), ~0, QueryTriggerInteraction.Ignore);
+                            string blocker = null;
+                            foreach (var h in hits)
+                            {
+                                if (h == null || h.isTrigger) continue;
+                                string n = h.transform.root.name;
+                                if (n.StartsWith("SM_B1_Ground") || n.StartsWith("SM_B1_Road") || n.StartsWith("SM_B1_RoadMarkings")) continue;
+                                blocker = h.transform.root.name + "/" + h.name; break;
+                            }
+                            if (blocker != null)
+                            {
+                                Count(tag + " engel");
+                                blockers[blocker] = (blockers.TryGetValue(blocker, out int bn) ? bn : 0) + 1;
+                                if (flatSpots.Count < 12) flatSpots.Add(tag + " d " + d.ToString("F1", Inv) + " yanal " + lateral.ToString("F1", Inv) + " → " + blocker);
+                                continue;
+                            }
+                            Count(tag + " UYGUN");
+                            float score = (side > 0f ? 10f : 0f) - Mathf.Abs(Mathf.Abs(d) - 20f) * 0.3f + worstNormal * 5f - maxDy * 2f + (lane == east ? 1f : 0f) - extra * 2f;
+                            if (score > bestScore)
+                            {
+                                bestScore = score; bestLane = lane; bestS = s; bestLateral = lateral;
+                                bestPos = center;
+                                if (StaticGround(center, truck, out RaycastHit gc)) bestPos.y = gc.point.y;
+                                notes.Clear();
+                                notes.Add(lane.name + " " + (side > 0 ? "sağ" : "sol") + ", çekiciye " + Mathf.Abs(d).ToString("F1", Inv) + " m, ek yanal " + extra.ToString("F1", Inv) + " m, en kötü eğim " + (Mathf.Acos(worstNormal) * Mathf.Rad2Deg).ToString("F1", Inv) + "°, şeride yükseklik farkı " + maxDy.ToString("F2", Inv) + " m");
+                            }
                         }
-                    if (!flat) continue;
-                    flatOk++;
-                    // Gövde hacmi: statik engel (korkuluk, çekici, kaya, eşya) yok
-                    Vector3 boxCenter = center + Vector3.up * 1.4f;
-                    var hits = Physics.OverlapBox(boxCenter, new Vector3(halfW + 0.2f, 1.2f, halfL + 0.3f), Quaternion.LookRotation(fwd, Vector3.up), ~0, QueryTriggerInteraction.Ignore);
-                    bool clear = true;
-                    foreach (var h in hits)
-                    {
-                        if (h == null || h.isTrigger) continue;
-                        string n = h.transform.root.name;
-                        if (n.StartsWith("SM_B1_Ground") || n.StartsWith("SM_B1_Road") || n.StartsWith("SM_B1_RoadMarkings")) continue;
-                        clear = false; break;
                     }
-                    if (!clear) continue;
-                    clearOk++;
-                    float score = (side > 0f ? 10f : 0f) - Mathf.Abs(Mathf.Abs(d) - 20f) * 0.3f + worstNormal * 5f - maxDy * 2f + (lane == east ? 1f : 0f);
-                    if (score > bestScore)
-                    {
-                        bestScore = score; bestLane = lane; bestS = s; bestLateral = lateral;
-                        bestPos = center;
-                        if (StaticGround(center, truck, out RaycastHit gc)) bestPos.y = gc.point.y;
-                        notes.Clear();
-                        notes.Add(lane.name + " " + (side > 0 ? "sağ" : "sol") + ", çekiciye " + Mathf.Abs(d).ToString("F1", Inv) + " m, en kötü eğim " + (Mathf.Acos(worstNormal) * Mathf.Rad2Deg).ToString("F1", Inv) + "°, şeride yükseklik farkı " + maxDy.ToString("F2", Inv) + " m");
-                    }
-                }
             }
+            if (bestLane != null) break;
         }
-        info = "denenen " + tested + ", düz " + flatOk + ", engelsiz " + clearOk + (notes.Count > 0 ? "; seçim: " + notes[0] : "");
+        info = "aralık " + range + ": denenen " + tested + "; " + string.Join(", ", diag.OrderBy(k => k.Key).Select(k => k.Key + " " + k.Value))
+            + (blockers.Count > 0 ? "; engeller: " + string.Join(", ", blockers.OrderByDescending(b => b.Value).Take(6).Select(b => b.Key + "×" + b.Value)) : "")
+            + (flatSpots.Count > 0 ? "; düz ama engelli: " + string.Join(" | ", flatSpots) : "")
+            + (notes.Count > 0 ? "; seçim: " + notes[0] : "");
         return bestLane != null;
     }
 

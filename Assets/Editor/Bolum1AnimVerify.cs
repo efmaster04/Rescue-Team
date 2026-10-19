@@ -46,8 +46,16 @@ public static partial class Bolum1AnimVerify
 
     public static void Run() { Begin(true); }
 
-    private static void Begin(bool batch)
+    // U4: yalnız hırsız fazı (hızlı iterasyon; kabul tam Run ile). Batchmode: -executeMethod Bolum1AnimVerify.RunU4
+    [MenuItem("Rescue Team/Bölüm 1/Hırsızlar (U4): Doğrula")]
+    public static void RunU4Menu() { Begin(false, "u4"); }
+    public static void RunU4() { Begin(true, "u4"); }
+
+    private const string ModeKey = "Bolum1AnimVerify.Mode";
+
+    private static void Begin(bool batch, string mode = "")
     {
+        SessionState.SetString(ModeKey, mode);
         Directory.CreateDirectory(OutDir);
         report = new StringBuilder();
         allOk = true;
@@ -209,7 +217,7 @@ public static partial class Bolum1AnimVerify
             report = new StringBuilder(SessionState.GetString(ReportKey, ""));
             allOk = SessionState.GetBool(OkKey, false);
             batchMode = SessionState.GetBool(BatchKey, true);
-            scenario = Scenario();
+            scenario = SessionState.GetString(ModeKey, "") == "u4" ? ScenarioU4Only() : Scenario();
             stack.Clear();
             stack.Push(scenario);
         }
@@ -491,6 +499,32 @@ public static partial class Bolum1AnimVerify
         yield return PhaseBales();
         yield return PhaseAmbulanceFollow();
         yield return PhaseCelebrate();
+    }
+
+    // U4 hızlı kurulum: önceki fazların bıraktığı durum (halat hazır, hastalar patikada) kısa yoldan kurulur, yalnız PhaseU4 oynar.
+    private static IEnumerator ScenarioU4Only()
+    {
+        yield return null;
+        Line("MOD: yalnız U4 (hızlı kurulum: halat ForceReady, hastalar patikaya)");
+        player = GameObject.Find(Bolum1SceneBuilder.CharacterName).GetComponent<ThirdPersonPlayer>();
+        Player.GetComponent<PlayerInputReader>().enabled = false;
+        var mission = Mission;
+        mission.missLimit = 999;
+        mission.Begin(TestSchedule(99999f, 99999f));
+        Traffic.Begin(TestSettings(false));
+        if (Thieves != null) Thieves.Begin(TestThiefSettings(99999f, 99999f));
+        var roofLuggage = UnityEngine.Object.FindAnyObjectByType<MinivanRoofLuggage>();
+        if (roofLuggage != null) roofLuggage.enabled = false;
+        var rope = Rope;
+        if (rope != null && !rope.IsReady) rope.ForceReady();
+        var tg = UnityEngine.Object.FindAnyObjectByType<MinivanTailgate>();
+        if (tg != null && !tg.IsOpen) tg.SetAngle(tg.openAngle);
+        Bolum1TestPatients.LayOnPath(mission.patients);
+        var tourist = PatientNamed("Tourist");
+        parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
+        ParkCarriersOffLane();
+        yield return Seconds(1f);
+        yield return PhaseU4();
     }
 
     private static TrafficSettings TestSettings(bool natural)

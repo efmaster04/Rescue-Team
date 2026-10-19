@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ecb6e2a1f4851c4f8dad704c436f8c9, type: 3}
+  m_Name: ThiefSettings
+  m_EditorClassIdentifier: Assembly-CSharp::ThiefSettings
+  firstWaveSeconds: 180
+  waveIntervalSeconds: 300
+  maxThieves: 5
+  warnLeadSeconds: 5
+  vanWaitSeconds: 90
+  pullOffLength: 12
+  shoulderClearance: 0.3
+  unloadInterval: 0.8
+  doorOpenAngle: 150
+  doorSeconds: 0.6
+  sneakSpeed: 1.6
+  runSpeed: 3.6
+  stretcherDragFactor: 0.6
+  slopeLimit: 35
+  stepHeight: 0.5
+  waypointRadius: 0.9
+  grabRange: 1.2
+  handGrabRange: 1.2
+  handGrabAngle: 60
+  throwRange: 2
+  attackRadius: 6
+  punchDamage: 25
+  punchRange: 1.2
+  punchAngle: 60
+  punchCooldown: 2.5
+  punchApproach: 1
+  pushStunSeconds: 2
+  pushKnockback: 1.5
+  tackleStunSeconds: 4
+  throwHitStunSeconds: 3
+  vehicleDownSeconds: 3
+  fearSeconds: 4
+  pushRange: 1.4
+  pushAngle: 60
+  pushCooldown: 0.8
+  tackleDistance: 2.5
+  tackleHitRadius: 1.2
+  tackleCooldown: 3
+  throwSpeed: 12
+  whistleRadius: 8
+  whistleCooldown: 20
+  waveWarningFormat: "H\u0131rs\u0131zlar geliyor! (Dalga {0})"
+  useFixedSeed: 0
+  seed: 20261019
