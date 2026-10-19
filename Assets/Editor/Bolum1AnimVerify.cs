@@ -1334,6 +1334,7 @@ public static partial class Bolum1AnimVerify
         Time.timeScale = 0f; // görüntü alınırken poz donar
         yield return null;
         yield return null;
+        BeforeCapture?.Invoke(cam); // LateUpdate'ler ana kameraya döndürmüş olabilir
         cam.Render();
         Time.timeScale = prevScale;
         var prev = RenderTexture.active;

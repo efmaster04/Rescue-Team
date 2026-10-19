@@ -17,7 +17,7 @@ MonoBehaviour:
   maxThieves: 5
   warnLeadSeconds: 5
   vanWaitSeconds: 90
-  pullOffLength: 12
+  pullOffLength: 5
   shoulderClearance: 0.3
   unloadInterval: 0.8
   doorOpenAngle: 150

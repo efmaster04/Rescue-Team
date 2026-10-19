@@ -18,8 +18,8 @@ public class ThiefSettings : ScriptableObject
     [Min(5f)] public float vanWaitSeconds = 90f;
 
     [Header("Kamyonet")]
-    [Tooltip("Duraktan bu kadar önce bankete kaymaya başlar / kalkınca bu kadar yolda şeride döner (m).")]
-    [Min(2f)] public float pullOffLength = 12f;
+    [Tooltip("Duraktan bu kadar önce bankete kaymaya başlar / kalkınca bu kadar yolda şeride döner (m). Kısa: durak çekicinin hemen önünde, yanından geçerken sürtmesin.")]
+    [Min(2f)] public float pullOffLength = 5f;
     [Tooltip("Parktayken kamyonet kenarı ile şerit kenarı arasındaki boşluk (m).")]
     [Min(0f)] public float shoulderClearance = 0.3f;
     [Tooltip("Hırsızlar bu aralıkla iner (sn).")]

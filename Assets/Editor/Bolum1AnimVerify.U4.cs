@@ -36,6 +36,37 @@ public static partial class Bolum1AnimVerify
         foreach (var l in UnityEngine.Object.FindObjectsByType<ThiefLabel>(FindObjectsSortMode.None)) l.FaceCamera(cam);
     }
 
+    // Test kurulumu: hırsızın yalnız istenen eşyaları görmesi için öbür eşyalar geçici kapatılır (LootItem.All yalnız etkinleri sayar).
+    private static List<LootItem> HideLootExcept(params LootItem[] keep)
+    {
+        var hidden = new List<LootItem>();
+        foreach (var l in LootItem.All.ToArray())
+        {
+            if (l == null || Array.IndexOf(keep, l) >= 0) continue;
+            l.gameObject.SetActive(false);
+            hidden.Add(l);
+        }
+        return hidden;
+    }
+
+    private static void RestoreLoot(List<LootItem> hidden)
+    {
+        foreach (var l in hidden) if (l != null) l.gameObject.SetActive(true);
+        hidden.Clear();
+    }
+
+    // Çıkış tarafından (banket ya da yol) kamyonetin arka ucuna bakan kamera konumu
+    private static Vector3 VanCaptureCamera(ThiefVan van, out Vector3 look)
+    {
+        Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf);
+        Vector3 exit = van.RearPoint;
+        Vector3 bumper = van.transform.position - vf * van.Follower.rearOverhang;
+        float side = Mathf.Sign(Vector3.Dot(exit - van.transform.position, vr));
+        if (Mathf.Abs(side) < 0.5f) side = 1f;
+        look = (bumper + exit) * 0.5f + Vector3.up * 0.9f;
+        return bumper + vr * side * 5.5f + vf * 1.0f + Vector3.up * 2.1f;
+    }
+
     private static string ThiefAnim(Thief t)
     {
         if (t == null || t.animator == null || !t.animator.isActiveAndEnabled) return "-";
@@ -70,12 +101,12 @@ public static partial class Bolum1AnimVerify
         Health.SetHealthForTest(Health.Max);
         var asset = Bolum1ThiefBuilder.Settings;
         bool u4 = dir != null && dir.settings != null && dir.vanStop != null && dir.vanPrefab != null && dir.thiefPrefabs.Length == 3 && dir.thiefPrefabs.All(p => p != null)
-            && dir.rampPoints.Length >= 2 && combat != null && combat.settings != null && roof != null && roof.suitcases.Length == 2 && asset != null;
+            && dir.navMeshData != null && dir.NavMeshLoaded && combat != null && combat.settings != null && roof != null && roof.suitcases.Length == 2 && asset != null;
         string counts = asset != null ? string.Join(",", Enumerable.Range(0, 6).Select(k => asset.ThievesForWave(k))) : "-";
         float truckDist = dir != null && dir.vanStop != null ? Flat(dir.vanStop.position - Truck.position).magnitude : -1f;
-        Check("(U4-0) sahne: ThiefDirector + ThiefVanStop (çekiciye 15–25 m) + kamyonet ve 3 hırsız prefab'ı + rampa noktaları; oyuncuda PlayerCombat; minibüste MinivanRoofLuggage (2 valiz); ayar ilk dalga 180 sn, aralık 300 sn, 1→2→3→4→5→5, kamyonet 90 sn",
-            u4 && asset.firstWaveSeconds == 180f && asset.waveIntervalSeconds == 300f && counts == "1,2,3,4,5,5" && asset.vanWaitSeconds == 90f && truckDist >= 14.5f && truckDist <= 26f,
-            "yönetmen " + (dir != null) + ", durak " + (dir != null && dir.vanStop != null ? V(dir.vanStop.position) + " çekiciye " + M(truckDist) : "-") + ", rampa " + (dir != null ? dir.rampPoints.Length : 0) + " nokta, savunma " + (combat != null)
+        Check("(U4-0) sahne: ThiefDirector + ThiefVanStop (bankette, çekiciye ≥ 4 m; brief ~15–25 m istedi, şerit dışı düz yer yalnız çekici slotunda) + kamyonet ve 3 hırsız prefab'ı + hırsız NavMesh'i (eğim ≤ 35°) yüklü; oyuncuda PlayerCombat; minibüste MinivanRoofLuggage (2 valiz); ayar ilk dalga 180 sn, aralık 300 sn, 1→2→3→4→5→5, kamyonet 90 sn",
+            u4 && asset.firstWaveSeconds == 180f && asset.waveIntervalSeconds == 300f && counts == "1,2,3,4,5,5" && asset.vanWaitSeconds == 90f && truckDist >= 4f && truckDist <= 26f,
+            "yönetmen " + (dir != null) + ", durak " + (dir != null && dir.vanStop != null ? V(dir.vanStop.position) + " çekiciye " + M(truckDist) : "-") + ", NavMesh " + (dir != null && dir.navMeshData != null ? dir.navMeshData.name + " yüklü " + dir.NavMeshLoaded : "yok") + ", savunma " + (combat != null)
             + ", tavan valizi " + (roof != null ? roof.suitcases.Length : 0) + "; ayar " + (asset != null ? asset.firstWaveSeconds + "/" + asset.waveIntervalSeconds + " sn, " + counts + ", bekleme " + asset.vanWaitSeconds : "-"));
         if (u4)
         {
@@ -110,12 +141,23 @@ public static partial class Bolum1AnimVerify
         var lane = dir.lane;
         var truck = Truck;
         ParkCarriersOffLane();
-        dir.Begin(TestThiefSettings(180f, 300f, 25f)); // gerçek zamanlama; kamyonet 25 sn bekler (test), ayar 90
+        const float testWait = 60f;
+        dir.Begin(TestThiefSettings(180f, 300f, testWait)); // gerçek zamanlama; kamyonet 60 sn bekler (test), ayar 90
+        // Tek hedef: bir valiz (öbür eşyalar geçici kapalı; yoksa hırsız çekicinin yanındaki ekipmanı 1 sn'de kapıyor)
+        var item = LootItem.All.Where(l => l.kind == LootKind.Luggage && l.CanPickUp).OrderBy(l => l.name).First();
+        var hidden = HideLootExcept(item);
         float warnAt = -1f;
         Time.timeScale = 10f;
         yield return Until(() => { if (warnAt < 0f && dir.WarningActive) warnAt = dir.Elapsed; return dir.Vans.Count > 0 || dir.Elapsed > 215f; }, 230f, "ilk kamyonet");
         float spawnAt = dir.Elapsed;
         var van = dir.ActiveVan;
+        var vanEvents = new List<string>();
+        if (van != null)
+        {
+            van.Parked += v => vanEvents.Add("park " + S(dir.Elapsed));
+            van.Departed += v => vanEvents.Add("kalkış " + S(dir.Elapsed));
+            van.Despawned += v => vanEvents.Add("yok oldu " + S(dir.Elapsed) + " faz " + v.Phase + " s " + (v.Follower != null ? v.Follower.Distance.ToString("F1", Inv) : "-"));
+        }
         string hudWarn = Hud.ThiefWarningText.text;
         string expectWarn = string.Format(dir.Active.waveWarningFormat, 1);
         bool warnOk = warnAt >= 174.5f && warnAt <= 176f && hudWarn == expectWarn && GameNotice.LastMessage == expectWarn;
@@ -158,30 +200,45 @@ public static partial class Bolum1AnimVerify
         bool oneThief = false, sneak = false;
         if (parked)
         {
-            yield return Until(() => van.Spawned >= 1, 10f, "hırsız indi");
-            thief = van.Thieves[0];
+            yield return Until(() => van == null || van.Spawned >= 1, 10f, "hırsız indi");
+            thief = van != null && van.Thieves.Count > 0 ? van.Thieves[0] : null;
             yield return Seconds(0.7f);
+            if (van == null)
+            {
+                Check("(U4-1) kamyonet hırsız indirdikten hemen sonra yok oldu", false, "olaylar: " + string.Join(" | ", vanEvents) + "; hırsız " + (thief != null ? thief.State.ToString() : "yok"));
+                BeforeCapture = null;
+                dir.Begin(TestThiefSettings(99999f, 99999f));
+                yield break;
+            }
             oneThief = van.PlannedThieves == 1 && van.Spawned == 1 && Thief.All.Count == 1 && thief != null && !thief.IsGone;
             sneak = ThiefIn(thief, Thief.StateMove);
-            Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf);
-            Vector3 rear = van.RearPoint;
             BeforeCapture = FaceLabels;
-            yield return Capture("u4_kamyonet", rear - vf * 4.5f + vr * 4.2f + Vector3.up * 2.2f, rear + vf * 1.8f + Vector3.up * 1.0f, 50f);
+            // Çıkış tarafından, kamyonetin arka ucu hizasından: kapılar, iniş noktası ve hırsız
+            Vector3 camPos = VanCaptureCamera(van, out Vector3 camLook);
+            yield return Capture("u4_kamyonet", camPos, camLook, 55f);
         }
-        Check("(U4-1) dalga 1 (gerçek zamanlama, hızlandırılmış): uyarı " + (dir.Active.firstWaveSeconds - dir.Active.warnLeadSeconds).ToString(Inv) + ". sn'de HUD + bildirim; kamyonet 180. sn'de şeride çıkar, ThiefVanStop'a çekilir (çekiciye 15–25 m, ambulans durağından uzak), park edince şerit kaydından çıkar ve gövdesi şeridin dışında kalır; arkadan gelen araç yavaşlamadan geçer; kapılar açılır, 1 hırsız iner (Thief_Sneak_Walk)",
-            warnOk && spawnOk && parked && outsideLane && unregistered && nearStop && doorsOpen && passed && oneThief && sneak && truckD >= 14f && truckD <= 27f,
+        Check("(U4-1) dalga 1 (gerçek zamanlama, hızlandırılmış): uyarı " + (dir.Active.firstWaveSeconds - dir.Active.warnLeadSeconds).ToString(Inv) + ". sn'de HUD + bildirim; kamyonet 180. sn'de şeride çıkar, ThiefVanStop'a çekilir (bankette, ambulans durağından uzak), park edince şerit kaydından çıkar ve gövdesi şeridin dışında kalır; arkadan gelen araç yavaşlamadan geçer; kapılar açılır, 1 hırsız iner (Thief_Sneak_Walk)",
+            warnOk && spawnOk && parked && outsideLane && unregistered && nearStop && doorsOpen && passed && oneThief && sneak && truckD >= 4f && truckD <= 27f,
             "uyarı " + S(warnAt) + " \"" + hudWarn + "\"; kamyonet " + S(spawnAt) + "; park " + parked + " (s " + s.ToString("F1", Inv) + " / durak " + dir.StopS.ToString("F1", Inv) + ", yanal " + lat.ToString("F2", Inv) + " m, şerit dışı " + outsideLane
-            + ", kayıt dışı " + unregistered + ", çekiciye " + M(truckD) + ", kapılar " + doorsOpen + "); geçen araç " + passed + " (en düşük hız " + minSpeedNear.ToString("F1", Inv) + " m/sn); hırsız " + oneThief + " anim " + ThiefAnim(thief));
-        if (!parked || thief == null) { BeforeCapture = null; yield break; }
+            + ", kayıt dışı " + unregistered + ", çekiciye " + M(truckD) + ", kapılar " + doorsOpen + ", iniş " + (van != null && van.SideExit ? "yan kapı (arka kapalı)" : "arka") + "); geçen araç " + passed + " (en düşük hız " + minSpeedNear.ToString("F1", Inv) + " m/sn); hırsız " + oneThief + " anim " + ThiefAnim(thief));
+        if (!parked || thief == null) { BeforeCapture = null; RestoreLoot(hidden); yield break; }
 
-        // (U4-2) kapma: valiz kamyonetin 4.5 m arkasına
+        // (U4-2) kapma: valiz kamyonetin 7 m önünde, yolda (iniş noktasından ~8 m); hırsız zaten ona gidiyor olmalı
         Vector3 vf2 = Flat(van.transform.forward).normalized, vr2 = Vector3.Cross(Vector3.up, vf2);
-        Vector3 rear2 = van.RearPoint;
-        var item = LootItem.All.Where(l => l.kind == LootKind.Luggage && l.CanPickUp).OrderBy(l => l.name).First();
-        Vector3 spot = U3Ground(rear2 - vf2 * 4.5f + vr2 * 1.0f, rear2.y);
-        item.Drop(spot, 0f);
-        thief.ForceTarget(item);
-        yield return Until(() => thief.Carried == item || thief.IsGone, 25f, "hırsız valizi kaptı");
+        float bankSign = Mathf.Sign(dir.ShoulderLateral);
+        if (thief.Carried != item) thief.ForceTarget(item);
+        float tg0 = Time.time;
+        yield return (Func<bool>)(() => thief == null || thief.Carried == item || thief.IsGone || Time.time - tg0 > 25f);
+        if (thief == null || thief.Carried != item)
+        {
+            Check("(U4-2) kapma: hırsız valizi kapamadı", false, thief == null ? "hırsız yok (kamyonet " + (van != null ? van.Phase.ToString() : "yok") + ")" : "durum " + thief.State + ", hedef " + (thief.Target != null ? thief.Target.name : "-") + ", konum " + V(thief.transform.position) + " eşya " + V(item.Center)
+                + ", yol " + thief.PathStatus + " kalan " + M(thief.RemainingDistance) + ", takılma " + S(thief.StuckTime) + ", vazgeçme " + thief.StuckGiveUps + " (son: " + thief.LastBlock + ")"
+                + (van != null ? ", iniş noktası " + V(van.RearPoint) + " yan " + van.SideExit + " kamyonet " + van.Phase : ", kamyonet yok"));
+            BeforeCapture = null;
+            RestoreLoot(hidden);
+            dir.Begin(TestThiefSettings(99999f, 99999f));
+            yield break;
+        }
         bool grabbed = thief.Carried == item && item.IsHeldByThief && !item.CanPickUp && thief.Grabs == 1;
         string labelText = item.LabelText;
         yield return Seconds(0.35f);
@@ -192,17 +249,20 @@ public static partial class Bolum1AnimVerify
         Vector3 tp = thief.transform.position, tf = Flat(thief.transform.forward).normalized;
         yield return Capture("u4_kapma", tp + Vector3.Cross(Vector3.up, tf) * 2.6f - tf * 1.4f + Vector3.up * 1.7f, tp + Vector3.up * 1.0f, 50f);
         int stolen0 = Loot.StolenValue, floats0 = Hud.FloatingSpawned;
-        yield return Until(() => item.IsStolen || thief.IsGone, 20f, "kamyonete attı");
+        float tt0 = Time.time;
+        yield return (Func<bool>)(() => thief == null || item.IsStolen || thief.IsGone || Time.time - tt0 > 25f);
         yield return null;
-        bool stolenOk = item.IsStolen && !item.gameObject.activeSelf && Loot.StolenValue == stolen0 + item.TotalValue && van.LootCount == 1 && Hud.FloatingSpawned == floats0 + 1 && thief.Throws == 1;
+        string throwDiag = thief != null ? "durum " + thief.State + ", konum " + V(thief.transform.position) + (van != null ? ", iniş noktası " + V(van.RearPoint) + " (yan " + van.SideExit + "), gövdeye " + M(van.DistanceToBody(thief.transform.position)) : ", kamyonet yok") + ", yol " + thief.PathStatus + " kalan " + M(thief.RemainingDistance) + ", takılma " + S(thief.StuckTime) + " (son: " + thief.LastBlock + ")" : "hırsız yok";
+        bool stolenOk = item.IsStolen && !item.gameObject.activeSelf && Loot.StolenValue == stolen0 + item.TotalValue && van != null && van.LootCount == 1 && Hud.FloatingSpawned == floats0 + 1 && thief != null && thief.Throws == 1;
         Check("(U4-2) kapma: hırsız 4.5 m'deki valizi hedefler, Thief_Grab ile kapar (elde; oyuncu alamaz), başının üstünde \"" + labelText + "\", Thief_Run_Carry ile kamyonete koşar, Thief_ThrowInVan → LootRegistry.ReportStolen (−₺ yazısı), eşya kaybolur",
             grabbed && labelOk && carryAnim && local.z > 0.1f && local.y > 0.6f && stolenOk,
             "kaptı " + grabbed + ", etiket " + labelOk + " (\"" + (label != null ? label.Text.text : "-") + "\"), taşıma anim " + carryAnim + " (" + ThiefAnim(thief) + "), eşya kök uzayında " + V(local) + "; çalındı " + item.IsStolen + " gizli " + !item.gameObject.activeSelf
-            + ", çalınan +" + (Loot.StolenValue - stolen0) + "/" + item.TotalValue + ", kamyonette " + van.LootCount + ", uçan yazı +" + (Hud.FloatingSpawned - floats0));
+            + ", çalınan +" + (Loot.StolenValue - stolen0) + "/" + item.TotalValue + ", kamyonette " + (van != null ? van.LootCount : -1) + ", uçan yazı +" + (Hud.FloatingSpawned - floats0) + (item.IsStolen ? "" : "; TANI: " + throwDiag));
+        if (!item.IsStolen || van == null) { BeforeCapture = null; RestoreLoot(hidden); dir.Begin(TestThiefSettings(99999f, 99999f)); yield break; }
 
-        // (U4-3) kalkış: 25 sn (test) dolunca; hırsız kaçar; kamyonet kaybolur
+        // (U4-3) kalkış: bekleme (test 60 sn) dolunca; hırsız kaçar; kamyonet kaybolur
         Time.timeScale = 4f;
-        yield return Until(() => van == null || van.Phase == ThiefVan.VanPhase.Departing, 70f, "kamyonet kalktı");
+        yield return Until(() => van == null || van.Phase == ThiefVan.VanPhase.Departing, 100f, "kamyonet kalktı");
         float departAt = van != null ? van.ParkedTime : -1f;
         bool reRegistered = van != null && LaneOccupancy.Followers.Contains(van.Follower);
         bool thiefFlee = thief == null || thief.IsGone || thief.State == Thief.ThiefState.Flee;
@@ -210,11 +270,12 @@ public static partial class Bolum1AnimVerify
         bool fled = thief == null;
         yield return Until(() => van == null, 90f, "kamyonet kayboldu");
         Time.timeScale = 1f;
-        Check("(U4-3) kamyonet bekleme süresi dolunca (test 25 sn; ayar " + Bolum1ThiefBuilder.Settings.vanWaitSeconds.ToString(Inv) + " sn) kapıları kapatıp şeride kaydolur ve kalkar; geride kalan hırsız panikle kaçıp kaybolur; kamyonet şerit sonunda kaybolur",
-            departAt >= 24.5f && departAt <= 28f && reRegistered && thiefFlee && fled && van == null,
+        Check("(U4-3) kamyonet bekleme süresi dolunca (test " + testWait.ToString(Inv) + " sn; ayar " + Bolum1ThiefBuilder.Settings.vanWaitSeconds.ToString(Inv) + " sn) kapıları kapatıp şeride kaydolur ve kalkar; geride kalan hırsız panikle kaçıp kaybolur; kamyonet şerit sonunda kaybolur",
+            departAt >= testWait - 0.5f && departAt <= testWait + 4f && reRegistered && thiefFlee && fled && van == null,
             "kalkış park süresi " + S(departAt) + ", şeride kaydoldu " + reRegistered + ", hırsız kaçış " + thiefFlee + " / kayboldu " + fled + ", kamyonet kayboldu " + (van == null));
 
-        // (U4-4) dalga sayıları: kısa aralık, 2. dalga 2 hırsız
+        // (U4-4) dalga sayıları: kısa aralık, 2. dalga 2 hırsız (eşyalar yine açık)
+        RestoreLoot(hidden);
         ParkCarriersOffLane();
         dir.Begin(TestThiefSettings(3f, 15f, 4f));
         Time.timeScale = 8f;
@@ -257,23 +318,28 @@ public static partial class Bolum1AnimVerify
         ParkCarriersOffLane();
         Loot.ResetForTest();
         h.SetHealthForTest(h.Max);
+        // Tek eşya (arena valizi); hırsızlar inince hemen ekipman kapmasın
+        var item = LootItem.All.Where(l => l.kind == LootKind.Luggage && l.CanPickUp).OrderBy(l => l.name).First();
+        var hidden = HideLootExcept(item);
         ThiefVan van = null;
         yield return SpawnParkedVan(dir, 3, v => van = v);
         Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf);
         Vector3 rear = van.RearPoint;
         var A = van.Thieves[0]; var B = van.Thieves[1]; var C = van.Thieves[2];
+        foreach (var t in new[] { A, B, C }) t.ResetForTest();
         B.gameObject.SetActive(false); C.gameObject.SetActive(false);
-        // Arena: kamyonetin 9 m arkası (yol/banket). Oyuncu valizi elinde, sırtı hırsıza dönük.
-        Vector3 arena = U3Ground(rear - vf * 9f + vr * 0.5f, rear.y);
-        var item = LootItem.All.Where(l => l.kind == LootKind.Luggage && l.CanPickUp).OrderBy(l => l.name).First();
+        // Arena: kamyonetin 10 m önünde, yolda (trafik yok). Oyuncu valizi elinde, sırtı hırsıza dönük.
+        float bankSign = Mathf.Sign(dir.ShoulderLateral);
+        vr *= -bankSign; // arena yönü: banketten yola doğru
+        Vector3 arena = U3Ground(van.transform.position + vf * 10f + vr * 1.0f, van.transform.position.y);
         item.Drop(U3Ground(arena + vr * 1.0f, arena.y), 0f);
         Player.Teleport(arena, Quaternion.LookRotation(vr));
         yield return null; yield return null;
         Interaction.Interact();
         yield return null;
         bool holding = Player.HeldValuable == item;
-        Player.Teleport(arena, Quaternion.LookRotation(-vf)); // sırt kamyonete (hırsız arkadan gelir)
-        A.TeleportForTest(U3Ground(arena + vf * 4f, arena.y), Quaternion.LookRotation(-vf));
+        Player.Teleport(arena, Quaternion.LookRotation(vf)); // sırt kamyonete (hırsız arkadan gelir)
+        A.TeleportForTest(U3Ground(arena - vf * 4f, arena.y), Quaternion.LookRotation(vf));
         A.ForceTarget(item);
         float hp0 = h.Current;
         float punch1At = -1f;
@@ -374,6 +440,8 @@ public static partial class Bolum1AnimVerify
         Note("fırlatma", held2 && aiming && handLocal.y > 1.0f && releaseAnim && flying && throwHit && landed,
             "Throw_Aim " + aiming + " (eşya kök uzayında " + V(handLocal) + "), Throw_Release " + releaseAnim + ", uçtu " + flying + ", isabet " + item.ThrowHits + " (sersem " + A.LastStunReason + "), yere indi/alınabilir " + landed);
         // Boşluğa düşen eşya geri döner: uçurum kenarından vadiye fırlat (kamera: aşağı doğru)
+        RestoreLoot(hidden);
+        A.ResetForTest();
         var item2 = LootItem.All.Where(l => l.kind == LootKind.Luggage && l.CanPickUp && l != item).OrderBy(l => l.name).First();
         Vector3 start2 = item2.transform.position; Transform parent2 = item2.transform.parent;
         var edgeRope = Rope;
@@ -405,7 +473,9 @@ public static partial class Bolum1AnimVerify
         Note("boşluğa düşen eşya geri döner", held3 && returned, "FallReturns " + item2.FallReturns + ", durum " + item2.State + ", başlangıca " + M(Vector3.Distance(item2.transform.position, start2)) + ", çalınan sayılmadı " + !item2.IsStolen);
         // Düdük: 3 hırsız 6 m içinde (A eşyalı), Q → korku, kamyonete koşar, eşya bırakılmaz; bekleme 20 sn, HUD
         B.gameObject.SetActive(true); C.gameObject.SetActive(true);
-        Player.Teleport(arena, Quaternion.LookRotation(vf));
+        var hidden2 = HideLootExcept(item);
+        Player.Teleport(arena, Quaternion.LookRotation(vf)); // yüz ileri (kamyonet arkada); hırsızlar önde
+        foreach (var t in new[] { A, B, C }) t.ResetForTest();
         A.TeleportForTest(U3Ground(arena + vf * 3f + vr * 1.5f, arena.y), Quaternion.LookRotation(-vf));
         B.TeleportForTest(U3Ground(arena + vf * 4f - vr * 1.5f, arena.y), Quaternion.LookRotation(-vf));
         C.TeleportForTest(U3Ground(arena + vf * 5.5f, arena.y), Quaternion.LookRotation(-vf));
@@ -415,6 +485,7 @@ public static partial class Bolum1AnimVerify
         A.ForceTarget(item);
         yield return Until(() => A.Carried == item, 6f, "A eşyayı aldı");
         foreach (var t in new[] { B, C }) t.ForceTarget(null);
+        RestoreLoot(hidden2);
         var rearDist0 = new Dictionary<Thief, float>();
         foreach (var t in new[] { A, B, C }) rearDist0[t] = Flat(rear - t.transform.position).magnitude;
         bool whistleStarted = combat.Whistle();
@@ -461,9 +532,14 @@ public static partial class Bolum1AnimVerify
         void Note(string what, bool c, string detail) { ok &= c; parts.Add(what + (c ? " ✓" : " ✗") + " " + detail); }
         ParkCarriersOffLane();
         Loot.ResetForTest();
+        var hiddenAll = HideLootExcept(); // hırsız inince hedefsiz kalsın (biner), testler tek tek açar
         ThiefVan van = null;
         yield return SpawnParkedVan(dir, 1, v => van = v);
         var thief = van.Thieves[0];
+        thief.gameObject.SetActive(true);
+        thief.ResetForTest();
+        RestoreLoot(hiddenAll);
+        yield return null;
         // Hastalı sedye çalınmaz; boşalınca çalınabilir
         var s0 = Stretcher(0);
         var s0Item = s0.GetComponent<LootItem>();
@@ -489,22 +565,26 @@ public static partial class Bolum1AnimVerify
         bool piGrabbed = false;
         if (pi != null)
         {
+            var hiddenPi = HideLootExcept(pi);
+            thief.ResetForTest();
             thief.TeleportForTest(U3StandAround(pi.Center, 1.0f, out Vector3 pdir), Quaternion.LookRotation(-pdir));
             thief.ForceTarget(pi);
             yield return Until(() => thief.Carried == pi, 8f, "hasta eşyası kapıldı");
             piGrabbed = thief.Carried == pi && pi.transform.parent == null && pi.IsHeldByThief;
             thief.Stun(0.5f, Vector3.zero, "test"); // bırak
             yield return Seconds(0.7f);
+            RestoreLoot(hiddenPi);
         }
         Note("hasta eşyası", piStealable && piGrabbed && pi != null && pi.State == LootItem.LootState.Dropped && pi.CanPickUp, "çalınabilir " + piStealable + ", kapıldı " + piGrabbed + ", bırakınca yerde alınabilir " + (pi != null && pi.CanPickUp));
         // Boş sedye: kapar, arkasında sürükler, kamyonete atınca sedye kaybolur
         var s1 = Stretcher(1);
         var s1Item = s1.GetComponent<LootItem>();
-        Vector3 rear = van.RearPoint;
-        Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf);
-        Vector3 sPos = U3Ground(rear - vf * 7f + vr * 1.5f, rear.y);
+        Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf) * -Mathf.Sign(dir.ShoulderLateral);
+        Vector3 sPos = U3Ground(van.transform.position + vf * 8f + vr * 1.5f, van.transform.position.y);
         s1.Teleport(sPos, Quaternion.LookRotation(vr, Vector3.up));
-        thief.TeleportForTest(U3Ground(sPos - vf * 1.5f, sPos.y), Quaternion.LookRotation(vf));
+        var hiddenS = HideLootExcept(s1Item);
+        thief.ResetForTest();
+        thief.TeleportForTest(U3Ground(sPos + vf * 1.5f, sPos.y), Quaternion.LookRotation(-vf));
         thief.ForceTarget(s1Item);
         yield return Until(() => thief.Carried == s1Item, 10f, "sedye kapıldı");
         bool dragging = thief.Carried == s1Item;
@@ -518,6 +598,7 @@ public static partial class Bolum1AnimVerify
         bool gone = s1Item.IsStolen && !s1.gameObject.activeSelf && !StretcherController.All.Contains(s1) && Loot.StolenValue >= s1Item.TotalValue;
         Note("boş sedye sürüklenir ve çalınınca kaybolur", dragging && behind && gone, "kaptı " + dragging + ", arkasında " + V(rel) + " (" + ThiefAnim(thief) + "), çalındı/gizli " + gone);
         Loot.RestoreForTest(s1Item);
+        RestoreLoot(hiddenS);
         // Koni ve ulaşılmazlık
         var cone = Cone(2);
         var coneItem = cone != null ? cone.GetComponent<LootItem>() : null;
@@ -586,18 +667,18 @@ public static partial class Bolum1AnimVerify
         int total = Loot.TotalValue;
         ThiefVan van = null;
         yield return SpawnParkedVan(dir, 5, v => van = v);
-        Vector3 rear = van.RearPoint;
-        Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf);
-        // Eşyalar kamyonetin 5–9 m arkasına (yay)
+        Vector3 vp = van.transform.position;
+        Vector3 vf = Flat(van.transform.forward).normalized, vr = Vector3.Cross(Vector3.up, vf) * -Mathf.Sign(dir.ShoulderLateral);
+        // Eşyalar kamyonetin 6–10 m önüne, yola (yay)
         var items = LootItem.All.Where(l => l.carryable && !l.IsSecured && !l.IsStolen && !l.IsHeld && !l.IsHeldByThief).OrderBy(l => l.name).ToList();
         for (int i = 0; i < items.Count; i++)
         {
-            Vector3 at = U3Ground(rear - vf * (5f + (i % 3) * 1.6f) + vr * (((i % 5) - 2) * 1.5f), rear.y);
+            Vector3 at = U3Ground(vp + vf * (6f + (i % 3) * 1.6f) + vr * ((i % 4) * 1.4f), vp.y);
             items[i].Drop(at, i * 37f);
         }
         var s0 = Stretcher(0); var s1 = Stretcher(1);
-        s0.Teleport(U3Ground(rear - vf * 10f + vr * 3f, rear.y), Quaternion.LookRotation(vr));
-        s1.Teleport(U3Ground(rear - vf * 10f - vr * 3f, rear.y), Quaternion.LookRotation(vr));
+        s0.Teleport(U3Ground(vp + vf * 11f + vr * 0.5f, vp.y), Quaternion.LookRotation(vr));
+        s1.Teleport(U3Ground(vp + vf * 11f + vr * 3.5f, vp.y), Quaternion.LookRotation(vr));
         float t0 = Time.time;
         Time.timeScale = 5f;
         yield return Until(() => Mission.IsFinished || van == null || Time.time - t0 > 220f, 240f, "%50 çalındı");

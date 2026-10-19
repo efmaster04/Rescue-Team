@@ -7,6 +7,7 @@ using System.Text;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.AI;
 
 // U4 (kullanıcı kararı "Hırsızlar", 2026-10-19): hırsız mekaniği kurulumu. Bolum1SceneBuilder.Build içinden çağrılır
 // (BuildAssets eşya ayarlarından sonra, SetupScene en sonda).
@@ -31,6 +32,9 @@ public static class Bolum1ThiefBuilder
     public const string VanPaintMaterialPath = Bolum1AmbulanceBuilder.MaterialFolder + "/M_ThiefVan_Paint.mat";
     public const string VanDoorMaterialPath = Bolum1AmbulanceBuilder.MaterialFolder + "/M_ThiefVan_Door.mat";
     public const string ReportPath = "Captures/Bolum1/thief_build_report.txt";
+    public const string NavMeshPath = Bolum1AmbulanceBuilder.SettingsFolder + "/ThiefNavMesh.asset";
+    // NavMesh ajanı (hırsız): yarıçap, boy, eğim (kullanıcı kararı: ≤ 35° yürünebilir), basamak
+    public const float AgentRadius = 0.3f, AgentHeight = 1.5f, AgentSlope = 35f, AgentClimb = 0.5f;
     public const string RootName = "Bolum1_Thieves";
     public const string DirectorName = "ThiefDirector";
     public const string VanStopName = "ThiefVanStop";
@@ -196,6 +200,18 @@ public static class Bolum1ThiefBuilder
             rb.isKinematic = true;
             rb.useGravity = false;
             rb.interpolation = RigidbodyInterpolation.None;
+            // Hareket: NavMeshAgent (hızı Thief verir); diğer hırsızlardan kaçınır, oyuncuyla çarpışma kapsülden
+            var agent = go.AddComponent<NavMeshAgent>();
+            agent.radius = AgentRadius;
+            agent.height = AgentHeight;
+            agent.speed = settings.sneakSpeed;
+            agent.acceleration = 12f;
+            agent.angularSpeed = 720f;
+            agent.stoppingDistance = 0.2f;
+            agent.autoBraking = true;
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.MedQualityObstacleAvoidance;
+            agent.avoidancePriority = 50;
+            thief.agent = agent;
             Bolum1AmbulanceBuilder.BuildRagdoll(animator, ThiefMass, out thief.ragdollBodies, out thief.ragdollColliders);
             var src = go.AddComponent<AudioSource>();
             src.playOnAwake = false;
@@ -275,6 +291,13 @@ public static class Bolum1ThiefBuilder
             van.doorRight = right;
             van.doorLeftOpenAngle = -150f;
             van.doorRightOpenAngle = 150f;
+            // Park edince NavMesh'i oyar: hırsızlar gövdenin içinden geçmez (hareket hâlinde oyma yok)
+            var obstacle = go.AddComponent<NavMeshObstacle>();
+            obstacle.shape = NavMeshObstacleShape.Box;
+            obstacle.center = vehicle.bodyCenter;
+            obstacle.size = vehicle.bodySize;
+            obstacle.carving = true;
+            obstacle.carveOnlyStationary = true;
             var ds = go.AddComponent<AudioSource>();
             ds.playOnAwake = false;
             ds.spatialBlend = 1f;
@@ -314,24 +337,35 @@ public static class Bolum1ThiefBuilder
         Line("ThiefVanStop: " + V(stopPos) + " şerit " + lane.name + " s " + stopS.ToString("F1", Inv) + ", yanal " + lateral.ToString("F2", Inv) + " m (şerit yarı genişliği " + (lane.width * 0.5f).ToString(Inv)
             + " + boşluk " + settings.shoulderClearance.ToString(Inv) + " + kamyonet yarı genişliği " + halfW.ToString("F2", Inv) + "); " + stopInfo);
 
-        // 2) Rampa ara noktaları (yoldan patikaya), seviye yükseklikleri
-        var ramp = ((List<object>)Bolum1Coordinates.Obj(markers, "geometry_probes")["ramp"]).Select(p => Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(p))).ToList();
-        var rampPts = new List<Vector3>();
-        foreach (var p in ramp)
-        {
-            Vector3 q = p;
-            if (GroundProbe.Find(q + Vector3.up * 2f, 6f, out RaycastHit g)) q.y = g.point.y + 0.02f;
-            rampPts.Add(q);
-        }
-        rampPts = rampPts.OrderByDescending(p => p.y).ToList();
-        // Seyreltme: ~2 m aralık (ilk ve son korunur)
-        var thinned = new List<Vector3> { rampPts[0] };
-        for (int i = 1; i < rampPts.Count - 1; i++) if (Vector3.Distance(thinned[thinned.Count - 1], rampPts[i]) >= 2f) thinned.Add(rampPts[i]);
-        thinned.Add(rampPts[rampPts.Count - 1]);
+        // 2) NavMesh: fiziksel collider'lardan (zemin, yol, korkuluk, kayalar, minibüs, çekici); oyuncu, bot, hastalar, sedyeler, eşyalar hariç
         var path = ((List<object>)Bolum1Coordinates.Obj(markers, "geometry_probes")["path"]).Select(p => Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(p))).ToList();
+        var ramp = ((List<object>)Bolum1Coordinates.Obj(markers, "geometry_probes")["ramp"]).Select(p => Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(p))).ToList();
         float pathY = path.Average(p => p.y);
         float roadY = east.PointAt(east.Project(truck.transform.position)).y;
-        Line("Rampa ara noktaları: " + thinned.Count + " (" + V(thinned[0]) + " → " + V(thinned[thinned.Count - 1]) + "); yol seviyesi y " + roadY.ToString("F2", Inv) + ", patika y " + pathY.ToString("F2", Inv));
+        var navData = BakeNavMesh(minivan, truck, character, out string navInfo);
+        if (AssetDatabase.LoadAssetAtPath<NavMeshData>(NavMeshPath) != null) AssetDatabase.DeleteAsset(NavMeshPath);
+        AssetDatabase.CreateAsset(navData, NavMeshPath);
+        // Ölçüm: yol, patika, rampa ve çekici banketi NavMesh'te; kaya çıkıntısı değil
+        var instance = NavMesh.AddNavMeshData(navData);
+        try
+        {
+            bool On(Vector3 p) { return NavMesh.SamplePosition(p, out NavMeshHit h, 0.6f, NavMesh.AllAreas); }
+            int pathOn = path.Count(p => { Vector3 q = p; if (GroundProbe.Find(q + Vector3.up * 2f, 6f, out RaycastHit g)) q.y = g.point.y; return On(q); });
+            int rampOn = ramp.Count(p => { Vector3 q = p; if (GroundProbe.Find(q + Vector3.up * 2f, 6f, out RaycastHit g)) q.y = g.point.y; return On(q); });
+            bool stopOn = On(stopPos);
+            bool roadOn = On(east.PointAt(east.Project(truck.transform.position)));
+            Vector3 ledge = Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(markers, "markers"), "LedgeZone"), "position"));
+            bool ledgeOn = On(ledge);
+            var navPath = new NavMeshPath();
+            bool roadToPath = NavMesh.SamplePosition(east.PointAt(east.Project(truck.transform.position)), out NavMeshHit a, 1f, NavMesh.AllAreas)
+                && NavMesh.SamplePosition(new Vector3(path[path.Count / 2].x, pathY, path[path.Count / 2].z), out NavMeshHit b, 1.5f, NavMesh.AllAreas)
+                && NavMesh.CalculatePath(a.position, b.position, NavMesh.AllAreas, navPath) && navPath.status == NavMeshPathStatus.PathComplete;
+            float len = 0f; for (int i = 1; i < navPath.corners.Length; i++) len += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
+            Line("NavMesh: " + NavMeshPath + " (" + navInfo + "); patika " + pathOn + "/" + path.Count + ", rampa " + rampOn + "/" + ramp.Count + ", durak " + stopOn + ", yol " + roadOn + ", kaya çıkıntısı " + ledgeOn
+                + " (beklenen: hayır); yol → patika yolu " + roadToPath + " (" + len.ToString("F1", Inv) + " m); yol seviyesi y " + roadY.ToString("F2", Inv) + ", patika y " + pathY.ToString("F2", Inv));
+            if (pathOn < path.Count / 2 || rampOn < ramp.Count / 2 || !stopOn || !roadToPath) throw new Exception("NavMesh eksik: patika " + pathOn + "/" + path.Count + ", rampa " + rampOn + "/" + ramp.Count + ", durak " + stopOn + ", yol→patika " + roadToPath);
+        }
+        finally { instance.Remove(); }
 
         // 3) Yönetmen
         var root = new GameObject(RootName).transform;
@@ -346,7 +380,7 @@ public static class Bolum1ThiefBuilder
         director.thiefPrefabs = Variants.Select(v => AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath(v)).GetComponent<Thief>()).ToArray();
         director.mission = GameObject.Find(Bolum1AmbulanceBuilder.MissionName).GetComponent<MissionDirector>();
         director.traffic = GameObject.Find(Bolum1TrafficBuilder.DirectorName).GetComponent<TrafficDirector>();
-        director.rampPoints = thinned.ToArray();
+        director.navMeshData = navData;
         director.roadLevelY = roadY;
         director.pathLevelY = pathY;
         director.killBelowY = GameObject.Find("FallRespawnPlane").transform.position.y;
@@ -477,6 +511,53 @@ public static class Bolum1ThiefBuilder
             + (flatSpots.Count > 0 ? "; düz ama engelli: " + string.Join(" | ", flatSpots) : "")
             + (notes.Count > 0 ? "; seçim: " + notes[0] : "");
         return bestLane != null;
+    }
+
+    // NavMesh fırını: sahnedeki fiziksel collider'lar (etkin olanlar); oyuncu, bot, hastalar, sedyeler, eşya prop'ları ve ambulans
+    // durağı hariç (hareketli / alınabilir şeyler NavMesh'e delik açmasın). Ajan: yarıçap 0.3, boy 1.5, eğim 35°, basamak 0.5, voksel 0.1.
+    private static NavMeshData BakeNavMesh(GameObject minivan, GameObject truck, GameObject character, out string info)
+    {
+        var settings = NavMesh.GetSettingsByID(0);
+        settings.agentRadius = AgentRadius;
+        settings.agentHeight = AgentHeight;
+        settings.agentSlope = AgentSlope;
+        settings.agentClimb = AgentClimb;
+        settings.minRegionArea = 1.5f;
+        settings.overrideVoxelSize = true;
+        settings.voxelSize = 0.1f;
+        settings.overrideTileSize = true;
+        settings.tileSize = 128;
+        var markups = new List<NavMeshBuildMarkup>();
+        void Ignore(Transform t) { if (t != null) markups.Add(new NavMeshBuildMarkup { root = t, ignoreFromBuild = true }); }
+        Ignore(character.transform);
+        var bot = UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>();
+        if (bot != null) Ignore(bot.transform);
+        foreach (var p in UnityEngine.Object.FindObjectsByType<Patient>(FindObjectsInactive.Include, FindObjectsSortMode.None)) Ignore(p.transform);
+        foreach (var s in UnityEngine.Object.FindObjectsByType<StretcherController>(FindObjectsInactive.Include, FindObjectsSortMode.None)) Ignore(s.transform);
+        var props = GameObject.Find(Bolum1LootBuilder.PropsRootName);
+        if (props != null) Ignore(props.transform);
+        var coil = UnityEngine.Object.FindAnyObjectByType<RopeCoil>();
+        if (coil != null) Ignore(coil.transform);
+        // Sınırlar: zemin + yol renderer sınırları (+ pay)
+        Bounds bounds = new Bounds(Vector3.zero, Vector3.one);
+        bool any = false;
+        foreach (var n in new[] { "SM_B1_Ground", "SM_B1_Road" })
+        {
+            var go = GameObject.Find(n);
+            if (go == null) continue;
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                if (!any) { bounds = r.bounds; any = true; } else bounds.Encapsulate(r.bounds);
+            }
+        }
+        bounds.Expand(new Vector3(4f, 10f, 4f));
+        var sources = new List<NavMeshBuildSource>();
+        NavMeshBuilder.CollectSources(bounds, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, markups, sources);
+        var data = NavMeshBuilder.BuildNavMeshData(settings, sources, bounds, Vector3.zero, Quaternion.identity);
+        if (data == null) throw new Exception("NavMesh fırınlanamadı");
+        data.name = "ThiefNavMesh";
+        info = sources.Count + " kaynak, sınır " + V(bounds.size) + ", ajan r " + AgentRadius.ToString(Inv) + " h " + AgentHeight.ToString(Inv) + " eğim " + AgentSlope.ToString(Inv) + "° basamak " + AgentClimb.ToString(Inv) + " voksel " + settings.voxelSize.ToString("F2", Inv);
+        return data;
     }
 
     private static bool StaticGround(Vector3 p, Transform truck, out RaycastHit ground)

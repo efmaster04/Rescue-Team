@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 // U4 (kullanıcı kararı "Hırsızlar" + "Ek kararlar", 2026-10-19): hırsız dalgaları. Saat fizik adımında ilerler (görevle aynı).
 //  - İlk kamyonet firstWaveSeconds'ta (180), sonra waveIntervalSeconds'ta bir (300) şeride çıkar; hırsız sayısı 1 → 2 → … → maxThieves (5).
@@ -24,9 +25,9 @@ public class ThiefDirector : MonoBehaviour
     public Thief[] thiefPrefabs = new Thief[0];
     public MissionDirector mission;
     public TrafficDirector traffic;
-    [Tooltip("Yoldan patikaya rampa ara noktaları (Unity, zeminde, yukarıdan aşağıya sıralı).")]
-    public Vector3[] rampPoints = new Vector3[0];
-    [Tooltip("Yol ve patika zemin yükseklikleri (m): seviye ayrımı ikisinin ortasından.")]
+    [Tooltip("Hırsız NavMesh'i (Bolum1ThiefBuilder fırınlar: fiziksel collider'lar, eğim ≤ 35°, basamak 0.5, yarıçap 0.3). Play'de eklenir.")]
+    public NavMeshData navMeshData;
+    [Tooltip("Yol ve patika zemin yükseklikleri (m): kaya çıkıntısı (patikanın 2.5 m'den çok altı) ulaşılmaz sayılır.")]
     public float roadLevelY = 0f, pathLevelY = -9f;
     [Tooltip("Bu yüksekliğin altı boşluk (FallRespawnPlane; fırlatılan eşya geri döner).")]
     public float killBelowY = -50f;
@@ -53,9 +54,20 @@ public class ThiefDirector : MonoBehaviour
 
     private float lastSpawnElapsed = -100f;
     private int warnedWave = -1;
+    private NavMeshDataInstance navMeshInstance;
+    public bool NavMeshLoaded { get { return navMeshInstance.valid; } }
 
-    private void Awake() { Instance = this; }
-    private void OnDestroy() { if (Instance == this) Instance = null; }
+    private void Awake()
+    {
+        Instance = this;
+        if (navMeshData != null) navMeshInstance = NavMesh.AddNavMeshData(navMeshData);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        if (navMeshInstance.valid) navMeshInstance.Remove();
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics() { SuppressedForTests = false; }
@@ -162,42 +174,12 @@ public class ThiefDirector : MonoBehaviour
 
     public void RegisterThief(Thief t) { if (t != null && !Thieves.Contains(t)) Thieves.Add(t); }
 
-    // ---- rota yardımcıları ----
+    // ---- yardımcılar ----
     public bool IsRoadLevel(Vector3 p) { return p.y > (roadLevelY + pathLevelY) * 0.5f; }
-    // Kaya çıkıntısı (patikadan ~5 m aşağıda) ve boşluk ulaşılmaz.
+    // Kaya çıkıntısı (patikadan ~5 m aşağıda) ve boşluk ulaşılmaz (NavMesh yolu da yoktur; bu hızlı ön eleme).
     public bool Reachable(Vector3 p) { return p.y > pathLevelY - 2.5f; }
 
-    // from → to: aynı seviyede düz; farklı seviyede rampa noktalarından (en yakınından başlayarak) geçer.
-    public List<Vector3> Route(Vector3 from, Vector3 to)
-    {
-        var r = new List<Vector3>();
-        if (rampPoints == null || rampPoints.Length < 2 || IsRoadLevel(from) == IsRoadLevel(to)) { r.Add(to); return r; }
-        bool down = IsRoadLevel(from);
-        int n = rampPoints.Length;
-        // Rampa sırası: yukarıdan aşağı (down) ya da tersi
-        int start = down ? 0 : n - 1, step = down ? 1 : -1;
-        // En yakın rampa noktasından başla (geri dönmesin), ama en az bir sonraki noktayı da al
-        int nearest = start;
-        float best = float.MaxValue;
-        for (int i = 0; i < n; i++)
-        {
-            float d = Flat(rampPoints[i] - from).magnitude + Mathf.Abs(rampPoints[i].y - from.y) * 2f;
-            if (d < best) { best = d; nearest = i; }
-        }
-        for (int i = nearest; i >= 0 && i < n; i += step) r.Add(rampPoints[i]);
-        r.Add(to);
-        return r;
-    }
-
-    public float RouteLength(Vector3 from, Vector3 to)
-    {
-        float len = 0f;
-        Vector3 prev = from;
-        foreach (var p in Route(from, to)) { len += Vector3.Distance(prev, p); prev = p; }
-        return len;
-    }
-
-    // Panikle kaçış hedefi: şeridin sonu (yol seviyesinde).
+    // Panikle kaçış hedefi: şeridin sonu (yol seviyesinde, NavMesh'te).
     public Vector3 FleePoint(Vector3 from)
     {
         if (lane == null) return from + Vector3.right * 60f;

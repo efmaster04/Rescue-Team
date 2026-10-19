@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 // U4 (kullanıcı kararı "Hırsızlar", 2026-10-19): hırsız yapay zekâsı. Kamyonetten iner, güvende olmayan en "kârlı" eşyayı
 // (puan = değer / yol) kapar, kamyonete koşup atar (ReportStolen → eşya kaybolur), hedef kalmayınca kamyonete biner.
-//  - Hareket: mevcut bot gibi GroundProbe adımlarıyla; yalnız ≤ slopeLimit zemin, ≤ stepHeight basamak; yön tarama (±35/70/110°)
-//    engelleri dolaşır; yol ↔ patika geçişi ThiefDirector'ın rampa ara noktalarıyla. Halat kullanmaz, minibüse girmez, kenardan düşmez.
+//  - Hareket: NavMeshAgent. NavMesh sahne kurulurken fiziksel collider'lardan fırınlanır (Bolum1ThiefBuilder: eğim ≤ 35°, basamak
+//    ≤ 0.5 m, yarıçap 0.3); yani yalnız yürünebilir zemin, rampa dahil; kaya çıkıntısı ve uçurum bağlantısız, minibüs / çekici /
+//    kamyonet (NavMeshObstacle) engel. Yolu olmayan hedef (NavMeshPathStatus ≠ Complete) seçilmez.
 //  - Kapma: yerdeki eşya (Thief_Grab, grab_frame), oyuncunun ELİNDEKİ eşya (oyuncunun ≤ handGrabRange önündeyse), yatan/sedyedeki
 //    hastanın eşyası, boş sedye (arkasında komik sürükler), kangal (dolapta/yerde; bağlı halat çalınmaz), koni.
 //  - Saldırı: elleri boşken attackRadius içinde yaklaşan / yolunu kesen ya da hedefi elinde tutan oyuncuya Thief_Punch (hit_frame'de
@@ -33,6 +35,7 @@ public class Thief : MonoBehaviour
 
     public ThiefSettings settings;
     public Animator animator;
+    public NavMeshAgent agent;
     [Tooltip("Kalça kemiği (Humanoid Hips).")]
     public Transform hips;
     public Rigidbody[] ragdollBodies = new Rigidbody[0];
@@ -68,18 +71,20 @@ public class Thief : MonoBehaviour
     public int GetUps { get; private set; }
     public int StuckGiveUps { get; private set; }
     public Vector3 LastKnockback { get; private set; }
+    // Tanı (doğrulama okur)
+    public string LastBlock { get; private set; } = "";
+    public float StuckTime { get { return stuckTime; } }
+    public string PathStatus { get { return agent != null && agent.enabled ? (agent.pathPending ? "pending" : agent.pathStatus.ToString()) : "agent kapalı"; } }
+    public float RemainingDistance { get { return agent != null && agent.enabled && agent.isOnNavMesh && !agent.pathPending ? agent.remainingDistance : -1f; } }
 
     public event Action<Thief, LootItem> Grabbed;
     public event Action<Thief, LootItem> Stole;
     public event Action<Thief> BoardedVan;
     public event Action<Thief, ThirdPersonPlayer> Punched;
 
-    private readonly List<Vector3> route = new List<Vector3>();
-    private int routeIndex;
     private Vector3 destination;
     private bool hasDestination;
     private float stuckTime;
-    private int steerSign = 1;
     private readonly Dictionary<LootItem, float> unreachableUntil = new Dictionary<LootItem, float>();
     private float stateTimer, stunUntil, fearUntil, punchReadyAt = -100f, downAt;
     private bool grabDone, throwDone, punchDone, grabFromHand;
@@ -93,11 +98,12 @@ public class Thief : MonoBehaviour
     private float smoothSpeed;
     private Vector3 lastPos;
     private float retargetAt;
-    private static readonly Collider[] overlap = new Collider[24];
+    private NavMeshPath scratchPath; // Awake'te kurulur (alan başlatıcısında NavMeshPath yaratılamaz)
 
     private void Awake()
     {
         if (animator == null) animator = GetComponent<Animator>();
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (hips == null && animator != null && animator.isHuman) hips = animator.GetBoneTransform(HumanBodyBones.Hips);
         bones = GetComponentsInChildren<Transform>(true);
         bonePositions = new Vector3[bones.Length];
@@ -113,6 +119,18 @@ public class Thief : MonoBehaviour
         audioSource.volume = 0.8f;
         rng = new System.Random(settings != null && settings.useFixedSeed ? settings.seed + All.Count * 131 : Environment.TickCount + All.Count);
         lastPos = transform.position;
+        if (agent != null)
+        {
+            agent.updateRotation = true;
+            agent.updateUpAxis = false;
+            agent.autoBraking = true;
+            agent.stoppingDistance = 0.2f;
+        }
+    }
+
+    private void Start()
+    {
+        EnsureOnNavMesh();
     }
 
     private void OnEnable()
@@ -143,6 +161,17 @@ public class Thief : MonoBehaviour
         State = ThiefState.Unloading;
         stateTimer = 0f;
         hasDestination = false;
+        EnsureOnNavMesh();
+    }
+
+    // Ajan NavMesh'te değilse en yakın NavMesh noktasına (≤ 2.5 m) ışınla.
+    private bool EnsureOnNavMesh()
+    {
+        if (agent == null || !agent.enabled) return false;
+        if (agent.isOnNavMesh) return true;
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 2.5f, NavMesh.AllAreas)) { agent.Warp(hit.position); return agent.isOnNavMesh; }
+        LastBlock = "navmesh yok";
+        return false;
     }
 
     // =====================================================================================
@@ -195,6 +224,14 @@ public class Thief : MonoBehaviour
         hasDestination = false;
         grabDone = throwDone = punchDone = false;
         if (s == ThiefState.Seek && Target == null) retargetAt = 0f;
+        // Yerinde yapılan eylemlerde ajan durur ve yüz kodla çevrilir
+        bool stationary = s == ThiefState.Grab || s == ThiefState.Throw || s == ThiefState.Punch || s == ThiefState.Stunned || s == ThiefState.Unloading || s == ThiefState.GettingUp;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = stationary;
+            if (stationary) agent.ResetPath();
+            agent.updateRotation = !stationary;
+        }
     }
 
     private void Trigger(string t)
@@ -223,8 +260,8 @@ public class Thief : MonoBehaviour
             if (holdsTarget && d <= settings.handGrabRange && InFrontOf(player, transform.position, settings.handGrabAngle))
             {
                 grabFromHand = true;
-                Face(Target.Center);
                 Enter(ThiefState.Grab);
+                FaceNow(Target.Center);
                 Trigger(TriggerGrab);
                 return;
             }
@@ -232,12 +269,12 @@ public class Thief : MonoBehaviour
             {
                 if (d > settings.punchApproach + 0.15f)
                 {
-                    MoveDirect(player.transform.position, SneakSpeed * 1.5f, dt);
+                    GoTo(player.transform.position, SneakSpeed * 1.5f, settings.punchApproach);
                     return;
                 }
-                Face(player.transform.position);
                 PunchTarget = player;
                 Enter(ThiefState.Punch);
+                FaceNow(player.transform.position);
                 Trigger(TriggerPunch);
                 punchReadyAt = Time.time + settings.punchCooldown;
                 Punches++;
@@ -254,12 +291,12 @@ public class Thief : MonoBehaviour
             var coil = Target.GetComponent<RopeCoil>();
             if (coil != null && coil.InLocker && coil.locker != null && !coil.locker.IsOpen && !coil.locker.IsMoving) coil.locker.Toggle();
             grabFromHand = false;
-            Face(c);
             Enter(ThiefState.Grab);
+            FaceNow(c);
             Trigger(TriggerGrab);
             return;
         }
-        MoveAlongRoute(c, SneakSpeed, dt, settings.grabRange * 0.8f);
+        GoTo(c, SneakSpeed, settings.grabRange * 0.8f);
     }
 
     private void TickGrab(float dt)
@@ -297,14 +334,16 @@ public class Thief : MonoBehaviour
         Vector3 rear = Van.RearPoint;
         float speed = RunSpeed * (Carried.GetComponent<StretcherController>() != null ? settings.stretcherDragFactor : 1f);
         float dist = Flat(rear - transform.position).magnitude;
-        if (dist <= settings.throwRange)
+        // İniş noktasına varınca ya da kamyonet gövdesinin arka yarısına ≤ 1.5 m yaklaşınca (iniş noktası dar aralıktaysa) atar
+        bool nearBody = Van.DistanceToBody(transform.position) <= 1.5f && Vector3.Dot(Flat(transform.position - Van.transform.position), Flat(Van.transform.forward)) < 0.5f;
+        if (dist <= settings.throwRange || (nearBody && stateTimer > 0.5f))
         {
-            Face(Van.transform.position);
             Enter(ThiefState.Throw);
+            FaceNow(Van.transform.position);
             Trigger(TriggerThrow);
             return;
         }
-        MoveAlongRoute(rear, speed, dt, settings.throwRange * 0.8f);
+        GoTo(rear, speed, settings.throwRange * 0.8f);
     }
 
     private void TickThrow(float dt)
@@ -359,7 +398,11 @@ public class Thief : MonoBehaviour
             Vector3 step = knock * part;
             knock -= step;
             knockTime -= dt;
-            if (step.sqrMagnitude > 1e-8f && TryStep(step.normalized, step.magnitude, out Vector3 to, null)) transform.position = to;
+            if (step.sqrMagnitude > 1e-8f)
+            {
+                if (agent != null && agent.enabled && agent.isOnNavMesh) agent.Move(step); // NavMesh içinde kalır (uçurum / duvar yok)
+                else transform.position += step;
+            }
         }
         if (Time.time >= stunUntil) Enter(Carried != null ? ThiefState.Carry : ThiefState.Seek);
     }
@@ -368,9 +411,13 @@ public class Thief : MonoBehaviour
     {
         Vector3 to = Van != null && !Van.IsGone ? Van.RearPoint : transform.position + Flat(transform.position - NearestPlayerPos()).normalized * 10f;
         float dist = Flat(to - transform.position).magnitude;
-        if (dist > 1.5f) MoveAlongRoute(to, RunSpeed, dt, 1.5f);
+        if (dist > 1.5f) GoTo(to, RunSpeed, 1.5f);
+        else if (agent != null && agent.enabled && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
         if (Time.time >= fearUntil) Enter(Carried != null ? ThiefState.Carry : ThiefState.Seek);
     }
+
+    // Hedef kalmayınca binmeden önce iniş noktasında etrafa bakınma süresi (sn): yeni hedef (düşürülen eşya) çıkarsa döner.
+    public const float IdleBeforeBoard = 8f;
 
     private void TickBoarding(float dt)
     {
@@ -382,9 +429,14 @@ public class Thief : MonoBehaviour
             var t = PickTarget();
             if (t != null) { Target = t; Enter(ThiefState.Seek); return; }
         }
+        if (stateTimer < IdleBeforeBoard)
+        {
+            if (agent != null && agent.enabled && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
+            return;
+        }
         Vector3 rear = Van.RearPoint;
         float dist = Flat(rear - transform.position).magnitude;
-        if (dist <= 1.2f)
+        if (dist <= 1.2f || (Van.DistanceToBody(transform.position) <= 1.2f && stateTimer > 1f))
         {
             State = ThiefState.Gone;
             Van.OnThiefBoarded(this);
@@ -392,7 +444,7 @@ public class Thief : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-        MoveAlongRoute(rear, RunSpeed, dt, 1.0f);
+        GoTo(rear, RunSpeed, 1.0f);
     }
 
     private void TickFlee(float dt)
@@ -407,7 +459,7 @@ public class Thief : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        MoveAlongRoute(to, RunSpeed, dt, 2.5f);
+        GoTo(to, RunSpeed, 2.5f);
     }
 
     // =====================================================================================
@@ -446,10 +498,26 @@ public class Thief : MonoBehaviour
     // Test: ışınla (rota sıfırlanır) ve hedef dayat (bir sonraki yeniden seçime kadar).
     public void TeleportForTest(Vector3 position, Quaternion rotation)
     {
+        if (agent != null && agent.enabled && NavMesh.SamplePosition(position, out NavMeshHit hit, 2.5f, NavMesh.AllAreas)) { agent.Warp(hit.position); position = hit.position; }
         transform.SetPositionAndRotation(position, rotation);
         lastPos = position;
         hasDestination = false;
         stuckTime = 0f;
+    }
+
+    // Test: elindekini bırakır, hedefini ve beklemelerini sıfırlar, aramaya döner.
+    public void ResetForTest()
+    {
+        if (State == ThiefState.Gone) gameObject.SetActive(true);
+        if (Carried != null) { var c = Carried; Carried = null; c.DropByThief(transform.position, transform.forward); }
+        Target = null;
+        PunchTarget = null;
+        punchReadyAt = -100f;
+        stunUntil = 0f;
+        fearUntil = 0f;
+        unreachableUntil.Clear();
+        if (State == ThiefState.Down || State == ThiefState.GettingUp) return;
+        Enter(ThiefState.Seek);
     }
 
     public void ForceTarget(LootItem item)
@@ -457,7 +525,7 @@ public class Thief : MonoBehaviour
         Target = item;
         retargetAt = Time.time + 30f;
         hasDestination = false;
-        unreachableUntil.Remove(item);
+        if (item != null) unreachableUntil.Remove(item);
         if (State == ThiefState.Boarding) Enter(ThiefState.Seek);
         if (State == ThiefState.Seek) retargetAt = Time.time + 30f;
     }
@@ -479,6 +547,7 @@ public class Thief : MonoBehaviour
         VehicleHits++;
         downAt = Time.time;
         Enter(ThiefState.Down);
+        if (agent != null) agent.enabled = false;
         SetRagdoll(true);
         foreach (var rb in ragdollBodies) if (rb != null) rb.linearVelocity = velocity;
     }
@@ -494,8 +563,9 @@ public class Thief : MonoBehaviour
         transform.position = ground;
         lastPos = ground;
         GetUps++;
+        if (agent != null) { agent.enabled = true; EnsureOnNavMesh(); }
         Enter(ThiefState.GettingUp);
-        if (animator != null && animator.runtimeAnimatorController != null) { animator.Play(StateGetUpAnim, 0, 0f); }
+        if (animator != null && animator.runtimeAnimatorController != null) animator.Play(StateGetUpAnim, 0, 0f);
     }
 
     private void SetRagdoll(bool on)
@@ -543,7 +613,21 @@ public class Thief : MonoBehaviour
         }
     }
 
-    // Puan = değer / yol uzunluğu; başka hırsızın hedefi (varsa alternatif) atlanır.
+    // NavMesh yolu var mı ve uzunluğu: hedefin yakınındaki NavMesh noktasına (≤ 2 m) tam yol gerekir.
+    public bool PathTo(Vector3 target, out float length)
+    {
+        length = Flat(target - transform.position).magnitude;
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return true;
+        if (!NavMesh.SamplePosition(target, out NavMeshHit hit, 2.0f, NavMesh.AllAreas)) return false;
+        if (scratchPath == null) scratchPath = new NavMeshPath();
+        if (!agent.CalculatePath(hit.position, scratchPath) || scratchPath.status != NavMeshPathStatus.PathComplete) return false;
+        var corners = scratchPath.corners;
+        length = 0f;
+        for (int i = 1; i < corners.Length; i++) length += Vector3.Distance(corners[i - 1], corners[i]);
+        return true;
+    }
+
+    // Puan = değer / yol uzunluğu; yolu olmayan eşya atlanır; başka hırsızın hedefi (varsa alternatif) atlanır.
     public LootItem PickTarget()
     {
         LootItem best = null, bestAny = null;
@@ -552,7 +636,8 @@ public class Thief : MonoBehaviour
         {
             if (!IsStealable(item)) continue;
             Vector3 c = item.Center;
-            float len = Director != null ? Director.RouteLength(transform.position, c) : Flat(c - transform.position).magnitude;
+            if (item.IsHeld && item.Holder != null) c = item.Holder.transform.position;
+            if (!PathTo(c, out float len)) { unreachableUntil[item] = Time.time + 10f; continue; }
             float score = item.TotalValue / Mathf.Max(1.5f, len) * (1f + 0.02f * (float)rng.NextDouble());
             bool claimed = false;
             foreach (var t in All) if (t != null && t != this && t.Target == item && t.State != ThiefState.Gone) { claimed = true; break; }
@@ -599,106 +684,42 @@ public class Thief : MonoBehaviour
     }
 
     // =====================================================================================
-    // Hareket
+    // Hareket (NavMeshAgent)
     // =====================================================================================
 
-    // Rotalı hareket: hedef değişince ThiefDirector rotası (rampa ara noktaları) alınır. Varınca true.
-    private bool MoveAlongRoute(Vector3 target, float speed, float dt, float arriveRadius)
+    // Hedefe git: hedef 0.5 m'den çok kaydıysa yeniden yol; yolu olmayan hedef 2 sn içinde bırakılır.
+    private void GoTo(Vector3 target, float speed, float arrive)
     {
-        if (!hasDestination || Flat(target - destination).magnitude > 1.0f)
+        if (agent == null || !agent.enabled) { transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime); return; }
+        if (!EnsureOnNavMesh()) { stuckTime += Time.deltaTime; GiveUpIfStuck(); return; }
+        agent.isStopped = false;
+        agent.updateRotation = true;
+        agent.speed = speed;
+        agent.acceleration = Mathf.Max(8f, speed * 4f);
+        agent.stoppingDistance = Mathf.Max(0.1f, arrive * 0.5f);
+        if (!hasDestination || Flat(target - destination).magnitude > 0.5f)
         {
             destination = target;
             hasDestination = true;
-            route.Clear();
-            if (Director != null) route.AddRange(Director.Route(transform.position, target));
-            else route.Add(target);
-            routeIndex = 0;
+            if (NavMesh.SamplePosition(target, out NavMeshHit hit, 2.0f, NavMesh.AllAreas)) agent.SetDestination(hit.position);
+            else { LastBlock = "hedef navmesh dışı"; stuckTime += 1f; GiveUpIfStuck(); return; }
         }
-        else if (route.Count > 0) route[route.Count - 1] = target; // hedef biraz kaydıysa son noktayı güncelle
-        if (routeIndex >= route.Count) return true;
-        Vector3 wp = route[routeIndex];
-        bool last = routeIndex == route.Count - 1;
-        float radius = last ? arriveRadius : settings.waypointRadius;
-        Vector3 d = Flat(wp - transform.position);
-        if (d.magnitude <= radius)
-        {
-            routeIndex++;
-            if (routeIndex >= route.Count) return true;
-            wp = route[routeIndex];
-            d = Flat(wp - transform.position);
-        }
-        Step(d.normalized, Mathf.Min(speed * dt, d.magnitude), dt);
-        return false;
+        if (!agent.pathPending && agent.pathStatus != NavMeshPathStatus.PathComplete) { LastBlock = "yol " + agent.pathStatus; stuckTime += Time.deltaTime; }
+        else if (!agent.pathPending && agent.hasPath && agent.velocity.sqrMagnitude < 0.01f && agent.remainingDistance > arrive + 0.5f) { LastBlock = "duruyor"; stuckTime += Time.deltaTime; }
+        else stuckTime = 0f;
+        GiveUpIfStuck();
     }
 
-    // Rotasız doğrudan yaklaşma (yumruk için oyuncuya).
-    private void MoveDirect(Vector3 target, float speed, float dt)
+    private void GiveUpIfStuck()
     {
-        Vector3 d = Flat(target - transform.position);
-        if (d.magnitude < 0.05f) return;
-        Step(d.normalized, Mathf.Min(speed * dt, d.magnitude), dt);
-    }
-
-    // Bir adım: yön taraması (düz, ±35, ±70, ±110°); adım atılamazsa takılma sayacı, 2 sn sonra hedef vazgeçilir.
-    private void Step(Vector3 dir, float dist, float dt)
-    {
-        if (dist <= 1e-5f) return;
-        float[] angles = { 0f, 35f * steerSign, -35f * steerSign, 70f * steerSign, -70f * steerSign, 110f * steerSign, -110f * steerSign };
-        foreach (float a in angles)
-        {
-            Vector3 d2 = Quaternion.AngleAxis(a, Vector3.up) * dir;
-            if (!TryStep(d2, dist, out Vector3 to, Carried)) continue;
-            if (a != 0f) steerSign = a > 0f ? 1 : -1;
-            transform.position = to;
-            Face(transform.position + d2);
-            stuckTime = 0f;
-            return;
-        }
-        stuckTime += dt;
-        if (stuckTime > 2f)
-        {
-            stuckTime = 0f;
-            StuckGiveUps++;
-            if (Target != null) unreachableUntil[Target] = Time.time + 15f;
-            Target = null;
-            hasDestination = false;
-            steerSign = -steerSign;
-            if (State == ThiefState.Seek) retargetAt = 0f;
-        }
-    }
-
-    // Adım kabul: zemin var, eğim ≤ slopeLimit, basamak ≤ stepHeight, bel hizasında statik engel yok, hasta/kamyonet/sedye gövdesi yok.
-    private bool TryStep(Vector3 dir, float dist, out Vector3 to, LootItem carrying)
-    {
-        to = transform.position;
-        Vector3 from = transform.position;
-        Vector3 cand = from + dir * dist;
-        if (!GroundProbe.Find(cand + Vector3.up * 1.2f, 2.6f, out RaycastHit hit)) return false;
-        float limit = settings != null ? settings.slopeLimit : 35f;
-        if (hit.normal.y < Mathf.Cos(limit * Mathf.Deg2Rad)) return false;
-        if (Mathf.Abs(hit.point.y - from.y) > (settings != null ? settings.stepHeight : 0.5f)) return false;
-        if (GroundProbe.LineBlocked(from + Vector3.up * 0.6f, hit.point + Vector3.up * 0.6f)) return false;
-        if (GroundProbe.LineBlocked(from + Vector3.up * 1.2f, hit.point + Vector3.up * 1.2f)) return false;
-        if (BodyBlocked(hit.point, carrying)) return false;
-        to = hit.point;
-        return true;
-    }
-
-    // Hareketli ama katı gövdeler: yatan hasta (NpcBody), kamyonet gövdesi (arka noktaya ≤ 2.5 m değilse), başka sedye.
-    private bool BodyBlocked(Vector3 at, LootItem carrying)
-    {
-        int n = Physics.OverlapCapsuleNonAlloc(at + Vector3.up * 0.4f, at + Vector3.up * 1.3f, 0.3f, overlap, ~0, QueryTriggerInteraction.Ignore);
-        bool nearVanRear = Van != null && Flat(Van.RearPoint - at).magnitude <= 2.5f;
-        for (int i = 0; i < n; i++)
-        {
-            var c = overlap[i];
-            if (c == null || c.transform.IsChildOf(transform)) continue;
-            if (c.GetComponentInParent<Patient>() != null) return true;
-            if (!nearVanRear && c.GetComponentInParent<ThiefVan>() != null) return true;
-            var s = c.GetComponentInParent<StretcherController>();
-            if (s != null && (carrying == null || s.gameObject != carrying.gameObject)) return true;
-        }
-        return false;
+        if (stuckTime <= 2f) return;
+        stuckTime = 0f;
+        StuckGiveUps++;
+        if (Target != null) unreachableUntil[Target] = Time.time + 15f;
+        Target = null;
+        hasDestination = false;
+        if (agent != null && agent.enabled && agent.isOnNavMesh) agent.ResetPath();
+        if (State == ThiefState.Seek) retargetAt = 0f;
     }
 
     private void Face(Vector3 target)
@@ -706,6 +727,13 @@ public class Thief : MonoBehaviour
         Vector3 d = Flat(target - transform.position);
         if (d.sqrMagnitude < 1e-6f) return;
         transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(d.normalized, Vector3.up), 540f * Time.deltaTime);
+    }
+
+    private void FaceNow(Vector3 target)
+    {
+        Vector3 d = Flat(target - transform.position);
+        if (d.sqrMagnitude < 1e-6f) return;
+        transform.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
     }
 
     // Nokta önümüzdeki koni içinde mi (yatay)

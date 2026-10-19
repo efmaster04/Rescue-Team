@@ -139,6 +139,7 @@ public class TrafficVehicle : MonoBehaviour
 
         if (Follower.AtEnd)
         {
+            if (GetComponent<ThiefVan>() != null) Debug.Log("ThiefVan şerit sonunda kayboluyor: " + name + " s " + Follower.Distance.ToString("F1") + "/" + Follower.lane.Length.ToString("F1") + " park " + parked + " dışDurak " + externalStopS);
             Despawned?.Invoke(this);
             Destroy(gameObject);
         }

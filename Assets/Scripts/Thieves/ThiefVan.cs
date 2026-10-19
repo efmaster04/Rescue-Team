@@ -77,18 +77,84 @@ public class ThiefVan : MonoBehaviour
         Despawned?.Invoke(this);
     }
 
-    // Kamyonetin arkası: arka tamponun 1.2 m gerisi, zeminde (hırsızlar burada iner ve eşyayı buraya atar).
-    public Vector3 RearPoint
+    // İniş / atış noktası: arka tamponun 1.3 m gerisi, NavMesh'te ve engelsiz. Arkası kapalıysa (durak başka bir aracın burnuna
+    // yakın, ör. çekicinin önü) banket tarafındaki yan kapı hizası (arka tekerin yanı, gövdeden 0.9 m dışarıda), o da olmazsa yol tarafı.
+    public bool SideExit { get; private set; }
+    public Vector3 RearPoint { get { return ExitPoint(out _); } }
+
+    public Vector3 ExitPoint(out Vector3 spread)
     {
-        get
+        if (exitFrame == Time.frameCount) { spread = exitSpread; return exitPoint; }
+        Vector3 fwd = transform.forward; fwd.y = 0f;
+        if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
+        fwd.Normalize();
+        Vector3 right = Vector3.Cross(Vector3.up, fwd);
+        float rear = Follower != null ? Follower.rearOverhang : 2.7f;
+        float halfW = Vehicle != null ? Vehicle.bodySize.x * 0.5f : 1f;
+        float sideSign = ShoulderLateral >= 0f ? 1f : -1f;
+        Vector3 bumper = transform.position - fwd * rear + Vector3.up * 0.8f;
+        Vector3 rearCand = transform.position - fwd * (rear + 1.3f);
+        Vector3 sideCand = transform.position - fwd * (rear * 0.5f) + right * sideSign * (halfW + 0.9f);
+        Vector3 roadCand = transform.position - fwd * (rear * 0.5f) - right * sideSign * (halfW + 0.9f);
+        // Yola bağlı olmalı: kamyonetin oyduğu NavMesh ile banket eğimi arasında kalan şerit yoldan kopuk olabilir
+        Vector3 road = Follower != null && Follower.lane != null ? Follower.lane.PointAt(Follower.Distance) : transform.position - right * ShoulderLateral;
+        Vector3 rearNav = rearCand, sideNav = sideCand, roadNav = roadCand;
+        bool rearOk = !GroundProbe.LineBlocked(bumper, rearCand + Vector3.up * 0.8f) && !StaticObstacle(rearCand, fwd) && OnNavMesh(rearCand, out rearNav) && ConnectedTo(rearNav, road);
+        if (rearOk) { SideExit = false; exitSpread = right; exitPoint = rearNav; }
+        else if (!StaticObstacle(sideCand, fwd) && OnNavMesh(sideCand, out sideNav) && ConnectedTo(sideNav, road)) { SideExit = true; exitSpread = fwd; exitPoint = sideNav; }
+        else if (OnNavMesh(roadCand, out roadNav)) { SideExit = true; exitSpread = fwd; exitPoint = roadNav; }
+        else
         {
-            Vector3 fwd = transform.forward; fwd.y = 0f;
-            if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
-            fwd.Normalize();
-            Vector3 p = transform.position - fwd * (Follower.rearOverhang + 1.2f);
-            if (GroundProbe.Find(p + Vector3.up * 1.5f, 4f, out RaycastHit g)) p = g.point;
-            return p;
+            SideExit = true;
+            exitSpread = fwd;
+            exitPoint = GroundProbe.Find(roadCand + Vector3.up * 1.5f, 4f, out RaycastHit gs) ? gs.point : roadCand;
         }
+        exitFrame = Time.frameCount;
+        spread = exitSpread;
+        return exitPoint;
+    }
+
+    private static bool OnNavMesh(Vector3 p, out Vector3 onMesh)
+    {
+        if (UnityEngine.AI.NavMesh.SamplePosition(p, out UnityEngine.AI.NavMeshHit hit, 0.8f, UnityEngine.AI.NavMesh.AllAreas)) { onMesh = hit.position; return true; }
+        onMesh = p;
+        return false;
+    }
+
+    private static UnityEngine.AI.NavMeshPath connectPath;
+    private static bool ConnectedTo(Vector3 from, Vector3 to)
+    {
+        if (!UnityEngine.AI.NavMesh.SamplePosition(to, out UnityEngine.AI.NavMeshHit hit, 2f, UnityEngine.AI.NavMesh.AllAreas)) return true; // yol NavMesh'te değilse kontrol yapılamaz
+        if (connectPath == null) connectPath = new UnityEngine.AI.NavMeshPath();
+        return UnityEngine.AI.NavMesh.CalculatePath(from, hit.position, UnityEngine.AI.NavMesh.AllAreas, connectPath) && connectPath.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
+    }
+    private int exitFrame = -1;
+    private Vector3 exitPoint, exitSpread;
+    private static readonly Collider[] exitOverlap = new Collider[16];
+
+    // İniş alanında (1.6 × 1.6 m, 0.3–1.9 m yükseklik) hareketsiz bir collider (çekici, korkuluk, kaya) var mı?
+    private bool StaticObstacle(Vector3 at, Vector3 fwd)
+    {
+        int n = Physics.OverlapBoxNonAlloc(at + Vector3.up * 1.1f, new Vector3(0.8f, 0.8f, 0.8f), exitOverlap, Quaternion.LookRotation(fwd, Vector3.up), ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+        {
+            var c = exitOverlap[i];
+            if (c == null || c.transform.IsChildOf(transform)) continue;
+            if (c is MeshCollider mc && !mc.convex) continue; // zemin / yol (korkuluk hariç tutulmaz: ince ama dik; aşağıda LineBlocked yakalar)
+            if (GroundProbe.IsMovingGameObject(c)) continue;
+            return true;
+        }
+        return false;
+    }
+
+    // Kamyonet gövdesine (BoxCollider) en yakın uzaklık (yatay): hırsız eşyayı buradan da atabilir (iniş noktası dar bir aralıktaysa).
+    public float DistanceToBody(Vector3 p)
+    {
+        var box = GetComponent<BoxCollider>();
+        if (box == null) return Vector3.Distance(p, transform.position);
+        Vector3 q = box.ClosestPoint(new Vector3(p.x, transform.position.y + 1f, p.z));
+        q.y = 0f; p.y = 0f;
+        return Vector3.Distance(p, q);
     }
 
     // Yönetmen çağırır: şeridin başına koyar, durağı verir.
@@ -208,12 +274,12 @@ public class ThiefVan : MonoBehaviour
     {
         if (prefabs == null || prefabs.Length == 0) return;
         var prefab = prefabs[(Spawned + variantOffset) % prefabs.Length];
-        Vector3 rear = RearPoint;
-        Vector3 fwd = transform.forward; fwd.y = 0f; fwd.Normalize();
-        Vector3 side = Vector3.Cross(Vector3.up, fwd) * ((Spawned % 2 == 0) ? -0.45f : 0.45f);
-        Vector3 at = rear + side;
+        Vector3 exit = ExitPoint(out Vector3 spread);
+        Vector3 at = exit + spread * ((Spawned % 2 == 0) ? -0.45f : 0.45f);
         if (GroundProbe.Find(at + Vector3.up * 1.5f, 4f, out RaycastHit g)) at = g.point;
-        var t = Instantiate(prefab, at, Quaternion.LookRotation(-fwd, Vector3.up));
+        Vector3 away = exit - transform.position; away.y = 0f;
+        if (away.sqrMagnitude < 1e-6f) away = -transform.forward;
+        var t = Instantiate(prefab, at, Quaternion.LookRotation(away.normalized, Vector3.up));
         t.name = prefab.name + "_W" + (WaveIndex + 1) + "_" + (Spawned + 1);
         t.settings = settings;
         t.BeginUnload(this, director);

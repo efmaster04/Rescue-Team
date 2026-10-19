@@ -381,6 +381,7 @@ public static partial class Bolum1AnimVerify
         Time.timeScale = 0f;
         yield return null;
         yield return null;
+        BeforeCapture?.Invoke(cam);
         Canvas.ForceUpdateCanvases();
         cam.Render();
         Time.timeScale = prevScale;
