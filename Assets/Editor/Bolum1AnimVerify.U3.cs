@@ -213,9 +213,13 @@ public static partial class Bolum1AnimVerify
         float frac = (float)v / total;
         bool barOk = Mathf.Abs(hud.StolenFill.fillAmount - frac) < 0.01f && hud.StolenPercent.text == "%" + Mathf.RoundToInt(frac * 100f);
         bool red = hud.FloatingSpawned == spawned0 + 1;
-        Check("(U3-3a) çalınma: ReportStolen(Sedye) → çalınan/toplam oranında çubuk, \"-300 ₺ Sedye\" kırmızı yazı, görev sürüyor",
-            reported && stretcherItem.IsStolen && loot.StolenValue == v && Mathf.Abs(loot.StolenFraction - frac) < 1e-4f && barOk && red && !Mission.IsFinished,
-            "çalınan " + loot.StolenValue + "/" + total + " = %" + (frac * 100f).ToString("F1", Inv) + ", çubuk " + hud.StolenFill.fillAmount.ToString("F3", Inv) + " \"" + hud.StolenPercent.text + "\", yazı " + red + ", görev bitti " + Mission.IsFinished);
+        // U4: çalınan ekipman da kaybolur (sedye objesi kapanır); sonraki fazlar için geri getirilir
+        bool hidden = !stretcherItem.gameObject.activeSelf;
+        Check("(U3-3a) çalınma: ReportStolen(Sedye) → çalınan/toplam oranında çubuk, \"-300 ₺ Sedye\" kırmızı yazı, görev sürüyor; U4: çalınan sedye sahneden kalkar",
+            reported && stretcherItem.IsStolen && hidden && loot.StolenValue == v && Mathf.Abs(loot.StolenFraction - frac) < 1e-4f && barOk && red && !Mission.IsFinished,
+            "çalınan " + loot.StolenValue + "/" + total + " = %" + (frac * 100f).ToString("F1", Inv) + ", çubuk " + hud.StolenFill.fillAmount.ToString("F3", Inv) + " \"" + hud.StolenPercent.text + "\", yazı " + red + ", sedye gizli " + hidden + ", görev bitti " + Mission.IsFinished);
+        loot.RestoreForTest(stretcherItem);
+        yield return null;
     }
 
     // ---- (U3-1) can ----

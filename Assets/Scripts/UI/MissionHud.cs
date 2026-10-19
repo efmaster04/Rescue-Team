@@ -32,6 +32,10 @@ public class MissionHud : MonoBehaviour
     public const string RestartText = "R: Yeniden başlat";
     public const string StolenLabelText = "Çalınan";
     public const string RespawnPrefix = "Yeniden doğma: ";
+    // U4: düdük bekleme göstergesi (sol alt) ve dalga uyarısı (üst orta, telsizin altında)
+    public const string WhistleReadyText = "Q Düdük: hazır";
+    public const string WhistlePrefix = "Q Düdük: ";
+    public static readonly Color ThiefWarningColor = new Color(1f, 0.45f, 0.35f);
     public static readonly Color WarningHintColor = new Color(1f, 0.72f, 0.5f, 0.85f);
     public static readonly Color CreditColor = new Color(0.55f, 1f, 0.55f);
     public static readonly Color StolenColor = new Color(1f, 0.35f, 0.3f);
@@ -51,6 +55,9 @@ public class MissionHud : MonoBehaviour
     public Image StolenFill { get; private set; }
     public Text StolenPercent { get; private set; }
     public Text RespawnText { get; private set; }
+    // U4
+    public Text ThiefWarningText { get; private set; }
+    public Text WhistleText { get; private set; }
     public int FloatingCount { get { return floats.Count; } }
     public int FloatingSpawned { get; private set; }
     public readonly List<MissIndicator> Indicators = new List<MissIndicator>();
@@ -144,6 +151,11 @@ public class MissionHud : MonoBehaviour
         // U3: yeniden doğma geri sayımı (orta, üstte)
         RespawnText = MakeText("Respawn", new Vector2(0.5f, 0.5f), new Vector2(0f, 180f), new Vector2(1200f, 70f), 48, TextAnchor.MiddleCenter);
         RespawnText.color = new Color(1f, 0.8f, 0.5f);
+        // U4: dalga uyarısı (telsizin altında) ve düdük bekleme göstergesi (sol alt, küçük)
+        ThiefWarningText = MakeText("ThiefWarning", new Vector2(0.5f, 1f), new Vector2(0f, -185f), new Vector2(1400f, 60f), 40, TextAnchor.MiddleCenter);
+        ThiefWarningText.color = ThiefWarningColor;
+        WhistleText = MakeText("Whistle", new Vector2(0f, 0f), new Vector2(40f, 36f), new Vector2(500f, 40f), 26, TextAnchor.LowerLeft);
+        WhistleText.color = new Color(0.85f, 0.9f, 1f, 0.9f);
     }
 
     private Text MakeText(string name, Vector2 anchor, Vector2 position, Vector2 size, int fontSize, TextAnchor align)
@@ -313,5 +325,12 @@ public class MissionHud : MonoBehaviour
         RespawnText.text = remaining >= 0f && !mission.IsFinished ? RespawnPrefix + Mathf.CeilToInt(remaining) : "";
         UpdateFloating();
         UpdateOtherHealthBars();
+
+        // U4: dalga uyarısı ve düdük beklemesi
+        var thieves = ThiefDirector.Instance;
+        ThiefWarningText.text = thieves != null && thieves.WarningActive && !mission.IsFinished ? thieves.WarningText : "";
+        var combat = interaction != null && interaction.player != null ? interaction.player.GetComponent<PlayerCombat>() : null;
+        if (combat == null || mission.IsFinished) WhistleText.text = "";
+        else WhistleText.text = combat.WhistleReady ? WhistleReadyText : WhistlePrefix + Mathf.CeilToInt(combat.WhistleRemaining) + " sn";
     }
 }

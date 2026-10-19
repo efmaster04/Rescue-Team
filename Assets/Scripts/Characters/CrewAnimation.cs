@@ -42,6 +42,9 @@ public class CrewAnimation : MonoBehaviour
     public const int CarryCoil = 5;
     // U3: darbe tepkisi (HitReact 0.5 sn; PlayerHealth.TakeDamage → PlayAction)
     public const string StateHitReact = "HitReact";
+    // U4: savunma — itme, tackle (dalış → kalkış), fırlatma (nişan döngüsü → atış), düdük (PlayerCombat → PlayAction / HoldAction)
+    public const string StatePushShove = "PushShove", StateTackleDive = "TackleDive", StateTackleGetUp = "TackleGetUp";
+    public const string StateThrowAim = "ThrowAim", StateThrowRelease = "ThrowRelease", StateWhistle = "WhistleBlow";
 
     public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni / değerli eşya (U3), 3 sırtta hasta (D2), 4 sedye ön uç, 5 kangal (U2)
     public const string ParamReviving = "Reviving";  // bool
@@ -149,8 +152,10 @@ public class CrewAnimation : MonoBehaviour
         {
             // Sırta alma / bırakma kendi klibini PlayAction ile oynatır (genel PickUp/PutDown tetiklenmez).
             // U2: kangal dolaptan alınırken / atılırken de kendi klibi sürer (InAction); yerden alma ve yere bırakma genel PickUp/PutDown.
+            // U4: fırlatma sırasında (Throw_Release) eşya elden çıkınca PutDown tetiklenmez (atış klibi tamamlanır).
             bool coilAction = (carry == CarryCoil || Carry == CarryCoil) && InAction;
-            if (carry != CarryPiggyback && Carry != CarryPiggyback && !coilAction)
+            bool throwing = InAction && (LastAction == StateThrowRelease || LastAction == StateThrowAim);
+            if (carry != CarryPiggyback && Carry != CarryPiggyback && !coilAction && !throwing)
             {
                 if (Carry == 0 && carry != 0) animator.SetTrigger(TriggerPickUp);
                 else if (carry == 0) animator.SetTrigger(TriggerPutDown);
@@ -189,6 +194,21 @@ public class CrewAnimation : MonoBehaviour
         animator.CrossFadeInFixedTime(state, 0.1f, 0, 0f);
     }
     public bool InAction { get { return Time.time < actionUntil; } }
+
+    // U4: süresiz eylem (Throw_Aim döngüsü): ReleaseAction çağrılana kadar Action açık kalır.
+    public void HoldAction(string state)
+    {
+        LastAction = state;
+        if (!Ready) return;
+        actionUntil = float.PositiveInfinity;
+        animator.SetBool(ParamAction, true);
+        animator.CrossFadeInFixedTime(state, 0.15f, 0, 0f);
+    }
+
+    public void ReleaseAction()
+    {
+        if (float.IsPositiveInfinity(actionUntil)) actionUntil = Time.time;
+    }
 
     private void OnJumped()
     {

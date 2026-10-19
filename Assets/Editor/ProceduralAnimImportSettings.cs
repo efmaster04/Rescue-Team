@@ -29,11 +29,16 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         "Cabinet_TakeCoil", "Carry_Coil_Idle", "Carry_Coil_Walk", "Rope_TieStake", "Rope_Throw",
         // U3 (r4b): darbe tepkisi (can sistemi)
         "HitReact",
+        // U4 (r4b): oyuncu savunması ve hırsız
+        "Push_Shove", "Tackle_Dive", "Tackle_GetUp", "Throw_Aim", "Throw_Release", "Whistle_Blow",
+        "Thief_Sneak_Walk", "Thief_Run", "Thief_Run_Carry", "Thief_Grab", "Thief_Punch", "Thief_Stunned", "Thief_ThrowInVan",
     };
 
     public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan",
         "Patient_SitDazed", "Patient_SitDazed_ArmSling", "Piggyback_Rider", "Rope_Descend", "Rope_Climb", "Rope_Hang_Idle",
-        "Piggyback_Rope_Climb", "Piggyback_Walk", "Rope_Pull", "Carry_Coil_Idle", "Carry_Coil_Walk" };
+        "Piggyback_Rope_Climb", "Piggyback_Walk", "Rope_Pull", "Carry_Coil_Idle", "Carry_Coil_Walk",
+        // U4 (README r4b): yalnız bunlar döngü
+        "Throw_Aim", "Thief_Sneak_Walk", "Thief_Run", "Thief_Run_Carry", "Thief_Stunned" };
 
     public static string ClipPath(string clip) { return Folder + clip + ".fbx"; }
     public static bool IsLoop(string clip) { return LoopClips.Contains(clip); }

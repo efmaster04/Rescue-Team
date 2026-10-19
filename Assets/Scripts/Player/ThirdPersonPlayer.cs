@@ -133,11 +133,20 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // Ambulans teması: oyuncu verilen yer değiştirme kadar (şerit dışına) itilir ve kontrolü bir süre kaybeder.
     public void KnockAside(Vector3 displacement, float controlLossSeconds)
     {
+        Lunge(displacement, 0.25f, controlLossSeconds);
+    }
+
+    // U4: yer değiştirme verilen sürede uygulanır (tackle kayması: zemine ve duvarlara saygılı, CharacterController.Move ile).
+    public void Lunge(Vector3 displacement, float seconds, float controlLossSeconds)
+    {
         displacement.y = 0f;
         knockRemaining = displacement;
-        knockTimeLeft = 0.25f;
-        controlLostUntil = Time.time + controlLossSeconds;
+        knockTimeLeft = Mathf.Max(0.05f, seconds);
+        controlLostUntil = Mathf.Max(controlLostUntil, Time.time + controlLossSeconds);
     }
+
+    // U4: Shift basılı mı (koşu isteği; PlayerCombat tackle için okur)
+    public bool RunHeld { get { return runHeld; } }
 
     // Yeniden doğma (şef kararı 8): elindekini bırakır, yerdeyse ayağa kalkar, verilen noktaya ışınlanır.
     public void RespawnAt(Vector3 position, Quaternion rotation)

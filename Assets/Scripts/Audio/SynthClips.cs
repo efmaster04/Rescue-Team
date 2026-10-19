@@ -127,6 +127,80 @@ public static class SynthClips
         return Make("Synth_ConeHit", data);
     }
 
+    // ---- U4: hırsızlar ve savunma (slapstick) ----
+
+    // Yumruk "pof": kısa alçak geçirenli gürültü + 90 Hz tok gövde.
+    public static AudioClip Punch()
+    {
+        int n = Mathf.RoundToInt(0.22f * SampleRate);
+        var data = new float[n];
+        var rng = new System.Random(41);
+        float lowpass = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = (float)i / SampleRate;
+            float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+            lowpass += 0.18f * (noise - lowpass);
+            float puff = lowpass * Mathf.Exp(-t * 40f) * 1.1f;
+            float body = Mathf.Sin(2f * Mathf.PI * 90f * t) * Mathf.Exp(-t * 22f) * 0.7f;
+            data[i] = Mathf.Clamp(puff + body, -1f, 1f) * Fade(i, n, 0.003f);
+        }
+        return Make("Synth_Punch", data);
+    }
+
+    // İtme "hop": kısa yükselen ton (220 → 330 Hz) + hafif nefes gürültüsü.
+    public static AudioClip Shove()
+    {
+        int n = Mathf.RoundToInt(0.18f * SampleRate);
+        var data = new float[n];
+        var rng = new System.Random(43);
+        double phase = 0.0;
+        for (int i = 0; i < n; i++)
+        {
+            float t = (float)i / SampleRate;
+            float u = t / 0.18f;
+            float f = Mathf.Lerp(220f, 330f, u);
+            phase += f / SampleRate;
+            float tone = Mathf.Sin((float)(phase % 1.0) * 2f * Mathf.PI) * (1f - u) * 0.5f;
+            float breath = (float)(rng.NextDouble() * 2.0 - 1.0) * 0.08f * Mathf.Exp(-t * 30f);
+            data[i] = Mathf.Clamp(tone + breath, -1f, 1f) * Fade(i, n, 0.004f);
+        }
+        return Make("Synth_Shove", data);
+    }
+
+    // Düdük: kısa tiz ton (2.6 kHz) + hızlı titreşim (vibrato) ve küçük bir "trill".
+    public static AudioClip Whistle(float seconds = 0.45f)
+    {
+        int n = Mathf.RoundToInt(seconds * SampleRate);
+        var data = new float[n];
+        double phase = 0.0;
+        for (int i = 0; i < n; i++)
+        {
+            float t = (float)i / SampleRate;
+            float f = 2600f + 90f * Mathf.Sin(2f * Mathf.PI * 32f * t);
+            phase += f / SampleRate;
+            float env = Mathf.Clamp01(t / 0.015f) * Mathf.Clamp01((seconds - t) / 0.05f);
+            data[i] = 0.35f * Mathf.Sin((float)(phase % 1.0) * 2f * Mathf.PI) * env;
+        }
+        return Make("Synth_Whistle", data);
+    }
+
+    // Kamyonet kapısı "tak": kısa sert tıkırtı (metal mandal) + tok vuruş.
+    public static AudioClip VanDoor()
+    {
+        int n = Mathf.RoundToInt(0.3f * SampleRate);
+        var data = new float[n];
+        var rng = new System.Random(47);
+        for (int i = 0; i < n; i++)
+        {
+            float t = (float)i / SampleRate;
+            float click = (float)(rng.NextDouble() * 2.0 - 1.0) * Mathf.Exp(-t * 120f) * 0.9f;
+            float thud = Mathf.Sin(2f * Mathf.PI * 140f * t) * Mathf.Exp(-t * 25f) * 0.6f;
+            data[i] = Mathf.Clamp(click + thud, -1f, 1f) * Fade(i, n, 0.002f);
+        }
+        return Make("Synth_VanDoor", data);
+    }
+
     // Paylaşılan klipler: her araç için yeniden üretilmez (bellek). Sahne boyunca yaşar.
     private static readonly System.Collections.Generic.Dictionary<string, AudioClip> cache = new System.Collections.Generic.Dictionary<string, AudioClip>();
 

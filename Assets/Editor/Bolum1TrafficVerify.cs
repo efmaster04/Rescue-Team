@@ -286,6 +286,9 @@ public static class Bolum1TrafficVerify
 
     private static IEnumerator Scenario()
     {
+        // U4: hırsız dalgaları bu doğrulamada kapalı (180. sn'de kamyonet şeride çıkıp ölçümleri bozmasın)
+        ThiefDirector.SuppressedForTests = true;
+        if (ThiefDirector.Instance != null) ThiefDirector.Instance.ClearAll();
         yield return null;
         player = GameObject.Find(Bolum1SceneBuilder.CharacterName).GetComponent<ThirdPersonPlayer>();
         Player.GetComponent<PlayerInputReader>().enabled = false;

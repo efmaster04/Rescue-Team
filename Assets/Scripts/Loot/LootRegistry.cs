@@ -105,6 +105,16 @@ public class LootRegistry : MonoBehaviour
         return true;
     }
 
+    // Test: çalınmış bir eşyayı geri getirir (yerine döner, çalınan değer ve sayaç düşer). Başarısızlık geri alınmaz.
+    public void RestoreForTest(LootItem item)
+    {
+        if (item == null || !item.IsStolen) return;
+        int v = item.TotalValue;
+        item.ResetToStart();
+        StolenCount = Mathf.Max(0, StolenCount - 1);
+        StolenValue = Mathf.Max(0, StolenValue - v);
+    }
+
     // Test: her şey başa döner (eşyalar yerine, para ve çalınan sıfır).
     public void ResetForTest()
     {

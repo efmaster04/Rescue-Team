@@ -44,6 +44,7 @@ public static class GroundProbe
             || c.GetComponentInParent<AmbulanceController>() != null
             || c.GetComponentInParent<LaneFollower>() != null      // trafik araçları
             || c.GetComponentInParent<PlayerKnockdown>() != null   // düşmüş oyuncunun ragdoll'u
-            || c.GetComponentInParent<StretcherHelperBot>() != null; // düşmüş botun ragdoll'u
+            || c.GetComponentInParent<StretcherHelperBot>() != null // düşmüş botun ragdoll'u
+            || c.GetComponentInParent<Thief>() != null;             // U4: hırsız gövdesi ve ragdoll'u
     }
 }

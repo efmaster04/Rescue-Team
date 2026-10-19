@@ -9,11 +9,17 @@ public class PlayerInputReader : MonoBehaviour
     public ThirdPersonPlayer player;
     public PlayerInteraction interaction;
     public OrbitCamera orbitCamera;
+    [Tooltip("U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük (boşsa oyuncudan bulunur).")]
+    public PlayerCombat combat;
 
-    private InputAction move, look, jump, interact, restart, run;
+    private InputAction move, look, jump, interact, restart, run, attack, throwHold, whistle;
 
     private void Awake()
     {
+        if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
+        attack = new InputAction("Attack", InputActionType.Button, "<Mouse>/leftButton");
+        throwHold = new InputAction("ThrowHold", InputActionType.Button, "<Mouse>/rightButton");
+        whistle = new InputAction("Whistle", InputActionType.Button, "<Keyboard>/q");
         run = new InputAction("Run", InputActionType.Button, "<Keyboard>/leftShift");
         run.AddBinding("<Keyboard>/rightShift");
         move = new InputAction("Move", InputActionType.Value);
@@ -29,17 +35,21 @@ public class PlayerInputReader : MonoBehaviour
     private void OnEnable()
     {
         run.Enable(); move.Enable(); look.Enable(); jump.Enable(); interact.Enable(); restart.Enable();
+        attack.Enable(); throwHold.Enable(); whistle.Enable();
     }
 
     private void OnDisable()
     {
         run.Disable(); move.Disable();
         if (player != null) player.SetRunInput(false); look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
+        attack.Disable(); throwHold.Disable(); whistle.Disable();
+        if (combat != null) combat.SetThrowHeld(false);
     }
 
     private void OnDestroy()
     {
         run.Dispose(); move.Dispose(); look.Dispose(); jump.Dispose(); interact.Dispose(); restart.Dispose();
+        attack.Dispose(); throwHold.Dispose(); whistle.Dispose();
     }
 
     private void Update()
@@ -54,5 +64,13 @@ public class PlayerInputReader : MonoBehaviour
         if (interact.WasPressedThisFrame() && interaction != null) interaction.Interact();
         if (interaction != null) interaction.SetInteractHeld(interact.IsPressed()); // basılı tutma (arkadaşı kaldırma)
         if (restart.WasPressedThisFrame() && MissionDirector.Instance != null) MissionDirector.Instance.RequestRestart();
+        // U4: savunma
+        if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
+        if (combat != null)
+        {
+            if (attack.WasPressedThisFrame()) combat.Attack();
+            combat.SetThrowHeld(throwHold.IsPressed());
+            if (whistle.WasPressedThisFrame()) combat.Whistle();
+        }
     }
 }

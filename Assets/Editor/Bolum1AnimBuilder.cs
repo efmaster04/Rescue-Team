@@ -127,6 +127,28 @@ public static class Bolum1AnimBuilder
         var hitReact = OneShot(sm, CrewAnimation.StateHitReact, "HitReact", 1f, new Vector3(560f, 420f));
         ReturnByCarry(hitReact, loops, 0.9f, 0.12f);
 
+        // U4: savunma — yalnız kodla (PlayerCombat → PlayAction / HoldAction)
+        var push = OneShot(sm, CrewAnimation.StatePushShove, "Push_Shove", 1f, new Vector3(560f, 480f));
+        ReturnByCarry(push, loops, 0.9f, 0.12f);
+        var dive = OneShot(sm, CrewAnimation.StateTackleDive, "Tackle_Dive", 1f, new Vector3(560f, 540f));
+        var tackleUp = OneShot(sm, CrewAnimation.StateTackleGetUp, "Tackle_GetUp", 1f, new Vector3(560f, 600f));
+        var diveToUp = dive.AddTransition(tackleUp); // dalış biter bitmez kalkış (ortak poz)
+        diveToUp.hasExitTime = true; diveToUp.exitTime = 0.97f; diveToUp.duration = 0.06f; diveToUp.hasFixedDuration = true;
+        ReturnByCarry(tackleUp, loops, 0.9f, 0.15f);
+        var whistle = OneShot(sm, CrewAnimation.StateWhistle, "Whistle_Blow", 1f, new Vector3(560f, 660f));
+        ReturnByCarry(whistle, loops, 0.9f, 0.15f);
+        // Nişan döngüsü: Action açıkken kalır (HoldAction), bırakılınca taşımaya göre döngüye; atış PlayAction ile girer
+        var aim = OneShot(sm, CrewAnimation.StateThrowAim, "Throw_Aim", 1f, new Vector3(560f, 720f));
+        for (int c = 0; c < loops.Length; c++)
+        {
+            var t = aim.AddTransition(loops[c]);
+            t.hasExitTime = false; t.duration = 0.2f; t.hasFixedDuration = true;
+            t.AddCondition(AnimatorConditionMode.IfNot, 0f, CrewAnimation.ParamAction);
+            t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+        }
+        var release = OneShot(sm, CrewAnimation.StateThrowRelease, "Throw_Release", 1f, new Vector3(560f, 780f));
+        ReturnByCarry(release, loops, 0.9f, 0.12f);
+
         // Kalkış: yalnız kodla (CrewAnimation.BeginGetUp → Animator.Play); geçiş ragdoll pozundan kodda yapılır.
         var getUp = OneShot(sm, CrewAnimation.StateGetUp, "GetUp_FromBack", 1f, new Vector3(560f, 300f));
         ReturnByCarry(getUp, loops, 0.9f, 0.15f);

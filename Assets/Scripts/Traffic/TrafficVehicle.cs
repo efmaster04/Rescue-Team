@@ -40,6 +40,11 @@ public class TrafficVehicle : MonoBehaviour
     public event Action<TrafficVehicle, TrafficCone, float> ConeRammed;   // koni, bekleme süresi
     public event Action<TrafficVehicle, ThirdPersonPlayer> HitPlayer;
     public event Action<TrafficVehicle, Patient> HitPatient;
+    public event Action<TrafficVehicle, Thief> HitThief;
+
+    // U4: dış durak (ThiefVan): şeritte bu s'den ileri gitmez (+sonsuz = yok); parktayken araç hiç sürülmez ve kaybolmaz.
+    [NonSerialized] public float externalStopS = float.PositiveInfinity;
+    [NonSerialized] public bool parked;
 
     private readonly HashSet<TrafficCone> ignoredCones = new HashSet<TrafficCone>();
     private MaterialPropertyBlock block;
@@ -70,6 +75,13 @@ public class TrafficVehicle : MonoBehaviour
     {
         if (Follower.lane == null || settings == null) return;
         float dt = Time.fixedDeltaTime;
+        if (parked)
+        {
+            // U4: bankette park (ThiefVan): sürüş yok, korna yok, motor rölantide
+            YieldingToCarrier = false;
+            if (sound != null) sound.SetSpeed(0f);
+            return;
+        }
 
         // 1) Öndeki engel
         var b = LaneOccupancy.NearestBlocker(Follower, ignoredCones, settings.coneUprightMaxAngle);
@@ -86,6 +98,7 @@ public class TrafficVehicle : MonoBehaviour
         }
         else if (b.kind == LaneOccupancy.BlockerKind.Cone)
             stop = b.edgeS - settings.coneStopMargin - Follower.frontOverhang;
+        stop = Mathf.Min(stop, externalStopS); // U4: dış durak
 
         if (!float.IsPositiveInfinity(stop)) Follower.StopAt(Mathf.Max(stop, Follower.Distance));
         else Follower.ClearStop();
@@ -184,6 +197,16 @@ public class TrafficVehicle : MonoBehaviour
             if (!Touches(p.Position, 0.3f) || ApproachSpeed(p.Position) <= settings.knockdownSpeedThreshold) continue;
             p.HitByVehicle(HitVelocity(p.Position));
             HitPatient?.Invoke(this, p);
+        }
+        // U4: hırsızlar da çarpılır (ragdoll, sonra kalkıp devam eder)
+        foreach (var t in Thief.All.ToArray())
+        {
+            if (t == null || !t.CanBeHit) continue;
+            Vector3 root = t.transform.position;
+            bool touch = Touches(root + Vector3.up * 0.3f, 0.3f) || Touches(root + Vector3.up * 0.9f, 0.3f);
+            if (!touch || ApproachSpeed(root) <= settings.knockdownSpeedThreshold) continue;
+            t.HitByVehicle(HitVelocity(root));
+            HitThief?.Invoke(this, t);
         }
     }
 

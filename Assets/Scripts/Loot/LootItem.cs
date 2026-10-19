@@ -9,6 +9,9 @@ using UnityEngine;
 //    alınır. Hasta eşyasıyla ambulansa binerse eşya kendiliğinden güvende sayılır.
 //  - Equipment (sedye, halat kangalı, koni; sağlık çantası sahnede yoksa yok): taşınmaz, para kazandırmaz; çalınırsa − yazılır.
 // Çalınma ve güvenlik: LootRegistry.ReportStolen / Secure. Güvenli yere konmuş eşya çalınamaz (IsSecured).
+// U4: hırsız taşır (ThiefHolder; göğsünde, sedyeyi arkasında sürükler), kamyonete atınca ReportStolen → eşya kaybolur (ekipman dahil).
+//     Oyuncu tek elle taşıdığı eşyayı fırlatabilir (Throw: geçici Rigidbody ile uçar, hırsıza isabet sersemletir, yere düşer;
+//     FallRespawnPlane altına düşerse başlangıç yerine döner, kayıp sayılmaz).
 public enum LootKind { Luggage, PatientItem, Equipment }
 
 [DefaultExecutionOrder(60)] // taşıyıcı hareket ettikten sonra elde konumlanır (TrafficCone ile aynı)
@@ -16,7 +19,7 @@ public class LootItem : MonoBehaviour
 {
     public static readonly List<LootItem> All = new List<LootItem>();
 
-    public enum LootState { AtStart, Held, Dropped, Secured, Stolen }
+    public enum LootState { AtStart, Held, Dropped, Secured, Stolen, Flying }
 
     [Tooltip("Ekranda görünen ad (\"Valiz\", \"Kamera\", \"Sedye\").")]
     public string displayName = "Eşya";
@@ -34,9 +37,18 @@ public class LootItem : MonoBehaviour
 
     public LootState State { get; private set; } = LootState.AtStart;
     public ThirdPersonPlayer Holder { get; private set; }
+    // U4: taşıyan hırsız (varsa). Eşya onun göğsünde (sedye arkasında sürüklenir).
+    public Thief ThiefHolder { get; private set; }
     public bool IsHeld { get { return Holder != null; } }
+    public bool IsHeldByThief { get { return ThiefHolder != null; } }
     public bool IsSecured { get { return State == LootState.Secured; } }
     public bool IsStolen { get { return State == LootState.Stolen; } }
+    public bool IsFlying { get { return State == LootState.Flying; } }
+    // U4 ölçüm: fırlatılan eşyanın isabet ettiği hırsız sayısı, uçuş sonrası yere inme / başa dönme
+    public int ThrowHits { get; private set; }
+    public int Throws { get; private set; }
+    public int FallReturns { get; private set; }
+    public float ThrowHitStun { get; private set; }
     // Toplam değer: kendi + içindekiler (çalınan çubuğu ve güvenli yer bunu sayar)
     public int TotalValue
     {
@@ -52,11 +64,41 @@ public class LootItem : MonoBehaviour
     {
         get
         {
-            if (!carryable || State == LootState.Secured || State == LootState.Stolen || Holder != null || !gameObject.activeInHierarchy) return false;
+            if (!carryable || State == LootState.Secured || State == LootState.Stolen || State == LootState.Flying || Holder != null || ThiefHolder != null || !gameObject.activeInHierarchy) return false;
             if (patient != null && State == LootState.AtStart)
                 return patient.State == PatientState.LyingGround || patient.State == PatientState.OnStretcher;
             return true;
         }
+    }
+
+    // U4: hırsızın başının üstündeki yazı: "Laptop'lu valiz 320 ₺" (en değerli içerik + ünlü uyumlu ek), "Kamera 150 ₺", "Sedye 300 ₺".
+    public string LabelText
+    {
+        get
+        {
+            string name = displayName;
+            if (kind == LootKind.Luggage && contents.Count > 0)
+            {
+                LootValues.Entry best = null;
+                foreach (var c in contents) if (c != null && (best == null || c.value > best.value)) best = c;
+                if (best != null) name = best.name + Suffix(best.name) + " " + displayName.ToLowerInvariant();
+            }
+            return name + " " + TotalValue.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + " " + LootRegistry.MoneySymbol;
+        }
+    }
+
+    // Türkçe "-lı/-li/-lu/-lü" eki: son ünlüye göre (Laptop → 'lu, Saat → 'lı, Kolye → 'li, Parfüm → 'lü).
+    private static string Suffix(string word)
+    {
+        for (int i = word.Length - 1; i >= 0; i--)
+        {
+            char c = char.ToLowerInvariant(word[i]);
+            if ("aı".IndexOf(c) >= 0) return "'lı";
+            if ("ei".IndexOf(c) >= 0) return "'li";
+            if ("ou".IndexOf(c) >= 0) return "'lu";
+            if ("öü".IndexOf(c) >= 0) return "'lü";
+        }
+        return "'li";
     }
 
     private Collider[] colliders;
@@ -66,10 +108,23 @@ public class LootItem : MonoBehaviour
     private Quaternion startRotation;
     private float bottomOffset;
     private bool startKnown;
+    // U4: uçuş
+    private Rigidbody flightBody;
+    private Collider tempCollider;
+    private float flightStart = -1f, slowSince = -1f, killBelowY = float.NegativeInfinity;
+    private readonly HashSet<Thief> hitThieves = new HashSet<Thief>();
+    // U4: ekipman taşıma yardımcıları
+    private StretcherController stretcher;
+    private TrafficCone cone;
+    private RopeCoil coil;
+    private float dragWobble;
 
     private void Awake()
     {
         colliders = GetComponentsInChildren<Collider>(true);
+        stretcher = GetComponent<StretcherController>();
+        cone = GetComponent<TrafficCone>();
+        coil = GetComponent<RopeCoil>();
         RememberStart();
     }
 
@@ -102,7 +157,7 @@ public class LootItem : MonoBehaviour
     // Hasta eşyasıyla ambulansa bindi: eşya güvende (para yazılır)
     private void OnPatientState(Patient p)
     {
-        if (State != LootState.AtStart || Holder != null) return;
+        if (State != LootState.AtStart || Holder != null || ThiefHolder != null) return;
         if (p.State == PatientState.InAmbulance && LootRegistry.Instance != null) LootRegistry.Instance.Secure(this);
     }
 
@@ -117,7 +172,16 @@ public class LootItem : MonoBehaviour
             return b;
         }
     }
-    public Vector3 Center { get { return WorldBounds.center; } }
+    // Eşyanın merkezi (koni: koninin kendisi; kangal: tutuş ortası)
+    public Vector3 Center
+    {
+        get
+        {
+            if (cone != null && cone.target != null) return cone.Center;
+            if (coil != null) return coil.GripMid;
+            return WorldBounds.center;
+        }
+    }
 
     // Oyuncu yakın ve yüzü dönük mü (U3 yüz kuralı: PlayerInteraction'ın açısıyla)
     public bool InRange(Vector3 p)
@@ -132,6 +196,7 @@ public class LootItem : MonoBehaviour
     public void PickUp(ThirdPersonPlayer by)
     {
         Holder = by;
+        ThiefHolder = null;
         State = LootState.Held;
         transform.SetParent(null, true);
         foreach (var c in colliders) if (c != null) c.enabled = false;
@@ -142,6 +207,7 @@ public class LootItem : MonoBehaviour
     public void Drop(Vector3 groundPoint, float yaw)
     {
         Holder = null;
+        ThiefHolder = null;
         State = LootState.Dropped;
         Quaternion rot = kind == LootKind.PatientItem ? Quaternion.Euler(0f, yaw, 0f) : Quaternion.AngleAxis(yaw - startRotation.eulerAngles.y, Vector3.up) * startRotation;
         transform.SetPositionAndRotation(groundPoint + Vector3.up * (bottomOffset + 0.005f), rot);
@@ -164,25 +230,30 @@ public class LootItem : MonoBehaviour
     public void Secure()
     {
         Holder = null;
+        ThiefHolder = null;
         State = LootState.Secured;
         gameObject.SetActive(false);
     }
 
-    // Çalındı (U4: hırsız taşıyacak; şimdilik kaybolur).
+    // Çalındı (U4: hırsız kamyonete attı): eşya kaybolur, ekipman dahil (koni: yönetilen koni parçası da gizlenir).
     public void MarkStolen()
     {
         Holder = null;
+        ThiefHolder = null;
         State = LootState.Stolen;
-        // Taşınabilir eşya kaybolur (U4: hırsız taşıyacak); ekipman (sedye, kangal, koni) sahnede kalır, yalnız değeri sayılır
-        if (carryable) gameObject.SetActive(false);
+        if (cone != null && cone.target != null) { cone.SetHeldExternal(false); cone.target.gameObject.SetActive(false); }
+        gameObject.SetActive(false);
     }
 
     // Test: başlangıç durumuna döner.
     public void ResetToStart()
     {
+        EndFlight(false);
         Holder = null;
+        ThiefHolder = null;
         State = LootState.AtStart;
         gameObject.SetActive(true);
+        if (cone != null && cone.target != null) { cone.target.gameObject.SetActive(true); cone.SetHeldExternal(false); }
         transform.SetParent(startParent, false);
         transform.SetLocalPositionAndRotation(startLocalPosition, startLocalRotation);
         foreach (var c in colliders) if (c != null) c.enabled = true;
@@ -200,12 +271,191 @@ public class LootItem : MonoBehaviour
         Vector3 right = Vector3.Cross(Vector3.up, fwd);
         float yaw = Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg;
         Quaternion rot = kind == LootKind.PatientItem ? Quaternion.Euler(0f, yaw, 0f) : Quaternion.AngleAxis(yaw - startRotation.eulerAngles.y, Vector3.up) * startRotation;
+        // U4: nişan alırken (Throw_Aim) eşya sağ elde yukarı-geride (hold_grip RightHand avuç +5 cm)
+        var combat = Holder.GetComponent<PlayerCombat>();
+        if (combat != null && combat.Aiming && Holder.animator != null && Holder.animator.isHuman)
+        {
+            var hand = Holder.animator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (hand != null)
+            {
+                transform.SetPositionAndRotation(hand.position + hand.up * 0.05f + hand.forward * 0.06f, rot);
+                return;
+            }
+        }
         Vector3 basePos = r.position + fwd * 0.38f + right * 0.28f + Vector3.up * 0.42f;
         transform.SetPositionAndRotation(basePos, rot);
+    }
+
+    // ---- U4: hırsız taşıması ----
+    public void PickUpByThief(Thief by)
+    {
+        // Oyuncunun elinden kapıldıysa oyuncunun kaydı temizlenir
+        if (Holder != null && Holder.HeldValuable == this) Holder.HeldValuable = null;
+        Holder = null;
+        ThiefHolder = by;
+        State = LootState.Held;
+        if (stretcher == null && coil == null && cone == null) transform.SetParent(null, true);
+        if (cone != null) cone.SetHeldExternal(true);
+        if (coil != null) coil.TakeExternal();
+        foreach (var c in colliders) if (c != null) c.enabled = false;
+        dragWobble = 0f;
+        FollowThief();
+    }
+
+    // Hırsız sersemleyince / kaçarken eşya yere düşer, tekrar alınabilir (ekipman yerinde kalır).
+    public void DropByThief(Vector3 from, Vector3 forward)
+    {
+        ThiefHolder = null;
+        if (stretcher != null)
+        {
+            State = LootState.Dropped;
+            foreach (var c in colliders) if (c != null) c.enabled = true;
+            Vector3 p = stretcher.transform.position;
+            if (GroundProbe.Find(p + Vector3.up * 1f, 4f, out RaycastHit g)) stretcher.Teleport(g.point + Vector3.up * 0.02f, Quaternion.LookRotation(Flat(stretcher.transform.forward, forward), Vector3.up));
+            return;
+        }
+        if (cone != null)
+        {
+            State = LootState.Dropped;
+            foreach (var c in colliders) if (c != null) c.enabled = true;
+            cone.SetHeldExternal(false);
+            cone.Drop(Vector3.zero);
+            return;
+        }
+        if (coil != null)
+        {
+            State = LootState.Dropped;
+            foreach (var c in colliders) if (c != null) c.enabled = true;
+            coil.Drop();
+            return;
+        }
+        DropNear(from, forward);
+    }
+
+    // Göğüs önünde iki elle (loot_grip: iki avucun ortası); sedye arkada sürüklenir; koni/kangal göğüste.
+    private void FollowThief()
+    {
+        if (ThiefHolder == null) return;
+        Transform r = ThiefHolder.transform;
+        Vector3 fwd = r.forward; fwd.y = 0f;
+        if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
+        fwd.Normalize();
+        float yaw = Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg;
+        if (stretcher != null)
+        {
+            // Komik sürükleme: sedye hırsızın 1.3 m arkasında, yürüyüşle sağa sola yalpalar
+            dragWobble += Time.deltaTime * 6f;
+            Vector3 behind = r.position - fwd * 1.3f + Vector3.Cross(Vector3.up, fwd) * Mathf.Sin(dragWobble) * 0.15f;
+            if (GroundProbe.Find(behind + Vector3.up * 1.2f, 3f, out RaycastHit g)) behind.y = g.point.y + 0.02f;
+            stretcher.Teleport(behind, Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.Euler(0f, 8f * Mathf.Sin(dragWobble), 0f));
+            return;
+        }
+        Vector3 chest = r.position + fwd * 0.32f + Vector3.up * 0.95f;
+        if (cone != null && cone.target != null)
+        {
+            Quaternion crot = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.FromToRotation(cone.localUp.normalized, Vector3.up);
+            cone.target.SetPositionAndRotation(chest + Vector3.up * (cone.baseOffset - 0.25f), crot);
+            return;
+        }
+        if (coil != null)
+        {
+            coil.SetPose(chest, -r.right, fwd);
+            return;
+        }
+        Quaternion rot = kind == LootKind.PatientItem ? Quaternion.Euler(0f, yaw, 0f) : Quaternion.AngleAxis(yaw - startRotation.eulerAngles.y, Vector3.up) * startRotation;
+        transform.SetPositionAndRotation(chest, rot);
+    }
+
+    // ---- U4: fırlatma ----
+    // velocity: başlangıç hızı (m/sn); hitStun: isabet eden hırsız bu kadar sn sersemler; killBelow: bu yüksekliğin altı boşluk (başa döner).
+    public void Throw(Vector3 velocity, float hitStun, float killBelow)
+    {
+        if (Holder != null && Holder.HeldValuable == this) Holder.HeldValuable = null;
+        Holder = null;
+        ThiefHolder = null;
+        State = LootState.Flying;
+        Throws++;
+        ThrowHitStun = hitStun;
+        killBelowY = killBelow;
+        hitThieves.Clear();
+        transform.SetParent(null, true);
+        foreach (var c in colliders) if (c != null) c.enabled = true;
+        if (colliders.Length == 0 || Array.TrueForAll(colliders, c => c == null))
+        {
+            // Hasta eşyası kutusunun collider'ı yok: uçuş için geçici kutu
+            var r = GetComponentInChildren<Renderer>(true);
+            var bc = gameObject.AddComponent<BoxCollider>();
+            if (r != null)
+            {
+                bc.center = transform.InverseTransformPoint(r.bounds.center);
+                Vector3 s = r.bounds.size;
+                bc.size = new Vector3(s.x / Mathf.Max(0.01f, transform.lossyScale.x), s.y / Mathf.Max(0.01f, transform.lossyScale.y), s.z / Mathf.Max(0.01f, transform.lossyScale.z));
+            }
+            tempCollider = bc;
+        }
+        flightBody = GetComponent<Rigidbody>();
+        if (flightBody == null) flightBody = gameObject.AddComponent<Rigidbody>();
+        flightBody.mass = 3f;
+        flightBody.isKinematic = false;
+        flightBody.useGravity = true;
+        flightBody.interpolation = RigidbodyInterpolation.Interpolate;
+        flightBody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        flightBody.linearVelocity = velocity;
+        flightBody.angularVelocity = UnityEngine.Random.insideUnitSphere * 6f;
+        flightStart = Time.time;
+        slowSince = -1f;
+    }
+
+    private void FixedUpdate()
+    {
+        if (State != LootState.Flying || flightBody == null) return;
+        // İsabet: merkeze 0.7 m içindeki hırsızlar (bir kez)
+        Vector3 c = WorldBounds.center;
+        foreach (var t in Thief.All)
+        {
+            if (t == null || hitThieves.Contains(t) || !t.CanBeHit) continue;
+            if (Vector3.Distance(t.transform.position + Vector3.up * 0.8f, c) <= 0.7f)
+            {
+                hitThieves.Add(t);
+                ThrowHits++;
+                t.Stun(ThrowHitStun, Vector3.zero, "firlatma");
+            }
+        }
+        if (transform.position.y < killBelowY) { EndFlight(true); return; }
+        bool slow = flightBody.linearVelocity.magnitude < 0.2f && Time.time - flightStart > 0.4f;
+        if (slow && slowSince < 0f) slowSince = Time.time;
+        if (!slow) slowSince = -1f;
+        if ((slowSince >= 0f && Time.time - slowSince > 0.4f) || Time.time - flightStart > 8f) EndFlight(false);
+    }
+
+    // Uçuş biter: yere indiyse Dropped (yattığı gibi kalır); boşluğa düştüyse başlangıç yerine döner (kayıp sayılmaz).
+    private void EndFlight(bool fell)
+    {
+        if (flightBody != null) { Destroy(flightBody); flightBody = null; }
+        if (tempCollider != null) { Destroy(tempCollider); tempCollider = null; }
+        if (State != LootState.Flying) return;
+        if (fell)
+        {
+            FallReturns++;
+            State = LootState.AtStart;
+            transform.SetParent(startParent, false);
+            transform.SetLocalPositionAndRotation(startLocalPosition, startLocalRotation);
+            foreach (var cl in colliders) if (cl != null) cl.enabled = true;
+            Physics.SyncTransforms();
+            return;
+        }
+        State = LootState.Dropped;
+    }
+
+    private static Vector3 Flat(Vector3 v, Vector3 fallback)
+    {
+        v.y = 0f;
+        return v.sqrMagnitude > 1e-6f ? v.normalized : fallback;
     }
 
     private void LateUpdate()
     {
         if (Holder != null) FollowHolder();
+        else if (ThiefHolder != null) FollowThief();
     }
 }

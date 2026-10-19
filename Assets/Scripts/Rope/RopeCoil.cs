@@ -146,6 +146,14 @@ public class RopeCoil : MonoBehaviour
         FollowHands();
     }
 
+    // U4: hırsız aldı (konumu LootItem her kare SetPose ile verir; Holder yok).
+    public void TakeExternal()
+    {
+        Holder = null;
+        State = CoilState.Held;
+        tiePose = false;
+    }
+
     // Yere bırak (zemin noktası + normali): yatay yığın; tutan serbest kalır.
     public void PutDown(Vector3 groundPoint, Vector3 groundNormal, float yawDeg)
     {

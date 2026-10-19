@@ -365,6 +365,7 @@ public static partial class Bolum1AnimVerify
         cam.fieldOfView = fov;
         go.transform.position = pos;
         go.transform.LookAt(look);
+        BeforeCapture?.Invoke(cam);
         var hud = UnityEngine.Object.FindAnyObjectByType<MissionHud>();
         Canvas canvas = hud != null ? hud.ScreenCanvas : null;
         if (canvas != null)

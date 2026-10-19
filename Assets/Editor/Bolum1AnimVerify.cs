@@ -114,7 +114,8 @@ public static partial class Bolum1AnimVerify
         var want = new[] { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCone, CrewAnimation.StatePickUp, CrewAnimation.StatePutDown,
             CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate,
             CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow, // U2
-            CrewAnimation.StateHitReact }; // U3
+            CrewAnimation.StateHitReact, // U3
+            CrewAnimation.StatePushShove, CrewAnimation.StateTackleDive, CrewAnimation.StateTackleGetUp, CrewAnimation.StateThrowAim, CrewAnimation.StateThrowRelease, CrewAnimation.StateWhistle }; // U4
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
         var patients = Bolum1AmbulanceBuilder.PatientTypes.Select(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath(t))).ToList();
@@ -450,6 +451,9 @@ public static partial class Bolum1AnimVerify
         mission.missLimit = 999;
         mission.Begin(TestSchedule(99999f, 99999f)); // ambulans gelmesin (ambulans testinde yeniden)
         traffic.Begin(TestSettings(false));           // doğal trafik yok
+        if (Thieves != null) Thieves.Begin(TestThiefSettings(99999f, 99999f)); // U4: hırsız dalgaları yalnız U4 fazında
+        var roofLuggage = UnityEngine.Object.FindAnyObjectByType<MinivanRoofLuggage>();
+        if (roofLuggage != null) roofLuggage.enabled = false; // U4: tavan valizleri U4 fazında düşer (bagaj kapısı D2'de açılıyor)
         // D2: minibüs, halat, sırtta taşıma (taze sahnede), sonra eski fazlar için hastalar patikaya
         yield return PhaseE2IndicatorInVehicle(); // E2: hastalar minibüsteyken gösterge
         yield return PhaseU2(); // U2: halat zinciri GERÇEK akışla (dolap → kangal → kazık → atış); sonraki fazlar hazır halatı kullanır
@@ -463,6 +467,8 @@ public static partial class Bolum1AnimVerify
         CheckE2IndicatorOutside(); // E2: dışarıdaki hastaların göstergesi başlarının üstünde
         refAnkle = AnkleHeight(Player.GetComponent<Animator>(), Player.transform.position);
         yield return PhaseU3(); // U3: can / düşme / yeniden doğma, değerli eşyalar ve para, çalınan çubuğu, yüz kuralı
+        ParkCarriersOffLane();
+        yield return PhaseU4(); // U4: hırsız dalgaları, kamyonet, kapma, yumruk, savunma, düdük, tavan valizleri, %50 başarısızlık
         ParkCarriersOffLane();
 
         yield return PhaseCorrections();
@@ -1272,6 +1278,9 @@ public static partial class Bolum1AnimVerify
         bot.transform.position = bp;
     }
 
+    // U4: görüntü alınmadan hemen önce geçici kamerayla çağrılır (hırsız etiketleri kameraya dönsün)
+    private static Action<Camera> BeforeCapture;
+
     private static IEnumerator Capture(string name, Vector3 pos, Vector3 look, float fov)
     {
         var go = new GameObject("AnimVerify_CaptureCam");
@@ -1284,6 +1293,7 @@ public static partial class Bolum1AnimVerify
         cam.fieldOfView = fov;
         go.transform.position = pos;
         go.transform.LookAt(look);
+        BeforeCapture?.Invoke(cam);
         var rt = new RenderTexture(1920, 1080, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
         cam.targetTexture = rt;
         float prevScale = Time.timeScale;

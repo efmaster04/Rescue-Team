@@ -135,6 +135,22 @@ public class TrafficCone : MonoBehaviour
         Release(velocity);
     }
 
+    // U4: hırsız taşır (LootItem konumlar). Açıkken fizik ve collider kapalı; kapatınca fiziğe bırakılmaz (çağıran Drop ya da gizleme yapar).
+    public bool HeldExternal { get; private set; }
+    public void SetHeldExternal(bool on)
+    {
+        HeldExternal = on;
+        if (!on) return;
+        holder = null;
+        if (Body != null)
+        {
+            if (!Body.isKinematic) { Body.linearVelocity = Vector3.zero; Body.angularVelocity = Vector3.zero; }
+            Body.isKinematic = true;
+            Body.interpolation = RigidbodyInterpolation.None;
+        }
+        foreach (var c in colliders) if (c != null) c.enabled = false;
+    }
+
     private void Release(Vector3 velocity)
     {
         foreach (var c in colliders) if (c != null) c.enabled = true;
@@ -162,7 +178,7 @@ public class TrafficCone : MonoBehaviour
     private void FixedUpdate()
     {
         if (target == null) { Destroy(gameObject); return; }
-        if (IsHeld) return;
+        if (IsHeld || HeldExternal) return;
         if (target.position.y < killBelowY)
         {
             Destroy(target.gameObject);

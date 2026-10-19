@@ -69,6 +69,8 @@ public static class Bolum1SceneBuilder
         Bolum1TrafficBuilder.BuildAssets();
         // U3: eşya değerleri ve can kuralları (ScriptableObject'ler; varsa dokunulmaz).
         Bolum1LootBuilder.BuildAssets();
+        // U4: hırsız ayarı, hırsız Animator'ı ve prefab'ları, hırsız kamyoneti prefab'ı.
+        Bolum1ThiefBuilder.BuildAssets();
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
@@ -149,6 +151,9 @@ public static class Bolum1SceneBuilder
 
         // 9) U3: oyuncu canı, değerli eşyalar ve para (teslim noktası, çalınan çubuğu kaydı), yeniden doğma noktası.
         Bolum1LootBuilder.SetupScene(truck, GameObject.Find(CharacterName));
+
+        // 10) U4: hırsız dalgaları (kamyonet durağı, yönetmen, rampa ara noktaları), oyuncu savunması, tavan valizleri.
+        Bolum1ThiefBuilder.SetupScene(markers, minivan, truck, GameObject.Find(CharacterName));
 
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))

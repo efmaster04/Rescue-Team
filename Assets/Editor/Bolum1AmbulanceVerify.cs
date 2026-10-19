@@ -329,7 +329,9 @@ public static class Bolum1AmbulanceVerify
         // Trafik test anahtarı: bu doğrulama yalnız ambulans döngüsünü ölçer; trafik kapalı (sahne yeniden yüklense de).
         TrafficDirector.SuppressedForTests = true;
         if (TrafficDirector.Instance != null) TrafficDirector.Instance.ClearVehicles();
-        Line("PLAY: trafik kapalı (TrafficDirector.SuppressedForTests)");
+        ThiefDirector.SuppressedForTests = true; // U4: hırsızlar da kapalı
+        if (ThiefDirector.Instance != null) ThiefDirector.Instance.ClearAll();
+        Line("PLAY: trafik kapalı (TrafficDirector.SuppressedForTests), hırsızlar kapalı (ThiefDirector.SuppressedForTests)");
 
         // Gerçek klip oynarken üç hastanın patikadaki yakın planı ve yüzey ölçümü.
         yield return null;

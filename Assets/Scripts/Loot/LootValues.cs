@@ -54,4 +54,24 @@ public class LootValues : ScriptableObject
         if (type.Contains("Civilian")) return civilianItem;
         return elderItem;
     }
+
+    // Sabit tohumla 2–4 tekrarsız içerik; toplam [min, max] aralığında kalana kadar yeniden çekilir.
+    // index: valizin sırası (aynı sahnede her valiz farklı, ama her oyunda aynı). Builder ve U4 tavan valizleri kullanır.
+    public System.Collections.Generic.List<Entry> Roll(int index)
+    {
+        var rng = new System.Random(seed + index * 7919);
+        System.Collections.Generic.List<Entry> last = null;
+        for (int attempt = 0; attempt < 500; attempt++)
+        {
+            int count = rng.Next(minItems, maxItems + 1);
+            var order = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < catalog.Length; i++) order.Add(i);
+            for (int i = 0; i < order.Count; i++) { int j = rng.Next(i, order.Count); int t = order[i]; order[i] = order[j]; order[j] = t; }
+            last = new System.Collections.Generic.List<Entry>();
+            int total = 0;
+            for (int i = 0; i < count && i < order.Count; i++) { var e = catalog[order[i]]; last.Add(new Entry(e.name, e.value)); total += e.value; }
+            if (total >= minContentTotal && total <= maxContentTotal) return last;
+        }
+        return last ?? new System.Collections.Generic.List<Entry>();
+    }
 }
