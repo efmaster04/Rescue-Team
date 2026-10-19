@@ -50,6 +50,7 @@ public static partial class Bolum1AnimVerify
         Player.Teleport(spot, rot);
         yield return null; yield return null;
         string hintClosed = Interaction.CurrentHint;
+        Transform u1HlClosed = Highlight.Current; // U1: bagaj kapısı vurgusu
         bool directRefused = !tg.Extract(tourist, Player) && tourist.State == PatientState.InVehicle;
         // Minibüs hastası sırta alınamaz (e)
         bool vanNoPiggy = !tourist.CanPiggyback && hintClosed != PlayerInteraction.HintPiggyback;
@@ -66,6 +67,7 @@ public static partial class Bolum1AnimVerify
         yield return null; yield return null;
         string hintExtract = Interaction.CurrentHint;
         var target = tg.ExtractTarget(Player.transform.position);
+        Transform u1HlExtract = Highlight.Current; // U1: minibüsteki hasta vurgusu
         Interaction.Interact();
         float t0 = Time.time;
         yield return null; yield return null;
@@ -112,6 +114,9 @@ public static partial class Bolum1AnimVerify
             + "\"; Extract_Pull " + pullAnim + ", Patient_DraggedOut " + dragAnim + ", yere yatma " + S(dragTime) + ", zeminde " + onPath + ", arka tampondan " + M(behind) + ", gövdeye değen " + (touching.Length == 0 ? "yok" : string.Join(",", touching)) + ", çeken zeminden " + Cm(pullerErr)
             + " geride; kapı açık kaldı " + stillOpen + "; 2. hasta ipucu \"" + hint2 + "\", iki hasta arası " + M(apart) + "; sedyeye " + stretcherOk
             + "; minibüs oynaması " + Cm(vanMoved) + " / " + vanTurned.ToString("F3", Inv) + "°");
+        Check("(U1-2t) beyaz vurgu: bagaj kapısı ipucunda kapı, çekme ipucunda minibüsteki hasta vurgulu",
+            u1HlClosed == tg.tailgate && target != null && u1HlExtract == target.transform,
+            "kapı ipucunda vurgu " + (u1HlClosed != null ? u1HlClosed.name : "yok") + ", çekme ipucunda " + (u1HlExtract != null ? u1HlExtract.name : "yok") + " (hedef " + (target != null ? target.name : "-") + ")");
 
         // ---- (c) halat: bağlan, in, kayada çöz, yeniden bağlan, boşken çık ----
         Player.Teleport(rope.topStand.position, rope.topStand.rotation);
@@ -145,7 +150,9 @@ public static partial class Bolum1AnimVerify
         float walked = Flat(Player.transform.position - w0).magnitude;
         bool onRock = Mathf.Abs(Player.transform.position.y - rope.climbBottom.position.y) < 0.3f && !Player.IsDown;
         // Yeniden bağlan (dipte)
-        Player.Teleport(rope.climbBottom.position + Flat(Player.transform.position - rope.climbBottom.position).normalized * 0.6f + Vector3.up * 0.02f, Player.transform.rotation);
+        // U1: ≤ 1.0 m ve yüz halat köküne dönük
+        Vector3 awayFromRope = Flat(Player.transform.position - rope.climbBottom.position).normalized;
+        Player.Teleport(rope.climbBottom.position + awayFromRope * 0.6f + Vector3.up * 0.02f, Quaternion.LookRotation(-awayFromRope));
         yield return null; yield return null;
         string hintReattach = Interaction.CurrentHint;
         Interaction.Interact();
@@ -207,10 +214,11 @@ public static partial class Bolum1AnimVerify
         Player.SetMoveInput(Vector2.zero);
         Player.SetRunInput(false);
         yield return Seconds(0.3f);
-        bool noOtherActions = Interaction.CurrentHint == "" || Interaction.CurrentHint == PlayerInteraction.HintAttachRope;
+        // U1: kayada bırakılamayan yerde "Burada bırakılamaz" uyarısı da ipucu yerinde görünür (eylem değil)
+        bool noOtherActions = Interaction.CurrentHint == "" || Interaction.CurrentHint == PlayerInteraction.HintAttachRope || Interaction.CurrentHint == PlayerInteraction.NoticeCannotPutDown;
         bool cantPutDownOnLedge = Interaction.CurrentHint != PlayerInteraction.HintPutDownBack;
-        // Halata sırtında hastayla bağlan; bot kapalı: W ile kendi tırmanamaz, aşağıda kalır
-        Player.Teleport(rope.climbBottom.position + Vector3.right * 0.5f + Vector3.up * 0.02f, rope.ClimbRotation);
+        // Halata sırtında hastayla bağlan; bot kapalı: W ile kendi tırmanamaz, aşağıda kalır (U1: yüz halat köküne dönük)
+        Player.Teleport(rope.climbBottom.position + Vector3.right * 0.5f + Vector3.up * 0.02f, Quaternion.LookRotation(Vector3.left));
         yield return null; yield return null;
         string hintAttachLoaded = Interaction.CurrentHint;
         Interaction.Interact();

@@ -444,6 +444,7 @@ public static partial class Bolum1AnimVerify
         // D2: minibüs, halat, sırtta taşıma (taze sahnede), sonra eski fazlar için hastalar patikaya
         yield return PhaseE2IndicatorInVehicle(); // E2: hastalar minibüsteyken gösterge
         yield return PhaseRescue();
+        yield return PhaseU1(); // U1: halat yakınlığı/yönü, beyaz vurgu, sırttan bırakma
         Bolum1TestPatients.LayOnPath(mission.patients);
         var tourist = PatientNamed("Tourist");
         parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
@@ -828,6 +829,11 @@ public static partial class Bolum1AnimVerify
         if (GroundProbe.Find(mp + Vector3.up * 1.5f, 5f, out RaycastHit g)) mp.y = g.point.y + 0.02f;
         mate.Teleport(mp, Quaternion.LookRotation(Flat(kd.ChestPosition - mp).normalized));
         yield return null; yield return null;
+        // U1: arkadaşın ipucunda düşmüş oyuncu vurgulu
+        var mateHl = mateGo.GetComponent<InteractionHighlight>();
+        Check("(U1-2r) beyaz vurgu: kaldırma ipucunda düşmüş arkadaş vurgulu (skinned kopya ragdoll kemiklerini izler)",
+            mateI.CurrentHint == PlayerInteraction.HintRevive && mateHl != null && mateHl.Current == kd.transform && mateHl.CopyCount > 0,
+            "ipucu \"" + mateI.CurrentHint + "\", vurgu " + (mateHl != null && mateHl.Current != null ? mateHl.Current.name : "yok") + " (" + (mateHl != null ? mateHl.CopyCount : 0) + " kopya)");
         mateI.SetInteractHeld(true);
         yield return Seconds(0.8f);
         bool mateRevive = mateA.InState(CrewAnimation.StateRevive);

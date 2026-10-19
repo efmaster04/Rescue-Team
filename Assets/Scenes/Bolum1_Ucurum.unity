@@ -288,7 +288,7 @@ MonoBehaviour:
   climbTop: {fileID: 82490313}
   topStand: {fileID: 1638088299}
   pullerStand: {fileID: 752981884}
-  attachRange: 1.5
+  attachRange: 1
   descendSpeed: 0.6
   climbSpeed: 0.3
   pullSpeed: 0.25
@@ -8444,7 +8444,6 @@ MonoBehaviour:
   coneRange: 1.5
   conePlaceDistance: 1
   piggybackRange: 1.5
-  pullRange: 1.5
   piggybackAttachTime: 0.56666666
   piggybackReleaseTime: 0.53333336
   putDownBehind: 1.05

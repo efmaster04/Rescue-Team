@@ -28,8 +28,12 @@ public class RopeAnchor : MonoBehaviour
     [Tooltip("Çeken kişinin durduğu yer (kazığın arkası), yönü uçuruma.")]
     public Transform pullerStand;
 
-    [Tooltip("Bağlanma menzili (m): topStand'e ya da dipte halat köküne yatay uzaklık.")]
-    public float attachRange = 1.5f;
+    [Tooltip("Bağlanma / çekme menzili (m): topStand'e, dipte halat köküne ya da pullerStand'e yatay uzaklık (U1 kararı 1: 1.0).")]
+    public float attachRange = 1.0f;
+    [Tooltip("U1 kararı 1: bağlanma ve çekme yalnız yüz hedefe dönükken (yatay ileri yön ile hedefe yön arasındaki açı ≤ bu kadar °).")]
+    public float facingAngle = 30f;
+    [Tooltip("Hedefe bundan yakınken (m) yön koşulu aranmaz (yön belirsiz; örn. tam topStand'de).")]
+    public float facingIgnoreDistance = 0.2f;
     [Tooltip("İniş hızı (m/sn, dikey; Rope_Descend vertical_speed_mps).")]
     public float descendSpeed = 0.6f;
     [Tooltip("Boşken tırmanış hızı (m/sn, dikey; Rope_Climb).")]
@@ -66,19 +70,43 @@ public class RopeAnchor : MonoBehaviour
 
     public bool NeedsPull { get { return Climber != null && Climber.Piggyback != null && T < 1f; } }
 
-    // Bağlanabilir mi: halat boş ve oyuncu kazıkta ya da dipte
-    public bool CanAttach(Vector3 p, out bool atBottom)
+    // Oyuncu (p, yatay ileri yön forward) hedef noktaya yakın VE yüzü dönük mü (U1 kararı 1).
+    public bool Near(Vector3 p, Vector3 forward, Vector3 target)
+    {
+        if (FlatDistance(p, target) > attachRange || Mathf.Abs(p.y - target.y) >= 1.2f) return false;
+        return Facing(p, forward, target);
+    }
+
+    public bool Facing(Vector3 p, Vector3 forward, Vector3 target)
+    {
+        Vector3 to = target - p; to.y = 0f;
+        if (to.magnitude < facingIgnoreDistance) return true;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 1e-6f) return false;
+        return Vector3.Angle(forward, to) <= facingAngle;
+    }
+
+    // Bağlanabilir mi: halat boş ve oyuncu ≤ attachRange yakında, yüzü bağlanma noktasına (kazıkta topStand, dipte halat kökü) dönük
+    public bool CanAttach(Vector3 p, Vector3 forward, out bool atBottom)
     {
         atBottom = false;
         if (Climber != null) return false;
-        if (FlatDistance(p, topStand.position) <= attachRange && Mathf.Abs(p.y - topStand.position.y) < 1.2f) return true;
-        if (FlatDistance(p, climbBottom.position) <= attachRange && Mathf.Abs(p.y - climbBottom.position.y) < 1.2f) { atBottom = true; return true; }
+        if (Near(p, forward, topStand.position)) return true;
+        if (Near(p, forward, climbBottom.position)) { atBottom = true; return true; }
         return false;
+    }
+
+    // Çekebilir mi: halatta sırtında hastayla biri var, oyuncu pullerStand'de (≤ attachRange) ve yüzü kazığa (halata) dönük
+    public bool CanPull(Vector3 p, Vector3 forward)
+    {
+        if (!NeedsPull || pullerStand == null) return false;
+        if (FlatDistance(p, pullerStand.position) > attachRange || Mathf.Abs(p.y - pullerStand.position.y) > 1.2f) return false;
+        return Facing(p, forward, ropeAttach != null ? ropeAttach.position : pullerStand.position + pullerStand.forward);
     }
 
     public bool Attach(ThirdPersonPlayer p)
     {
-        if (!CanAttach(p.transform.position, out bool bottom)) return false;
+        if (!CanAttach(p.transform.position, p.transform.forward, out bool bottom)) return false;
         Climber = p;
         T = bottom ? 0f : 0.98f;
         VerticalSpeed = 0f;

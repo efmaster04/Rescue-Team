@@ -641,7 +641,10 @@ public static class Bolum1AmbulanceVerify
         Interaction.Interact();
         yield return Seconds(1.7f);
         if (Player.Piggyback != elder) throw new Exception("Yaşlı sırta alınamadı");
-        yield return null;
+        // U1: bağlanma ≤ 1.0 m ve yüz halat köküne dönükken; halatın dibine yaklaş ve ona dön
+        Vector3 reattach = rope.climbBottom.position + Vector3.right * 0.5f + Vector3.up * 0.02f;
+        Player.Teleport(reattach, Quaternion.LookRotation(Vector3.left));
+        yield return null; yield return null;
         if (Interaction.CurrentHint != PlayerInteraction.HintAttachRope) throw new Exception("halat ipucu yok: \"" + Interaction.CurrentHint + "\"");
         Interaction.Interact();
         Time.timeScale = 3f;

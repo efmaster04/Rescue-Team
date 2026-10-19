@@ -43,24 +43,37 @@ public class PlayerInteraction : MonoBehaviour
     public const string HintPiggyback = "E: Sırtına al";
     public const string HintPutDownBack = "E: Hastayı yere bırak";
     public const string HintPullRope = "E (basılı tut): Halatı çek";
+    // U1: eylem değil, uyarı (sırtta hasta varken burada bırakılamıyor); HUD soluk uyarı renginde gösterir
+    public const string NoticeCannotPutDown = "Burada bırakılamaz";
 
     [Header("D2")]
     [Tooltip("Sırta alma menzili: oyuncu kökünden hastanın kalçasına uzaklık (m).")]
     public float piggybackRange = 1.5f;
-    [Tooltip("Halatı çekme menzili: oyuncu kökünden çekme yerine (pullerStand) yatay uzaklık (m).")]
-    public float pullRange = 1.5f;
+    // Halatı çekme menzili ve yön kuralı RopeAnchor.attachRange / facingAngle'dadır (U1 kararı 1: bağlanmayla aynı).
     [Tooltip("Sırta alma: hasta Piggyback_PickUp'ın bu anından itibaren sırtta (kare 17 / 30).")]
     public float piggybackAttachTime = 17f / 30f;
     [Tooltip("Bırakma: hasta Piggyback_PutDown'ın bu anına kadar sırtta (kare 16 / 30).")]
     public float piggybackReleaseTime = 16f / 30f;
     [Tooltip("Bırakılan hastanın kalçası oyuncu kökünün bu kadar arkasına (m) yatar. Hastanın katı gövdesi (NpcBody, kalçadan ayağa 0.78 m) oyuncunun kapsülüne (0.25 m) değmesin diye ≥ 1.03 m.")]
     public float putDownBehind = 1.05f;
+    [Tooltip("U1 kararı 3: sırttaki hasta en fazla bu eğimdeki (°) zemine bırakılır; hasta zemin normaline göre yatar.")]
+    public float putDownMaxSlope = 35f;
+    [Tooltip("U1 kararı 3: bırakılan gövdenin her noktası uçurum kenarından (zeminin bittiği / bu kadardan çok düştüğü yer) en az bu kadar (m) uzak olmalı.")]
+    public float putDownEdgeClearance = 1.0f;
+    [Tooltip("Kenar sayılan düşüş (m): çevre örneğinde zemin beklenen düzlemden bundan çok aşağıdaysa ya da yoksa.")]
+    public float putDownEdgeDrop = 0.7f;
+    [Tooltip("Gövde örneklerinin bırakma düzleminden sapma payı (m): çukur/basamak/kaya varsa bırakılmaz.")]
+    public float putDownBodyTolerance = 0.25f;
 
     public Patient PiggybackTarget { get; private set; }
     public RopeAnchor PullTarget { get; private set; }
     private bool piggybackBusy;
 
     public string CurrentHint { get; private set; } = "";
+    // U1: CurrentHint bir eylem değil uyarı mı ("Burada bırakılamaz")
+    public bool HintIsWarning { get; private set; }
+    // U1: ipucunun hedefi (beyaz vurgu); hedefsiz eylemlerde (bırak, koy, yere bırak) null
+    public Transform HighlightTarget { get; private set; }
     // Kaldırılmakta olan arkadaş (HUD ilerleme çubuğu için)
     public PlayerKnockdown ReviveTarget { get; private set; }
 
@@ -78,7 +91,14 @@ public class PlayerInteraction : MonoBehaviour
 
     private CrewAnimation crewAnimation;
 
-    private void Awake() { crewAnimation = GetComponent<CrewAnimation>(); }
+    private void Awake()
+    {
+        crewAnimation = GetComponent<CrewAnimation>();
+        // U1: hedef vurgusu (yerel oyuncu); sahne dosyasında ayrıca kurulmaz
+        var highlight = GetComponent<InteractionHighlight>();
+        if (highlight == null) highlight = gameObject.AddComponent<InteractionHighlight>();
+        if (highlight.interaction == null) highlight.interaction = this;
+    }
 
     private void Update()
     {
@@ -99,6 +119,31 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Evaluate()
     {
+        EvaluateAction();
+        HighlightTarget = ResolveHighlightTarget();
+    }
+
+    // U1: ipucunun hedef nesnesi. Yalnız bir nesneye yönelen eylemlerde; bırak/koy/yere bırak ve uyarıda null.
+    private Transform ResolveHighlightTarget()
+    {
+        switch (action)
+        {
+            case Action.Grab: return targetStretcher != null ? targetStretcher.transform : null;
+            case Action.PlacePatient: return targetPatient != null ? targetPatient.transform : null;
+            case Action.PickCone: return targetCone != null ? (targetCone.target != null ? targetCone.target : targetCone.transform) : null; // koninin görseli (denetleyicinin çocuğu değil)
+            case Action.Revive: return ReviveTarget != null ? ReviveTarget.transform : null;
+            case Action.OpenTailgate: return targetTailgate != null ? (targetTailgate.tailgate != null ? targetTailgate.tailgate : targetTailgate.transform) : null;
+            case Action.Extract: return targetPatient != null ? targetPatient.transform : null;
+            case Action.AttachRope:
+            case Action.DetachRope:
+            case Action.PullRope: return targetRope != null ? targetRope.transform : null;
+            case Action.Piggyback: return PiggybackTarget != null ? PiggybackTarget.transform : null;
+            default: return null;
+        }
+    }
+
+    private void EvaluateAction()
+    {
         action = Action.None;
         targetStretcher = null;
         targetPatient = null;
@@ -109,6 +154,7 @@ public class PlayerInteraction : MonoBehaviour
         PiggybackTarget = null;
         PullTarget = null;
         CurrentHint = "";
+        HintIsWarning = false;
         if (player == null || player.IsDown || piggybackBusy) return;
 
         // ---- D2: halatta ----
@@ -132,7 +178,7 @@ public class PlayerInteraction : MonoBehaviour
         // ---- D2: sırtında hasta: yalnız bırakma (sedye, koni, başka eylem yok) ----
         if (player.Piggyback != null)
         {
-            if (CanPutDown(out _, out _))
+            if (CanPutDown(out _, out _, out _))
             {
                 action = Action.PutDownBack;
                 CurrentHint = HintPutDownBack;
@@ -143,6 +189,12 @@ public class PlayerInteraction : MonoBehaviour
                 targetRope = r;
                 action = Action.AttachRope;
                 CurrentHint = HintAttachRope;
+            }
+            else
+            {
+                // U1 kararı 3: bırakılamayan yerde uyarı (eylem yok)
+                CurrentHint = NoticeCannotPutDown;
+                HintIsWarning = true;
             }
             return;
         }
@@ -177,8 +229,8 @@ public class PlayerInteraction : MonoBehaviour
         // ---- D2 ----
         foreach (var r in RopeAnchor.All)
         {
-            if (r == null || !r.NeedsPull || r.Climber == player || r.pullerStand == null) continue;
-            if (Flat(r.pullerStand.position - me).magnitude > pullRange || Mathf.Abs(r.pullerStand.position.y - me.y) > 1.2f) continue;
+            // U1 kararı 1: çekme de bağlanma kuralıyla (≤ 1.0 m, yüz halata dönük)
+            if (r == null || r.Climber == player || !r.CanPull(me, player.transform.forward)) continue;
             targetRope = r;
             PullTarget = r;
             action = Action.PullRope;
@@ -367,25 +419,68 @@ public class PlayerInteraction : MonoBehaviour
     {
         rope = null;
         foreach (var r in RopeAnchor.All)
-            if (r != null && r.CanAttach(player.transform.position, out _)) { rope = r; return true; }
+            if (r != null && r.CanAttach(player.transform.position, player.transform.forward, out _)) { rope = r; return true; }
         return false;
     }
 
-    // Sırttaki hasta yalnız patikada (halatta ve kaya çıkıntısında değil) ve arkadaki yer güvenliyse bırakılır.
-    private bool CanPutDown(out Vector3 point, out Vector3 normal)
+    // U1 kararı 3: sırttaki hasta ≤ putDownMaxSlope eğimli, yürünebilir her yere bırakılabilir (halatta ve kaya çıkıntısında değil).
+    // Önce arka, sonra sol, sağ, ön denenir; ilk uygun yer seçilir. head = hastanın baş yönü (oyuncudan bırakma yerine).
+    private bool CanPutDown(out Vector3 point, out Vector3 normal, out Vector3 head)
     {
         point = default; normal = Vector3.up;
+        Vector3 fwd = Flat(player.transform.forward);
+        fwd = fwd.sqrMagnitude > 1e-6f ? fwd.normalized : Vector3.forward;
+        head = -fwd;
         if (player.Rope != null) return false;
         Vector3 me = player.transform.position;
-        foreach (var r in RopeAnchor.All) if (r != null && r.IsBelowEdge(me)) return false;
-        Vector3 back = -Flat(player.transform.forward).normalized;
-        Vector3 at = me + back * putDownBehind;
-        if (!GroundProbe.Find(at + Vector3.up * 1f, 2f, out RaycastHit g) || g.normal.y < 0.8f) return false;
+        foreach (var r in RopeAnchor.All) if (r != null && r.IsBelowEdge(me)) return false; // kaya çıkıntısı kuralı aynı
+        Vector3 right = Vector3.Cross(Vector3.up, fwd);
+        foreach (var dir in new[] { -fwd, -right, right, fwd })
+            if (TryPutDownSpot(me, dir, out point, out normal)) { head = dir; return true; }
+        return false;
+    }
+
+    // Oyuncudan dir yönünde putDownBehind uzaktaki yer bırakmaya uygun mu: eğim, gövdenin düzleme oturması, kenar payı, engel.
+    private bool TryPutDownSpot(Vector3 me, Vector3 dir, out Vector3 point, out Vector3 normal)
+    {
+        point = default; normal = Vector3.up;
+        float minNormalY = Mathf.Cos(putDownMaxSlope * Mathf.Deg2Rad);
+        Vector3 at = me + dir * putDownBehind;
+        if (!GroundProbe.Find(at + Vector3.up * 1f, 2.5f, out RaycastHit g) || g.normal.y < minNormalY) return false;
+        if (Mathf.Abs(g.point.y - me.y) > 0.8f) return false; // basamak / duvar üstü / çukur
         point = g.point; normal = g.normal;
-        // Gövde boyunca (baş arkaya) ve iki yanda zemin olmalı; uçurum kenarına 1 m'den yakın bırakılmaz.
-        Vector3 side = Vector3.Cross(Vector3.up, back);
-        foreach (var o in new[] { back * 1.8f, back * 0.9f, -back * 0.8f, side * 0.6f, -side * 0.6f })
-            if (!GroundProbe.Find(point + o + Vector3.up * 1f, 2f, out RaycastHit h) || Mathf.Abs(h.point.y - point.y) > 0.5f) return false;
+        Vector3 side = Vector3.Cross(Vector3.up, dir).normalized;
+        // Gövde (kalçadan başa 0.9 m, ayaklara 0.8 m, iki yan 0.4 m) aynı eğik düzlemde ve ≤ eğim sınırında olmalı
+        foreach (var o in new[] { dir * 0.9f, dir * 0.45f, -dir * 0.4f, -dir * 0.8f, side * 0.4f, -side * 0.4f })
+            if (!GroundAt(point, normal, o, out float dy, out float ny) || Mathf.Abs(dy) > putDownBodyTolerance || ny < minNormalY) return false;
+        // Uçurum kenarı: gövdenin her noktasından putDownEdgeClearance uzakta (8 yön) zemin düzlemden putDownEdgeDrop'tan çok düşmemeli.
+        // O yönde kaya duvarı varsa (yatay ışın engellenir) kenar değildir; ışın duvarın içinden atılıp zemin bulamasın diye atlanır.
+        Vector3 lift = normal * 0.5f;
+        foreach (var body in new[] { Vector3.zero, dir * 0.9f, -dir * 0.8f })
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * Mathf.PI / 4f;
+                Vector3 ring = (dir * Mathf.Cos(a) + side * Mathf.Sin(a)) * putDownEdgeClearance;
+                Vector3 from = point + body + lift;
+                if (GroundProbe.LineBlocked(from, from + ring)) continue;
+                if (!GroundAt(point, normal, body + ring, out float dy, out _) || dy < -putDownEdgeDrop) return false;
+            }
+        // Duvar / araç içi: oyuncudan bırakma yerine ve yatan gövde boyunca (zeminden 0.5 m yukarıda) statik engel olmamalı
+        Vector3 hip = point + lift;
+        if (GroundProbe.LineBlocked(me + Vector3.up * 0.5f, hip)) return false;
+        foreach (var o in new[] { dir * 0.9f, -dir * 0.8f, side * 0.45f, -side * 0.45f })
+            if (GroundProbe.LineBlocked(hip, hip + o)) return false;
+        return true;
+    }
+
+    // point+o altındaki zemin: dy = zeminin, (point, normal) düzleminden beklenen yüksekliğe göre sapması; ny = zemin normalinin y'si.
+    private static bool GroundAt(Vector3 point, Vector3 normal, Vector3 o, out float dy, out float ny)
+    {
+        dy = 0f; ny = 0f;
+        float expected = point.y - (normal.x * o.x + normal.z * o.z) / Mathf.Max(0.3f, normal.y);
+        if (!GroundProbe.Find(new Vector3(point.x + o.x, expected + 1.5f, point.z + o.z), 4f, out RaycastHit h)) return false;
+        dy = h.point.y - expected;
+        ny = h.normal.y;
         return true;
     }
 
@@ -408,9 +503,11 @@ public class PlayerInteraction : MonoBehaviour
 
     private IEnumerator PutDownRoutine()
     {
-        if (piggybackBusy || !CanPutDown(out Vector3 point, out Vector3 normal)) yield break;
+        if (piggybackBusy || !CanPutDown(out Vector3 point, out Vector3 normal, out Vector3 head)) yield break;
         piggybackBusy = true;
-        Vector3 head = -Flat(player.transform.forward).normalized; // baş arkaya (hasta sırttan geriye kayar)
+        // U1: bırakma yeri yanda/önde seçildiyse sırt o yöne dönsün (hasta sırttan geriye kayar, baş bırakma yönünde)
+        Vector3 faceDir = -head;
+        if (Vector3.Angle(Flat(player.transform.forward), faceDir) > 1f) player.Teleport(player.transform.position, Quaternion.LookRotation(faceDir, Vector3.up));
         player.SuspendControl(1.2f);
         if (crewAnimation != null) crewAnimation.PlayAction(CrewAnimation.StatePiggybackPutDown);
         yield return new WaitForSeconds(piggybackReleaseTime);

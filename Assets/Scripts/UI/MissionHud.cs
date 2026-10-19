@@ -21,6 +21,7 @@ public class MissionHud : MonoBehaviour
 
     public const string RadioText = "Telsiz: Ambulans rampa başına yaklaşıyor!";
     public const string RestartText = "R: Yeniden başlat";
+    public static readonly Color WarningHintColor = new Color(1f, 0.72f, 0.5f, 0.85f);
 
     public Canvas ScreenCanvas { get; private set; }
     public Text TimerText { get; private set; }
@@ -143,6 +144,8 @@ public class MissionHud : MonoBehaviour
         RadioLabel.text = Time.time < radioUntil ? RadioText : "";
 
         HintText.text = interaction != null && !mission.IsFinished ? interaction.CurrentHint : "";
+        // U1: "Burada bırakılamaz" gibi uyarılar ipucunun yerinde, soluk uyarı renginde
+        HintText.color = interaction != null && interaction.HintIsWarning ? WarningHintColor : Color.white;
         ReviveText.text = ReviveLine();
         NoticeText.text = Time.time < noticeUntil ? notice : "";
         ResultText.text = mission.IsFinished ? mission.ResultMessage + "\n" + RestartText : "";
