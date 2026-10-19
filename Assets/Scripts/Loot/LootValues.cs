@@ -14,6 +14,7 @@ public class LootValues : ScriptableObject
     {
         public string name;
         public int value;
+        public Entry() { }
         public Entry(string n, int v) { name = n; value = v; }
     }
 

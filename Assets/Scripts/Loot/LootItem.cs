@@ -173,7 +173,8 @@ public class LootItem : MonoBehaviour
     {
         Holder = null;
         State = LootState.Stolen;
-        gameObject.SetActive(false);
+        // Taşınabilir eşya kaybolur (U4: hırsız taşıyacak); ekipman (sedye, kangal, koni) sahnede kalır, yalnız değeri sayılır
+        if (carryable) gameObject.SetActive(false);
     }
 
     // Test: başlangıç durumuna döner.

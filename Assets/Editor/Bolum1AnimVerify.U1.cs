@@ -186,7 +186,8 @@ public static partial class Bolum1AnimVerify
             yield return Capture("u1_hasta_vurgu", p.Position + pside * 2.4f - toP * 1.2f + Vector3.up * 1.7f, p.Position + Vector3.up * 0.3f, 50f);
             p.onLedge = false; // hedef kayboldu
             yield return null; yield return null;
-            Note("hedef kaybolunca", Highlight.Current == null && Highlight.CopyCount == 0 && Interaction.CurrentHint != PlayerInteraction.HintPiggyback,
+            // U3: hasta artık hedef değil; önündeki başka bir hedef (ör. hastanın değerli eşyası) vurgulanabilir
+            Note("hedef kaybolunca", Highlight.Current != p.transform && Interaction.CurrentHint != PlayerInteraction.HintPiggyback,
                 "ipucu \"" + Interaction.CurrentHint + "\", vurgu " + HlName() + " (" + Highlight.CopyCount + " kopya)");
         }
         else Note("hasta", false, "yerde hasta yok");

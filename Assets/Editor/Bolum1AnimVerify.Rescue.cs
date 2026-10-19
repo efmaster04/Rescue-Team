@@ -53,7 +53,7 @@ public static partial class Bolum1AnimVerify
         Player.Teleport(spot, rot * Quaternion.Euler(0f, 180f, 0f));
         yield return null; yield return null;
         string hintBackToGate = Interaction.CurrentHint;
-        Check("(U3-f) yüz kuralı: bagaj kapısına sırtı dönükken kapı ipucu yok, vurgu yok", hintBackToGate != PlayerInteraction.HintOpenTailgate && Highlight.Current == null,
+        Check("(U3-f) yüz kuralı: bagaj kapısına sırtı dönükken kapı ipucu yok, vurgu yok", hintBackToGate != PlayerInteraction.HintOpenTailgate && Highlight.Current != tg.tailgate,
             "ipucu \"" + hintBackToGate + "\", vurgu " + (Highlight.Current != null ? Highlight.Current.name : "yok"));
         Player.Teleport(spot, rot);
         yield return null; yield return null;
