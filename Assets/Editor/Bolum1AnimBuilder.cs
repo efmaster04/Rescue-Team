@@ -87,7 +87,9 @@ public static class Bolum1AnimBuilder
         // D2: sırtta hastayla yürüyüş (Piggyback_Walk 1.2 m/sn'de ×1, beklerken yavaşlatılmış)
         var carryPiggyback = CarryState(ac, sm, CrewAnimation.StateCarryPiggyback, "Piggyback_Walk", PiggybackSpeed, new Vector3(300f, 320f));
         var carryFront = CarryState(ac, sm, CrewAnimation.StateCarryStretcherFront, "Carry_Stretcher_Front_Walk", carryStretcherSpeed, new Vector3(300f, 420f));
-        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback, carryFront };
+        // U2: kangal taşıma — ayrı bekleme ve yürüyüş klipleri (Carry_Coil_Idle 0, Carry_Coil_Walk 2.4 m/sn ×1); koşu yok
+        var carryCoil = CoilCarryState(ac, sm, walkSpeed, new Vector3(300f, 520f));
+        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback, carryFront, carryCoil }; // dizin = Carry parametresi
 
         // Döngüler arası (Carry değişince; AnyState tetikleyicileri önceliklidir)
         for (int a = 0; a < loops.Length; a++)
@@ -168,8 +170,12 @@ public static class Bolum1AnimBuilder
         var descend = OneShot(sm, CrewAnimation.StateRopeDescend, "Rope_Descend", 1f, new Vector3(820f, 320f));
         var pclimb = OneShot(sm, CrewAnimation.StateRopePiggybackClimb, "Piggyback_Rope_Climb", 1f, new Vector3(820f, 380f));
         var pull = OneShot(sm, CrewAnimation.StateRopePull, "Rope_Pull", RopePullPlayback, new Vector3(820f, 440f));
+        // U2: halat zinciri eylemleri (PlayAction ile; bitince Carry'ye göre döngüye)
+        var takeCoil = OneShot(sm, CrewAnimation.StateTakeCoil, "Cabinet_TakeCoil", 1f, new Vector3(820f, 520f));
+        var tieStake = OneShot(sm, CrewAnimation.StateTieStake, "Rope_TieStake", 1f, new Vector3(820f, 580f));
+        var ropeThrow = OneShot(sm, CrewAnimation.StateRopeThrow, "Rope_Throw", 1f, new Vector3(820f, 640f));
         var ropes = new[] { hang, climb, descend, pclimb };
-        foreach (var a in new[] { extract, pick, put })
+        foreach (var a in new[] { extract, pick, put, takeCoil, tieStake, ropeThrow })
         {
             // Eylem bitince: halatta değilse taşımaya göre döngüye (halattaysa Action kapanınca AnyState halat durumuna geçer)
             for (int c = 0; c < loops.Length; c++)
@@ -206,7 +212,7 @@ public static class Bolum1AnimBuilder
             t.AddCondition(AnimatorConditionMode.IfNot, 0f, CrewAnimation.ParamPulling);
             t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
         }
-        Line("D2 durumları: " + string.Join(", ", new[] { extract, pick, put, hang, climb, descend, pclimb, pull }.Select(s => s.name + " (" + s.motion.name + " x" + s.speed.ToString("F3", Inv) + ")"))
+        Line("D2/U2 durumları: " + string.Join(", ", new[] { extract, pick, put, hang, climb, descend, pclimb, pull, takeCoil, tieStake, ropeThrow }.Select(s => s.name + " (" + s.motion.name + " x" + s.speed.ToString("F3", Inv) + ")"))
             + "; sırtta yürüyüş " + PiggybackSpeed.ToString(Inv) + " m/sn, çekme " + RopePullSpeed.ToString(Inv) + " m/sn");
     }
 
@@ -224,6 +230,22 @@ public static class Bolum1AnimBuilder
         if (name == CrewAnimation.StateCarryCone)
             tree.children = new[] { tree.children[0], tree.children[1], new ChildMotion { motion = clip, threshold = 3.2f, timeScale = CarryWalkScale * 3.2f / walkSpeed } };
         var st = sm.AddState(name, pos);
+        st.motion = tree;
+        return st;
+    }
+
+    // U2: kangal taşıma döngüsü — hız 0'da Carry_Coil_Idle, yürüme hızında Carry_Coil_Walk (ikisi de yazıldığı hızda ×1).
+    private static AnimatorState CoilCarryState(AnimatorController ac, AnimatorStateMachine sm, float walkSpeed, Vector3 pos)
+    {
+        var tree = new BlendTree { name = CrewAnimation.StateCarryCoil + "_Blend", blendType = BlendTreeType.Simple1D, blendParameter = "Speed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
+        AssetDatabase.AddObjectToAsset(tree, ac);
+        float coilWalk = MetaFloat("Carry_Coil_Walk", "target_speed_mps", walkSpeed);
+        tree.children = new[]
+        {
+            new ChildMotion { motion = Clip("Carry_Coil_Idle"), threshold = 0f, timeScale = 1f },
+            new ChildMotion { motion = Clip("Carry_Coil_Walk"), threshold = coilWalk, timeScale = 1f },
+        };
+        var st = sm.AddState(CrewAnimation.StateCarryCoil, pos);
         st.motion = tree;
         return st;
     }

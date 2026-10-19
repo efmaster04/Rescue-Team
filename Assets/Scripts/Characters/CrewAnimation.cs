@@ -37,8 +37,11 @@ public class CrewAnimation : MonoBehaviour
     public const string ParamPulling = "Pulling";  // bool: halatı çekiyor (Rope_Pull)
     public const string ParamAction = "Action";    // bool: tek seferlik D2 eylemi sürüyor (halat durumlarına geçiş bekler)
     public const int CarryPiggyback = 3;
+    // U2: halat kangalı — dolaptan alma, göğüste taşıma (Carry_Coil_Idle/Walk), kazığa bağlama, atma
+    public const string StateCarryCoil = "CarryCoil", StateTakeCoil = "CabinetTakeCoil", StateTieStake = "RopeTieStake", StateRopeThrow = "RopeThrow";
+    public const int CarryCoil = 5;
 
-    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni, 3 sırtta hasta (D2)
+    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni, 3 sırtta hasta (D2), 4 sedye ön uç, 5 kangal (U2)
     public const string ParamReviving = "Reviving";  // bool
     public const string TriggerPickUp = "PickUp", TriggerPutDown = "PutDown", TriggerJump = "Jump", TriggerStartled = "Startled", TriggerCelebrate = "Celebrate";
 
@@ -122,7 +125,7 @@ public class CrewAnimation : MonoBehaviour
 
     private int CurrentCarry()
     {
-        if (player != null) return player.HeldStretcher != null ? (player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1) : player.HeldCone != null ? 2 : player.Piggyback != null ? CarryPiggyback : 0;
+        if (player != null) return player.HeldStretcher != null ? (player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1) : player.HeldCone != null ? 2 : player.Piggyback != null ? CarryPiggyback : player.HeldCoil != null ? CarryCoil : 0;
         if (bot != null) return bot.HeldStretcher != null ? (bot.HeldStretcher.HoldsFront(bot) ? CarryStretcherFront : 1) : 0;
         return 0;
     }
@@ -142,8 +145,10 @@ public class CrewAnimation : MonoBehaviour
         }
         if (carry != Carry)
         {
-            // Sırta alma / bırakma kendi klibini PlayAction ile oynatır (genel PickUp/PutDown tetiklenmez)
-            if (carry != CarryPiggyback && Carry != CarryPiggyback)
+            // Sırta alma / bırakma kendi klibini PlayAction ile oynatır (genel PickUp/PutDown tetiklenmez).
+            // U2: kangal dolaptan alınırken / atılırken de kendi klibi sürer (InAction); yerden alma ve yere bırakma genel PickUp/PutDown.
+            bool coilAction = (carry == CarryCoil || Carry == CarryCoil) && InAction;
+            if (carry != CarryPiggyback && Carry != CarryPiggyback && !coilAction)
             {
                 if (Carry == 0 && carry != 0) animator.SetTrigger(TriggerPickUp);
                 else if (carry == 0) animator.SetTrigger(TriggerPutDown);
@@ -170,11 +175,13 @@ public class CrewAnimation : MonoBehaviour
     public bool Pulling { get { return Time.time - lastPullMark < 0.2f; } }
 
     // Tek seferlik D2 eylemi (ExtractPull, PiggybackPickUp, PiggybackPutDown): doğrudan geçiş, süre boyunca Action açık.
-    public void PlayAction(string state)
+    public void PlayAction(string state) { PlayAction(state, state == StatePiggybackPutDown ? 1.2f : 1.5f); }
+
+    // seconds: klibin süresi (Action bu kadar açık kalır; U2 klipleri 1.4 / 2.0 / 1.4 sn).
+    public void PlayAction(string state, float seconds)
     {
         LastAction = state;
         if (!Ready) return;
-        float seconds = state == StatePiggybackPutDown ? 1.2f : 1.5f;
         actionUntil = Time.time + seconds;
         animator.SetBool(ParamAction, true);
         animator.CrossFadeInFixedTime(state, 0.1f, 0, 0f);

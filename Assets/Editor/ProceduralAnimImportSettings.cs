@@ -25,11 +25,13 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         "Patient_SitDazed", "Patient_SitDazed_ArmSling", "Patient_DraggedOut", "Piggyback_Rider", "Extract_Pull",
         "Rope_Descend", "Rope_Climb", "Rope_Hang_Idle", "Piggyback_PickUp", "Piggyback_Rope_Climb", "Piggyback_Walk",
         "Piggyback_PutDown", "Rope_Pull",
+        // U2 (r4): halat zinciri — dolaptan kangal alma, kangal taşıma, kazığa bağlama, atma
+        "Cabinet_TakeCoil", "Carry_Coil_Idle", "Carry_Coil_Walk", "Rope_TieStake", "Rope_Throw",
     };
 
     public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan",
         "Patient_SitDazed", "Patient_SitDazed_ArmSling", "Piggyback_Rider", "Rope_Descend", "Rope_Climb", "Rope_Hang_Idle",
-        "Piggyback_Rope_Climb", "Piggyback_Walk", "Rope_Pull" };
+        "Piggyback_Rope_Climb", "Piggyback_Walk", "Rope_Pull", "Carry_Coil_Idle", "Carry_Coil_Walk" };
 
     public static string ClipPath(string clip) { return Folder + clip + ".fbx"; }
     public static bool IsLoop(string clip) { return LoopClips.Contains(clip); }

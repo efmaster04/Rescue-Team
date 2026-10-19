@@ -45,6 +45,30 @@ public class PlayerInteraction : MonoBehaviour
     public const string HintPullRope = "E (basılı tut): Halatı çek";
     // U1: eylem değil, uyarı (sırtta hasta varken burada bırakılamıyor); HUD soluk uyarı renginde gösterir
     public const string NoticeCannotPutDown = "Burada bırakılamaz";
+    // U2: halat zinciri (dolap → kangal → kazık → atış)
+    public const string HintOpenLocker = "E: Dolabı aç";
+    public const string HintCloseLocker = "E: Dolabı kapat";
+    public const string HintTakeCoil = "E: Halatı al";
+    public const string HintDropCoil = "E: Kangalı bırak";
+    public const string HintTieStake = "E: Halatı kazığa bağla";
+    public const string HintThrowRope = "E: Halatı at";
+
+    [Header("U2: halat zinciri (klip zamanları, clips_meta.json; kare numaraları 1 tabanlı, t = (kare−1)/(kare sayısı−1) × süre)")]
+    [Tooltip("Cabinet_TakeCoil süresi (sn) ve kangalın ellere geçtiği an (grab_frame 11 / 43 kare).")]
+    public float takeCoilSeconds = 1.4f, takeCoilGrabTime = 1.4f * 10f / 42f;
+    [Tooltip("Dolaptan alırken yaklaşma: kangal slotu oyuncunun bu kadar önünde (m) (cabinet_coil_root_local_m y −0.40; kasa collider'ı için 0.45).")]
+    public float takeCoilApproach = 0.45f;
+    [Tooltip("Rope_TieStake süresi (sn); kangalın yerde olduğu aralık (coil_ground_frames 17–45 / 61) ve düğüm anı (stake_hand_frames 21).")]
+    public float tieSeconds = 2.0f, tieGroundStart = 2.0f * 16f / 60f, tieKnotTime = 2.0f * 20f / 60f, tieGroundEnd = 2.0f * 44f / 60f;
+    [Tooltip("Bağlarken kazık oyuncunun bu kadar önünde (m) (stake_root_local_m y −0.51).")]
+    public float tieStakeAhead = 0.51f;
+    [Tooltip("Bağlarken yerdeki kangal: oyuncu kök uzayında (m) ve yatay dönüşü (°) (coil_ground_root_local_m, Blender (0.27, −0.43, 0.222) → Unity (−0.27, 0.222, 0.43)).")]
+    public Vector3 tieCoilLocal = new Vector3(-0.27f, 0f, 0.43f);
+    public float tieCoilYaw = -35f;
+    [Tooltip("Rope_Throw süresi (sn) ve bırakış anı (release_frame 22 / 43 kare).")]
+    public float throwSeconds = 1.4f, throwReleaseTime = 1.4f * 21f / 42f;
+    [Tooltip("Kangal yere bırakılırken oyuncunun bu kadar önüne (m) konur.")]
+    public float coilPlaceDistance = 0.6f;
 
     [Header("D2")]
     [Tooltip("Sırta alma menzili: oyuncu kökünden hastanın kalçasına uzaklık (m).")]
@@ -78,9 +102,13 @@ public class PlayerInteraction : MonoBehaviour
     public PlayerKnockdown ReviveTarget { get; private set; }
 
     private enum Action { None, Release, PlaceCone, Revive, PlacePatient, Grab, PickCone,
-        OpenTailgate, Extract, AttachRope, DetachRope, Piggyback, PutDownBack, PullRope }
+        OpenTailgate, Extract, AttachRope, DetachRope, Piggyback, PutDownBack, PullRope,
+        OpenLocker, CloseLocker, TakeCoil, DropCoil, TieStake, ThrowRope }
     private MinivanTailgate targetTailgate;
     private RopeAnchor targetRope;
+    private TowTruckLocker targetLocker;
+    private RopeCoil targetCoil;
+    private bool coilBusy; // U2: dolaptan alma / bağlama / atma klibi sürüyor
 
     private Action action;
     private StretcherController targetStretcher;
@@ -136,8 +164,14 @@ public class PlayerInteraction : MonoBehaviour
             case Action.Extract: return targetPatient != null ? targetPatient.transform : null;
             case Action.AttachRope:
             case Action.DetachRope:
-            case Action.PullRope: return targetRope != null ? targetRope.transform : null;
+            case Action.PullRope:
+            case Action.TieStake:
+            case Action.ThrowRope: return targetRope != null ? targetRope.transform : null;
             case Action.Piggyback: return PiggybackTarget != null ? PiggybackTarget.transform : null;
+            // U2: dolap kapağı, dolaptaki / yerdeki kangal; bırakma hedefsiz
+            case Action.OpenLocker:
+            case Action.CloseLocker: return targetLocker != null ? (targetLocker.door != null ? targetLocker.door : targetLocker.transform) : null;
+            case Action.TakeCoil: return targetCoil != null ? targetCoil.transform : null;
             default: return null;
         }
     }
@@ -151,11 +185,13 @@ public class PlayerInteraction : MonoBehaviour
         ReviveTarget = null;
         targetTailgate = null;
         targetRope = null;
+        targetLocker = null;
+        targetCoil = null;
         PiggybackTarget = null;
         PullTarget = null;
         CurrentHint = "";
         HintIsWarning = false;
-        if (player == null || player.IsDown || piggybackBusy) return;
+        if (player == null || player.IsDown || piggybackBusy || coilBusy) return;
 
         // ---- D2: halatta ----
         if (player.Rope != null)
@@ -211,6 +247,31 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = HintPlaceCone;
             return;
         }
+        // ---- U2: kangal elde: bağlıysa yalnız at (yüz kenara dönük), değilse kazığa bağla ya da yere bırak ----
+        if (player.HeldCoil != null)
+        {
+            var heldCoil = player.HeldCoil;
+            var heldRope = heldCoil.anchor;
+            Vector3 cp = player.transform.position;
+            Vector3 cf = player.transform.forward;
+            if (heldRope != null && heldRope.State == RopeAnchor.RopeState.Tied)
+            {
+                // Bağlanmış ama atılmamış halat çözülemez; yanlış yöne bakarken ipucu yok
+                if (heldRope.CanThrow(cp, cf)) { targetRope = heldRope; action = Action.ThrowRope; CurrentHint = HintThrowRope; }
+            }
+            else if (heldRope != null && heldRope.CanTie(cp, cf))
+            {
+                targetRope = heldRope;
+                action = Action.TieStake;
+                CurrentHint = HintTieStake;
+            }
+            else if (heldRope == null || heldRope.State == RopeAnchor.RopeState.Stowed)
+            {
+                action = Action.DropCoil;
+                CurrentHint = HintDropCoil;
+            }
+            return;
+        }
 
         Vector3 me = player.transform.position;
 
@@ -223,6 +284,36 @@ public class PlayerInteraction : MonoBehaviour
             ReviveTarget = mate.knockdown;
             action = Action.Revive;
             CurrentHint = HintRevive;
+            return;
+        }
+
+        // ---- U2: çekici dolabı ve halat kangalı (yüz dönük, ≤ 1 m; koniden önce: dolabın önünde deckteki koni de menzilde olabilir) ----
+        Vector3 fwd = player.transform.forward;
+        foreach (var l in TowTruckLocker.All)
+        {
+            if (l == null) continue;
+            // Kapak açık ve kangal içindeyse önce kangal hedeflenir
+            if (l.IsOpen && l.coil != null && l.coil.InLocker && l.coil.CanPickUp && l.PlayerOutside(me) && l.coil.CanInteract(me, fwd))
+            {
+                targetCoil = l.coil;
+                action = Action.TakeCoil;
+                CurrentHint = HintTakeCoil;
+                return;
+            }
+            if (l.CanInteract(me, fwd))
+            {
+                targetLocker = l;
+                action = l.IsOpen ? Action.CloseLocker : Action.OpenLocker;
+                CurrentHint = l.IsOpen ? HintCloseLocker : HintOpenLocker;
+                return;
+            }
+        }
+        foreach (var c in RopeCoil.All)
+        {
+            if (c == null || !c.OnGround || !c.CanPickUp || !c.CanInteract(me, fwd)) continue;
+            targetCoil = c;
+            action = Action.TakeCoil;
+            CurrentHint = HintTakeCoil;
             return;
         }
 
@@ -394,8 +485,122 @@ public class PlayerInteraction : MonoBehaviour
             case Action.PutDownBack:
                 StartCoroutine(PutDownRoutine());
                 break;
+            // U2
+            case Action.OpenLocker:
+            case Action.CloseLocker:
+                targetLocker.Toggle();
+                break;
+            case Action.TakeCoil:
+                StartCoroutine(TakeCoilRoutine(targetCoil));
+                break;
+            case Action.DropCoil:
+                DropCoil();
+                break;
+            case Action.TieStake:
+                StartCoroutine(TieStakeRoutine(targetRope));
+                break;
+            case Action.ThrowRope:
+                StartCoroutine(ThrowRopeRoutine(targetRope));
+                break;
         }
         Evaluate();
+    }
+
+    // ---- U2: halat zinciri ----
+
+    // Dolaptan: oyuncu slotun önüne hizalanır (yüz dolaba), Cabinet_TakeCoil oynar, grab karesinde kangal ellere geçer.
+    // Yerden: anında elde (genel PickUp klibi Carry değişince tetiklenir).
+    private IEnumerator TakeCoilRoutine(RopeCoil coil)
+    {
+        if (coil == null || coilBusy || !coil.CanPickUp) yield break;
+        coilBusy = true;
+        if (coil.InLocker)
+        {
+            Vector3 n = coil.locker != null ? coil.locker.outward : Flat(player.transform.position - coil.GripMid);
+            n.y = 0f;
+            n = n.sqrMagnitude > 1e-6f ? n.normalized : Vector3.forward;
+            Vector3 at = coil.GripMid + n * takeCoilApproach;
+            if (GroundProbe.Find(new Vector3(at.x, player.transform.position.y + 1f, at.z), 3f, out RaycastHit g)) at.y = g.point.y + 0.02f;
+            else at.y = player.transform.position.y;
+            player.Teleport(at, Quaternion.LookRotation(-n, Vector3.up));
+            player.SuspendControl(takeCoilSeconds);
+            if (crewAnimation != null) crewAnimation.PlayAction(CrewAnimation.StateTakeCoil, takeCoilSeconds);
+            yield return new WaitForSeconds(takeCoilGrabTime);
+            if (!player.IsDown && coil.CanPickUp && player.HeldCoil == null)
+            {
+                player.HeldCoil = coil;
+                coil.PickUp(player);
+            }
+            yield return new WaitForSeconds(Mathf.Max(0f, takeCoilSeconds - takeCoilGrabTime - 0.2f));
+        }
+        else if (player.HeldCoil == null)
+        {
+            player.HeldCoil = coil;
+            coil.PickUp(player);
+        }
+        coilBusy = false;
+    }
+
+    // Kangal oyuncunun önüne, zemine yatay konur (zemin yoksa elde kalır). Genel PutDown klibi Carry değişince oynar.
+    private void DropCoil()
+    {
+        var coil = player.HeldCoil;
+        if (coil == null) return;
+        Vector3 fwd = Flat(player.transform.forward);
+        fwd = fwd.sqrMagnitude > 1e-6f ? fwd.normalized : Vector3.forward;
+        Vector3 at = player.transform.position + fwd * coilPlaceDistance;
+        if (!GroundProbe.Find(at + Vector3.up * 1.5f, 4f, out RaycastHit hit)) return;
+        player.HeldCoil = null;
+        coil.PutDown(hit.point, hit.normal, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg);
+    }
+
+    // Rope_TieStake: oyuncu kazığın tieStakeAhead gerisine, yüzü kazığa; kare 17–45 arasında kangal kazığın yanında yerde dik,
+    // kare 21'de halat ucu kazığa bağlı (çizgi kazıktan kangala); sonra kangal tekrar ellerde.
+    private IEnumerator TieStakeRoutine(RopeAnchor rope)
+    {
+        var coil = player.HeldCoil;
+        if (rope == null || coil == null || coilBusy || rope.State != RopeAnchor.RopeState.Stowed) yield break;
+        coilBusy = true;
+        Vector3 toStake = Flat(rope.transform.position - player.transform.position);
+        toStake = toStake.sqrMagnitude > 1e-6f ? toStake.normalized : Flat(player.transform.forward).normalized;
+        Vector3 at = rope.transform.position - toStake * tieStakeAhead;
+        if (GroundProbe.Find(new Vector3(at.x, rope.transform.position.y + 1f, at.z), 3f, out RaycastHit g)) at.y = g.point.y + 0.02f;
+        else at.y = player.transform.position.y;
+        player.Teleport(at, Quaternion.LookRotation(toStake, Vector3.up));
+        player.SuspendControl(tieSeconds);
+        if (crewAnimation != null) crewAnimation.PlayAction(CrewAnimation.StateTieStake, tieSeconds);
+        yield return new WaitForSeconds(tieGroundStart);
+        if (player.HeldCoil == coil)
+        {
+            Vector3 cp = player.transform.TransformPoint(new Vector3(tieCoilLocal.x, 0f, tieCoilLocal.z));
+            if (GroundProbe.Find(cp + Vector3.up * 1f, 3f, out RaycastHit cg)) cp.y = cg.point.y;
+            else cp.y = player.transform.position.y;
+            coil.BeginTiePose(cp, Quaternion.AngleAxis(tieCoilYaw, Vector3.up) * player.transform.forward);
+        }
+        yield return new WaitForSeconds(Mathf.Max(0f, tieKnotTime - tieGroundStart));
+        rope.Tie();
+        yield return new WaitForSeconds(Mathf.Max(0f, tieGroundEnd - tieKnotTime));
+        coil.EndTiePose();
+        yield return new WaitForSeconds(Mathf.Max(0f, tieSeconds - tieGroundEnd - 0.15f));
+        coilBusy = false;
+    }
+
+    // Rope_Throw: bırakış karesinde kangal ellerden çıkar, halat dibine uçar (RopeAnchor sürer); inince halat hazır.
+    private IEnumerator ThrowRopeRoutine(RopeAnchor rope)
+    {
+        var coil = player.HeldCoil;
+        if (rope == null || coil == null || coilBusy || rope.State != RopeAnchor.RopeState.Tied) yield break;
+        coilBusy = true;
+        player.SuspendControl(throwSeconds);
+        if (crewAnimation != null) crewAnimation.PlayAction(CrewAnimation.StateRopeThrow, throwSeconds);
+        yield return new WaitForSeconds(throwReleaseTime);
+        if (player.HeldCoil == coil && rope.State == RopeAnchor.RopeState.Tied)
+        {
+            player.HeldCoil = null;
+            rope.BeginThrow();
+        }
+        yield return new WaitForSeconds(Mathf.Max(0f, throwSeconds - throwReleaseTime - 0.2f));
+        coilBusy = false;
     }
 
     // ---- D2 yardımcıları ----

@@ -103,6 +103,7 @@ MonoBehaviour:
   - {fileID: 5212850461740344329}
   liftTime: 0.3
   fallSideSpeed: 1.2
+  passengerTowardFeet: 0.18
 --- !u!1 &3424078940205448385
 GameObject:
   m_ObjectHideFlags: 0

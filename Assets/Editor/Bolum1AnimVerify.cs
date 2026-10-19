@@ -112,7 +112,8 @@ public static partial class Bolum1AnimVerify
     {
         var ac = AssetDatabase.LoadAssetAtPath<AnimatorController>(Bolum1AmbulanceBuilder.LocomotionControllerPath);
         var want = new[] { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCone, CrewAnimation.StatePickUp, CrewAnimation.StatePutDown,
-            CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate };
+            CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate,
+            CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow }; // U2
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
         var patients = Bolum1AmbulanceBuilder.PatientTypes.Select(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath(t))).ToList();
@@ -443,6 +444,7 @@ public static partial class Bolum1AnimVerify
         traffic.Begin(TestSettings(false));           // doğal trafik yok
         // D2: minibüs, halat, sırtta taşıma (taze sahnede), sonra eski fazlar için hastalar patikaya
         yield return PhaseE2IndicatorInVehicle(); // E2: hastalar minibüsteyken gösterge
+        yield return PhaseU2(); // U2: halat zinciri GERÇEK akışla (dolap → kangal → kazık → atış); sonraki fazlar hazır halatı kullanır
         yield return PhaseRescue();
         yield return PhaseU1(); // U1: halat yakınlığı/yönü, beyaz vurgu, sırttan bırakma
         Bolum1TestPatients.LayOnPath(mission.patients);

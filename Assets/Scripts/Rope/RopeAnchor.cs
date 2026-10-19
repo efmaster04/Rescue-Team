@@ -9,13 +9,29 @@ using UnityEngine;
 //  - Sırtında hasta varken kendi tırmanamaz: kazıktaki arkadaş E'yi basılı tutarak çeker (Pull; Rope_Pull,
 //    halattaki Piggyback_Rope_Climb, 0.25 m/sn). Multiplayer gelene kadar test botu kazığa ışınlanıp çeker.
 // Halat LineRenderer ile çizilir: RopeAttach → (çeken varsa elleri) → kenar → halattakinin üst eli → alt eli → sarkan uç.
+//
+// U2 (üçüncü test turu kararı 3): halat başta hazır DEĞİLDİR. Kazık (SM_RopeAnchor_Bare) boş durur, çizgi yok, bağlanılamaz.
+//  Stowed → (kangal kazığa bağlanır, Rope_TieStake) Tied → (kangal atılır, Rope_Throw) Thrown → (kangal dibe iner) Ready.
+//  Tied: çizgi kazıktan kangala (ellerde ya da yerde). Thrown: kazık → (kenar) → uçan kangal (balistik, throwSeconds).
+//  Ready: eski akış (bağlanma / iniş / çekme). Bağlanmış ama atılmamış halat çözülemez (en sade seçenek).
 [DefaultExecutionOrder(200)] // oyuncu ve bot hareket ettikten, Animator kemikleri yazdıktan sonra çizim (LateUpdate)
 public class RopeAnchor : MonoBehaviour
 {
     public static readonly List<RopeAnchor> All = new List<RopeAnchor>();
 
+    public enum RopeState { Stowed, Tied, Thrown, Ready }
+
     [Tooltip("Halatın bağlandığı yaka (SM_RopeAnchor/RopeAttach).")]
     public Transform ropeAttach;
+    [Header("U2: halat zinciri")]
+    [Tooltip("Halat kangalı (dolaptan alınır, kazığa bağlanır, atılır). Boşsa halat baştan hazırdır.")]
+    public RopeCoil coil;
+    [Tooltip("Atış menzili: oyuncu kökünden uçurum kenarı noktasına (edgePoint) yatay uzaklık (m).")]
+    public float throwRange = 1.5f;
+    [Tooltip("Kangalın kazıktan kaya çıkıntısına uçuş süresi (sn).")]
+    public float throwSeconds = 0.9f;
+    [Tooltip("Dipteki kangal yığını halat kökünden (climbBottom) duvar boyunca bu kadar yanda (m).")]
+    public float bottomCoilSide = 0.45f;
     public LineRenderer line;
     [Tooltip("Uçurum kenarındaki halat dönüm noktası (patika yüzeyinde).")]
     public Transform edgePoint;
@@ -57,8 +73,129 @@ public class RopeAnchor : MonoBehaviour
     private float pullThisFrame;
     private Animator pullerAnimator;
 
+    // U2: zincir durumu
+    public RopeState State { get; private set; } = RopeState.Stowed;
+    public bool IsReady { get { return State == RopeState.Ready; } }
+    public float ThrowStartTime { get; private set; } = -1f;
+    public float FlightSeconds { get; private set; }
+    private Vector3 flightFrom, flightTo, flightNormal, flightAxis;
+
     private void OnEnable() { if (!All.Contains(this)) All.Add(this); }
     private void OnDisable() { All.Remove(this); }
+
+    private void Awake()
+    {
+        if (coil == null) State = RopeState.Ready; // kangal yoksa (eski sahne) halat baştan hazır
+        if (coil != null && coil.State == RopeCoil.CoilState.Bottom) State = RopeState.Ready;
+    }
+
+    // ---- U2: bağlama ve atma ----
+
+    // Kangal elde ve halat bağlı değilken kazığa ≤ attachRange yakın, yüz kazığa dönük
+    public bool CanTie(Vector3 p, Vector3 forward)
+    {
+        return State == RopeState.Stowed && coil != null && coil.IsHeld && Near(p, forward, transform.position);
+    }
+
+    // Rope_TieStake'in düğüm karesinde çağrılır: halat ucu kazıkta.
+    public void Tie()
+    {
+        if (State != RopeState.Stowed) return;
+        State = RopeState.Tied;
+    }
+
+    // Bağlı kangal elde, oyuncu kenara ≤ throwRange yakın ve yüzü kenara (uçuruma) dönük
+    public bool CanThrow(Vector3 p, Vector3 forward)
+    {
+        if (State != RopeState.Tied || coil == null || !coil.IsHeld || edgePoint == null) return false;
+        if (FlatDistance(p, edgePoint.position) > throwRange || Mathf.Abs(p.y - edgePoint.position.y) > 1.5f) return false;
+        return Facing(p, forward, edgePoint.position);
+    }
+
+    // Dipteki kangal yığınının yeri (zemin noktası) ve normali
+    public Vector3 BottomCoilSpot(out Vector3 normal)
+    {
+        normal = Vector3.up;
+        Vector3 side = Vector3.Cross(Vector3.up, Flat(climbBottom.forward));
+        Vector3 at = climbBottom.position + side * bottomCoilSide;
+        if (GroundProbe.Find(at + Vector3.up * 1f, 3f, out RaycastHit g)) { at = g.point; normal = g.normal; }
+        return at;
+    }
+
+    // Rope_Throw'un bırakış karesinde çağrılır: kangal ellerden çıkar, balistik eğriyle halat dibine uçar.
+    public void BeginThrow()
+    {
+        if (State != RopeState.Tied || coil == null) return;
+        State = RopeState.Thrown;
+        flightFrom = coil.GripMid;
+        flightTo = BottomCoilSpot(out flightNormal) + flightNormal * coil.halfDepth;
+        // Yörünge iki parça: kısa bir savuruşla kenarın üstündeki tepe noktasına (kenar + 0.5 m), oradan serbest düşüşle dibe.
+        // Tek parabol kısa sürede (0.9 sn) 6 m düşerken kenarın içinden geçiyordu; tepe noktası kangalı patikanın üstünde tutar.
+        Vector3 valley = Flat(climbBottom.position - edgePoint.position);
+        flightMid = edgePoint.position + valley * 0.25f + Vector3.up * 0.5f;
+        flightAxis = coil.AxisX;
+        flightPrev = flightFrom;
+        ThrowStartTime = Time.time;
+        FlightSeconds = Mathf.Max(0.2f, throwSeconds);
+        coil.BeginFlight();
+    }
+
+    private const float FlightRiseShare = 0.35f; // sürenin bu kadarı savuruş (ele → kenar üstü), kalanı düşüş
+    private Vector3 flightMid, flightPrev;
+
+    // Uçuştaki konum (t: 0..1)
+    public Vector3 FlightPoint(float u)
+    {
+        if (u < FlightRiseShare)
+        {
+            float s = u / FlightRiseShare;
+            return Vector3.Lerp(flightFrom, flightMid, s) + Vector3.up * (0.25f * Mathf.Sin(Mathf.PI * s));
+        }
+        float f = (u - FlightRiseShare) / (1f - FlightRiseShare);
+        Vector3 p = Vector3.Lerp(flightMid, flightTo, f);  // yatayda sabit hız
+        p.y = Mathf.Lerp(flightMid.y, flightTo.y, f * f);   // dikeyde ivmeli düşüş (parabol)
+        return p;
+    }
+
+    // Test / hızlı kurulum: zinciri atlayıp halatı hazır duruma getirir (kangal dipte yığın).
+    public void ForceReady()
+    {
+        if (coil != null)
+        {
+            Vector3 at = BottomCoilSpot(out Vector3 n);
+            coil.RestAtBottom(at, n);
+        }
+        State = RopeState.Ready;
+    }
+
+    private void StepFlight()
+    {
+        float t = Time.time - ThrowStartTime;
+        if (t >= FlightSeconds)
+        {
+            coil.RestAtBottom(flightTo - flightNormal * coil.halfDepth, flightNormal);
+            State = RopeState.Ready;
+            return;
+        }
+        Vector3 pos = FlightPoint(t / FlightSeconds);
+        Vector3 vel = pos - flightPrev;
+        flightPrev = pos;
+        Vector3 dir = vel.sqrMagnitude > 1e-8f ? vel.normalized : Vector3.down;
+        // Kangal uçuş yönüne döner, kendi ekseni etrafında hafifçe yuvarlanır
+        Vector3 axis = Quaternion.AngleAxis(360f * t / FlightSeconds, dir) * flightAxis;
+        Vector3 normal = Vector3.Cross(axis, dir);
+        if (normal.sqrMagnitude < 1e-6f) normal = Vector3.up;
+        coil.SetPose(pos, axis, normal);
+    }
+
+    public static bool FacingTarget(Vector3 p, Vector3 forward, Vector3 target, float maxAngle, float ignoreDistance)
+    {
+        Vector3 to = target - p; to.y = 0f;
+        if (to.magnitude < ignoreDistance) return true;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 1e-6f) return false;
+        return Vector3.Angle(forward, to) <= maxAngle;
+    }
 
     public float Height { get { return climbTop.position.y - climbBottom.position.y; } }
     public Vector3 ClimbPoint(float t) { return Vector3.Lerp(climbBottom.position, climbTop.position, Mathf.Clamp01(t)); }
@@ -77,20 +214,13 @@ public class RopeAnchor : MonoBehaviour
         return Facing(p, forward, target);
     }
 
-    public bool Facing(Vector3 p, Vector3 forward, Vector3 target)
-    {
-        Vector3 to = target - p; to.y = 0f;
-        if (to.magnitude < facingIgnoreDistance) return true;
-        forward.y = 0f;
-        if (forward.sqrMagnitude < 1e-6f) return false;
-        return Vector3.Angle(forward, to) <= facingAngle;
-    }
+    public bool Facing(Vector3 p, Vector3 forward, Vector3 target) { return FacingTarget(p, forward, target, facingAngle, facingIgnoreDistance); }
 
-    // Bağlanabilir mi: halat boş ve oyuncu ≤ attachRange yakında, yüzü bağlanma noktasına (kazıkta topStand, dipte halat kökü) dönük
+    // Bağlanabilir mi: halat HAZIR (U2), boş ve oyuncu ≤ attachRange yakında, yüzü bağlanma noktasına (kazıkta topStand, dipte halat kökü) dönük
     public bool CanAttach(Vector3 p, Vector3 forward, out bool atBottom)
     {
         atBottom = false;
-        if (Climber != null) return false;
+        if (State != RopeState.Ready || Climber != null) return false;
         if (Near(p, forward, topStand.position)) return true;
         if (Near(p, forward, climbBottom.position)) { atBottom = true; return true; }
         return false;
@@ -171,7 +301,26 @@ public class RopeAnchor : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (State == RopeState.Thrown && coil != null) StepFlight();
         if (line == null || ropeAttach == null) return;
+        // U2: zincir tamamlanmadan halat çizilmez / kısa çizilir
+        if (State == RopeState.Stowed || coil == null && State != RopeState.Ready)
+        {
+            line.enabled = false;
+            return;
+        }
+        if (State == RopeState.Tied || State == RopeState.Thrown)
+        {
+            line.enabled = true;
+            var tied = new List<Vector3> { ropeAttach.position };
+            Vector3 c = coil.GripMid;
+            if (State == RopeState.Thrown && edgePoint != null && c.y < edgePoint.position.y) tied.Add(edgePoint.position); // kenardan kırılır
+            tied.Add(c);
+            line.positionCount = tied.Count;
+            line.SetPositions(tied.ToArray());
+            return;
+        }
+        line.enabled = true;
         var pts = new List<Vector3> { ropeAttach.position };
         if (BeingPulled && pullerAnimator != null)
             AddHands(pts, pullerAnimator, true);

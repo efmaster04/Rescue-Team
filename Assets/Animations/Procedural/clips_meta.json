@@ -638,6 +638,3599 @@
         "handle_spacing_m": 0.586,
         "note": "Avuç noktası = el kemiği başı + kemik yönünde 0.05 m (parmaklara doğru). Konumlar kök yerel Blender koordinatı (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)), döngü ortalaması; adım sallantısıyla z aralığında oynar. Sedye taşıyanla aynı yöne bakar (sedye -Y = yürüyüş yönü); Handle_Front işareti iki avucun ortasına oturur, sap ekseni kök +Y boyunca. Unity IK: iki el hedefini sedyenin sap noktalarına kilitleyin (sol el +X, sağ el -X direği)."
       }
+    },
+    "Cabinet_TakeCoil": {
+      "file": "Cabinet_TakeCoil.fbx",
+      "duration_s": 1.4,
+      "frames": 43,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Açık dolaba uzanır, kangalı çeker; geri kaykılıp göğsüne bastırarak Carry_Coil pozunda biter.",
+      "action_sha256": "82d5995732cf6c96b445a6a5372881f3d151e5827145fd4aca55928f1410cde9",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.368277,
+            -0.05532,
+            0.612945
+          ],
+          "Right": [
+            -0.368277,
+            -0.05532,
+            0.612945
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.368277,
+                -0.05532,
+                0.612945
+              ],
+              "Right": [
+                -0.368277,
+                -0.05532,
+                0.612945
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.364057,
+                -0.065832,
+                0.618048
+              ],
+              "Right": [
+                -0.362545,
+                -0.065832,
+                0.618048
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.352645,
+                -0.094231,
+                0.631807
+              ],
+              "Right": [
+                -0.347071,
+                -0.094231,
+                0.631807
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.335907,
+                -0.135813,
+                0.651902
+              ],
+              "Right": [
+                -0.324444,
+                -0.135813,
+                0.651902
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.315716,
+                -0.185867,
+                0.676029
+              ],
+              "Right": [
+                -0.297251,
+                -0.185867,
+                0.676029
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.293958,
+                -0.239674,
+                0.701904
+              ],
+              "Right": [
+                -0.268058,
+                -0.239674,
+                0.701904
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.272542,
+                -0.292507,
+                0.727274
+              ],
+              "Right": [
+                -0.239414,
+                -0.292507,
+                0.727274
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.253399,
+                -0.339634,
+                0.749914
+              ],
+              "Right": [
+                -0.213846,
+                -0.339634,
+                0.749914
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.238473,
+                -0.376326,
+                0.767608
+              ],
+              "Right": [
+                -0.193865,
+                -0.376326,
+                0.767608
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.228323,
+                -0.387399,
+                0.781131
+              ],
+              "Right": [
+                -0.182148,
+                -0.389769,
+                0.780448
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.226967,
+                -0.391061,
+                0.782868
+              ],
+              "Right": [
+                -0.17994,
+                -0.393226,
+                0.782269
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.22752,
+                -0.392734,
+                0.782218
+              ],
+              "Right": [
+                -0.179601,
+                -0.394958,
+                0.781611
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.228148,
+                -0.393498,
+                0.78174
+              ],
+              "Right": [
+                -0.179128,
+                -0.395787,
+                0.781127
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.229137,
+                -0.393202,
+                0.781348
+              ],
+              "Right": [
+                -0.178231,
+                -0.395591,
+                0.780723
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.230601,
+                -0.391733,
+                0.78101
+              ],
+              "Right": [
+                -0.176791,
+                -0.394265,
+                0.780365
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.232294,
+                -0.38906,
+                0.780817
+              ],
+              "Right": [
+                -0.175044,
+                -0.391755,
+                0.780149
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.233964,
+                -0.385155,
+                0.780853
+              ],
+              "Right": [
+                -0.173237,
+                -0.388008,
+                0.780168
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.235335,
+                -0.379823,
+                0.781233
+              ],
+              "Right": [
+                -0.171626,
+                -0.382799,
+                0.780545
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.236051,
+                -0.372286,
+                0.782176
+              ],
+              "Right": [
+                -0.170497,
+                -0.375314,
+                0.781509
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.235979,
+                -0.363072,
+                0.783584
+              ],
+              "Right": [
+                -0.170045,
+                -0.366072,
+                0.78296
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.235115,
+                -0.353007,
+                0.785273
+              ],
+              "Right": [
+                -0.170369,
+                -0.355907,
+                0.784714
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.233816,
+                -0.34285,
+                0.78705
+              ],
+              "Right": [
+                -0.171242,
+                -0.34562,
+                0.786576
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.232199,
+                -0.333081,
+                0.78879
+              ],
+              "Right": [
+                -0.172542,
+                -0.3357,
+                0.788403
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.230334,
+                -0.324252,
+                0.790413
+              ],
+              "Right": [
+                -0.174186,
+                -0.326704,
+                0.790105
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.228294,
+                -0.316997,
+                0.791872
+              ],
+              "Right": [
+                -0.176099,
+                -0.31927,
+                0.791628
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.226151,
+                -0.311999,
+                0.793128
+              ],
+              "Right": [
+                -0.178215,
+                -0.314085,
+                0.792924
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.223961,
+                -0.309991,
+                0.794109
+              ],
+              "Right": [
+                -0.180486,
+                -0.311887,
+                0.793918
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.221491,
+                -0.312905,
+                0.794711
+              ],
+              "Right": [
+                -0.183303,
+                -0.314587,
+                0.794512
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.218655,
+                -0.320023,
+                0.794725
+              ],
+              "Right": [
+                -0.186748,
+                -0.321452,
+                0.79451
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.215538,
+                -0.329433,
+                0.79393
+              ],
+              "Right": [
+                -0.190636,
+                -0.33057,
+                0.793713
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.212289,
+                -0.339362,
+                0.792329
+              ],
+              "Right": [
+                -0.194717,
+                -0.340179,
+                0.792137
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.209142,
+                -0.348299,
+                0.790238
+              ],
+              "Right": [
+                -0.198661,
+                -0.348795,
+                0.7901
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.206147,
+                -0.35065,
+                0.789631
+              ],
+              "Right": [
+                -0.201853,
+                -0.35065,
+                0.789631
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.35,
+                0.79
+              ],
+              "Right": [
+                -0.204,
+                -0.35,
+                0.79
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202781,
+                -0.348339,
+                0.790831
+              ],
+              "Right": [
+                -0.205219,
+                -0.348339,
+                0.790831
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202133,
+                -0.345982,
+                0.792009
+              ],
+              "Right": [
+                -0.205867,
+                -0.345982,
+                0.792009
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.201942,
+                -0.343169,
+                0.793416
+              ],
+              "Right": [
+                -0.206058,
+                -0.343169,
+                0.793416
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202095,
+                -0.340136,
+                0.794932
+              ],
+              "Right": [
+                -0.205905,
+                -0.340136,
+                0.794932
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202476,
+                -0.337121,
+                0.79644
+              ],
+              "Right": [
+                -0.205524,
+                -0.337121,
+                0.79644
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202971,
+                -0.334362,
+                0.797819
+              ],
+              "Right": [
+                -0.205029,
+                -0.334362,
+                0.797819
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.203467,
+                -0.332097,
+                0.798952
+              ],
+              "Right": [
+                -0.204534,
+                -0.332097,
+                0.798952
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.203848,
+                -0.330564,
+                0.799718
+              ],
+              "Right": [
+                -0.204152,
+                -0.330564,
+                0.799718
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      },
+      "grab_frame": 11,
+      "cabinet_coil_root_local_m": [
+        0.025,
+        -0.4,
+        0.78
+      ]
+    },
+    "Carry_Coil_Idle": {
+      "file": "Carry_Coil_Idle.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki el kangalın yanlarında; göğüs önünde yükü sarar, nefes ve sabırsız kafa hareketi.",
+      "action_sha256": "4ab5050143574fd0fce0c8d2acddd2d7684332efb18bad048c742f9464565e4b",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.33,
+            0.8
+          ],
+          "Right": [
+            -0.204,
+            -0.33,
+            0.8
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800039
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800039
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800155
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800155
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800346
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800346
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800608
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800608
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800936
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800936
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801324
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801324
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801763
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801763
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802247
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802247
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802764
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802764
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803306
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803306
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803861
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803861
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804418
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804418
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804968
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804968
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.805499
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.805499
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806463
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806463
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806877
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806877
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807236
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807236
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807532
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807532
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807759
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807759
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807913
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807913
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.80799
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.80799
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.80799
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.80799
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807913
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807913
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807759
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807759
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807532
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807532
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807236
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807236
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806877
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806877
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806463
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806463
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.805499
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.805499
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804968
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804968
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804418
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804418
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803861
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803861
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803306
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803306
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802764
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802764
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802247
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802247
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801763
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801763
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801324
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801324
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800936
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800936
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800608
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800608
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800346
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800346
+              ]
+            }
+          },
+          {
+            "frame": 44,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800155
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800155
+              ]
+            }
+          },
+          {
+            "frame": 45,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800039
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800039
+              ]
+            }
+          },
+          {
+            "frame": 46,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      }
+    },
+    "Carry_Coil_Walk": {
+      "file": "Carry_Coil_Walk.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki elle kangalı göğüste tutarak telaşlı kısa adımlarla 2.4 m/sn yürür (yerinde).",
+      "action_sha256": "46cb01bbf88c71cf4e088c1186ac66b950e2ac497733eefdc9a237d0dc81bb15",
+      "target_speed_mps": 2.4,
+      "stance_ratio": 0.4,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.384,
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.32,
+            0.754369
+          ],
+          "Right": [
+            -0.204,
+            -0.32,
+            0.754369
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754369
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754369
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.749436
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.749436
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745067
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745067
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745631
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745631
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.750565
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.750565
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754933
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754933
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754369
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754369
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.749436
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.749436
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745067
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745067
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745631
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745631
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.750565
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.750565
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754933
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754933
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754369
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754369
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      }
+    },
+    "Rope_TieStake": {
+      "file": "Rope_TieStake.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kangalı yere koyar, kazık yakasında üç abartılı çekişle düğüm atar, tekrar kucaklayıp doğrulur.",
+      "action_sha256": "7c47fb3230d5ccd78cfef1c343f845dd7941a23558324646066db1e88c713275",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.33,
+            0.8
+          ],
+          "Right": [
+            -0.204,
+            -0.33,
+            0.8
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.207434,
+                -0.329686,
+                0.792636
+              ],
+              "Right": [
+                -0.200554,
+                -0.332862,
+                0.792636
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.21703,
+                -0.328805,
+                0.771914
+              ],
+              "Right": [
+                -0.19079,
+                -0.340914,
+                0.771914
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.231668,
+                -0.327449,
+                0.739888
+              ],
+              "Right": [
+                -0.175508,
+                -0.353351,
+                0.739888
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.25019,
+                -0.325724,
+                0.698615
+              ],
+              "Right": [
+                -0.15547,
+                -0.369358,
+                0.698615
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.271447,
+                -0.323753,
+                0.650148
+              ],
+              "Right": [
+                -0.131447,
+                -0.388099,
+                0.650148
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.294342,
+                -0.321672,
+                0.596544
+              ],
+              "Right": [
+                -0.104262,
+                -0.408728,
+                0.596544
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.317858,
+                -0.319625,
+                0.539857
+              ],
+              "Right": [
+                -0.074818,
+                -0.43039,
+                0.539857
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.341077,
+                -0.317745,
+                0.482143
+              ],
+              "Right": [
+                -0.044117,
+                -0.452241,
+                0.482143
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.361103,
+                -0.313893,
+                0.429372
+              ],
+              "Right": [
+                -0.013265,
+                -0.473459,
+                0.425456
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.374991,
+                -0.307404,
+                0.387823
+              ],
+              "Right": [
+                0.016531,
+                -0.493265,
+                0.371852
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.386553,
+                -0.30307,
+                0.351313
+              ],
+              "Right": [
+                0.043978,
+                -0.510927,
+                0.323386
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.39588,
+                -0.300461,
+                0.320681
+              ],
+              "Right": [
+                0.067722,
+                -0.525765,
+                0.282112
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.402886,
+                -0.299054,
+                0.297066
+              ],
+              "Right": [
+                0.086374,
+                -0.537139,
+                0.250087
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.407338,
+                -0.298402,
+                0.281816
+              ],
+              "Right": [
+                0.098547,
+                -0.544432,
+                0.229364
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.408908,
+                -0.298216,
+                0.276398
+              ],
+              "Right": [
+                0.102893,
+                -0.54701,
+                0.222
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.380802,
+                -0.334247,
+                0.265497
+              ],
+              "Right": [
+                0.076492,
+                -0.534321,
+                0.231844
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.290371,
+                -0.4139,
+                0.254527
+              ],
+              "Right": [
+                0.024443,
+                -0.512822,
+                0.254527
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.162458,
+                -0.474493,
+                0.279778
+              ],
+              "Right": [
+                -0.022458,
+                -0.504026,
+                0.279778
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.069356,
+                -0.5098,
+                0.294609
+              ],
+              "Right": [
+                -0.050837,
+                -0.512318,
+                0.294609
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.498751,
+                0.308035
+              ],
+              "Right": [
+                -0.055,
+                -0.498751,
+                0.308035
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.475878,
+                0.324373
+              ],
+              "Right": [
+                -0.055,
+                -0.475878,
+                0.324373
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.482636,
+                0.319546
+              ],
+              "Right": [
+                -0.055,
+                -0.482636,
+                0.319546
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.51,
+                0.3
+              ],
+              "Right": [
+                -0.055,
+                -0.51,
+                0.3
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.064558,
+                -0.521719,
+                0.296588
+              ],
+              "Right": [
+                -0.064558,
+                -0.521719,
+                0.296588
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.06866,
+                -0.520753,
+                0.29951
+              ],
+              "Right": [
+                -0.06866,
+                -0.520753,
+                0.29951
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.056498,
+                -0.522933,
+                0.291517
+              ],
+              "Right": [
+                -0.056498,
+                -0.522933,
+                0.291517
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.494814,
+                0.310847
+              ],
+              "Right": [
+                -0.055,
+                -0.494814,
+                0.310847
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.475878,
+                0.324373
+              ],
+              "Right": [
+                -0.055,
+                -0.475878,
+                0.324373
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.482636,
+                0.319546
+              ],
+              "Right": [
+                -0.055,
+                -0.482636,
+                0.319546
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.51,
+                0.3
+              ],
+              "Right": [
+                -0.055,
+                -0.51,
+                0.3
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.064558,
+                -0.521719,
+                0.296588
+              ],
+              "Right": [
+                -0.064558,
+                -0.521719,
+                0.296588
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.06866,
+                -0.520753,
+                0.29951
+              ],
+              "Right": [
+                -0.06866,
+                -0.520753,
+                0.29951
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.056498,
+                -0.522933,
+                0.291517
+              ],
+              "Right": [
+                -0.056498,
+                -0.522933,
+                0.291517
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.494814,
+                0.310847
+              ],
+              "Right": [
+                -0.055,
+                -0.494814,
+                0.310847
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.475878,
+                0.324373
+              ],
+              "Right": [
+                -0.055,
+                -0.475878,
+                0.324373
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.482636,
+                0.319546
+              ],
+              "Right": [
+                -0.055,
+                -0.482636,
+                0.319546
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.51,
+                0.3
+              ],
+              "Right": [
+                -0.055,
+                -0.51,
+                0.3
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.064558,
+                -0.521719,
+                0.296588
+              ],
+              "Right": [
+                -0.064558,
+                -0.521719,
+                0.296588
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.06866,
+                -0.520753,
+                0.29951
+              ],
+              "Right": [
+                -0.06866,
+                -0.520753,
+                0.29951
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.521249,
+                0.291965
+              ],
+              "Right": [
+                -0.055,
+                -0.521249,
+                0.291965
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.069356,
+                -0.502195,
+                0.300041
+              ],
+              "Right": [
+                -0.050837,
+                -0.504714,
+                0.300041
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.162458,
+                -0.474493,
+                0.279778
+              ],
+              "Right": [
+                -0.022458,
+                -0.504026,
+                0.279778
+              ]
+            }
+          },
+          {
+            "frame": 44,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.290371,
+                -0.4139,
+                0.254527
+              ],
+              "Right": [
+                0.024443,
+                -0.512822,
+                0.254527
+              ]
+            }
+          },
+          {
+            "frame": 45,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.380802,
+                -0.334247,
+                0.265497
+              ],
+              "Right": [
+                0.076492,
+                -0.534321,
+                0.231844
+              ]
+            }
+          },
+          {
+            "frame": 46,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.408908,
+                -0.298216,
+                0.276398
+              ],
+              "Right": [
+                0.102893,
+                -0.54701,
+                0.222
+              ]
+            }
+          },
+          {
+            "frame": 47,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.407338,
+                -0.298402,
+                0.281816
+              ],
+              "Right": [
+                0.098547,
+                -0.544432,
+                0.229364
+              ]
+            }
+          },
+          {
+            "frame": 48,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.402886,
+                -0.299054,
+                0.297066
+              ],
+              "Right": [
+                0.086374,
+                -0.537139,
+                0.250087
+              ]
+            }
+          },
+          {
+            "frame": 49,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.39588,
+                -0.300461,
+                0.320681
+              ],
+              "Right": [
+                0.067722,
+                -0.525765,
+                0.282112
+              ]
+            }
+          },
+          {
+            "frame": 50,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.386553,
+                -0.30307,
+                0.351313
+              ],
+              "Right": [
+                0.043978,
+                -0.510927,
+                0.323386
+              ]
+            }
+          },
+          {
+            "frame": 51,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.374991,
+                -0.307404,
+                0.387823
+              ],
+              "Right": [
+                0.016531,
+                -0.493265,
+                0.371852
+              ]
+            }
+          },
+          {
+            "frame": 52,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.361103,
+                -0.313893,
+                0.429372
+              ],
+              "Right": [
+                -0.013265,
+                -0.473459,
+                0.425456
+              ]
+            }
+          },
+          {
+            "frame": 53,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.341077,
+                -0.317745,
+                0.482143
+              ],
+              "Right": [
+                -0.044117,
+                -0.452241,
+                0.482143
+              ]
+            }
+          },
+          {
+            "frame": 54,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.317858,
+                -0.319625,
+                0.539857
+              ],
+              "Right": [
+                -0.074818,
+                -0.43039,
+                0.539857
+              ]
+            }
+          },
+          {
+            "frame": 55,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.294342,
+                -0.321672,
+                0.596544
+              ],
+              "Right": [
+                -0.104262,
+                -0.408728,
+                0.596544
+              ]
+            }
+          },
+          {
+            "frame": 56,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.271447,
+                -0.323753,
+                0.650148
+              ],
+              "Right": [
+                -0.131447,
+                -0.388099,
+                0.650148
+              ]
+            }
+          },
+          {
+            "frame": 57,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.25019,
+                -0.325724,
+                0.698615
+              ],
+              "Right": [
+                -0.15547,
+                -0.369358,
+                0.698615
+              ]
+            }
+          },
+          {
+            "frame": 58,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.231668,
+                -0.327449,
+                0.739888
+              ],
+              "Right": [
+                -0.175508,
+                -0.353351,
+                0.739888
+              ]
+            }
+          },
+          {
+            "frame": 59,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.21703,
+                -0.328805,
+                0.771914
+              ],
+              "Right": [
+                -0.19079,
+                -0.340914,
+                0.771914
+              ]
+            }
+          },
+          {
+            "frame": 60,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.207434,
+                -0.329686,
+                0.792636
+              ],
+              "Right": [
+                -0.200554,
+                -0.332862,
+                0.792636
+              ]
+            }
+          },
+          {
+            "frame": 61,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      },
+      "stake_hand_frames": [
+        21,
+        40
+      ],
+      "stake_root_local_m": [
+        0,
+        -0.51,
+        0
+      ],
+      "coil_ground_frames": [
+        17,
+        45
+      ],
+      "coil_ground_root_local_m": [
+        0.27,
+        -0.43,
+        0.222
+      ],
+      "coil_ground_rotation_euler_deg": [
+        0,
+        0,
+        35
+      ],
+      "tug_frames": [
+        22,
+        29,
+        36
+      ]
+    },
+    "Rope_Throw": {
+      "file": "Rope_Throw.fbx",
+      "duration_s": 1.4,
+      "frames": 43,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kangalı geriye çeker, ileri-aşağı fırlatır; kollar açık iki komik denge salınımından sonra dik durur.",
+      "action_sha256": "20c2a8bf1c3a0a2a131ba1cdc7c69d2914f7ac6b7749870c41380650d8965bc8",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.33,
+            0.8
+          ],
+          "Right": [
+            -0.204,
+            -0.33,
+            0.8
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.179631,
+                -0.344087,
+                0.797398
+              ],
+              "Right": [
+                -0.227305,
+                -0.314635,
+                0.797398
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.109066,
+                -0.373059,
+                0.790301
+              ],
+              "Right": [
+                -0.284357,
+                -0.264971,
+                0.790301
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.001955,
+                -0.389456,
+                0.779777
+              ],
+              "Right": [
+                -0.348429,
+                -0.174003,
+                0.779777
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.130483,
+                -0.360864,
+                0.769354
+              ],
+              "Right": [
+                -0.384922,
+                -0.042782,
+                0.76797
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.248186,
+                -0.283925,
+                0.758637
+              ],
+              "Right": [
+                -0.369953,
+                0.103809,
+                0.755391
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.330131,
+                -0.171619,
+                0.74772
+              ],
+              "Right": [
+                -0.30473,
+                0.233059,
+                0.741862
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.365788,
+                -0.049961,
+                0.737097
+              ],
+              "Right": [
+                -0.209428,
+                0.323195,
+                0.728392
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.364292,
+                0.053592,
+                0.727488
+              ],
+              "Right": [
+                -0.113993,
+                0.37053,
+                0.716287
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.348059,
+                0.120424,
+                0.719985
+              ],
+              "Right": [
+                -0.045758,
+                0.387422,
+                0.707022
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.340267,
+                0.141244,
+                0.715986
+              ],
+              "Right": [
+                -0.023801,
+                0.390752,
+                0.702164
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.343292,
+                0.143802,
+                0.720957
+              ],
+              "Right": [
+                -0.026614,
+                0.393752,
+                0.708864
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.350198,
+                0.149135,
+                0.734332
+              ],
+              "Right": [
+                -0.024906,
+                0.391233,
+                0.729112
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.358348,
+                0.155269,
+                0.750146
+              ],
+              "Right": [
+                -0.024474,
+                0.389773,
+                0.750146
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.380659,
+                0.099507,
+                0.760965
+              ],
+              "Right": [
+                -0.087759,
+                0.383538,
+                0.760965
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.398969,
+                -0.037408,
+                0.754145
+              ],
+              "Right": [
+                -0.228023,
+                0.332692,
+                0.753417
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.349407,
+                -0.219004,
+                0.736237
+              ],
+              "Right": [
+                -0.366082,
+                0.18783,
+                0.736657
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.212615,
+                -0.377326,
+                0.710304
+              ],
+              "Right": [
+                -0.425756,
+                -0.030903,
+                0.713257
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.026463,
+                -0.456508,
+                0.680869
+              ],
+              "Right": [
+                -0.376301,
+                -0.248407,
+                0.684263
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.132871,
+                -0.458879,
+                0.653648
+              ],
+              "Right": [
+                -0.269261,
+                -0.392097,
+                0.654902
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.203201,
+                -0.448948,
+                0.632711
+              ],
+              "Right": [
+                -0.204602,
+                -0.44946,
+                0.632037
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.46,
+                0.62
+              ],
+              "Right": [
+                -0.204,
+                -0.46,
+                0.62
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.253004,
+                -0.47048,
+                0.612999
+              ],
+              "Right": [
+                -0.251028,
+                -0.469961,
+                0.611183
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.281199,
+                -0.480279,
+                0.638204
+              ],
+              "Right": [
+                -0.257901,
+                -0.465906,
+                0.635968
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.328718,
+                -0.488406,
+                0.673946
+              ],
+              "Right": [
+                -0.253728,
+                -0.457387,
+                0.669188
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.381821,
+                -0.483272,
+                0.710608
+              ],
+              "Right": [
+                -0.245593,
+                -0.447858,
+                0.703591
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.412075,
+                -0.458675,
+                0.740008
+              ],
+              "Right": [
+                -0.250445,
+                -0.437092,
+                0.736412
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.397111,
+                -0.420169,
+                0.760078
+              ],
+              "Right": [
+                -0.281321,
+                -0.411968,
+                0.765161
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.35211,
+                -0.371781,
+                0.767924
+              ],
+              "Right": [
+                -0.327381,
+                -0.373299,
+                0.782309
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.303767,
+                -0.323662,
+                0.766605
+              ],
+              "Right": [
+                -0.375088,
+                -0.332142,
+                0.788406
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.268267,
+                -0.288782,
+                0.759451
+              ],
+              "Right": [
+                -0.409049,
+                -0.30063,
+                0.786344
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.260341,
+                -0.27702,
+                0.755334
+              ],
+              "Right": [
+                -0.416352,
+                -0.290185,
+                0.787544
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.28085,
+                -0.289583,
+                0.758104
+              ],
+              "Right": [
+                -0.396787,
+                -0.302562,
+                0.794878
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.317427,
+                -0.317759,
+                0.763652
+              ],
+              "Right": [
+                -0.361493,
+                -0.327655,
+                0.798739
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.360651,
+                -0.346533,
+                0.761001
+              ],
+              "Right": [
+                -0.327565,
+                -0.350154,
+                0.785527
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.398588,
+                -0.354325,
+                0.744779
+              ],
+              "Right": [
+                -0.31314,
+                -0.352714,
+                0.752917
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.41115,
+                -0.313735,
+                0.727709
+              ],
+              "Right": [
+                -0.316432,
+                -0.312072,
+                0.720344
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.415421,
+                -0.258578,
+                0.702318
+              ],
+              "Right": [
+                -0.331082,
+                -0.256993,
+                0.691283
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.415465,
+                -0.199529,
+                0.671363
+              ],
+              "Right": [
+                -0.351167,
+                -0.198405,
+                0.666176
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.413549,
+                -0.144891,
+                0.640692
+              ],
+              "Right": [
+                -0.372282,
+                -0.144331,
+                0.643405
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.411213,
+                -0.100966,
+                0.616313
+              ],
+              "Right": [
+                -0.390769,
+                -0.100805,
+                0.622231
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.409361,
+                -0.072133,
+                0.601858
+              ],
+              "Right": [
+                -0.403708,
+                -0.072119,
+                0.604965
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.420784,
+                -0.025323,
+                0.569432
+              ],
+              "Right": [
+                -0.420784,
+                -0.025323,
+                0.569432
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      },
+      "release_frame": 22,
+      "release_hand_root_local_m": {
+        "Left": [
+          0.204,
+          -0.46,
+          0.62
+        ],
+        "Right": [
+          -0.204,
+          -0.46,
+          0.62
+        ]
+      },
+      "release_position_root_local_m": [
+        0.0,
+        -0.46,
+        0.62
+      ],
+      "throw_direction_root_local": [
+        0.042619,
+        -0.65683,
+        -0.752834
+      ],
+      "stumble_frames": [
+        25,
+        40
+      ],
+      "preview_flight_speed_mps": 1.8,
+      "preview_flight_note": "Şeritte bırakış sonrası balistik uçuş; oyunda aynı olayda fizik devralır."
     }
   },
   "actions_sha256": "9b3cf73757b53f786adcf6a5905b323b4c2fc6e0f68312705ca288460b1d3e08"

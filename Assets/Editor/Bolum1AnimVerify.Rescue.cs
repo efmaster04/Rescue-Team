@@ -23,6 +23,8 @@ public static partial class Bolum1AnimVerify
         Vector3 vanPos0 = van.position;
         Quaternion vanRot0 = van.rotation;
         var s1 = Stretcher(0);
+        // U2: halat zinciri normalde PhaseU2'de gerçek akışla kurulur; o faz başarısızsa hızlı kurulumla devam (bu fazın kontrolleri bağımsız kalsın)
+        if (!rope.IsReady) { rope.ForceReady(); Line("  (U2) halat zinciri hazır değildi, hızlı kurulumla hazır edildi"); }
         var savedStretchers = StretcherController.All.Select(s => (s, s.transform.position, s.transform.rotation)).ToList();
         bot.assistEnabled = false;
         // Hareket yönleri dünya eksenine göre (kamera yok): (1, 0) = +X, (-1, 0) = -X; kaya çıkıntısı X boyunca uzanır.

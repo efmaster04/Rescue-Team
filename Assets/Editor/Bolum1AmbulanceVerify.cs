@@ -632,6 +632,8 @@ public static class Bolum1AmbulanceVerify
         var rope = RopeAnchor.All[0];
         var bot = Bot;
         bot.assistEnabled = true;
+        // U2: halat başta hazır değil (dolap → kazık → atış zinciri). Bu test akışın kendisini değil kurtarmayı ölçer: hızlı kurulum.
+        if (!rope.IsReady) rope.ForceReady();
         Vector3 toElder = Flat(elder.Position - rope.climbBottom.position);
         Vector3 near = rope.climbBottom.position + toElder.normalized * Mathf.Max(0f, toElder.magnitude - 0.9f);
         if (GroundProbe.Find(near + Vector3.up, 2f, out RaycastHit g)) near.y = g.point.y + 0.02f;

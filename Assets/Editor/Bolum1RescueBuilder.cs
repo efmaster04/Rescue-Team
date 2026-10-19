@@ -13,9 +13,15 @@ using UnityEngine;
 //  - Oyuncunun Spine1'ine PiggybackSocket (clips_meta.json piggyback_socket).
 public static class Bolum1RescueBuilder
 {
-    public const string RopeAnchorModelPath = "Assets/Models/Props/RopeAnchor/SM_RopeAnchor.fbx";
+    // U2: kazık halat yığını OLMADAN (SM_RopeAnchor_Bare; aynı pivot ve RopeAttach). Halat kangalı ayrı prop.
+    public const string RopeAnchorModelPath = "Assets/Models/Props/RopeAnchor/SM_RopeAnchor_Bare.fbx";
+    public const string RopeCoilModelPath = "Assets/Models/Props/RopeCoil/SM_RopeCoil.fbx";
+    public const string RopeCoilMetaPath = "Assets/Models/Props/RopeCoil/rope_coil_meta.json";
     public const string RopeMaterialPath = Bolum1AmbulanceBuilder.MaterialFolder + "/M_Rope.mat";
     public const string RopeAnchorName = "RopeAnchor";
+    public const string RopeCoilName = "RopeCoil";
+    public const string LockerName = "TowTruckLocker_L1";
+    public const float LockerOpenSeconds = 0.4f;
     public const string SocketName = "PiggybackSocket";
     // Halat kazığının Blender X'i: kaya çıkıntısı (x −4…10) üstünde, minibüsün (x 3…5) ve çantaların batısında.
     public const float AnchorBlenderX = 0f;
@@ -219,6 +225,7 @@ public static class Bolum1RescueBuilder
         line.useWorldSpace = true;
         line.positionCount = 3;
         line.SetPositions(new[] { rope.ropeAttach.position, rope.edgePoint.position, bottom + Vector3.up * 0.05f });
+        line.enabled = false; // U2: halat zinciri kurulana kadar çizilmez (RopeAnchor.LateUpdate yönetir)
         rope.line = line;
 
         // Tırmanış hattı boyunca duvara uzaklık (ölçüm): her yükseklikte kökten duvara yatay mesafe
@@ -305,6 +312,86 @@ public static class Bolum1RescueBuilder
     }
 
     private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
+
+    // =====================================================================================
+    // U2: halat kangalı ve çekici dolabı
+    // =====================================================================================
+
+    // Çekici kök uzayı = Blender çekici uzayı, X işareti ters (Bolum1TowTruck.AddBox ile aynı).
+    private static Vector3 TruckLocal(Vector3 blender) { return new Vector3(-blender.x, blender.y, blender.z); }
+
+    // rope_coil_meta.json towtruck_slot: kangal L1 dolabında (kök-yerel konum, kapak parçası, dış yön);
+    // towtruck_meta.json parts[LockerDoor_L1].motion: menteşe ekseni ve çalışma açısı. Kapak ve kangal betikleri çekici
+    // hiyerarşisine EKLENMEZ (Bolum1Verify: parçalarda betik/collider yok); ayrı kontrol objeleri parçayı dışarıdan sürer.
+    public static void SetupRopeCoil(GameObject truck, Transform parent)
+    {
+        var rope = UnityEngine.Object.FindAnyObjectByType<RopeAnchor>();
+        if (rope == null) throw new Exception("RopeAnchor yok: halat kangalı kurulamaz");
+        var coilMeta = Bolum1Coordinates.LoadJson(RopeCoilMetaPath);
+        var slot = Bolum1Coordinates.Obj(coilMeta, "towtruck_slot");
+        string doorName = (string)slot["cabinet_part"];
+        Vector3 slotLocal = TruckLocal(Bolum1Coordinates.Vec3(slot, "position_m"));
+        Vector3 slotWorld = truck.transform.TransformPoint(slotLocal);
+        Vector3 outward = truck.transform.TransformDirection(TruckLocal(Bolum1Coordinates.Vec3(slot, "side_root_normal"))).normalized;
+        outward.y = 0f; outward.Normalize();
+
+        // Kapak: menteşe (parça pivotu), eksen ebeveyn (kök) uzayında; işaret, açılınca kapağın dışa gitmesinden seçilir
+        var door = Bolum1TowTruck.Part(truck, doorName);
+        var towMeta = Bolum1Coordinates.LoadJson(Bolum1Coordinates.TowTruckMetaPath);
+        var motion = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(towMeta, "parts"), doorName), "motion");
+        Vector3 axisLocal = TruckLocal(Bolum1Coordinates.Vec3(motion, "axis")).normalized;
+        float angle = Mathf.Abs(Convert.ToSingle(motion["work_pose_deg"], Inv));
+        var doorRenderers = door.GetComponentsInChildren<Renderer>();
+        Bounds db = doorRenderers[0].bounds;
+        foreach (var r in doorRenderers) db.Encapsulate(r.bounds);
+        Vector3 axisWorld = door.parent.rotation * axisLocal;
+        Vector3 rel = db.center - door.position;
+        float Score(float a) { return Vector3.Dot(Quaternion.AngleAxis(a, axisWorld) * rel - rel, outward); }
+        float signed = Score(angle) >= Score(-angle) ? angle : -angle;
+
+        var lockerGo = new GameObject(LockerName);
+        lockerGo.transform.SetParent(parent, false);
+        lockerGo.transform.position = db.center;
+        var locker = lockerGo.AddComponent<TowTruckLocker>();
+        locker.door = door;
+        locker.hingeAxis = axisLocal;
+        locker.openAngle = signed;
+        locker.openSeconds = LockerOpenSeconds;
+        locker.outward = outward;
+
+        // Kangal: sarmal obje + FBX kökü; dolapta dik, disk yüzü kapağa dönük
+        var coilFbx = AssetDatabase.LoadAssetAtPath<GameObject>(RopeCoilModelPath);
+        if (coilFbx == null) throw new Exception("SM_RopeCoil yok: " + RopeCoilModelPath);
+        var coilGo = new GameObject(RopeCoilName);
+        coilGo.transform.SetParent(parent, false);
+        var model = (GameObject)PrefabUtility.InstantiatePrefab(coilFbx);
+        model.transform.SetParent(coilGo.transform, false);
+        var coil = coilGo.AddComponent<RopeCoil>();
+        coil.model = model.transform;
+        coil.gripL = model.GetComponentsInChildren<Transform>(true).First(t => t.name == "Grip_L");
+        coil.gripR = model.GetComponentsInChildren<Transform>(true).First(t => t.name == "Grip_R");
+        coil.anchor = rope;
+        coil.locker = locker;
+        try
+        {
+            coil.halfDepth = Convert.ToSingle(coilMeta["bundle_depth_m"], Inv) * 0.5f;
+            coil.radius = Bolum1Coordinates.Vec3(coilMeta, "dimensions_m").x * 0.5f;
+        }
+        catch { }
+        coil.PlaceInLocker(slotWorld, outward);
+        rope.coil = coil;
+        locker.coil = coil;
+
+        // Ölçüm: kangal kapak sınırlarının içinde mi (yatayda), ince ekseni kapak normali boyunca mı
+        Bounds cb = coil.WorldBounds;
+        float thinAlongOutward = Mathf.Abs(Vector3.Dot(coil.Normal, outward));
+        Vector3 doorLocal = truck.transform.InverseTransformPoint(door.position);
+        Line("Halat kangalı: " + RopeCoilName + " dolap " + doorName + " slotunda, dünya " + V(slotWorld) + " (kök-yerel " + V(slotLocal) + "), dış yön " + V(outward)
+            + "; kangal sınırları " + V(cb.size) + ", disk normali·dış yön " + thinAlongOutward.ToString("F2", Inv) + "; tutuş aralığı " + Vector3.Distance(coil.gripL.position, coil.gripR.position).ToString("F3", Inv) + " m");
+        Line("Dolap kapağı " + doorName + ": pivot kök-yerel " + V(doorLocal) + " (meta " + V(Bolum1Coordinates.Vec3(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(towMeta, "parts"), doorName), "pivot_m")) + "), eksen kök " + V(axisLocal)
+            + ", açık açı " + signed.ToString("F0", Inv) + "° (meta " + angle.ToString("F0", Inv) + "), " + LockerOpenSeconds.ToString(Inv) + " sn; kapak merkezi " + V(db.center));
+        Line("Halat zinciri: kazık " + System.IO.Path.GetFileName(RopeAnchorModelPath) + ", başlangıç durumu Stowed (çizgi yok, bağlanılamaz); atış " + rope.throwSeconds.ToString(Inv) + " sn, menzil " + rope.throwRange.ToString(Inv) + " m");
+    }
 
     // Oyuncunun sırt soketi: taşıyan bağ pozundayken kökünün 0.312 m arkası, 0.292 m yukarısı; dönüşü kökle aynı; Spine1'e bağlı.
     public static Transform SetupPiggybackSocket(GameObject character)

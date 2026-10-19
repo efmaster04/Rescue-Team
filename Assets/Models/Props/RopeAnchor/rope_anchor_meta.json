@@ -61,5 +61,21 @@
   },
   "textures": "yok (düz renk)",
   "unity_import": "Scale Factor 1, Convert Units açık, Bake Axis Conversion kapalı; Materials: Import via MaterialDescription. Collider gerekmez (dekor); istenirse kazığa CapsuleCollider (r 0.03, h 0.33).",
-  "mesh_sha256": "861db6e1b6fc6149102b22564f0f4d4dff3fee0f849f3037cb75ab1005da9d15"
+  "mesh_sha256": "861db6e1b6fc6149102b22564f0f4d4dff3fee0f849f3037cb75ab1005da9d15",
+  "bare_variant": {
+    "file": "SM_RopeAnchor_Bare.fbx",
+    "triangles": 116,
+    "mesh_sha256": "851a2414cc8c27434fe4f3a275b742e08e7b7108bf74be1552ba41b13549d4eb",
+    "pivot_m": [
+      0,
+      0,
+      0
+    ],
+    "RopeAttach": [
+      0,
+      0,
+      0.27
+    ]
+  },
+  "source_sha256": "32838db15b2b920b3c31287aad76da01945c2f54427ff13ad894f9407d40fdfc"
 }

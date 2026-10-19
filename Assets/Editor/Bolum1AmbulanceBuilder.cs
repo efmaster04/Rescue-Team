@@ -694,6 +694,8 @@ public static class Bolum1AmbulanceBuilder
 
         // 4) Sedyeler: çekicinin arkasında, bankette yerde
         PlaceStretchers(truck, root);
+        // 4b) U2: halat kangalı çekicinin L1 dolabında, dolap kapağı kontrolü (halat başta hazır değil)
+        Bolum1RescueBuilder.SetupRopeCoil(truck, root);
 
         // 5) Oyuncu ve 6) test botu
         var cam = Camera.main;

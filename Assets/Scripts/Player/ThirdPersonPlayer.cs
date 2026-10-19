@@ -44,6 +44,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public StretcherController HeldStretcher { get; set; }
     // Elde taşınan koni (en fazla 1). Yalnız PlayerInteraction yazar.
     public TrafficCone HeldCone { get; set; }
+    // U2: iki elle taşınan halat kangalı. Yalnız PlayerInteraction yazar. Taşırken koşu ve zıplama yok.
+    public RopeCoil HeldCoil { get; set; }
     // Sırttaki hasta (D2). Yalnız PlayerInteraction yazar (SetPiggyback).
     public Patient Piggyback { get; private set; }
     // Bağlı olunan halat (D2); halattayken CharacterController kapalı, konum halattan gelir.
@@ -67,7 +69,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public float LastLandingDrop { get; private set; }
     public bool IsSliding { get; private set; }
     public int SlideStarts { get; private set; }
-    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : runHeld ? runSpeed : moveSpeed;
+    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : HeldCoil != null ? moveSpeed : runHeld ? runSpeed : moveSpeed;
     private float verticalSpeed;
     private Vector3 moveWish; // bu karenin yatay hareket isteği (OnControllerColliderHit okur)
     private bool walkableUnderNow; // bu karede ayağın altı yürünebilir zemin (OnControllerColliderHit okur)
@@ -147,6 +149,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             HeldCone = null;
             cone.Drop(Vector3.zero);
         }
+        DropCoil();
         if (knockdown != null) knockdown.ResetStanding();
         moveInput = Vector2.zero;
         knockRemaining = Vector3.zero;
@@ -191,11 +194,21 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             HeldCone = null;
             cone.Drop(velocity * 0.5f);
         }
+        DropCoil();
         moveInput = Vector2.zero;
         knockRemaining = Vector3.zero;
         knockTimeLeft = 0f;
         verticalSpeed = 0f;
         knockdown.KnockDown(velocity);
+    }
+
+    // U2: elindeki kangal yere düşer (çarpılma / yeniden doğma); bağlıysa bağlı kalır, yerden tekrar alınır.
+    private void DropCoil()
+    {
+        if (HeldCoil == null) return;
+        var c = HeldCoil;
+        HeldCoil = null;
+        c.Drop();
     }
 
     // ---- D2: sırtta taşıma ----
@@ -314,7 +327,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             verticalSpeed = -2f;
         }
         else airborne = true;
-        if (jumpRequested && supported && HasControl && Piggyback == null) // sırtta hastayla zıplanmaz (D2, sade seçim)
+        if (jumpRequested && supported && HasControl && Piggyback == null && HeldCoil == null) // sırtta hastayla / kangalla zıplanmaz (D2, U2)
         {
             verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
             airborne = true;
