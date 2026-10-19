@@ -417,7 +417,7 @@ public class Thief : MonoBehaviour
     }
 
     // Hedef kalmayınca binmeden önce iniş noktasında etrafa bakınma süresi (sn): yeni hedef (düşürülen eşya) çıkarsa döner.
-    public const float IdleBeforeBoard = 8f;
+    public const float IdleBeforeBoard = 15f;
 
     private void TickBoarding(float dt)
     {
@@ -486,7 +486,7 @@ public class Thief : MonoBehaviour
     // Düdük: kamyonete doğru kaçar, eşyasını bırakmaz. Sersem / yerdeyken etkilenmez.
     public bool Fear(float seconds)
     {
-        if (!CanBeHit || State == ThiefState.Stunned || State == ThiefState.Boarding || State == ThiefState.Flee) return false;
+        if (!CanBeHit || State == ThiefState.Stunned || State == ThiefState.Flee) return false; // binmeye giden de korkar (zaten kamyonete koşar)
         fearUntil = Time.time + seconds;
         Target = null;
         PunchTarget = null;
@@ -518,6 +518,17 @@ public class Thief : MonoBehaviour
         unreachableUntil.Clear();
         if (State == ThiefState.Down || State == ThiefState.GettingUp) return;
         Enter(ThiefState.Seek);
+    }
+
+    // Test: eşyayı doğrudan eline ver (Carry durumuna geçer).
+    public void GiveItemForTest(LootItem item)
+    {
+        if (item == null) return;
+        if (Carried != null && Carried != item) { var c = Carried; Carried = null; c.DropByThief(transform.position, transform.forward); }
+        item.PickUpByThief(this);
+        Carried = item;
+        Target = null;
+        if (State != ThiefState.Stunned && State != ThiefState.Down && State != ThiefState.GettingUp) Enter(ThiefState.Carry);
     }
 
     public void ForceTarget(LootItem item)

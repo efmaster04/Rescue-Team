@@ -94,8 +94,9 @@ public class ThiefVan : MonoBehaviour
         float sideSign = ShoulderLateral >= 0f ? 1f : -1f;
         Vector3 bumper = transform.position - fwd * rear + Vector3.up * 0.8f;
         Vector3 rearCand = transform.position - fwd * (rear + 1.3f);
-        Vector3 sideCand = transform.position - fwd * (rear * 0.5f) + right * sideSign * (halfW + 0.9f);
-        Vector3 roadCand = transform.position - fwd * (rear * 0.5f) - right * sideSign * (halfW + 0.9f);
+        // Yan kapı: gövdeden 0.5 m dışarıda (yol tarafındaysa şerit ortasındaki araçlara değmez), arka tekerin hemen önünde
+        Vector3 sideCand = transform.position - fwd * (rear * 0.3f) + right * sideSign * (halfW + 0.5f);
+        Vector3 roadCand = transform.position - fwd * (rear * 0.3f) - right * sideSign * (halfW + 0.5f);
         // Yola bağlı olmalı: kamyonetin oyduğu NavMesh ile banket eğimi arasında kalan şerit yoldan kopuk olabilir
         Vector3 road = Follower != null && Follower.lane != null ? Follower.lane.PointAt(Follower.Distance) : transform.position - right * ShoulderLateral;
         Vector3 rearNav = rearCand, sideNav = sideCand, roadNav = roadCand;
