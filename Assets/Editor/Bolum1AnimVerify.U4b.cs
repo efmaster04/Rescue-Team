@@ -305,6 +305,8 @@ public static partial class Bolum1AnimVerify
             "elde " + held + ", isabet +" + (item.ThrowHits - hits0) + ", can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv) + " (" + A.LastHitReason + ", durum " + A.State + ", vurulabilir " + A.CanBeHit + ")");
         yield return Until(() => !item.IsFlying, 8f, "eşya indi");
         yield return Until(() => !combat.Busy && Player.HasControl, 3f, "atış bitti");
+        // Fırlatılan valiz koşu hattına düşmüş olabilir (kayma CharacterController ile; valiz collider'ı kaymayı keser): kenara al
+        item.Drop(LanePoint(dir, 7f, -1.6f), 0f);
         // Tackle 50 → 0 → pes: A eşyalı (item2) 3.6 m önde; oyuncu koşar, tackle; eşya düşer, A sersem → pes
         Vector3 runDir = LaneDir(dir, 13f);
         Vector3 runFrom = LanePoint(dir, 12f, 0.3f);
