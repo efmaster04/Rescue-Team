@@ -34,6 +34,14 @@ public class ThiefVan : MonoBehaviour
     public Transform doorFrontLeft, doorFrontRight;
     public float frontDoorOpenAngle = 70f;
     public AudioSource doorSource;
+    // U4c: kasa içi (builder kurar): iç paneller kökü ve kasa iç sınırları (kök uzayında). Eşyalar kasa zemininde yuvalarda durur.
+    [Tooltip("U4c: kasa iç panelleri (zemin, yan duvarlar, tavan, ön bölme).")]
+    public Transform cargoRoot;
+    [Tooltip("Kasa iç sınırları, kök uzayında: zemin üstü y, tavan altı y, yarı genişlik, arka açıklık z (negatif), ön bölme z.")]
+    public float cargoFloorY = 0.57f, cargoCeilingY = 2.3f, cargoHalfWidth = 0.95f, cargoRearZ = -2.7f, cargoFrontZ = 0.5f;
+    // Yuva düzeni: 2 sütun × 3 sıra = 6 yuva zeminde; fazlası üst üste (katman başına +stackHeight)
+    public const int CargoColumns = 2, CargoRows = 3, CargoFloorSlots = CargoColumns * CargoRows;
+    public const float CargoColumnX = 0.5f, CargoFirstRowDepth = 0.55f, CargoRowSpacing = 0.75f, CargoStackHeight = 0.45f;
 
     public LaneFollower Follower { get; private set; }
     public TrafficVehicle Vehicle { get; private set; }
@@ -109,14 +117,71 @@ public class ThiefVan : MonoBehaviour
     private void OnDestroy()
     {
         IsGone = true;
-        // Kalkmadan yok edildiyse (test temizliği): kamyonetteki eşyalar çalınmış sayılmaz, yalnız "kamyonette" kaydı düşülür
+        // Kalkmadan yok edildiyse (test temizliği): kamyonetteki eşyalar çalınmış sayılmaz, yalnız "kamyonette" kaydı düşülür;
+        // U4c: eşya kasada görünür durduğundan başlangıç yerine döner (havada kalmasın)
         if (Loot.Count > 0 && !LootFinalized)
         {
             var reg = LootRegistry.Instance;
-            foreach (var item in Loot) if (item != null && reg != null) reg.ReportRetrieved(item);
+            foreach (var item in Loot.ToArray())
+            {
+                if (item == null) continue;
+                if (reg != null) reg.ReportRetrieved(item);
+                item.ResetToStart();
+            }
             Loot.Clear();
         }
+        usedSlots.Clear();
         Despawned?.Invoke(this);
+    }
+
+    // ---- U4c: kasa yuvaları ----
+    private readonly HashSet<int> usedSlots = new HashSet<int>();
+
+    private int FirstFreeSlot()
+    {
+        int k = 0;
+        while (usedSlots.Contains(k)) k++;
+        return k;
+    }
+
+    // Yuvanın kök uzayındaki zemin noktası: sütun x (±CargoColumnX), sıra z (arkadan öne), katman y (6'dan sonrası üst üste)
+    public Vector3 CargoSlotLocal(int slot)
+    {
+        if (slot < 0) slot = 0;
+        int layer = slot / CargoFloorSlots, k = slot % CargoFloorSlots;
+        int row = k / CargoColumns, col = k % CargoColumns;
+        float x = (col == 0 ? -1f : 1f) * Mathf.Min(CargoColumnX, cargoHalfWidth - 0.3f);
+        float z = cargoRearZ + CargoFirstRowDepth + row * CargoRowSpacing;
+        z = Mathf.Min(z, cargoFrontZ - 0.35f);
+        return new Vector3(x, cargoFloorY + layer * CargoStackHeight, z);
+    }
+
+    // Eşyanın kasadaki duruşu (dünya): zemin noktası + yön (kamyonet ileri). Sedye kasa ortasında boylu boyunca, yuva kullanmaz.
+    public bool CargoPose(LootItem item, out Vector3 floorPoint, out Vector3 forward)
+    {
+        forward = transform.forward;
+        if (item == null) { floorPoint = transform.position; return false; }
+        if (item.GetComponent<StretcherController>() != null)
+        {
+            floorPoint = transform.TransformPoint(new Vector3(0f, cargoFloorY, (cargoRearZ + cargoFrontZ) * 0.5f));
+            return true;
+        }
+        floorPoint = transform.TransformPoint(CargoSlotLocal(item.VanSlot));
+        return true;
+    }
+
+    // Kasa iç kutusu (dünya; testler okur): eşya sınırları bunun içinde kalmalı
+    public Bounds CargoWorldBounds
+    {
+        get
+        {
+            var b = new Bounds(transform.TransformPoint(new Vector3(0f, (cargoFloorY + cargoCeilingY) * 0.5f, (cargoRearZ + cargoFrontZ) * 0.5f)), Vector3.zero);
+            foreach (float x in new[] { -cargoHalfWidth, cargoHalfWidth })
+                foreach (float y in new[] { cargoFloorY, cargoCeilingY })
+                    foreach (float z in new[] { cargoRearZ, cargoFrontZ })
+                        b.Encapsulate(transform.TransformPoint(new Vector3(x, y, z)));
+            return b;
+        }
     }
 
     // =====================================================================================
@@ -284,6 +349,7 @@ public class ThiefVan : MonoBehaviour
     {
         if (item == null || !Loot.Contains(item)) return false;
         Loot.Remove(item);
+        usedSlots.Remove(item.VanSlot);
         var reg = LootRegistry.Instance;
         if (reg != null) reg.ReportRetrieved(item);
         Frame(out var f, out _, out _, out _, out _);
@@ -301,10 +367,13 @@ public class ThiefVan : MonoBehaviour
         return true;
     }
 
+    // Test: bütün kaydı düş (LootRegistry.ResetForTest)
+    public void ClearLootForTest() { Loot.Clear(); usedSlots.Clear(); }
+
     // Test / geri yükleme: eşyayı kamyonet kaydından sessizce düş (RestoreForTest)
     public static void ForgetLoot(LootItem item)
     {
-        foreach (var v in All) if (v != null) v.Loot.Remove(item);
+        foreach (var v in All) if (v != null && v.Loot.Remove(item)) v.usedSlots.Remove(item.VanSlot);
     }
 
     // Kalkış: bagaj kapandı, içindekiler kesin çalındı (ReportStolen; %50 kontrolü burada)
@@ -320,6 +389,7 @@ public class ThiefVan : MonoBehaviour
             StolenCount++;
         }
         Loot.Clear();
+        usedSlots.Clear();
         LootFinalizedEvent?.Invoke(this);
     }
 
@@ -549,7 +619,10 @@ public class ThiefVan : MonoBehaviour
             LootCount++;
             return;
         }
-        item.MarkInVan();
+        // U4c: kasa zemininde görünür yuva (sedye yuva kullanmaz; kasa ortasında)
+        int slot = item.GetComponent<StretcherController>() != null ? -1 : FirstFreeSlot();
+        if (slot >= 0) usedSlots.Add(slot);
+        item.MarkInVan(this, slot);
         if (reg != null) reg.ReportInVan(item);
         Loot.Add(item);
         LootCount++;

@@ -467,7 +467,7 @@ public static partial class Bolum1AnimVerify
         int v1 = item1.TotalValue, v2 = item2.TotalValue;
         float frac12 = (float)(v1 + v2) / total;
         string pct = hud.StolenPercent.text;
-        bool inVanOk = item1.IsInVan && item2.IsInVan && !item1.gameObject.activeSelf && !item1.IsStolen && Loot.InVanValue == v1 + v2 && Loot.InVanCount == 2 && Loot.StolenValue == 0 && van.Loot.Count == 2 && van.LootCount == 2
+        bool inVanOk = item1.IsInVan && item2.IsInVan && item1.gameObject.activeSelf && van.CargoWorldBounds.Contains(item1.WorldBounds.center) && !item1.IsStolen && Loot.InVanValue == v1 + v2 && Loot.InVanCount == 2 && Loot.StolenValue == 0 && van.Loot.Count == 2 && van.LootCount == 2
             && pct == MissionHud.StolenPercentText(0f, frac12) && pct.Contains(MissionHud.InVanPercentSuffix) && hud.InVanFill.enabled && Mathf.Abs(hud.InVanFill.rectTransform.anchorMax.x - frac12) < 0.01f && Mathf.Abs(hud.InVanFill.rectTransform.anchorMin.x) < 0.01f
             && hud.FloatingSpawned == floats0 + 2 && !Mission.IsFinished;
         Note("kamyonette (turuncu bölüm, \"" + pct + "\")", inVanOk, "kamyonette " + Loot.InVanValue + " (" + v1 + "+" + v2 + "), çalınan " + Loot.StolenValue + ", bölüm " + hud.InVanFill.rectTransform.anchorMin.x.ToString("F3", Inv) + "–" + hud.InVanFill.rectTransform.anchorMax.x.ToString("F3", Inv) + " / " + frac12.ToString("F3", Inv) + ", uçan yazı +" + (hud.FloatingSpawned - floats0));
@@ -486,8 +486,9 @@ public static partial class Bolum1AnimVerify
             if (Interaction.CurrentHint.StartsWith(PlayerInteraction.HintRetrievePrefix)) { hintOk = true; break; }
         }
         bool hintMostValuable = Interaction.CurrentHint == PlayerInteraction.HintRetrieve(item1) && Interaction.VanTarget == van && Interaction.LootTarget == item1;
-        bool highlightOk = Interaction.HighlightTarget == van.rearDoors && Highlight.Current == van.rearDoors && Highlight.CopyCount >= 2;
-        Note("açık bagaja ≤ 1 m + yüz dönük → \"E: Geri al (en değerli)\" + arka kapak vurgusu", hintOk && hintMostValuable && highlightOk, standInfo + ", vurgu " + HlName() + " (" + Highlight.CopyCount + " kopya)");
+        // U4c: vurgu sıradaki geri alınacak eşyada (kasada görünür), arka kapaklarda değil
+        bool highlightOk = Interaction.HighlightTarget == item1.transform && Highlight.Current == item1.transform && Highlight.CopyCount >= 1;
+        Note("açık bagaja ≤ 1 m + yüz dönük → \"E: Geri al (en değerli)\" + eşya vurgusu (U4c)", hintOk && hintMostValuable && highlightOk, standInfo + ", vurgu " + HlName() + " (" + Highlight.CopyCount + " kopya)");
         // Sırt dönükken ipucu yok
         Vector3 standP = Player.transform.position;
         Player.Teleport(standP, Quaternion.LookRotation(-Flat(van.TrunkCenter - standP).normalized));
@@ -516,7 +517,8 @@ public static partial class Bolum1AnimVerify
         var s0 = s0Item.GetComponent<StretcherController>();
         van.AddLoot(s0Item);
         yield return null;
-        bool stretcherHidden = s0Item.IsInVan && !s0.gameObject.activeSelf;
+        // U4c: sedye kasa ortasında görünür (gizli değil), tutulamaz
+        bool stretcherHidden = s0Item.IsInVan && s0.gameObject.activeSelf && van.CargoWorldBounds.Contains(s0.transform.position) && Interaction.CurrentHint != PlayerInteraction.HintGrab;
         // item2 (400) sedyeden (300) değerli: önce item2 gelir → al, bırak; sonra sedye
         Player.Teleport(standP, Quaternion.LookRotation(Flat(van.TrunkCenter - standP).normalized));
         yield return null; yield return null;
@@ -528,7 +530,7 @@ public static partial class Bolum1AnimVerify
         Interaction.Interact(); yield return null; yield return null; // sedye yere
         float sDist = van.TrunkDistance(s0.transform.position);
         bool stretcherOut = s0.gameObject.activeSelf && StretcherController.All.Contains(s0) && s0Item.State == LootItem.LootState.Dropped && Player.HeldValuable == null && sDist >= 0.6f && sDist <= 4.5f && Loot.InVanValue == 0 && van.Loot.Count == 0;
-        Note("büyük eşya (sedye) bagajdan yere", stretcherHidden && item2First && item2Held && stretcherHint && stretcherOut && normalAgain, "gizliydi " + stretcherHidden + ", önce valiz " + item2First + "/" + item2Held + ", sedye ipucu " + stretcherHint + ", sedye yerde " + stretcherOut + " (tampona " + M(sDist) + "), bırakılan valiz yeniden normal " + normalAgain);
+        Note("büyük eşya (sedye) bagajdan yere", stretcherHidden && item2First && item2Held && stretcherHint && stretcherOut && normalAgain, "kasada görünürdü " + stretcherHidden + ", önce valiz " + item2First + "/" + item2Held + ", sedye ipucu " + stretcherHint + ", sedye yerde " + stretcherOut + " (tampona " + M(sDist) + "), bırakılan valiz yeniden normal " + normalAgain);
         // ≥ %50 kamyonette iken geri alınırsa kaçışta görev bitmez
         var pool = luggage.Skip(2).Where(l => l != null && l.IsStolen == false && l.gameObject.activeSelf == false && l.State == LootItem.LootState.AtStart).ToList();
         pool.AddRange(hidden.Where(l => l != null && l.kind == LootKind.PatientItem && !l.gameObject.activeSelf));
@@ -588,7 +590,7 @@ public static partial class Bolum1AnimVerify
         string result = hud.ResultText.text;
         bool failOk = openNoFail && !finishedWhileOpen && Mission.IsFinished && !Mission.Succeeded && Mission.ResultMessage == LootRegistry.FailText && van2.LootFinalized && Loot.StolenFraction >= limit && Loot.InVanValue == 0 && result.StartsWith(LootRegistry.FailText);
         Note("kamyonette ≥ %50 ile kaçış → o anda başarısız (bagaj açıkken değil)", failOk, "atılan " + added2 + " → %" + (fracVan2 * 100f).ToString("F1", Inv) + " (açıkken görev sürüyor " + openNoFail + "), kesinleşince çalınan %" + (Loot.StolenFraction * 100f).ToString("F1", Inv) + ", görev bitti " + Mission.IsFinished + " (açıkken " + finishedWhileOpen + "), HUD \"" + result.Replace("\n", " | ") + "\"");
-        Check("(U4b-2) kamyonet: hırsızlar arka (açıksa) + yan kapıdan iner; bagaj " + Bolum1ThiefBuilder.Settings.vanWaitSeconds.ToString(Inv) + " sn açık; atılan eşya \"kamyonette\" (turuncu çubuk bölümü, \"%0 (+%N kamyonette)\"); açık bagaja ≤ " + Bolum1ThiefBuilder.Settings.retrieveRange.ToString(Inv) + " m + yüz dönük \"E: Geri al (…)\" + arka kapak vurgusu → eşya elde / sedye yere, çubuk düşer; %50 kontrolü yalnız kaçışta: geri alınınca bitmez, kamyonette ≥ %50 ile kaçınca biter",
+        Check("(U4b-2) kamyonet: hırsızlar arka (açıksa) + yan kapıdan iner; bagaj " + Bolum1ThiefBuilder.Settings.vanWaitSeconds.ToString(Inv) + " sn açık; atılan eşya \"kamyonette\" (turuncu çubuk bölümü, \"%0 (+%N kamyonette)\"); açık bagaja ≤ " + Bolum1ThiefBuilder.Settings.retrieveRange.ToString(Inv) + " m + yüz dönük \"E: Geri al (…)\" + eşya vurgusu (U4c) → eşya elde / sedye yere, çubuk düşer; %50 kontrolü yalnız kaçışta: geri alınınca bitmez, kamyonette ≥ %50 ile kaçınca biter",
             ok, string.Join("; ", parts));
         BeforeCapture = null;
         Mission.Begin(TestSchedule(99999f, 99999f));

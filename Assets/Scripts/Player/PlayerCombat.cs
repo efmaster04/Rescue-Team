@@ -8,7 +8,9 @@ using UnityEngine;
 //  - Koşarken (Shift + hareket) sol tık: Tackle_Dive; oyuncu tackleDistance öne kayar (CharacterController.Move: zemine ve duvara
 //    saygılı), yolundaki hırsız tackleStunSeconds sersemler; dalış bitince Tackle_GetUp ile kalkar (Animator geçişi). Bekleme tackleCooldown.
 //  - Sağ tık basılı: elinde tek elle taşınan eşya varsa Throw_Aim (döngü; eşya sağ elde); bırakınca Throw_Release, release_frame'de
-//    (kare 8) eşya bakış yönüne throwSpeed ile fırlar (LootItem.Throw: fizik; hırsıza isabet sersemletir; boşluğa düşerse geri döner).
+//    (kare 8) eşya fırlar (LootItem.Throw: fizik; hırsıza isabet sersemletir; boşluğa düşerse geri döner).
+//    U4c: nişan alırken HUD'da ekran ortasında nişangah, gövde kameraya döner; hedef kameranın merkez ışınının çarptığı nokta
+//    (yoksa 20 m ilerisi), eşya throwSpeed ile o noktaya düşecek şekilde balistik fırlatılır (menzil dışı → 45°).
 //  - Q: Whistle_Blow; blow_frames başında (kare 15) whistleRadius içindeki hırsızlar fearSeconds korkup kamyonete kaçar. Bekleme whistleCooldown.
 //  - Sedye / sırtta hasta / kangal / halatta: saldırı ve düdük yok (en sade). Yerdeyken / kontrol yokken de yok.
 public class PlayerCombat : MonoBehaviour
@@ -243,7 +245,9 @@ public class PlayerCombat : MonoBehaviour
         var item = player.HeldValuable;
         if (item != null && item.kind != LootKind.Equipment)
         {
-            Vector3 dir = AimDirection();
+            Vector3 target = AimPoint();
+            Vector3 dir = BallisticDirection(item.Center, target, settings.throwSpeed, out string arc);
+            LastAimArc = arc;
             player.HeldValuable = null;
             item.Throw(dir * settings.throwSpeed, settings.throwHitStunSeconds, settings.throwHitDamage, killBelowY);
             LastThrown = item;
@@ -253,39 +257,75 @@ public class PlayerCombat : MonoBehaviour
         Busy = false;
     }
 
-    // Bakış yönü: kamera ileri (kamera yoksa oyuncu ileri). Bakışın 20° içinde, ≤ 15 m'de bir hırsız varsa ona nişan alınır
-    // (göğsüne, yerçekimi için alçak yay telafisi); yoksa bakış yönü, en az 5° yukarı.
+    // U4c (kullanıcı kararı 2): nişan alırken gövde kameranın baktığı yöne döner (FaceForAttack deseni, her kare; hareket dönüşünü ezer).
+    // LateUpdate: ThirdPersonPlayer.Update'ten sonra, LootItem.LateUpdate'ten (sıra 60) önce → eşya elde doğru yerde kalır.
+    private void LateUpdate()
+    {
+        if (!Aiming || player == null) return;
+        Vector3 look = player.cameraTransform != null ? Flat(player.cameraTransform.forward) : Vector3.zero;
+        if (look.sqrMagnitude < 1e-4f) return;
+        player.transform.rotation = Quaternion.LookRotation(look.normalized, Vector3.up);
+    }
+
+    // U4c tanı: son nişan hedefi (dünya noktası), ışının çarptığı şey ("<collider adı>" / "boşluk 20 m") ve yay ("alçak" / "45°")
+    public Vector3 LastAimPoint { get; private set; }
+    public string LastAimHit { get; private set; } = "";
+    public string LastAimArc { get; private set; } = "";
+    public const float AimRayLength = 60f, AimEmptyDistance = 20f;
+    private static readonly RaycastHit[] aimHits = new RaycastHit[32];
+
+    // U4c (kullanıcı kararı 2): hedef = kameranın MERKEZ ışınının çarptığı nokta (oyuncunun kendisi ve tetikleyiciler hariç;
+    // çarpmazsa kameranın AimEmptyDistance m ilerisi). Eşya throwSpeed ile o noktaya düşecek şekilde fırlatılır (balistik, alçak yay);
+    // menzil dışındaysa 45° (en uzak atış). Kamera yoksa oyuncu ileri.
+    public Vector3 AimPoint()
+    {
+        Transform cam = player.cameraTransform;
+        Vector3 origin = cam != null ? cam.position : player.transform.position + Vector3.up * 1.4f;
+        Vector3 look = cam != null ? cam.forward : player.transform.forward;
+        if (look.sqrMagnitude < 1e-6f) look = player.transform.forward;
+        look.Normalize();
+        int n = Physics.RaycastNonAlloc(origin, look, aimHits, AimRayLength, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        string hitName = "";
+        Vector3 point = origin + look * AimEmptyDistance;
+        for (int i = 0; i < n; i++)
+        {
+            var h = aimHits[i];
+            if (h.collider == null || h.distance >= best) continue;
+            if (h.collider.transform.IsChildOf(player.transform)) continue; // kendi gövdesi
+            var held = player.HeldValuable;
+            if (held != null && h.collider.transform.IsChildOf(held.transform)) continue;
+            best = h.distance;
+            point = h.point;
+            hitName = h.collider.transform.root.name + "/" + h.collider.name;
+        }
+        LastAimHit = best < float.MaxValue ? hitName + " " + best.ToString("F1") + " m" : "boşluk " + AimEmptyDistance.ToString("F0") + " m";
+        LastAimPoint = point;
+        return point;
+    }
+
     public Vector3 AimDirection()
     {
-        Vector3 look = player.cameraTransform != null ? player.cameraTransform.forward : player.transform.forward;
-        if (Flat(look).sqrMagnitude < 1e-4f) look = player.transform.forward;
+        Vector3 target = AimPoint();
         Vector3 from = player.transform.position + Vector3.up * 1.4f;
         var item = player.HeldValuable;
         if (item != null) from = item.Center;
-        Thief best = null;
-        float bestAngle = 20f;
-        foreach (var t in Thief.All)
-        {
-            if (t == null || !t.CanBeHit) continue;
-            Vector3 to = t.transform.position + Vector3.up * 0.9f - from;
-            if (to.magnitude > 15f) continue;
-            float a = Vector3.Angle(look, to);
-            if (a < bestAngle) { bestAngle = a; best = t; }
-        }
-        if (best != null)
-        {
-            Vector3 to = best.transform.position + Vector3.up * 0.9f - from;
-            float d = Flat(to).magnitude, dy = to.y, v = settings.throwSpeed, g = -Physics.gravity.y;
-            float disc = v * v * v * v - g * (g * d * d + 2f * dy * v * v);
-            float angle = disc >= 0f && d > 0.1f ? Mathf.Atan((v * v - Mathf.Sqrt(disc)) / (g * d)) : Mathf.Atan2(dy, d) + 10f * Mathf.Deg2Rad;
-            Vector3 flat = Flat(to).normalized;
-            return (flat * Mathf.Cos(angle) + Vector3.up * Mathf.Sin(angle)).normalized;
-        }
-        Vector3 dir = look;
-        Vector3 f = Flat(dir).normalized;
-        float minUp = Mathf.Sin(5f * Mathf.Deg2Rad);
-        if (dir.y < minUp) dir = (f * Mathf.Cos(5f * Mathf.Deg2Rad) + Vector3.up * minUp);
-        return dir.normalized;
+        return BallisticDirection(from, target, settings.throwSpeed, out string arc);
+    }
+
+    // Başlangıç hızı v ile from → target balistik yön: alçak yay; çözüm yoksa hedefe doğru 45° (menzil dışı). arc: "alçak" / "45°".
+    public static Vector3 BallisticDirection(Vector3 from, Vector3 target, float v, out string arc)
+    {
+        Vector3 to = target - from;
+        Vector3 flat = Flat(to);
+        float d = flat.magnitude, dy = to.y, g = -Physics.gravity.y;
+        if (d < 0.1f) { arc = "dik"; return to.sqrMagnitude > 1e-6f ? to.normalized : Vector3.up; }
+        flat /= d;
+        float disc = v * v * v * v - g * (g * d * d + 2f * dy * v * v);
+        float angle;
+        if (disc >= 0f) { angle = Mathf.Atan((v * v - Mathf.Sqrt(disc)) / (g * d)); arc = "alçak"; }
+        else { angle = 45f * Mathf.Deg2Rad; arc = "45°"; }
+        return (flat * Mathf.Cos(angle) + Vector3.up * Mathf.Sin(angle)).normalized;
     }
 
     public bool Whistle()

@@ -206,8 +206,13 @@ public class PlayerInteraction : MonoBehaviour
             // U3: eşya (valiz prop'u / hasta kutusu) ve güvenli yer işareti; bırakma hedefsiz
             case Action.TakeLoot: return LootTarget != null ? LootTarget.transform : null;
             case Action.SecureLoot: return targetSafe;
-            // U4b: açık bagaj (içinde eşya varken) — arka kapaklar
-            case Action.RetrieveLoot: return VanTarget != null ? (VanTarget.rearDoors != null ? VanTarget.rearDoors : VanTarget.doorLeft) : null;
+            // U4b: açık bagaj (içinde eşya varken). U4c: eşyalar kasada görünür → vurgu sıradaki geri alınacak eşyada (koni: görseli)
+            case Action.RetrieveLoot:
+            {
+                if (LootTarget == null) return VanTarget != null ? VanTarget.rearDoors : null;
+                var rc = LootTarget.GetComponent<TrafficCone>();
+                return rc != null && rc.target != null ? rc.target : LootTarget.transform;
+            }
             default: return null;
         }
     }
@@ -397,7 +402,7 @@ public class PlayerInteraction : MonoBehaviour
             if (p == null || !p.CanBePickedUp) continue;
             foreach (var s in StretcherController.All)
             {
-                if (!s.CanAcceptPatient(p, me, stretcherToPatientRange, patientRange)) continue;
+                if (InVan(s) || !s.CanAcceptPatient(p, me, stretcherToPatientRange, patientRange)) continue;
                 if (!Facing(p.Position)) { FacingRejections++; continue; } // U3 yüz kuralı
                 float d = Vector3.Distance(me, p.Position);
                 if (d < bestPatient)
@@ -419,6 +424,7 @@ public class PlayerInteraction : MonoBehaviour
         float best = float.MaxValue;
         foreach (var s in StretcherController.All)
         {
+            if (InVan(s)) continue; // U4c: kasadaki sedye görünür ama tutulmaz (E: Geri al ile çıkar)
             for (int i = 0; i < 2; i++)
             {
                 bool front = i == 0;
@@ -601,6 +607,13 @@ public class PlayerInteraction : MonoBehaviour
                 break;
         }
         Evaluate();
+    }
+
+    // U4c: sedye hırsız kamyonetinin kasasında mı
+    private static bool InVan(StretcherController s)
+    {
+        var item = s != null ? s.GetComponent<LootItem>() : null;
+        return item != null && item.IsInVan;
     }
 
     // U4b: oyuncunun yakınında bagajı açık ve içinde eşya olan kamyonet; yüz arka tampona dönük.

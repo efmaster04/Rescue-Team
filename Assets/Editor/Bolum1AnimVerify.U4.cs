@@ -131,6 +131,7 @@ public static partial class Bolum1AnimVerify
             yield return PhaseU4Wave(dir);
             yield return PhaseU4Defense(dir);
             yield return PhaseU4b(dir);
+            yield return PhaseU4c(dir); // U4c: kasa içi görünür + eşyalar kasada, nişangah + kamera merkezine atış, pes edenin barı gizli
             yield return PhaseU4Rules(dir);
             yield return PhaseU4Roof(roof);
             yield return PhaseU4Fail(dir);
@@ -287,11 +288,11 @@ public static partial class Bolum1AnimVerify
         yield return null;
         string throwDiag = thief != null ? "durum " + thief.State + ", konum " + V(thief.transform.position) + (van != null ? ", iniş noktası " + V(van.RearPoint) + " (yan " + van.SideExit + "), gövdeye " + M(van.DistanceToBody(thief.transform.position)) : ", kamyonet yok") + ", yol " + thief.PathStatus + " kalan " + M(thief.RemainingDistance) + ", takılma " + S(thief.StuckTime) + " (son: " + thief.LastBlock + ")" : "hırsız yok";
         string pct = Hud.StolenPercent.text;
-        bool inVanOk = item.IsInVan && !item.gameObject.activeSelf && !item.IsStolen && Loot.StolenValue == stolen0 && Loot.InVanValue == inVan0 + item.TotalValue && van != null && van.LootCount == 1 && van.Loot.Contains(item)
+        bool inVanOk = item.IsInVan && item.gameObject.activeSelf && (van == null || van.CargoWorldBounds.Contains(item.WorldBounds.center)) && !item.IsStolen && Loot.StolenValue == stolen0 && Loot.InVanValue == inVan0 + item.TotalValue && van != null && van.LootCount == 1 && van.Loot.Contains(item)
             && Hud.FloatingSpawned == floats0 + 1 && thief != null && thief.Throws == 1 && pct.Contains(MissionHud.InVanPercentSuffix) && Hud.InVanFill.enabled && !Mission.IsFinished;
-        Check("(U4-2) kapma: hırsız 4.5 m'deki valizi hedefler, Thief_Grab ile kapar (elde; oyuncu alamaz), başının üstünde \"" + labelText + "\", Thief_Run_Carry ile kamyonete koşar, Thief_ThrowInVan → U4b: eşya KAMYONETTE (çalınmış değil; turuncu −₺ yazısı, çubukta risk bölümü \"%0 (+%N kamyonette)\"), eşya gizlenir",
+        Check("(U4-2) kapma: hırsız 4.5 m'deki valizi hedefler, Thief_Grab ile kapar (elde; oyuncu alamaz), başının üstünde \"" + labelText + "\", Thief_Run_Carry ile kamyonete koşar, Thief_ThrowInVan → U4b: eşya KAMYONETTE (çalınmış değil; turuncu −₺ yazısı, çubukta risk bölümü \"%0 (+%N kamyonette)\"), U4c: eşya kasa zemininde görünür durur",
             grabbed && labelOk && carryAnim && local.z > 0.1f && local.y > 0.5f && inVanOk,
-            "kaptı " + grabbed + ", etiket " + labelOk + " (\"" + (label != null ? label.Text.text : "-") + "\"), taşıma anim " + carryAnim + " (" + ThiefAnim(thief) + "), eşya kök uzayında " + V(local) + "; kamyonette " + item.IsInVan + " gizli " + !item.gameObject.activeSelf + " çalındı " + item.IsStolen
+            "kaptı " + grabbed + ", etiket " + labelOk + " (\"" + (label != null ? label.Text.text : "-") + "\"), taşıma anim " + carryAnim + " (" + ThiefAnim(thief) + "), eşya kök uzayında " + V(local) + "; kamyonette " + item.IsInVan + " kasada görünür " + (item.gameObject.activeSelf && van != null && van.CargoWorldBounds.Contains(item.WorldBounds.center)) + " çalındı " + item.IsStolen
             + ", kamyonette +" + (Loot.InVanValue - inVan0) + "/" + item.TotalValue + " çalınan +" + (Loot.StolenValue - stolen0) + ", kamyonette sayaç " + (van != null ? van.LootCount : -1) + ", uçan yazı +" + (Hud.FloatingSpawned - floats0) + ", HUD \"" + pct + "\"" + (item.IsInVan ? "" : "; TANI: " + throwDiag));
         if (!item.IsInVan || van == null) { BeforeCapture = null; RestoreLoot(hidden); dir.Begin(TestThiefSettings(99999f, 99999f)); yield break; }
 
@@ -663,8 +664,9 @@ public static partial class Bolum1AnimVerify
         yield return Until(() => s1Item.IsInVan || s1Item.IsStolen || thief.IsGone, 40f, "sedye kamyonete atıldı");
         Time.timeScale = 1f;
         yield return null;
-        bool gone = s1Item.IsInVan && !s1.gameObject.activeSelf && !StretcherController.All.Contains(s1) && Loot.InVanValue >= s1Item.TotalValue;
-        Note("boş sedye sürüklenir ve kamyonete atılınca kaybolur (kamyonette)", dragging && behind && gone, "kaptı " + dragging + ", arkasında " + V(rel) + " (" + ThiefAnim(thief) + "), kamyonette/gizli " + gone);
+        var s1Van = ThiefVan.All.FirstOrDefault(v => v != null && v.Loot.Contains(s1Item));
+        bool gone = s1Item.IsInVan && s1.gameObject.activeSelf && StretcherController.All.Contains(s1) && s1Van != null && s1Van.CargoWorldBounds.Contains(s1.transform.position) && Loot.InVanValue >= s1Item.TotalValue;
+        Note("boş sedye sürüklenir ve kamyonete atılınca kasada görünür durur (kamyonette)", dragging && behind && gone, "kaptı " + dragging + ", arkasında " + V(rel) + " (" + ThiefAnim(thief) + "), kamyonette/kasada " + gone + (s1Van != null ? " (kasa " + V(s1Van.CargoWorldBounds.center) + " sedye " + V(s1.transform.position) + ")" : ""));
         Loot.RestoreForTest(s1Item);
         RestoreLoot(hiddenS);
         // Koni ve ulaşılmazlık

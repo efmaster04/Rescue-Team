@@ -173,7 +173,7 @@ public class LootRegistry : MonoBehaviour
         InVanCount = 0;
         RetrievedCount = 0;
         Failed = false;
-        foreach (var v in ThiefVan.All) if (v != null) v.Loot.Clear();
+        foreach (var v in ThiefVan.All) if (v != null) v.ClearLootForTest();
         foreach (var i in LootItem.All.ToArray()) if (i != null) i.ResetToStart();
         // Kapalı (güvende/çalınmış) eşyalar All'da değildir: sahnedeki hepsini bul
         foreach (var i in FindObjectsByType<LootItem>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (!i.gameObject.activeSelf) i.ResetToStart();

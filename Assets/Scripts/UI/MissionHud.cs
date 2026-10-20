@@ -63,6 +63,11 @@ public class MissionHud : MonoBehaviour
     // U4
     public Text ThiefWarningText { get; private set; }
     public Text WhistleText { get; private set; }
+    // U4c: nişangah (ekran ortası; yalnız nişan alırken)
+    public GameObject Crosshair { get; private set; }
+    public bool CrosshairVisible { get { return Crosshair != null && Crosshair.activeSelf; } }
+    public const float CrosshairSize = 26f, CrosshairThickness = 3f;
+    public static readonly Color CrosshairColor = new Color(1f, 1f, 1f, 0.95f);
     public int FloatingCount { get { return floats.Count; } }
     public int FloatingSpawned { get; private set; }
     public readonly List<MissIndicator> Indicators = new List<MissIndicator>();
@@ -175,6 +180,32 @@ public class MissionHud : MonoBehaviour
         ThiefWarningText.color = ThiefWarningColor;
         WhistleText = MakeText("Whistle", new Vector2(0f, 0f), new Vector2(40f, 36f), new Vector2(500f, 40f), 26, TextAnchor.LowerLeft);
         WhistleText.color = new Color(0.85f, 0.9f, 1f, 0.9f);
+        // U4c (kullanıcı kararı 2): nişangah — ekran ortasında küçük artı; yalnız sağ tık basılıyken (PlayerCombat.Aiming)
+        Crosshair = new GameObject("Crosshair", typeof(RectTransform));
+        Crosshair.transform.SetParent(ScreenCanvas.transform, false);
+        var cr = Crosshair.GetComponent<RectTransform>();
+        cr.anchorMin = cr.anchorMax = new Vector2(0.5f, 0.5f);
+        cr.anchoredPosition = Vector2.zero;
+        cr.sizeDelta = new Vector2(CrosshairSize, CrosshairSize);
+        MakeCrosshairBar("H", new Vector2(CrosshairSize, CrosshairThickness));
+        MakeCrosshairBar("V", new Vector2(CrosshairThickness, CrosshairSize));
+        Crosshair.SetActive(false);
+    }
+
+    private void MakeCrosshairBar(string name, Vector2 size)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Outline));
+        go.transform.SetParent(Crosshair.transform, false);
+        var r = go.GetComponent<RectTransform>();
+        r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
+        r.anchoredPosition = Vector2.zero;
+        r.sizeDelta = size;
+        var img = go.GetComponent<Image>();
+        img.color = CrosshairColor;
+        img.raycastTarget = false;
+        var outline = go.GetComponent<Outline>();
+        outline.effectColor = new Color(0f, 0f, 0f, 0.8f);
+        outline.effectDistance = new Vector2(1.5f, -1.5f);
     }
 
     private Text MakeText(string name, Vector2 anchor, Vector2 position, Vector2 size, int fontSize, TextAnchor align)
@@ -314,6 +345,10 @@ public class MissionHud : MonoBehaviour
 
     private void LateUpdate()
     {
+        // U4c: nişangah yalnız sağ tık basılıyken (Throw_Aim)
+        var aimCombat = interaction != null && interaction.player != null ? interaction.player.GetComponent<PlayerCombat>() : null;
+        bool aiming = aimCombat != null && aimCombat.Aiming && (mission == null || !mission.IsFinished);
+        if (Crosshair != null && Crosshair.activeSelf != aiming) Crosshair.SetActive(aiming);
         if (mission == null) return;
 
         // Ambulans sayacı

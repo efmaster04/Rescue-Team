@@ -31,6 +31,16 @@ public static class Bolum1ThiefBuilder
     public const string VanPrefabPath = Bolum1TrafficBuilder.PrefabFolder + "/Vehicle_ThiefVan.prefab";
     public const string VanPaintMaterialPath = Bolum1AmbulanceBuilder.MaterialFolder + "/M_ThiefVan_Paint.mat";
     public const string VanDoorMaterialPath = Bolum1AmbulanceBuilder.MaterialFolder + "/M_ThiefVan_Door.mat";
+    // U4c: kasa içi
+    public const string CargoMaterialPath = Bolum1AmbulanceBuilder.MaterialFolder + "/M_ThiefVan_Cargo.mat";
+    public const string OpenBodyMeshName = "SM_ThiefVan_Body_Open";
+    public const string OpenBodyMeshPath = Bolum1TrafficBuilder.PrefabFolder + "/" + OpenBodyMeshName + ".asset";
+    public const string CargoInteriorName = "CargoInterior", RearFrameName = "RearFrame";
+    public static readonly Color CargoColor = new Color(0.16f, 0.165f, 0.18f); // koyu iç gri
+    // Arka yüz kesimi: gövdenin arka düzleminden bu kadar derin (m), tampon üstünden (y ≥) başlar
+    public const float RearCutDepth = 0.2f, RearCutMinY = 0.40f;
+    // Ön bölme (koltukların arkası; iç mesh koltuk arkası z ≈ 0.69) ve panel kalınlığı
+    public const float CargoFrontZ = 0.5f, CargoPanelThickness = 0.04f;
     public const string ReportPath = "Captures/Bolum1/thief_build_report.txt";
     public const string NavMeshPath = Bolum1AmbulanceBuilder.SettingsFolder + "/ThiefNavMesh.asset";
     // NavMesh ajanı (hırsız): yarıçap, boy, eğim (kullanıcı kararı: ≤ 35° yürünebilir), basamak
@@ -326,6 +336,36 @@ public static class Bolum1ThiefBuilder
             }
             var frontLeft = MakeFrontDoor("Door_FrontL", -1f);
             var frontRight = MakeFrontDoor("Door_FrontR", 1f);
+            // U4c (kullanıcı: "bagaj açılıyor ama içinde hâlâ kapı var, eşyaları göremiyoruz"): PanelVan gövdesi kapalı bir kabuk;
+            // sahte kapaklar açılınca arkada gövdenin kendi arka yüzü kalıyordu. Gövde mesh'inin kopyasında arka yüz (tampon üstü)
+            // kesilir, içeri koyu bir kasa (zemin, iki yan duvar, tavan, ön bölme) ve kesik kenarı örten ince bir çerçeve kurulur.
+            float bodyTop = vehicle.bodyCenter.y + vehicle.bodySize.y * 0.5f;
+            string cutInfo = CutRearFace(go, rearZ, out int cutTris, out int keptTris);
+            var cargoMat = AssetDatabase.LoadAssetAtPath<Material>(CargoMaterialPath);
+            if (cargoMat == null) { cargoMat = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(cargoMat, CargoMaterialPath); }
+            cargoMat.SetColor("_BaseColor", CargoColor);
+            cargoMat.SetFloat("_Smoothness", 0.15f);
+            EditorUtility.SetDirty(cargoMat);
+            float wi = vehicle.bodySize.x * 0.5f - 0.05f;          // kasa iç yarı genişliği (duvar iç yüzü)
+            float cargoRear = rearZ - 0.02f;                        // gövdenin arka düzlemi
+            float cargoFront = CargoFrontZ;                         // ön bölme iç yüzü (koltukların arkası)
+            float panel = CargoPanelThickness;
+            float midZ = (cargoRear + cargoFront) * 0.5f, lenZ = cargoFront - cargoRear;
+            var cargoRoot = new GameObject(CargoInteriorName).transform;
+            cargoRoot.SetParent(go.transform, false);
+            MakePanel(cargoRoot, "Floor", new Vector3(0f, bottom, midZ), new Vector3(wi * 2f + panel, panel, lenZ), cargoMat);
+            MakePanel(cargoRoot, "Ceiling", new Vector3(0f, top, midZ), new Vector3(wi * 2f + panel, panel, lenZ), cargoMat);
+            MakePanel(cargoRoot, "Wall_L", new Vector3(-(wi + panel * 0.5f), (bottom + top) * 0.5f, midZ), new Vector3(panel, top - bottom + panel, lenZ), cargoMat);
+            MakePanel(cargoRoot, "Wall_R", new Vector3(wi + panel * 0.5f, (bottom + top) * 0.5f, midZ), new Vector3(panel, top - bottom + panel, lenZ), cargoMat);
+            MakePanel(cargoRoot, "Bulkhead", new Vector3(0f, (bottom + top) * 0.5f, cargoFront + panel * 0.5f), new Vector3(wi * 2f + panel, top - bottom + panel, panel), cargoMat);
+            // Çerçeve: açıklığın çevresi (kapak üstü–tavan, kapak altı–tampon, iki yan şerit) dış boyada; kapalıyken dış görünüş aynı
+            var frame = new GameObject(RearFrameName).transform;
+            frame.SetParent(go.transform, false);
+            float frameBottom = RearCutMinY - 0.05f, bodyHalfW = vehicle.bodySize.x * 0.5f;
+            MakePanel(frame, "Top", new Vector3(0f, (top + bodyTop) * 0.5f, rearZ), new Vector3(bodyHalfW * 2f, bodyTop - top, 0.06f), paint);
+            MakePanel(frame, "Bottom", new Vector3(0f, (frameBottom + bottom) * 0.5f, rearZ), new Vector3(bodyHalfW * 2f, bottom - frameBottom, 0.06f), paint);
+            MakePanel(frame, "Side_L", new Vector3(-(halfW + bodyHalfW) * 0.5f, (frameBottom + bodyTop) * 0.5f, rearZ), new Vector3(bodyHalfW - halfW, bodyTop - frameBottom, 0.06f), paint);
+            MakePanel(frame, "Side_R", new Vector3((halfW + bodyHalfW) * 0.5f, (frameBottom + bodyTop) * 0.5f, rearZ), new Vector3(bodyHalfW - halfW, bodyTop - frameBottom, 0.06f), paint);
             var van = go.AddComponent<ThiefVan>();
             van.doorLeft = left;
             van.doorRight = right;
@@ -335,6 +375,14 @@ public static class Bolum1ThiefBuilder
             van.frontDoorOpenAngle = 70f;
             van.doorLeftOpenAngle = -150f;
             van.doorRightOpenAngle = 150f;
+            van.cargoRoot = cargoRoot;
+            van.cargoFloorY = bottom + panel * 0.5f;
+            van.cargoCeilingY = top - panel * 0.5f;
+            van.cargoHalfWidth = wi;
+            van.cargoRearZ = cargoRear;
+            van.cargoFrontZ = cargoFront;
+            Line("Kasa (U4c): arka yüz kesildi (" + cutTris + " üçgen çıktı, " + keptTris + " kaldı; " + cutInfo + ") → " + OpenBodyMeshPath + "; iç kasa zemin y " + van.cargoFloorY.ToString("F2", Inv) + ", tavan y " + van.cargoCeilingY.ToString("F2", Inv)
+                + ", yarı genişlik " + wi.ToString("F2", Inv) + ", z " + cargoRear.ToString("F2", Inv) + " … " + cargoFront.ToString("F2", Inv) + " (" + lenZ.ToString("F2", Inv) + " m), renk #" + ColorUtility.ToHtmlStringRGB(CargoColor) + "; yuva " + ThiefVan.CargoFloorSlots + " (2 × 3, sütun ±" + ThiefVan.CargoColumnX.ToString(Inv) + " m), fazlası üst üste");
             // Park edince NavMesh'i oyar: hırsızlar gövdenin içinden geçmez (hareket hâlinde oyma yok)
             var obstacle = go.AddComponent<NavMeshObstacle>();
             obstacle.shape = NavMeshObstacleShape.Box;
@@ -354,6 +402,60 @@ public static class Bolum1ThiefBuilder
         {
             UnityEngine.Object.DestroyImmediate(go);
         }
+    }
+
+    // U4c: gövde mesh'inin kopyasında arka yüzü kes. Kök uzayında z ≤ rearZ + RearCutDepth ve bütün köşeleri y ≥ RearCutMinY olan
+    // üçgenler (far/stop lambası alt mesh'leri hariç) çıkarılır. Kopya Assets'e kaydedilir; gövde MeshFilter'ı ona bağlanır.
+    private static string CutRearFace(GameObject root, float rearZ, out int cut, out int kept)
+    {
+        cut = 0; kept = 0;
+        var filters = root.GetComponentsInChildren<MeshFilter>(true).Where(f => f.sharedMesh != null && f.name.EndsWith("_Body")).ToArray();
+        if (filters.Length != 1) throw new Exception("Kamyonet gövde mesh'i bulunamadı (" + filters.Length + " aday: " + string.Join(", ", filters.Select(f => f.name)) + ")");
+        var mf = filters[0];
+        var src = mf.sharedMesh;
+        var renderer = mf.GetComponent<MeshRenderer>();
+        var open = UnityEngine.Object.Instantiate(src);
+        open.name = OpenBodyMeshName;
+        var verts = src.vertices.Select(v => root.transform.InverseTransformPoint(mf.transform.TransformPoint(v))).ToArray();
+        float zCut = rearZ + RearCutDepth;
+        var perSub = new List<string>();
+        for (int s = 0; s < src.subMeshCount; s++)
+        {
+            var tris = src.GetTriangles(s);
+            string mat = renderer != null && s < renderer.sharedMaterials.Length && renderer.sharedMaterials[s] != null ? renderer.sharedMaterials[s].name : "?";
+            bool lamp = mat.Contains("light") || mat.Contains("Amber");
+            var keepList = new List<int>(tris.Length);
+            int removed = 0;
+            for (int i = 0; i < tris.Length; i += 3)
+            {
+                Vector3 a = verts[tris[i]], b = verts[tris[i + 1]], c = verts[tris[i + 2]];
+                bool rear = !lamp && a.z <= zCut && b.z <= zCut && c.z <= zCut && a.y >= RearCutMinY && b.y >= RearCutMinY && c.y >= RearCutMinY;
+                if (rear) { removed++; continue; }
+                keepList.Add(tris[i]); keepList.Add(tris[i + 1]); keepList.Add(tris[i + 2]);
+            }
+            open.SetTriangles(keepList, s);
+            cut += removed;
+            kept += keepList.Count / 3;
+            if (removed > 0) perSub.Add(mat + " −" + removed);
+        }
+        if (cut == 0) throw new Exception("Kamyonet gövdesinde arka yüz üçgeni bulunamadı (z ≤ " + zCut.ToString("F2", Inv) + ", y ≥ " + RearCutMinY.ToString(Inv) + ")");
+        open.RecalculateBounds();
+        if (AssetDatabase.LoadAssetAtPath<Mesh>(OpenBodyMeshPath) != null) AssetDatabase.DeleteAsset(OpenBodyMeshPath);
+        AssetDatabase.CreateAsset(open, OpenBodyMeshPath);
+        mf.sharedMesh = open;
+        return "kesim z ≤ " + zCut.ToString("F2", Inv) + ", y ≥ " + RearCutMinY.ToString(Inv) + ": " + string.Join(", ", perSub);
+    }
+
+    private static Transform MakePanel(Transform parent, string name, Vector3 center, Vector3 size, Material mat)
+    {
+        var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        UnityEngine.Object.DestroyImmediate(cube.GetComponent<Collider>());
+        cube.name = name;
+        cube.transform.SetParent(parent, false);
+        cube.transform.localPosition = center;
+        cube.transform.localScale = size;
+        cube.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        return cube.transform;
     }
 
     // =====================================================================================

@@ -67,6 +67,7 @@ public static partial class Bolum1AnimVerify
             CheckCarryClipMeta(); // D2 madde 7
             CheckControllers();
             CheckVehiclePrefabs();
+            CheckU4cVanPrefab(); // U4c: kamyonet kasası (arka yüz kesik, iç paneller), kapalıyken dış ölçü aynı
             CheckScene();
         }
         catch (Exception e)

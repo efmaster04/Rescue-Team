@@ -713,7 +713,7 @@ public class Thief : MonoBehaviour
     // Çalınabilir mi: güvende/çalınmış/uçan değil, başka hırsızda değil, ulaşılabilir; türe göre kurallar.
     public bool IsStealable(LootItem item)
     {
-        if (item == null || !item.gameObject.activeInHierarchy || item.IsSecured || item.IsStolen || item.IsFlying || item.IsHeldByThief) return false;
+        if (item == null || !item.gameObject.activeInHierarchy || item.IsSecured || item.IsStolen || item.IsFlying || item.IsHeldByThief || item.IsInVan) return false; // U4c: kasadaki eşya görünür ama hedef değil
         if (unreachableUntil.TryGetValue(item, out float until) && Time.time < until) return false;
         if (Director != null && !Director.Reachable(item.Center)) return false;
         switch (item.kind)

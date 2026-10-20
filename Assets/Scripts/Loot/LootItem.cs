@@ -40,6 +40,9 @@ public class LootItem : MonoBehaviour
     public ThirdPersonPlayer Holder { get; private set; }
     // U4: taşıyan hırsız (varsa). Eşya onun göğsünde (sedye arkasında sürüklenir).
     public Thief ThiefHolder { get; private set; }
+    // U4c: içinde durduğu kamyonet ve kasa yuvası (InVan iken; eşya kasa zemininde görünür durur, kamyonetle birlikte hareket eder)
+    public ThiefVan Van { get; private set; }
+    public int VanSlot { get; private set; } = -1;
     public bool IsHeld { get { return Holder != null; } }
     public bool IsHeldByThief { get { return ThiefHolder != null; } }
     public bool IsSecured { get { return State == LootState.Secured; } }
@@ -235,6 +238,7 @@ public class LootItem : MonoBehaviour
     {
         Holder = null;
         ThiefHolder = null;
+        Van = null; VanSlot = -1;
         State = LootState.Secured;
         gameObject.SetActive(false);
     }
@@ -244,19 +248,54 @@ public class LootItem : MonoBehaviour
     {
         Holder = null;
         ThiefHolder = null;
+        Van = null; VanSlot = -1;
         State = LootState.Stolen;
         if (cone != null && cone.target != null) { cone.SetHeldExternal(false); cone.target.gameObject.SetActive(false); }
         gameObject.SetActive(false);
     }
 
-    // U4b: kamyonete atıldı, kamyonet daha kalkmadı: gizlenir ama "kamyonette" (açık bagajdan geri alınabilir).
-    public void MarkInVan()
+    // U4b: kamyonete atıldı, kamyonet daha kalkmadı: "kamyonette" (açık bagajdan geri alınabilir).
+    // U4c (kullanıcı: "alınan eşyaları göremiyoruz"): eşya gizlenmez; kasa zemininde verilen yuvada görünür durur (collider kapalı,
+    // alınamaz / çalınamaz), kamyonet kaçınca kapalı kapakların ardında gider, kesinleşince MarkStolen gizler.
+    public void MarkInVan(ThiefVan van, int slot)
     {
+        if (Holder != null && Holder.HeldValuable == this) Holder.HeldValuable = null;
         Holder = null;
         ThiefHolder = null;
+        Van = van;
+        VanSlot = slot;
         State = LootState.InVan;
-        if (cone != null && cone.target != null) { cone.SetHeldExternal(false); cone.target.gameObject.SetActive(false); }
-        gameObject.SetActive(false);
+        if (stretcher == null && coil == null && cone == null) transform.SetParent(null, true);
+        if (cone != null) cone.SetHeldExternal(true);
+        if (coil != null) coil.TakeExternal();
+        foreach (var c in colliders) if (c != null) c.enabled = false;
+        gameObject.SetActive(true);
+        FollowVan();
+    }
+
+    // U4c: kasa yuvasında dur (kamyonet hareket edince de). Sedye kasa ortasında boylu boyunca; koni dik; kangal yatık.
+    private void FollowVan()
+    {
+        if (Van == null || !Van.CargoPose(this, out Vector3 floorPoint, out Vector3 fwd)) return;
+        float yaw = Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg;
+        if (stretcher != null)
+        {
+            stretcher.Teleport(floorPoint + Vector3.up * 0.02f, Quaternion.LookRotation(fwd, Vector3.up));
+            return;
+        }
+        if (cone != null && cone.target != null)
+        {
+            Quaternion crot = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.FromToRotation(cone.localUp.normalized, Vector3.up);
+            cone.target.SetPositionAndRotation(floorPoint + Vector3.up * cone.baseOffset, crot);
+            return;
+        }
+        if (coil != null)
+        {
+            coil.PoseFlat(floorPoint, Vector3.up, yaw);
+            return;
+        }
+        Quaternion rot = kind == LootKind.PatientItem ? Quaternion.Euler(0f, yaw, 0f) : Quaternion.AngleAxis(yaw - startRotation.eulerAngles.y, Vector3.up) * startRotation;
+        transform.SetPositionAndRotation(floorPoint + Vector3.up * (bottomOffset + 0.005f), rot);
     }
 
     // U4b: bagajdan geri alındı. Tek elle taşınan (valiz / hasta eşyası) oyuncunun eli boşsa eline; ekipman ya da el doluysa
@@ -265,6 +304,7 @@ public class LootItem : MonoBehaviour
     {
         if (State != LootState.InVan) return;
         VanRetrievals++;
+        Van = null; VanSlot = -1;
         gameObject.SetActive(true);
         State = LootState.Dropped;
         facing.y = 0f;
@@ -307,6 +347,7 @@ public class LootItem : MonoBehaviour
         EndFlight(false);
         Holder = null;
         ThiefHolder = null;
+        Van = null; VanSlot = -1;
         State = LootState.AtStart;
         gameObject.SetActive(true);
         if (cone != null && cone.target != null) { cone.target.gameObject.SetActive(true); cone.SetHeldExternal(false); }
@@ -527,5 +568,6 @@ public class LootItem : MonoBehaviour
     {
         if (Holder != null) FollowHolder();
         else if (ThiefHolder != null) FollowThief();
+        else if (State == LootState.InVan && Van != null) FollowVan();
     }
 }

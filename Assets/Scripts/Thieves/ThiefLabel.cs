@@ -85,6 +85,9 @@ public class ThiefLabel : MonoBehaviour
         bool label = thief.Carried != null;
         if (textGo.activeSelf != label) textGo.SetActive(label);
         if (label) Text.text = thief.Carried.LabelText;
+        // U4c (kullanıcı: pes edenin boş barı görünür kalıyordu): pes edince bar gizlenir
+        bool bar = !thief.Surrendered;
+        if (barGo.activeSelf != bar) barGo.SetActive(bar);
         float f = thief.HealthFraction;
         MissionHud.SetFill(HealthFill, f);
         HealthFill.color = Color.Lerp(HealthLow, HealthFull, f);
