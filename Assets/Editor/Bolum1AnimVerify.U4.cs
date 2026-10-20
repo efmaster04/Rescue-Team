@@ -137,10 +137,21 @@ public static partial class Bolum1AnimVerify
         if (Player.HeldValuable != null) { var v = Player.HeldValuable; Player.HeldValuable = null; v.ResetToStart(); }
         if (Player.HeldStretcher != null) Interaction.Interact();
         Loot.ResetForTest();
+        // Tavan valizleri minibüsün arkasına (patikaya) indi; sonraki sedye fazları orada yürür (yön kilidi valizi dik zemin sayar) → kapat
+        if (roof != null)
+        {
+            Line("  U4 temizlik: tavan valizi " + roof.Items.Count + " adet sahneden kaldırıldı (" + string.Join(", ", roof.Items.Where(i => i != null).Select(i => i.name + " " + V(i.transform.position))) + ")");
+            foreach (var it in roof.Items) if (it != null) UnityEngine.Object.Destroy(it.gameObject);
+            roof.Items.Clear();
+            yield return null;
+            Loot.ComputeTotal();
+        }
         Mission.Begin(TestSchedule(99999f, 99999f));
         Mission.missLimit = 999;
         Health.SetHealthForTest(Health.Max);
         foreach (var st in savedStretchers) st.Item1.Teleport(st.Item2, st.Item3);
+        // U4-6 hastayı 1.5 m kaydırmıştı: sonraki sedye fazları (b1s yürüyüş hattı) hastaları LayOnPath yerlerinde bekler
+        Bolum1TestPatients.LayOnPath(Mission.patients);
         if (mateGo != null) mateGo.SetActive(false);
         Time.timeScale = 1f;
         BeforeCapture = null;
