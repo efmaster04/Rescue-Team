@@ -330,8 +330,14 @@ public class ThiefVan : MonoBehaviour
         Frame(out var f, out var r, out _, out float front, out float halfW);
         float side = driver ? -1f : 1f;
         doorPos = transform.position + f * (front - 1.4f) + r * side * halfW + Vector3.up * 0.9f;
-        Vector3 approach = transform.position + f * (front - 1.4f) + r * side * (halfW + 0.7f);
-        if (UnityEngine.AI.NavMesh.SamplePosition(approach, out UnityEngine.AI.NavMeshHit hit, 1.5f, UnityEngine.AI.NavMesh.AllAreas)) return hit.position;
+        Vector3 basePoint = transform.position + f * (front - 1.4f) + r * side * halfW;
+        // Kapının 0.7 m dışı; NavMesh orada yoksa biraz daha dışarı / içeri (kapıya yakın kalsın, uzak bir noktaya oturmasın)
+        foreach (float o in new[] { 0.7f, 1.0f, 1.3f, 0.5f })
+        {
+            Vector3 cand = basePoint + r * side * o;
+            if (UnityEngine.AI.NavMesh.SamplePosition(cand, out UnityEngine.AI.NavMeshHit hit, 0.6f, UnityEngine.AI.NavMesh.AllAreas)) return hit.position;
+        }
+        Vector3 approach = basePoint + r * side * 0.7f;
         if (GroundProbe.Find(approach + Vector3.up * 1.5f, 4f, out RaycastHit g)) return g.point;
         return approach;
     }

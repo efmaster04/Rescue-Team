@@ -99,6 +99,14 @@ public class PlayerCombat : MonoBehaviour
         return false;
     }
 
+    // Test: beklemeleri sıfırla (önceki fazın düdük / tackle beklemesi yeni testi engellemesin)
+    public void ResetCooldownsForTest()
+    {
+        PushReadyAt = -100f;
+        TackleReadyAt = -100f;
+        WhistleReadyAt = -100f;
+    }
+
     private string RejectReason()
     {
         if (player == null) return "oyuncu yok";

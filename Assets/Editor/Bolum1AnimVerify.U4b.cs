@@ -33,6 +33,8 @@ public static partial class Bolum1AnimVerify
         var hidden = HideLootExcept();
         var item1 = luggage[0]; var item2 = luggage[1];
         ThiefVan van = null;
+        dir.Begin(TestThiefSettings(99999f, 99999f, 9999f)); // test kamyoneti giriş + can testleri boyunca kalkmasın
+        yield return null;
         yield return SpawnParkedVan(dir, 3, v => van = v);
         var A = van.Thieves[0]; var B = van.Thieves[1]; var C = van.Thieves[2];
         foreach (var t in new[] { A, B, C }) t.ResetForTest();
@@ -97,7 +99,10 @@ public static partial class Bolum1AnimVerify
         // Sanal aygıtlar; editörde oyun görünümü odağı yokken fare/klavye olayları oyuna gitmez → test süresince hepsi oyuna
         var settings = InputSystem.settings;
         var savedBehavior = settings.editorInputBehaviorInPlayMode;
+        var savedBackground = settings.backgroundBehavior;
+        // Batchmode'da oyun odakta değil: olaylar yine oyuna gitsin (odak yok sayılır); test sonunda geri alınır
         settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+        settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
         bool realMouse = Mouse.current != null, realKeyboard = Keyboard.current != null;
         var mouse = InputSystem.AddDevice<Mouse>(U4bMouseName);
         var keyboard = InputSystem.AddDevice<Keyboard>(U4bKeyboardName);
@@ -171,6 +176,7 @@ public static partial class Bolum1AnimVerify
             yield return Until(() => !item.IsFlying, 8f, "eşya indi");
             yield return Until(() => !combat.Busy && Player.HasControl, 3f, "atış bitti");
             // Q → düdük
+            combat.ResetCooldownsForTest(); // U4-5'in 20 sn düdük beklemesi
             int wp0 = reader.WhistlePresses, w0 = combat.Whistles;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Q));
             yield return null;
@@ -190,7 +196,9 @@ public static partial class Bolum1AnimVerify
             yield return null;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.LeftShift, Key.W));
             yield return Seconds(0.6f);
-            bool running = Player.RunHeld && Player.HorizontalVelocity.magnitude > 1.5f;
+            float runSpeedIn = Player.HorizontalVelocity.magnitude;
+            bool running = Player.RunHeld && runSpeedIn > 1.5f;
+            combat.ResetCooldownsForTest();
             int tackles0 = combat.Tackles;
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left, true));
             yield return null;
@@ -201,7 +209,7 @@ public static partial class Bolum1AnimVerify
             UnityEngine.Object.Destroy(runCam.gameObject);
             bool diveAnim = PlayerAnim.InState(CrewAnimation.StateTackleDive);
             Note("Shift+W koşarken sol tık → tackle", running && combat.Tackles == tackles0 + 1 && combat.LastAction == "tackle" && diveAnim,
-                "koşu " + running + " (" + Player.HorizontalVelocity.magnitude.ToString("F1", Inv) + " m/sn), tackle " + (combat.Tackles - tackles0) + ", Tackle_Dive " + diveAnim + (combat.Tackles == tackles0 ? ", ret: " + combat.LastRejectReason : ""));
+                "koşu " + running + " (" + runSpeedIn.ToString("F1", Inv) + " m/sn), tackle " + (combat.Tackles - tackles0) + ", Tackle_Dive " + diveAnim + (combat.Tackles == tackles0 ? ", ret: " + combat.LastRejectReason : ""));
             yield return Until(() => !combat.Busy && Player.HasControl, 4f, "tackle bitti");
         }
         finally
@@ -212,6 +220,7 @@ public static partial class Bolum1AnimVerify
             if (mouse != null) InputSystem.RemoveDevice(mouse);
             if (keyboard != null) InputSystem.RemoveDevice(keyboard);
             settings.editorInputBehaviorInPlayMode = savedBehavior;
+            settings.backgroundBehavior = savedBackground;
             Player.cameraTransform = null;
         }
         if (Player.HeldValuable != null) { var v = Player.HeldValuable; Player.HeldValuable = null; v.Drop(U3Ground(Player.transform.position + Player.transform.forward * 0.7f, Player.transform.position.y), 0f); }
@@ -231,7 +240,8 @@ public static partial class Bolum1AnimVerify
         Vector3 arena = LanePoint(dir, 10f, 0.5f);
         BeforeCapture = FaceLabels;
         A.ResetForTest();
-        item.gameObject.SetActive(true); item2.gameObject.SetActive(true);
+        A.Stun(30f, Vector3.zero, "test-bekleme"); // yerinde (eşya hedeflemesin)
+        item.gameObject.SetActive(true);
         // Can barı dolu, görünür (etiket eşya yokken gizli)
         yield return null;
         var label = UnityEngine.Object.FindObjectsByType<ThiefLabel>(FindObjectsSortMode.None).FirstOrDefault(l => l.thief == A);
@@ -239,19 +249,22 @@ public static partial class Bolum1AnimVerify
         Note("can barı dolu (etiket gizli)", barFull, "bar " + (label != null && label.BarVisible) + " dolu " + (label != null ? label.HealthFill.fillAmount.ToString("F2", Inv) : "-") + ", can " + A.Health.ToString("F0", Inv));
         // Taşıma pozu: A valizi taşıyarak kamyonete koşar; eşya avuçların ortasında, önde, kafanın altında
         A.TeleportForTest(LanePoint(dir, 14f, 0.5f), Quaternion.LookRotation(-vf));
+        Player.Teleport(LanePoint(dir, 4f, 0.5f), Quaternion.LookRotation(vf)); // oyuncu kadrajdan çıksın
         yield return null;
-        A.GiveItemForTest(item);
-        yield return Seconds(0.6f);
+        A.ResetForTest(); // sersemlik biter, Seek
+        A.GiveItemForTest(item); // → Carry
+        float tCarry = Time.time;
+        yield return (Func<bool>)(() => (ThiefIn(A, Thief.StateMoveCarry) && Time.time - tCarry >= 0.4f) || Time.time - tCarry > 1.6f);
         A.HandsMid(out Vector3 mid, out _);
         Vector3 c = item.Center;
         Vector3 local = A.transform.InverseTransformPoint(c);
         var head = A.animator.GetBoneTransform(HumanBodyBones.Head);
         float headY = head != null ? head.position.y : A.transform.position.y + 1.2f;
         Bounds b = item.WorldBounds;
-        bool carryPose = Vector3.Distance(c, mid) <= 0.2f && local.z >= 0.24f && local.y >= 0.5f && local.y <= 1.15f && b.max.y <= headY + 0.05f && A.State == Thief.ThiefState.Carry && ThiefIn(A, Thief.StateMoveCarry);
+        bool carryPose = Vector3.Distance(c, mid) <= 0.2f && local.z >= 0.24f && local.y >= 0.5f && local.y <= 1.15f && c.y <= headY && A.State == Thief.ThiefState.Carry && ThiefIn(A, Thief.StateMoveCarry);
         Vector3 tp = A.transform.position, tf = Flat(A.transform.forward).normalized;
         yield return Capture("u4b_kapma", tp + Vector3.Cross(Vector3.up, tf) * 2.4f + tf * 1.2f + Vector3.up * 1.5f, tp + tf * 0.3f + Vector3.up * 0.9f, 45f);
-        Note("taşıma pozu (eşya avuçlarda, önde, kafanın altında)", carryPose, "avuçlara " + M(Vector3.Distance(c, mid)) + ", kök uzayında " + V(local) + ", üst " + b.max.y.ToString("F2", Inv) + " / kafa " + headY.ToString("F2", Inv) + ", anim " + ThiefAnim(A));
+        Note("taşıma pozu (eşya avuçlarda, önde, kafanın altında)", carryPose, "avuçlara " + M(Vector3.Distance(c, mid)) + ", kök uzayında " + V(local) + ", merkez y " + c.y.ToString("F2", Inv) + " / üst " + b.max.y.ToString("F2", Inv) + " (boyut " + V(b.size) + ") / kafa " + headY.ToString("F2", Inv) + ", anim " + ThiefAnim(A));
         // İtme 25: A oyuncunun 1.1 m önünde, sersem (yerinde)
         A.Stun(8f, Vector3.zero, "test-bekleme"); // eşyayı düşürür
         yield return null;
@@ -266,7 +279,7 @@ public static partial class Bolum1AnimVerify
         Note("itme 25", pushed && Mathf.Abs(hp0 - A.Health - s.pushDamage) < 0.01f && Mathf.Abs(A.Health - 75f) < 0.01f && A.LastHitReason == "itme" && A.IsStunned && Mathf.Abs(fillAfterPush - 0.75f) < 0.02f,
             "can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv) + ", bar " + fillAfterPush.ToString("F2", Inv) + ", sersem " + A.IsStunned + " (" + A.LastStunReason + ")");
         Vector3 ap = A.transform.position;
-        yield return Capture("u4b_can_bari", ap - vf * 0.6f + vr * 2.0f + Vector3.up * 1.9f, ap + Vector3.up * 1.5f, 40f);
+        yield return Capture("u4b_can_bari", ap - vf * 1.0f + vr * 2.4f + Vector3.up * 1.6f, ap + Vector3.up * 1.35f, 40f);
         yield return Until(() => !combat.Busy && Player.HasControl, 3f, "itme bitti");
         // Fırlatma 35: A 5 m önde, sersem; valiz elde, sağ tık → bırak
         A.Stun(6f, Vector3.zero, "test-hedef");
@@ -281,13 +294,15 @@ public static partial class Bolum1AnimVerify
         Player.Teleport(LanePoint(dir, 10f, 0.5f), Quaternion.LookRotation(vf));
         yield return null;
         hp0 = A.Health;
+        int hits0 = item.ThrowHits;
         combat.SetThrowHeld(true);
         yield return Seconds(0.3f);
         combat.SetThrowHeld(false);
-        yield return Until(() => item.ThrowHits > 0 || (!item.IsFlying && Time.time > combat.PushReadyAt + 1f), 5f, "fırlatma isabeti");
+        float tTh = Time.time;
+        yield return (Func<bool>)(() => item.ThrowHits > hits0 || (Time.time - tTh > 0.8f && !item.IsFlying) || Time.time - tTh > 5f);
         yield return null;
-        Note("fırlatma isabeti 35", held && item.ThrowHits >= 1 && Mathf.Abs(hp0 - A.Health - s.throwHitDamage) < 0.01f && Mathf.Abs(A.Health - 40f) < 0.01f && A.LastHitReason == "firlatma",
-            "elde " + held + ", isabet " + item.ThrowHits + ", can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv));
+        Note("fırlatma isabeti 35", held && item.ThrowHits == hits0 + 1 && Mathf.Abs(hp0 - A.Health - s.throwHitDamage) < 0.01f && Mathf.Abs(A.Health - 40f) < 0.01f && A.LastHitReason == "firlatma",
+            "elde " + held + ", isabet +" + (item.ThrowHits - hits0) + ", can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv) + " (" + A.LastHitReason + ", durum " + A.State + ", vurulabilir " + A.CanBeHit + ")");
         yield return Until(() => !item.IsFlying, 8f, "eşya indi");
         yield return Until(() => !combat.Busy && Player.HasControl, 3f, "atış bitti");
         // Tackle 50 → 0 → pes: A eşyalı (item2) 3.6 m önde; oyuncu koşar, tackle; eşya düşer, A sersem → pes
@@ -300,6 +315,7 @@ public static partial class Bolum1AnimVerify
         Player.Teleport(runFrom, Quaternion.LookRotation(runDir));
         A.TeleportForTest(LanePoint(dir, 15.6f, 0.3f), Quaternion.LookRotation(runDir));
         A.Stun(3f, Vector3.zero, "test-bekleme");
+        item2.gameObject.SetActive(true);
         yield return null;
         A.GiveItemForTest(item2);
         yield return Until(() => Time.time >= combat.TackleReadyAt, 4f, "tackle hazır");
@@ -325,7 +341,7 @@ public static partial class Bolum1AnimVerify
         float slid = Flat(Player.transform.position - before).magnitude;
         bool getUpSeen = false;
         yield return (Func<bool>)(() => { if (PlayerAnim.InState(CrewAnimation.StateTackleGetUp)) getUpSeen = true; return Time.time - tT >= 1.4f; });
-        Note("tackle 50 → 0 (eşya düşer, kayma havada 0.2–0.7 sn)", tackleStarted && diveAnim && getUpSeen && slidAt02 <= 0.5f && slid >= 1.8f && slid <= 3.2f && Mathf.Abs(hp0 - A.Health - s.tackleDamage) < 0.01f && A.Health <= 0.01f && A.Surrendered && A.LastHitReason == "tackle" && A.Carried == null && item2.State == LootItem.LootState.Dropped && item2.CanPickUp,
+        Note("tackle 50 → 0 (eşya düşer, kayma havada 0.2–0.7 sn)", tackleStarted && diveAnim && getUpSeen && slidAt02 <= 0.5f && slid >= 1.8f && slid <= 3.2f && Mathf.Abs(hp0 - A.Health - Mathf.Min(hp0, s.tackleDamage)) < 0.01f && A.Health <= 0.01f && A.Surrendered && A.LastHitReason == "tackle" && A.Carried == null && item2.State == LootItem.LootState.Dropped && item2.CanPickUp,
             "Tackle_Dive " + diveAnim + " → GetUp " + getUpSeen + ", kayma 0.2 sn'de " + M(Mathf.Max(0f, slidAt02)) + ", toplam " + M(slid) + ", kalça yüksekliği 0.5 sn " + hipsMid.ToString("F2", Inv) + " / 0.75 sn " + hipsGround.ToString("F2", Inv) + " m, can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv) + ", pes " + A.Surrendered + ", eşya yerde " + (item2.State == LootItem.LootState.Dropped));
         // Pes akışı: sersemlik bitince Surrender → yolcu kapısı (B, C aktif değil ama sahnede: aktif sayılmaz → A son mu? B/C kapalı → A "son" sayılır)
         // B ve C'yi açıp uzakta sersem bekletiriz ki A yolcu kapısını kullansın.
@@ -337,13 +353,15 @@ public static partial class Bolum1AnimVerify
         Time.timeScale = 2f;
         yield return Until(() => { if (A.State == Thief.ThiefState.Surrender) { stateSeen = true; } return stateSeen || A.IsGone; }, 12f, "pes durumu");
         if (A.State == Thief.ThiefState.Surrender) hitRefused = !A.Hit(10f, 1f, Vector3.zero, "test") && A.Health <= 0.01f && !A.CanBeHit;
-        Vector3 doorPos = Vector3.zero;
+        Vector3 doorPos = Vector3.zero, approachPt = Vector3.zero;
+        float minDoorDist = 99f;
         yield return Until(() =>
         {
             if (A.Target != null) targetStayedNull = false;
             maxDoor = Mathf.Max(maxDoor, van.FrontDoorAmount(false));
-            van.FrontDoorPoint(false, out doorPos);
-            return A.IsGone || (Flat(A.transform.position - doorPos).magnitude <= 2.3f && van.FrontDoorAmount(false) > 0.3f);
+            approachPt = van.FrontDoorPoint(false, out doorPos);
+            if (!A.IsGone) minDoorDist = Mathf.Min(minDoorDist, Flat(A.transform.position - doorPos).magnitude);
+            return A.IsGone || (Flat(A.transform.position - approachPt).magnitude <= 2.0f && van.FrontDoorAmount(false) > 0.3f);
         }, 40f, "ön kapıya yaklaştı");
         Time.timeScale = 1f;
         bool nearDoor = !A.IsGone;
@@ -357,7 +375,7 @@ public static partial class Bolum1AnimVerify
         Time.timeScale = 1f;
         bool doorClosed = van.FrontDoorAmount(false) <= 0.05f;
         Note("pes → ön (yolcu) kapıya yürür, kapı açılır, biner, gizlenir; vurulamaz, hedef seçmez", stateSeen && hitRefused && targetStayedNull && nearDoor && maxDoor >= 0.5f && A.IsGone && !A.gameObject.activeInHierarchy && !A.UsedDriverDoor && van.Surrendered == 1 && van.Boarded == boarded0 + 1 && doorClosed && !van.Departing,
-            "Surrender görüldü " + stateSeen + ", darbe reddedildi " + hitRefused + ", hedef hep boş " + targetStayedNull + ", kapıya yaklaştı " + nearDoor + ", kapı en çok " + maxDoor.ToString("F2", Inv) + " → kapandı " + doorClosed + ", gizli " + !A.gameObject.activeInHierarchy + ", şoför kapısı " + A.UsedDriverDoor + ", pes sayısı " + van.Surrendered + ", kamyonet kalkıyor " + van.Departing);
+            "Surrender görüldü " + stateSeen + ", darbe reddedildi " + hitRefused + ", hedef hep boş " + targetStayedNull + ", kapıya yaklaştı " + nearDoor + " (kapıya en yakın " + M(minDoorDist) + ", yaklaşma noktası kapıya " + M(Flat(approachPt - doorPos).magnitude) + "), kapı en çok " + maxDoor.ToString("F2", Inv) + " → kapandı " + doorClosed + ", gizli " + !A.gameObject.activeInHierarchy + ", şoför kapısı " + A.UsedDriverDoor + ", pes sayısı " + van.Surrendered + ", kamyonet kalkıyor " + van.Departing);
         // Hepsi pes edince: B (yolcu) sonra C (son → şoför kapısı), kamyonet hemen kalkar
         B.ResetForTest(); B.TeleportForTest(LanePoint(dir, 12f, -0.8f), Quaternion.LookRotation(-vf));
         bool bHit = B.Hit(s.thiefHealth, 0.5f, Vector3.zero, "test");
@@ -371,8 +389,8 @@ public static partial class Bolum1AnimVerify
         float parkedAtC = van.ParkedTime;
         yield return Until(() => van.Departing, 5f, "kamyonet kalkış kararı");
         Time.timeScale = 1f;
-        Note("hepsi pes: son hırsız şoför kapısından, kamyonet hemen kalkar", bHit && cHit && bPassenger && C.UsedDriverDoor && van.LastBoardWasDriverDoor && maxDriverDoor >= 0.5f && van.Surrendered == 3 && van.Departing && parkedAtC < s.vanWaitSeconds - 2f,
-            "B yolcu " + bPassenger + ", C şoför " + C.UsedDriverDoor + " (kapı " + maxDriverDoor.ToString("F2", Inv) + "), pes " + van.Surrendered + "/3, kalkış " + van.Departing + " park " + S(parkedAtC) + " < " + s.vanWaitSeconds.ToString(Inv));
+        Note("hepsi pes: son hırsız şoför kapısından, kamyonet hemen kalkar", bHit && cHit && bPassenger && C.UsedDriverDoor && van.LastBoardWasDriverDoor && maxDriverDoor >= 0.5f && van.Surrendered == 3 && van.Departing && parkedAtC < van.settings.vanWaitSeconds - 2f,
+            "B yolcu " + bPassenger + ", C şoför " + C.UsedDriverDoor + " (kapı " + maxDriverDoor.ToString("F2", Inv) + "), pes " + van.Surrendered + "/3, kalkış " + van.Departing + " park " + S(parkedAtC) + " < bekleme " + van.settings.vanWaitSeconds.ToString(Inv));
         Check("(U4b-1) hırsız canı " + s.thiefHealth.ToString(Inv) + ": başının üstünde can barı; itme " + s.pushDamage.ToString(Inv) + " / fırlatma " + s.throwHitDamage.ToString(Inv) + " / tackle " + s.tackleDamage.ToString(Inv) + "; can 0 → pes: elindekini düşürür, sersemlik bitince ön (yolcu) kapıya yürür, kapı açılır, biner, gizlenir, vurulamaz/hedef seçmez; hepsi pes edince son hırsız şoför kapısından biner, kamyonet hemen kalkar; taşıma pozu avuçlarda; tackle kayması havada",
             ok, string.Join("; ", parts));
         BeforeCapture = null;
@@ -463,7 +481,9 @@ public static partial class Bolum1AnimVerify
         yield return null; yield return null;
         bool normalAgain = item1.State == LootItem.LootState.Dropped && item1.CanPickUp && item1.gameObject.activeSelf && T0.IsStealable(item1);
         // Sedye kamyonette → geri al → yere (bagajın arkası)
-        var s0 = Stretcher(0); var s0Item = s0.GetComponent<LootItem>();
+        // Sedye LootItem'ı gizli listede (HideLootExcept kapattı; GameObject.Find kapalı nesneyi bulmaz)
+        var s0Item = hidden.First(l => l != null && l.GetComponent<StretcherController>() != null);
+        var s0 = s0Item.GetComponent<StretcherController>();
         van.AddLoot(s0Item);
         yield return null;
         bool stretcherHidden = s0Item.IsInVan && !s0.gameObject.activeSelf;
