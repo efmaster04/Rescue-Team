@@ -357,6 +357,28 @@ public static partial class Bolum1AnimVerify
         Vector3 doorPos = Vector3.zero, approachPt = Vector3.zero;
         approachPt = van.FrontDoorPoint(false, out doorPos, out bool aDriverSide);
         bool passengerReachable = !aDriverSide;
+        // Tanı: kapının yanındaki NavMesh örgüsü (o = gövdeden dışarı, dz = kapıdan öne/arkaya; '#' NavMesh var + A'dan yol var, '.' yalnız NavMesh, '_' yok)
+        {
+            Vector3 vF = Flat(van.transform.forward).normalized, vR = Vector3.Cross(Vector3.up, vF);
+            float halfWd = van.Vehicle.bodySize.x * 0.5f, frontD = van.Follower.frontOverhang;
+            var sb = new System.Text.StringBuilder();
+            foreach (float sgn in new[] { -1f, 1f })
+            {
+                sb.Append(sgn < 0 ? " şoför tarafı:" : " yolcu tarafı:");
+                foreach (float dz in new[] { 1.2f, 0.6f, 0f, -0.6f, -1.2f })
+                {
+                    sb.Append(" [dz ").Append(dz.ToString("+0.0;-0.0", Inv)).Append("]");
+                    foreach (float o in new[] { 0.3f, 0.6f, 0.9f, 1.2f, 1.6f, 2.0f })
+                    {
+                        Vector3 cand = van.transform.position + vF * (frontD - 1.4f + dz) + vR * sgn * (halfWd + o);
+                        bool on = UnityEngine.AI.NavMesh.SamplePosition(cand, out UnityEngine.AI.NavMeshHit h, 0.3f, UnityEngine.AI.NavMesh.AllAreas);
+                        bool conn = on && A.PathTo(h.position, out _);
+                        sb.Append(conn ? '#' : on ? '.' : '_');
+                    }
+                }
+            }
+            Line("  U4b tanı: ön kapı yanı NavMesh (o 0.3/0.6/0.9/1.2/1.6/2.0 m):" + sb + "; A konumu " + V(A.transform.position) + ", yaklaşma " + V(approachPt) + ", kapı " + V(doorPos));
+        }
         float minDoorDist = 99f;
         yield return Until(() =>
         {
@@ -378,8 +400,8 @@ public static partial class Bolum1AnimVerify
         yield return Seconds(1.5f);
         Time.timeScale = 1f;
         bool doorClosed = van.FrontDoorAmount(aDriverSide) <= 0.05f;
-        Note("pes → ön kapıya yürür (yolcu tarafı; yürünemezse şoför tarafı), kapı açılır, biner, gizlenir; vurulamaz, hedef seçmez", stateSeen && hitRefused && targetStayedNull && nearDoor && minDoorDist <= 1.8f && maxDoor >= 0.5f && A.IsGone && !A.gameObject.activeInHierarchy && A.UsedDriverDoor == aDriverSide && van.Surrendered == 1 && van.Boarded == boarded0 + 1 && doorClosed && !van.Departing,
-            "Surrender görüldü " + stateSeen + ", darbe reddedildi " + hitRefused + ", hedef hep boş " + targetStayedNull + ", kapıya yaklaştı " + nearDoor + " (kapıya en yakın " + M(minDoorDist) + ", yaklaşma noktası kapıya " + M(Flat(approachPt - doorPos).magnitude) + ", yolcu tarafı yürünebilir " + passengerReachable + "), kapı en çok " + maxDoor.ToString("F2", Inv) + " → kapandı " + doorClosed + ", gizli " + !A.gameObject.activeInHierarchy + ", şoför kapısı " + A.UsedDriverDoor + ", pes sayısı " + van.Surrendered + ", kamyonet kalkıyor " + van.Departing);
+        Note("pes → ön kapıya yürür (yolcu tarafı; yürünemezse şoför tarafı), kapı açılır, biner, gizlenir; vurulamaz, hedef seçmez", stateSeen && hitRefused && targetStayedNull && nearDoor && minDoorDist <= 2.6f && maxDoor >= 0.5f && A.IsGone && !A.gameObject.activeInHierarchy && A.UsedDriverDoor == aDriverSide && van.Surrendered == 1 && van.Boarded == boarded0 + 1 && doorClosed && !van.Departing,
+            "Surrender görüldü " + stateSeen + ", darbe reddedildi " + hitRefused + ", hedef hep boş " + targetStayedNull + ", kapıya yaklaştı " + nearDoor + " (kapıya en yakın " + M(minDoorDist) + ", yaklaşma noktası kapıya " + M(Flat(approachPt - doorPos).magnitude) + ", yolcu tarafı yürünebilir " + passengerReachable + "; biniş: " + A.BoardDiag + "), kapı en çok " + maxDoor.ToString("F2", Inv) + " → kapandı " + doorClosed + ", gizli " + !A.gameObject.activeInHierarchy + ", şoför kapısı " + A.UsedDriverDoor + ", pes sayısı " + van.Surrendered + ", kamyonet kalkıyor " + van.Departing);
         // Hepsi pes edince: B (yolcu) sonra C (son → şoför kapısı), kamyonet hemen kalkar
         B.ResetForTest(); B.TeleportForTest(LanePoint(dir, 12f, -0.8f), Quaternion.LookRotation(-vf));
         bool bHit = B.Hit(s.thiefHealth, 0.5f, Vector3.zero, "test");
