@@ -443,8 +443,12 @@ public class Thief : MonoBehaviour
         return true;
     }
 
+    private float surrenderBestD = float.MaxValue, surrenderProgressAt;
+    public string BoardDiag { get; private set; } = "";
+
     private void TickSurrender(float dt)
     {
+        if (stateTimer <= dt) { surrenderBestD = float.MaxValue; surrenderProgressAt = Time.time; }
         if (Carried != null) { var c = Carried; Carried = null; c.DropByThief(transform.position, transform.forward); }
         Target = null;
         PunchTarget = null;
@@ -453,12 +457,17 @@ public class Thief : MonoBehaviour
         Vector3 to = Van.FrontDoorPoint(driver, out Vector3 door, out bool usedDriver);
         driver = usedDriver; // istenen taraf yürünemezse (banket) öbür ön kapı
         float d = Flat(to - transform.position).magnitude;
+        float doorDist = Flat(door - transform.position).magnitude;
         float reach = settings != null ? settings.frontDoorReach : 1.0f;
-        bool arrived = d <= reach || (Flat(door - transform.position).magnitude <= reach + 0.6f && stateTimer > 1f)
+        if (d < surrenderBestD - 0.05f) { surrenderBestD = d; surrenderProgressAt = Time.time; }
+        bool stalled = Time.time - surrenderProgressAt > 3f; // 3 sn'dir yaklaşamıyor (NavMesh kapı yanına kadar gitmiyor)
+        bool arrived = d <= reach || (doorDist <= reach + 0.6f && stateTimer > 1f)
+            || (stalled && doorDist <= 2.6f) // kapının bir adım ötesinden biner
             || (stateTimer > 20f && Van.DistanceToBody(transform.position) <= 1.5f); // takıldıysa gövdenin yanından biner
         if (d <= 3f || arrived) Van.RequestFrontDoor(driver); // kapı açılır
         if (arrived && Van.FrontDoorAmount(driver) >= 0.5f)
         {
+            BoardDiag = "yaklaşma noktasına " + d.ToString("F2") + " m, kapıya " + doorDist.ToString("F2") + " m, " + stateTimer.ToString("F1") + " sn, yol " + PathStatus + ", kalan " + RemainingDistance.ToString("F2") + ", vazgeçme " + StuckGiveUps + ", son " + LastBlock + ", takıldı " + stalled;
             UsedDriverDoor = driver;
             State = ThiefState.Gone;
             Van.BoardFront(this, driver);
