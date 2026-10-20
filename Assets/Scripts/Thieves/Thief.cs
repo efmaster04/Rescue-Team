@@ -453,9 +453,9 @@ public class Thief : MonoBehaviour
         Vector3 to = Van.FrontDoorPoint(driver, out Vector3 door);
         float d = Flat(to - transform.position).magnitude;
         float reach = settings != null ? settings.frontDoorReach : 1.0f;
-        if (d <= 3f) Van.RequestFrontDoor(driver); // kapı açılır
         bool arrived = d <= reach || (Flat(door - transform.position).magnitude <= reach + 0.6f && stateTimer > 1f)
             || (stateTimer > 20f && Van.DistanceToBody(transform.position) <= 1.5f); // takıldıysa gövdenin yanından biner
+        if (d <= 3f || arrived) Van.RequestFrontDoor(driver); // kapı açılır
         if (arrived && Van.FrontDoorAmount(driver) >= 0.5f)
         {
             UsedDriverDoor = driver;
