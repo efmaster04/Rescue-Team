@@ -62,6 +62,9 @@ public class PlayerInteraction : MonoBehaviour
     public const string HintTakePatientItem = "E: Değerli eşyasını al";
     public const string HintDropLoot = "E: Eşyayı bırak";
     public const string HintSecureLoot = "E: Güvenli yere koy";
+    // U4b: açık bagajdan geri alma: "E: Geri al (Laptop'lu çanta 400 ₺)" (en değerliden başlar)
+    public const string HintRetrievePrefix = "E: Geri al (";
+    public static string HintRetrieve(LootItem item) { return HintRetrievePrefix + item.LabelText + ")"; }
 
     [Header("U3: yüz dönük kuralı (bütün E etkileşimleri)")]
     [Tooltip("Hedef, yatay ileri yönden en fazla bu kadar ° sapabilir (~60° koni).")]
@@ -73,6 +76,9 @@ public class PlayerInteraction : MonoBehaviour
     [Tooltip("Eşya bırakılırken oyuncunun bu kadar önüne (m) konur.")]
     public float lootPlaceDistance = 0.7f;
     public LootItem LootTarget { get; private set; }
+    // U4b: bagajından eşya alınacak kamyonet (ipucu "E: Geri al"); vurgu arka kapaklarda
+    public ThiefVan VanTarget { get; private set; }
+    public int Retrievals { get; private set; }
     // Yüz kuralı yüzünden gösterilmeyen ipucu sayısı (ölçüm): hedef menzilde ama sırt dönük
     public int FacingRejections { get; private set; }
 
@@ -127,7 +133,7 @@ public class PlayerInteraction : MonoBehaviour
     private enum Action { None, Release, PlaceCone, Revive, PlacePatient, Grab, PickCone,
         OpenTailgate, Extract, AttachRope, DetachRope, Piggyback, PutDownBack, PullRope,
         OpenLocker, CloseLocker, TakeCoil, DropCoil, TieStake, ThrowRope,
-        TakeLoot, DropLoot, SecureLoot }
+        TakeLoot, DropLoot, SecureLoot, RetrieveLoot }
     private MinivanTailgate targetTailgate;
     private Transform targetSafe;   // U3: güvenli yerin vurgu hedefi (halka ya da ambulans kapısı)
     private RopeAnchor targetRope;
@@ -200,6 +206,8 @@ public class PlayerInteraction : MonoBehaviour
             // U3: eşya (valiz prop'u / hasta kutusu) ve güvenli yer işareti; bırakma hedefsiz
             case Action.TakeLoot: return LootTarget != null ? LootTarget.transform : null;
             case Action.SecureLoot: return targetSafe;
+            // U4b: açık bagaj (içinde eşya varken) — arka kapaklar
+            case Action.RetrieveLoot: return VanTarget != null ? (VanTarget.rearDoors != null ? VanTarget.rearDoors : VanTarget.doorLeft) : null;
             default: return null;
         }
     }
@@ -218,6 +226,7 @@ public class PlayerInteraction : MonoBehaviour
         PiggybackTarget = null;
         PullTarget = null;
         LootTarget = null;
+        VanTarget = null;
         targetSafe = null;
         CurrentHint = "";
         HintIsWarning = false;
@@ -458,6 +467,15 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = loot.kind == LootKind.PatientItem ? HintTakePatientItem : HintTakeLuggage;
             return;
         }
+        // U4b: açık bagajdan geri alma (≤ retrieveRange, yüz bagaja dönük; en değerli eşya)
+        if (FindVanTrunk(out var van, out var inVan))
+        {
+            VanTarget = van;
+            LootTarget = inVan;
+            action = Action.RetrieveLoot;
+            CurrentHint = HintRetrieve(inVan);
+            return;
+        }
         // D2: halata bağlanma, minibüsten çekme, bagaj kapısı (en düşük öncelik: sedye ve koni önce gelir)
         if (FindAttachableRope(out var rope))
         {
@@ -577,8 +595,27 @@ public class PlayerInteraction : MonoBehaviour
             case Action.SecureLoot:
                 SecureLoot();
                 break;
+            // U4b
+            case Action.RetrieveLoot:
+                if (VanTarget != null && LootTarget != null && VanTarget.Retrieve(LootTarget, player)) Retrievals++;
+                break;
         }
         Evaluate();
+    }
+
+    // U4b: oyuncunun yakınında bagajı açık ve içinde eşya olan kamyonet; yüz arka tampona dönük.
+    private bool FindVanTrunk(out ThiefVan van, out LootItem best)
+    {
+        van = null; best = null;
+        Vector3 me = player.transform.position;
+        foreach (var v in ThiefVan.All)
+        {
+            if (v == null || !v.CanRetrieve(me, out LootItem item)) continue;
+            if (!Facing(v.TrunkCenter)) { FacingRejections++; continue; }
+            van = v; best = item;
+            return true;
+        }
+        return false;
     }
 
     // ---- U3: yüz kuralı ve değerli eşyalar ----

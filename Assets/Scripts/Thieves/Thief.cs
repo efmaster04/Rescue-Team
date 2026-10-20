@@ -12,15 +12,17 @@ using UnityEngine.AI;
 //    hastanın eşyası, boş sedye (arkasında komik sürükler), kangal (dolapta/yerde; bağlı halat çalınmaz), koni.
 //  - Saldırı: elleri boşken attackRadius içinde yaklaşan / yolunu kesen ya da hedefi elinde tutan oyuncuya Thief_Punch (hit_frame'de
 //    önündeki punchRange/punchAngle içindekilere punchDamage), bekleme punchCooldown. Eşya taşıyan vurmaz, kaçar.
-//  - Canı yok: sersemletilir (Thief_Stunned; elindekini düşürür), düdükle korkar (kamyonete kaçar, eşyasını bırakmaz),
+//  - U4b canı var (thiefHealth 100; itme 25, fırlatma 35, tackle 50): her darbe sersemletir (Thief_Stunned; elindekini düşürür),
+//    can 0 → PES: sersemlik bitince kamyonetin ÖN kapısına yürür (yolcu tarafı; dalganın son hırsızı şoför kapısı), kapı açılır,
+//    biner, gizlenir; bir daha çıkmaz, saldırmaz, hedef seçmez. Düdükle korkar (kamyonete kaçar, eşyasını bırakmaz),
 //    araç çarparsa ragdoll olup vehicleDownSeconds sonra kalkar (GetUp_FromBack), devam eder.
-// Oyun mantığı yalnız olay yayınlar; etiket (ThiefLabel) ve HUD okur.
+// Oyun mantığı yalnız olay yayınlar; etiket + can barı (ThiefLabel) ve HUD okur.
 [DefaultExecutionOrder(55)] // oyuncudan sonra, taşınan eşya (LootItem 60) konumlanmadan önce
 public class Thief : MonoBehaviour
 {
     public static readonly List<Thief> All = new List<Thief>();
 
-    public enum ThiefState { Unloading, Seek, Grab, Carry, Throw, Punch, Stunned, Feared, Down, GettingUp, Boarding, Flee, Gone }
+    public enum ThiefState { Unloading, Seek, Grab, Carry, Throw, Punch, Stunned, Feared, Down, GettingUp, Boarding, Flee, Gone, Surrender }
 
     // Animator (AC_Thief; Bolum1ThiefBuilder kurar)
     public const string ParamSpeed = "Speed", ParamCarry = "Carry", ParamStunned = "Stunned";
@@ -55,7 +57,18 @@ public class Thief : MonoBehaviour
     public bool IsFeared { get { return State == ThiefState.Feared; } }
     public bool IsDown { get { return State == ThiefState.Down; } }
     public bool IsGone { get { return State == ThiefState.Gone; } }
-    public bool CanBeHit { get { return State != ThiefState.Down && State != ThiefState.GettingUp && State != ThiefState.Gone; } }
+    public bool IsSurrendering { get { return State == ThiefState.Surrender; } }
+    // Pes eden (yerde / kalkan / giden / kapıya yürüyen) hırsıza vurulmaz
+    public bool CanBeHit { get { return State != ThiefState.Down && State != ThiefState.GettingUp && State != ThiefState.Gone && State != ThiefState.Surrender; } }
+    // U4b: can
+    public float Health { get; private set; } = -1f;
+    public float MaxHealth { get { return settings != null ? settings.thiefHealth : 100f; } }
+    public float HealthFraction { get { return MaxHealth > 0f ? Mathf.Clamp01((Health < 0f ? MaxHealth : Health) / MaxHealth) : 0f; } }
+    public bool Surrendered { get; private set; }
+    public bool UsedDriverDoor { get; private set; }
+    public int Hits { get; private set; }
+    public float DamageTaken { get; private set; }
+    public string LastHitReason { get; private set; } = "";
     public float StunRemaining { get { return IsStunned ? Mathf.Max(0f, stunUntil - Time.time) : 0f; } }
     public float FearRemaining { get { return IsFeared ? Mathf.Max(0f, fearUntil - Time.time) : 0f; } }
     public string LastStunReason { get; private set; } = "";
@@ -81,6 +94,8 @@ public class Thief : MonoBehaviour
     public event Action<Thief, LootItem> Stole;
     public event Action<Thief> BoardedVan;
     public event Action<Thief, ThirdPersonPlayer> Punched;
+    public event Action<Thief, float> Damaged;
+    public event Action<Thief> SurrenderedEvent;
 
     private Vector3 destination;
     private bool hasDestination;
@@ -119,6 +134,7 @@ public class Thief : MonoBehaviour
         audioSource.volume = 0.8f;
         rng = new System.Random(settings != null && settings.useFixedSeed ? settings.seed + All.Count * 131 : Environment.TickCount + All.Count);
         lastPos = transform.position;
+        Health = MaxHealth;
         if (agent != null)
         {
             agent.updateRotation = true;
@@ -198,10 +214,11 @@ public class Thief : MonoBehaviour
                 if (Time.time - downAt >= (settings != null ? settings.vehicleDownSeconds : 3f)) StandUp();
                 break;
             case ThiefState.GettingUp:
-                if (stateTimer >= GetUpSeconds) Enter(ThiefState.Seek);
+                if (stateTimer >= GetUpSeconds) AfterStun();
                 break;
             case ThiefState.Boarding: TickBoarding(dt); break;
             case ThiefState.Flee: TickFlee(dt); break;
+            case ThiefState.Surrender: TickSurrender(dt); break;
         }
         // Hız (animasyon): yatay yer değiştirme
         Vector3 moved = transform.position - lastPos; moved.y = 0f;
@@ -356,10 +373,13 @@ public class Thief : MonoBehaviour
             Carried = null;
             if (item != null)
             {
-                var reg = LootRegistry.Instance;
-                bool ok = reg != null ? reg.ReportStolen(item) : false;
-                if (!ok && reg == null) item.MarkStolen();
-                if (Van != null) Van.AddLoot(item);
+                // U4b: kamyonette (geri alınabilir); kamyonet yoksa doğrudan çalındı
+                if (Van != null && !Van.IsGone) Van.AddLoot(item);
+                else
+                {
+                    var reg = LootRegistry.Instance;
+                    if (reg == null || !reg.ReportStolen(item)) { if (reg == null) item.MarkStolen(); }
+                }
                 Throws++;
                 Stole?.Invoke(this, item);
             }
@@ -404,7 +424,49 @@ public class Thief : MonoBehaviour
                 else transform.position += step;
             }
         }
-        if (Time.time >= stunUntil) Enter(Carried != null ? ThiefState.Carry : ThiefState.Seek);
+        if (Time.time >= stunUntil) AfterStun();
+    }
+
+    // Sersemlik / korku bitti: pes ettiyse kapıya, değilse taşımaya ya da aramaya
+    private void AfterStun()
+    {
+        if (Surrendered) { Enter(ThiefState.Surrender); return; }
+        Enter(Carried != null ? ThiefState.Carry : ThiefState.Seek);
+    }
+
+    // ---- U4b: pes — kamyonetin ön kapısına yürü, bin, gizlen ----
+    // Dalgada aktif (gitmemiş) başka hırsız kalmadıysa şoför kapısı (son pes eden kamyoneti sürer), yoksa yolcu kapısı.
+    private bool IsLastActive()
+    {
+        if (Van == null) return true;
+        foreach (var t in Van.Thieves) if (t != null && t != this && !t.IsGone && t.gameObject.activeInHierarchy) return false;
+        return true;
+    }
+
+    private void TickSurrender(float dt)
+    {
+        if (Carried != null) { var c = Carried; Carried = null; c.DropByThief(transform.position, transform.forward); }
+        Target = null;
+        PunchTarget = null;
+        if (Van == null || Van.IsGone || Van.Departing) { Enter(ThiefState.Flee); return; }
+        bool driver = IsLastActive();
+        Vector3 to = Van.FrontDoorPoint(driver, out Vector3 door);
+        float d = Flat(to - transform.position).magnitude;
+        float reach = settings != null ? settings.frontDoorReach : 1.0f;
+        if (d <= 3f) Van.RequestFrontDoor(driver); // kapı açılır
+        bool arrived = d <= reach || (Flat(door - transform.position).magnitude <= reach + 0.6f && stateTimer > 1f)
+            || (stateTimer > 20f && Van.DistanceToBody(transform.position) <= 1.5f); // takıldıysa gövdenin yanından biner
+        if (arrived && Van.FrontDoorAmount(driver) >= 0.5f)
+        {
+            UsedDriverDoor = driver;
+            State = ThiefState.Gone;
+            Van.BoardFront(this, driver);
+            BoardedVan?.Invoke(this);
+            gameObject.SetActive(false);
+            return;
+        }
+        if (arrived) { if (agent != null && agent.enabled && agent.isOnNavMesh && agent.hasPath) agent.ResetPath(); FaceNow(door); return; }
+        GoTo(to, SneakSpeed, reach * 0.8f);
     }
 
     private void TickFeared(float dt)
@@ -413,7 +475,7 @@ public class Thief : MonoBehaviour
         float dist = Flat(to - transform.position).magnitude;
         if (dist > 1.5f) GoTo(to, RunSpeed, 1.5f);
         else if (agent != null && agent.enabled && agent.isOnNavMesh && agent.hasPath) agent.ResetPath();
-        if (Time.time >= fearUntil) Enter(Carried != null ? ThiefState.Carry : ThiefState.Seek);
+        if (Time.time >= fearUntil) AfterStun();
     }
 
     // Hedef kalmayınca binmeden önce iniş noktasında etrafa bakınma süresi (sn): yeni hedef (düşürülen eşya) çıkarsa döner.
@@ -466,7 +528,25 @@ public class Thief : MonoBehaviour
     // Dış etkiler
     // =====================================================================================
 
-    // Sersemleme (itme / tackle / fırlatma): elindekini düşürür, knockback kadar geri savrulur.
+    // U4b: darbe (itme / tackle / fırlatma isabeti): can düşer, sersemler; can 0 → pes (sersemlik bitince ön kapıya yürür).
+    public bool Hit(float damage, float stunSeconds, Vector3 knockback, string reason)
+    {
+        if (!CanBeHit) return false;
+        if (Health < 0f) Health = MaxHealth;
+        Health = Mathf.Max(0f, Health - Mathf.Max(0f, damage));
+        DamageTaken += damage;
+        Hits++;
+        LastHitReason = reason;
+        Damaged?.Invoke(this, damage);
+        if (Health <= 0f && !Surrendered)
+        {
+            Surrendered = true;
+            SurrenderedEvent?.Invoke(this);
+        }
+        return Stun(stunSeconds, knockback, reason);
+    }
+
+    // Sersemleme (itme / tackle / fırlatma; testlerde hasarsız bekletme): elindekini düşürür, knockback kadar geri savrulur.
     public bool Stun(float seconds, Vector3 knockback, string reason)
     {
         if (!CanBeHit) return false;
@@ -486,7 +566,7 @@ public class Thief : MonoBehaviour
     // Düdük: kamyonete doğru kaçar, eşyasını bırakmaz. Sersem / yerdeyken etkilenmez.
     public bool Fear(float seconds)
     {
-        if (!CanBeHit || State == ThiefState.Stunned || State == ThiefState.Flee) return false; // binmeye giden de korkar (zaten kamyonete koşar)
+        if (!CanBeHit || Surrendered || State == ThiefState.Stunned || State == ThiefState.Flee) return false; // binmeye giden de korkar (zaten kamyonete koşar)
         fearUntil = Time.time + seconds;
         Target = null;
         PunchTarget = null;
@@ -505,7 +585,7 @@ public class Thief : MonoBehaviour
         stuckTime = 0f;
     }
 
-    // Test: elindekini bırakır, hedefini ve beklemelerini sıfırlar, aramaya döner.
+    // Test: elindekini bırakır, hedefini ve beklemelerini sıfırlar, canı doldurur (pes geri alınır), aramaya döner.
     public void ResetForTest()
     {
         if (State == ThiefState.Gone) gameObject.SetActive(true);
@@ -515,6 +595,8 @@ public class Thief : MonoBehaviour
         punchReadyAt = -100f;
         stunUntil = 0f;
         fearUntil = 0f;
+        Health = MaxHealth;
+        Surrendered = false;
         unreachableUntil.Clear();
         if (State == ThiefState.Down || State == ThiefState.GettingUp) return;
         Enter(ThiefState.Seek);
@@ -544,7 +626,7 @@ public class Thief : MonoBehaviour
     // Kamyonet kalkıyor: dönmemiş hırsız panikler (sersem / yerdeki olan kalkınca kaçar).
     public void OnVanLeaving()
     {
-        if (State == ThiefState.Gone || State == ThiefState.Down || State == ThiefState.GettingUp || State == ThiefState.Stunned || State == ThiefState.Flee) return;
+        if (State == ThiefState.Gone || State == ThiefState.Down || State == ThiefState.GettingUp || State == ThiefState.Stunned || State == ThiefState.Flee || State == ThiefState.Surrender) return;
         Target = null;
         Enter(ThiefState.Flee);
     }
@@ -563,6 +645,25 @@ public class Thief : MonoBehaviour
         foreach (var rb in ragdollBodies) if (rb != null) rb.linearVelocity = velocity;
     }
 
+    // U4b: iki avucun ortası (clips_meta loot_grip: el kemiği + 5 cm kemik yönünde). Animator yoksa false.
+    public bool HandsMid(out Vector3 mid, out Vector3 across)
+    {
+        mid = transform.position + transform.forward * 0.32f + Vector3.up * 0.8f;
+        across = transform.right;
+        if (animator == null || !animator.isHuman || !animator.enabled) return false;
+        var l = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+        var r = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        var lf = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+        var rf = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
+        if (l == null || r == null) return false;
+        Vector3 lp = l.position, rp = r.position;
+        if (lf != null) lp += (l.position - lf.position).normalized * 0.05f;
+        if (rf != null) rp += (r.position - rf.position).normalized * 0.05f;
+        mid = (lp + rp) * 0.5f;
+        across = rp - lp;
+        return true;
+    }
+
     private void StandUp()
     {
         Vector3 at = hips != null ? hips.position : transform.position;
@@ -575,7 +676,7 @@ public class Thief : MonoBehaviour
         lastPos = ground;
         GetUps++;
         if (agent != null) { agent.enabled = true; EnsureOnNavMesh(); }
-        Enter(ThiefState.GettingUp);
+        Enter(ThiefState.GettingUp); // bitince AfterStun gibi: pes ettiyse kapıya
         if (animator != null && animator.runtimeAnimatorController != null) animator.Play(StateGetUpAnim, 0, 0f);
     }
 

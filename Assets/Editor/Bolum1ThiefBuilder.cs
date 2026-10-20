@@ -54,6 +54,23 @@ public static class Bolum1ThiefBuilder
     // =====================================================================================
     // Asset'ler
     // =====================================================================================
+    // Batchmode: -executeMethod Bolum1ThiefBuilder.BuildAssetsBatch (U4b: kamyonet prefab'ına ön kapılar; sahne kurulumu gerekmez)
+    public static void BuildAssetsBatch()
+    {
+        try
+        {
+            BuildAssets();
+            Debug.Log(report.ToString());
+            Debug.Log("THIEF BUILD OK");
+            EditorApplication.Exit(0);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("THIEF BUILD FAILED: " + e);
+            EditorApplication.Exit(1);
+        }
+    }
+
     public static void BuildAssets()
     {
         report.Length = 0;
@@ -270,10 +287,13 @@ public static class Bolum1ThiefBuilder
             float rearZ = -follower.rearOverhang + 0.02f;
             float halfW = vehicle.bodySize.x * 0.5f - 0.04f;
             float bottom = 0.55f, top = vehicle.bodyCenter.y + vehicle.bodySize.y * 0.5f - 0.08f;
+            // U4b: arka kapaklar ortak "RearDoors" kökünde (U1 beyaz vurgusu bagaj açıkken ikisini birden çizer)
+            var rearRoot = new GameObject("RearDoors").transform;
+            rearRoot.SetParent(go.transform, false);
             Transform MakeDoor(string name, float sideSign)
             {
                 var hinge = new GameObject(name).transform;
-                hinge.SetParent(go.transform, false);
+                hinge.SetParent(rearRoot, false);
                 hinge.localPosition = new Vector3(sideSign * halfW, bottom, rearZ);
                 var leaf = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 UnityEngine.Object.DestroyImmediate(leaf.GetComponent<Collider>());
@@ -286,9 +306,33 @@ public static class Bolum1ThiefBuilder
             }
             var left = MakeDoor("Door_L", -1f);
             var right = MakeDoor("Door_R", 1f);
+            // U4b: ön kapılar (şoför sol, yolcu sağ): gövde yan düzleminde ince levha, menteşe ön kenarda, 0.9 m geniş, 0.55–1.75 m
+            float frontZ = follower.frontOverhang - 1.4f;
+            float doorW = 0.9f, frontBottom = 0.55f, frontTop = Mathf.Min(top, 1.75f);
+            float sideX = vehicle.bodySize.x * 0.5f + 0.01f;
+            Transform MakeFrontDoor(string name, float sideSign)
+            {
+                var hinge = new GameObject(name).transform;
+                hinge.SetParent(go.transform, false);
+                hinge.localPosition = new Vector3(sideSign * sideX, frontBottom, frontZ);
+                var leaf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                UnityEngine.Object.DestroyImmediate(leaf.GetComponent<Collider>());
+                leaf.name = "Leaf";
+                leaf.transform.SetParent(hinge, false);
+                leaf.transform.localPosition = new Vector3(0f, (frontTop - frontBottom) * 0.5f, -doorW * 0.5f);
+                leaf.transform.localScale = new Vector3(0.05f, frontTop - frontBottom, doorW - 0.02f);
+                leaf.GetComponent<MeshRenderer>().sharedMaterial = door;
+                return hinge;
+            }
+            var frontLeft = MakeFrontDoor("Door_FrontL", -1f);
+            var frontRight = MakeFrontDoor("Door_FrontR", 1f);
             var van = go.AddComponent<ThiefVan>();
             van.doorLeft = left;
             van.doorRight = right;
+            van.rearDoors = rearRoot;
+            van.doorFrontLeft = frontLeft;
+            van.doorFrontRight = frontRight;
+            van.frontDoorOpenAngle = 70f;
             van.doorLeftOpenAngle = -150f;
             van.doorRightOpenAngle = 150f;
             // Park edince NavMesh'i oyar: hırsızlar gövdenin içinden geçmez (hareket hâlinde oyma yok)

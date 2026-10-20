@@ -14,8 +14,8 @@ public class ThiefSettings : ScriptableObject
     [Range(1, 10)] public int maxThieves = 5;
     [Tooltip("Dalgadan bu kadar önce HUD uyarısı (sn).")]
     [Min(0f)] public float warnLeadSeconds = 5f;
-    [Tooltip("Kamyonet durakta en fazla bu kadar bekler (sn); hepsi dönerse erken kalkar.")]
-    [Min(5f)] public float vanWaitSeconds = 90f;
+    [Tooltip("Kamyonet durakta en fazla bu kadar bekler (sn; U4b kullanıcı kararı: 30 — çalma süresi, bagaj bu süre açık); hepsi dönerse / pes ederse erken kalkar.")]
+    [Min(5f)] public float vanWaitSeconds = 30f;
 
     [Header("Kamyonet")]
     [Tooltip("Duraktan bu kadar önce bankete kaymaya başlar / kalkınca bu kadar yolda şeride döner (m). Kısa: durak çekicinin hemen önünde, yanından geçerken sürtmesin.")]
@@ -67,6 +67,21 @@ public class ThiefSettings : ScriptableObject
     public float throwHitStunSeconds = 3f;
     public float vehicleDownSeconds = 3f;
     public float fearSeconds = 4f;
+
+    [Header("Hırsız canı (U4b, kullanıcı kararı 2026-10-20)")]
+    [Tooltip("Her hırsızın canı; 0'a inince pes eder (elindekini düşürür, ön kapıdan kamyonete biner, bir daha çıkmaz).")]
+    public float thiefHealth = 100f;
+    [Tooltip("İtme / fırlatma isabeti / tackle hasarı (sersemletme süreleri yukarıda).")]
+    public float pushDamage = 25f;
+    public float throwHitDamage = 35f;
+    public float tackleDamage = 50f;
+    [Tooltip("Ön kapı: açılma süresi (sn) ve hırsızın kapıya varmış sayıldığı uzaklık (m).")]
+    public float frontDoorSeconds = 0.4f;
+    public float frontDoorReach = 1.0f;
+
+    [Header("Bagajdan geri alma (U4b)")]
+    [Tooltip("Açık bagaja bu kadar yakın (arka tampona yatay uzaklık, m) ve yüzü dönük oyuncu kamyonetteki eşyayı geri alır.")]
+    public float retrieveRange = 1.0f;
 
     [Header("Oyuncu savunması")]
     [Tooltip("İtme: menzil (m), açı (°), bekleme (sn).")]

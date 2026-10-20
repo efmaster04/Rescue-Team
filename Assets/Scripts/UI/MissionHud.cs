@@ -39,6 +39,9 @@ public class MissionHud : MonoBehaviour
     public static readonly Color WarningHintColor = new Color(1f, 0.72f, 0.5f, 0.85f);
     public static readonly Color CreditColor = new Color(0.55f, 1f, 0.55f);
     public static readonly Color StolenColor = new Color(1f, 0.35f, 0.3f);
+    // U4b: kamyonetteki (geri alınabilir, risk) eşya: turuncu bölüm ve yazı
+    public static readonly Color InVanColor = new Color(1f, 0.62f, 0.15f);
+    public const string InVanPercentSuffix = " kamyonette)";
 
     public Canvas ScreenCanvas { get; private set; }
     public Text TimerText { get; private set; }
@@ -53,6 +56,8 @@ public class MissionHud : MonoBehaviour
     public Text MoneyText { get; private set; }
     public Text StolenLabel { get; private set; }
     public Image StolenFill { get; private set; }
+    // U4b: çalınan (kırmızı) bölümün hemen sağında kamyonette (turuncu) bölüm
+    public Image InVanFill { get; private set; }
     public Text StolenPercent { get; private set; }
     public Text RespawnText { get; private set; }
     // U4
@@ -95,7 +100,7 @@ public class MissionHud : MonoBehaviour
     private void OnDisable()
     {
         GameNotice.Raised -= OnNotice;
-        if (loot != null) { loot.Credited -= OnCredited; loot.Stolen -= OnStolen; }
+        if (loot != null) { loot.Credited -= OnCredited; loot.Stolen -= OnStolen; loot.PutInVan -= OnPutInVan; loot.Retrieved -= OnRetrieved; }
     }
 
     private void Subscribe()
@@ -103,7 +108,12 @@ public class MissionHud : MonoBehaviour
         if (loot == null) return;
         loot.Credited -= OnCredited; loot.Credited += OnCredited;
         loot.Stolen -= OnStolen; loot.Stolen += OnStolen;
+        loot.PutInVan -= OnPutInVan; loot.PutInVan += OnPutInVan;
+        loot.Retrieved -= OnRetrieved; loot.Retrieved += OnRetrieved;
     }
+
+    private void OnPutInVan(string label, int amount) { SpawnFloating(label, InVanColor); }
+    private void OnRetrieved(string label, int amount) { SpawnFloating(label, CreditColor); }
 
     private void OnNotice(string message)
     {
@@ -146,6 +156,15 @@ public class MissionHud : MonoBehaviour
         StolenLabel = MakeText("StolenLabel", new Vector2(1f, 1f), new Vector2(-40f, -150f), new Vector2(560f, 36f), 26, TextAnchor.UpperRight);
         StolenLabel.text = StolenLabelText;
         StolenFill = MakeBar("StolenBar", new Vector2(1f, 1f), new Vector2(-40f, -186f), new Vector2(340f, 18f), StolenColor);
+        // U4b: aynı çubukta ikinci (turuncu) bölüm: kamyonette bekleyen değer, kırmızının bitiminden başlar
+        var inVan = new GameObject("InVanFill", typeof(RectTransform), typeof(Image));
+        inVan.transform.SetParent(StolenFill.transform.parent, false);
+        var ir = inVan.GetComponent<RectTransform>();
+        ir.anchorMin = new Vector2(0f, 0f); ir.anchorMax = new Vector2(0f, 1f); ir.pivot = new Vector2(0f, 0.5f);
+        ir.offsetMin = new Vector2(2f, 2f); ir.offsetMax = new Vector2(-2f, -2f);
+        InVanFill = inVan.GetComponent<Image>();
+        InVanFill.color = InVanColor;
+        InVanFill.raycastTarget = false;
         StolenPercent = MakeText("StolenPercent", new Vector2(1f, 1f), new Vector2(-390f, -180f), new Vector2(160f, 32f), 24, TextAnchor.UpperRight);
         floatOrigin = new Vector2(-40f, -230f);
         // U3: yeniden doğma geri sayımı (orta, üstte)
@@ -217,6 +236,23 @@ public class MissionHud : MonoBehaviour
         f = Mathf.Clamp01(f);
         img.fillAmount = f;
         img.rectTransform.anchorMax = new Vector2(f, 1f);
+    }
+
+    // U4b: çubukta [from, to] aralığını kaplayan bölüm (kamyonette bölümü kırmızının bitiminden başlar)
+    public static void SetSegment(Image img, float from, float to)
+    {
+        from = Mathf.Clamp01(from); to = Mathf.Clamp01(Mathf.Max(from, to));
+        img.rectTransform.anchorMin = new Vector2(from, 0f);
+        img.rectTransform.anchorMax = new Vector2(to, 1f);
+        img.enabled = to - from > 1e-4f;
+    }
+
+    // "%12" ya da "%12 (+%9 kamyonette)"
+    public static string StolenPercentText(float stolen, float inVan)
+    {
+        string s = "%" + Mathf.RoundToInt(stolen * 100f);
+        if (inVan > 1e-4f) s += " (+%" + Mathf.RoundToInt(inVan * 100f) + InVanPercentSuffix;
+        return s;
     }
 
     // U3: uçan para yazısı (paranın altından yukarı süzülür, solar). Kayıt 0.4 sn arayla yayınlar.
@@ -319,8 +355,10 @@ public class MissionHud : MonoBehaviour
         HealthLabel.text = "Can " + (health != null ? Mathf.CeilToInt(health.Current).ToString() : "-");
         MoneyText.text = LootRegistry.FormatMoney(loot != null ? loot.Money : 0);
         float sf = loot != null ? loot.StolenFraction : 0f;
+        float vf = loot != null ? loot.InVanFraction : 0f;
         SetFill(StolenFill, sf);
-        StolenPercent.text = "%" + Mathf.RoundToInt(sf * 100f);
+        SetSegment(InVanFill, sf, sf + vf);
+        StolenPercent.text = StolenPercentText(sf, vf);
         float remaining = health != null ? health.RespawnRemaining : -1f;
         RespawnText.text = remaining >= 0f && !mission.IsFinished ? RespawnPrefix + Mathf.CeilToInt(remaining) : "";
         UpdateFloating();

@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 // Klavye/fare girdisini okur ve oyun nesnelerine komut olarak iletir (girdi ile oyun durumu ayrı).
 // InputSystem_Actions.inputactions'a dokunmamak için eylemler burada kodla tanımlanır:
 // WASD hareket, fare bakış, Space zıplama, E etkileşim, R yeniden başlat (görev bitince).
+// U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük. U4b tanı: basış sayaçları ve bağlama özeti (doğrulama okur).
 public class PlayerInputReader : MonoBehaviour
 {
     public ThirdPersonPlayer player;
@@ -12,15 +13,27 @@ public class PlayerInputReader : MonoBehaviour
     [Tooltip("U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük (boşsa oyuncudan bulunur).")]
     public PlayerCombat combat;
 
+    public const string AttackPath = "<Mouse>/leftButton", ThrowPath = "<Mouse>/rightButton", WhistlePath = "<Keyboard>/q", RunPath = "<Keyboard>/leftShift";
+
+    // U4b tanı
+    public int AttackPresses { get; private set; }
+    public int AttackAccepted { get; private set; }
+    public int WhistlePresses { get; private set; }
+    public int ThrowHoldFrames { get; private set; }
+    public InputAction AttackAction { get { return attack; } }
+    public InputAction ThrowAction { get { return throwHold; } }
+    public InputAction WhistleAction { get { return whistle; } }
+    public InputAction RunAction { get { return run; } }
+
     private InputAction move, look, jump, interact, restart, run, attack, throwHold, whistle;
 
     private void Awake()
     {
         if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
-        attack = new InputAction("Attack", InputActionType.Button, "<Mouse>/leftButton");
-        throwHold = new InputAction("ThrowHold", InputActionType.Button, "<Mouse>/rightButton");
-        whistle = new InputAction("Whistle", InputActionType.Button, "<Keyboard>/q");
-        run = new InputAction("Run", InputActionType.Button, "<Keyboard>/leftShift");
+        attack = new InputAction("Attack", InputActionType.Button, AttackPath);
+        throwHold = new InputAction("ThrowHold", InputActionType.Button, ThrowPath);
+        whistle = new InputAction("Whistle", InputActionType.Button, WhistlePath);
+        run = new InputAction("Run", InputActionType.Button, RunPath);
         run.AddBinding("<Keyboard>/rightShift");
         move = new InputAction("Move", InputActionType.Value);
         move.AddCompositeBinding("2DVector")
@@ -68,9 +81,18 @@ public class PlayerInputReader : MonoBehaviour
         if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
         if (combat != null)
         {
-            if (attack.WasPressedThisFrame()) combat.Attack();
-            combat.SetThrowHeld(throwHold.IsPressed());
-            if (whistle.WasPressedThisFrame()) combat.Whistle();
+            if (attack.WasPressedThisFrame()) { AttackPresses++; if (combat.Attack()) AttackAccepted++; }
+            bool held = throwHold.IsPressed();
+            if (held) ThrowHoldFrames++;
+            combat.SetThrowHeld(held);
+            if (whistle.WasPressedThisFrame()) { WhistlePresses++; combat.Whistle(); }
         }
+    }
+
+    // U4b tanı: eylem → bağlama → etkin mi; aygıt var mı ("fare: var/yok")
+    public string BindingSummary()
+    {
+        string One(InputAction a) { return a == null ? "yok" : a.name + " [" + (a.bindings.Count > 0 ? a.bindings[0].effectivePath : "-") + "] " + (a.enabled ? "etkin" : "kapalı") + (a.controls.Count > 0 ? " → " + a.controls[0].path : " → aygıt yok"); }
+        return One(attack) + "; " + One(throwHold) + "; " + One(whistle) + "; " + One(run) + "; fare " + (Mouse.current != null ? "var" : "yok") + ", klavye " + (Keyboard.current != null ? "var" : "yok");
     }
 }

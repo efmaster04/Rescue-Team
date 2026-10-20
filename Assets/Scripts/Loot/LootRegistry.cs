@@ -32,10 +32,20 @@ public class LootRegistry : MonoBehaviour
     public bool Failed { get; private set; }
     public int SecuredCount { get; private set; }
     public int StolenCount { get; private set; }
+    // U4b (kullanıcı kararı 2026-10-20): kamyonete atılmış ama kamyonet kalkmadığı için geri alınabilir eşyalar ("risk").
+    // %50 kontrolüne SAYILMAZ; kamyonet kaçınca ReportStolen ile kesinleşir (kontrol o anda).
+    public int InVanValue { get; private set; }
+    public int InVanCount { get; private set; }
+    public float InVanFraction { get { return TotalValue > 0 ? (float)InVanValue / TotalValue : 0f; } }
+    public int RetrievedCount { get; private set; }
 
     // (etiket, miktar): "+300 ₺ Laptop" / "−300 ₺ Sedye" uçan yazıları HUD üretir
     public event Action<string, int> Credited;
     public event Action<string, int> Stolen;
+    // U4b: kamyonete atıldı ("−400 ₺ Çanta (kamyonette)", turuncu) / bagajdan geri alındı ("+400 ₺ Çanta (geri alındı)")
+    public event Action<string, int> PutInVan;
+    public event Action<string, int> Retrieved;
+    public const string InVanSuffix = " (kamyonette)", RetrievedSuffix = " (geri alındı)";
 
     private readonly Queue<KeyValuePair<string, int>> queue = new Queue<KeyValuePair<string, int>>();
     private Coroutine crediting;
@@ -87,11 +97,35 @@ public class LootRegistry : MonoBehaviour
         crediting = null;
     }
 
-    // Hırsız eşyayı çaldı (U4). Güvende/zaten çalınmış eşya çalınamaz.
+    // U4b: hırsız eşyayı kamyonete attı; kamyonet durdukça geri alınabilir. (Eşyayı ThiefVan.AddLoot gizler: MarkInVan.)
+    public bool ReportInVan(LootItem item)
+    {
+        if (item == null || item.IsSecured || item.IsStolen) return false;
+        int v = item.TotalValue;
+        InVanCount++;
+        InVanValue += v;
+        PutInVan?.Invoke(StolenLabel(item.displayName, v) + InVanSuffix, v);
+        return true;
+    }
+
+    // U4b: kamyonetteki eşya geri alındı (ya da kamyonet kalkmadan yok edildi): yalnız kayıt düşer; eşyayı ThiefVan.Retrieve yerleştirir.
+    public bool ReportRetrieved(LootItem item)
+    {
+        if (item == null || !item.IsInVan) return false;
+        int v = item.TotalValue;
+        InVanCount = Mathf.Max(0, InVanCount - 1);
+        InVanValue = Mathf.Max(0, InVanValue - v);
+        RetrievedCount++;
+        Retrieved?.Invoke(CreditLabel(item.displayName, v) + RetrievedSuffix, v);
+        return true;
+    }
+
+    // Hırsız eşyayı çaldı (U4; U4b: kamyonet kaçınca kamyonettekiler için). Güvende/zaten çalınmış eşya çalınamaz.
     public bool ReportStolen(LootItem item)
     {
         if (item == null || item.IsSecured || item.IsStolen) return false;
         int v = item.TotalValue;
+        if (item.IsInVan) { InVanCount = Mathf.Max(0, InVanCount - 1); InVanValue = Mathf.Max(0, InVanValue - v); }
         item.MarkStolen();
         StolenCount++;
         StolenValue += v;
@@ -105,10 +139,20 @@ public class LootRegistry : MonoBehaviour
         return true;
     }
 
-    // Test: çalınmış bir eşyayı geri getirir (yerine döner, çalınan değer ve sayaç düşer). Başarısızlık geri alınmaz.
+    // Test: çalınmış (ya da kamyonetteki) bir eşyayı geri getirir (yerine döner, değer ve sayaç düşer). Başarısızlık geri alınmaz.
     public void RestoreForTest(LootItem item)
     {
-        if (item == null || !item.IsStolen) return;
+        if (item == null) return;
+        if (item.IsInVan)
+        {
+            int iv = item.TotalValue;
+            InVanCount = Mathf.Max(0, InVanCount - 1);
+            InVanValue = Mathf.Max(0, InVanValue - iv);
+            ThiefVan.ForgetLoot(item);
+            item.ResetToStart();
+            return;
+        }
+        if (!item.IsStolen) return;
         int v = item.TotalValue;
         item.ResetToStart();
         StolenCount = Mathf.Max(0, StolenCount - 1);
@@ -125,7 +169,11 @@ public class LootRegistry : MonoBehaviour
         SecuredValue = 0;
         SecuredCount = 0;
         StolenCount = 0;
+        InVanValue = 0;
+        InVanCount = 0;
+        RetrievedCount = 0;
         Failed = false;
+        foreach (var v in ThiefVan.All) if (v != null) v.Loot.Clear();
         foreach (var i in LootItem.All.ToArray()) if (i != null) i.ResetToStart();
         // Kapalı (güvende/çalınmış) eşyalar All'da değildir: sahnedeki hepsini bul
         foreach (var i in FindObjectsByType<LootItem>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (!i.gameObject.activeSelf) i.ResetToStart();

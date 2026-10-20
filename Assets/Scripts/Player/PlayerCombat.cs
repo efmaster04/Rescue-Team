@@ -22,7 +22,8 @@ public class PlayerCombat : MonoBehaviour
 
     // Klip olayları (clips_meta.json; 1 tabanlı kare → (kare−1)/30 sn)
     public const float PushSeconds = 0.6f, PushHitTime = 8f / 30f;
-    public const float TackleSeconds = 0.9f, TackleGetUpSeconds = 1.0f, TackleHitStart = 0.1f, TackleHitEnd = 0.75f, TackleSlideSeconds = 0.55f;
+    // Tackle_Dive: 28 kare / 0.9 sn, hit_frame 12 (0.37 sn), ground_frame 22 (0.7 sn). Kayma 0.2 → 0.7 sn (havada), isabet 0.1–0.75 sn.
+    public const float TackleSeconds = 0.9f, TackleGetUpSeconds = 1.0f, TackleHitStart = 0.1f, TackleHitEnd = 0.75f, TackleSlideStart = 0.2f, TackleSlideSeconds = 0.5f;
     public const float ThrowReleaseSeconds = 0.5f, ThrowReleaseTime = 7f / 30f;
     public const float WhistleSeconds = 1.2f, WhistleBlowTime = 14f / 30f;
 
@@ -43,7 +44,10 @@ public class PlayerCombat : MonoBehaviour
     public int Whistles { get; private set; }
     public int WhistleHits { get; private set; }
     public int Rejected { get; private set; }
+    public string LastRejectReason { get; private set; } = "";
     public LootItem LastThrown { get; private set; }
+    // U4b tanı: son saldırıda yüz hangi yöne çevrildi (kamera / hedef hırsız)
+    public string LastFacing { get; private set; } = "";
 
     private readonly HashSet<Thief> tackleHit = new HashSet<Thief>();
 
@@ -86,12 +90,56 @@ public class PlayerCombat : MonoBehaviour
     // Sol tık: koşuyorsa tackle, değilse itme.
     public bool Attack()
     {
-        if (!CanAttack) { Rejected++; return false; }
+        if (!CanAttack) { Rejected++; LastRejectReason = RejectReason(); return false; }
         bool running = player.RunHeld && player.HorizontalVelocity.magnitude > 1.5f;
-        if (running && Time.time >= TackleReadyAt) { StartCoroutine(TackleRoutine()); return true; }
-        if (Time.time >= PushReadyAt) { StartCoroutine(PushRoutine()); return true; }
+        if (running && Time.time >= TackleReadyAt) { FaceForAttack(); StartCoroutine(TackleRoutine()); return true; }
+        if (Time.time >= PushReadyAt) { FaceForAttack(); StartCoroutine(PushRoutine()); return true; }
         Rejected++;
+        LastRejectReason = running ? "tackle beklemede" : "itme beklemede";
         return false;
+    }
+
+    private string RejectReason()
+    {
+        if (player == null) return "oyuncu yok";
+        if (settings == null) return "ayar yok";
+        if (!player.HasControl) return "kontrol yok";
+        if (player.IsDown) return "yerde";
+        if (player.Rope != null) return "halatta";
+        if (player.HeldStretcher != null) return "sedye elde";
+        if (player.Piggyback != null) return "sırtta hasta";
+        if (player.HeldCoil != null) return "kangal elde";
+        if (Busy) return "eylem sürüyor";
+        if (Aiming) return "nişan alınıyor";
+        return "?";
+    }
+
+    // U4b (kullanıcı testi: "hırsızlara vuramıyorum"): üçüncü şahıs karakter yürüdüğü yöne bakar, kameraya değil. Oyuncu durup
+    // kamerayı hırsıza çevirince gövde başka yöne dönük kalıyor ve itme konisi (önündeki 1.4 m / 60°) boşa gidiyordu.
+    // Saldırıda gövde önce kameranın baktığı yöne, kameranın 80° içinde ve itme menzili + 0.8 m'de bir hırsız varsa ona döner.
+    private void FaceForAttack()
+    {
+        Vector3 look = player.cameraTransform != null ? Flat(player.cameraTransform.forward) : Flat(player.transform.forward);
+        if (look.sqrMagnitude < 1e-4f) look = Flat(player.transform.forward);
+        if (look.sqrMagnitude < 1e-4f) return;
+        look.Normalize();
+        Thief best = null;
+        float bestScore = float.MaxValue;
+        float range = settings.pushRange + 0.8f;
+        foreach (var t in Thief.All)
+        {
+            if (t == null || !t.CanBeHit) continue;
+            Vector3 d = Flat(t.transform.position - player.transform.position);
+            float dist = d.magnitude;
+            if (dist > range || dist < 1e-3f || Mathf.Abs(t.transform.position.y - player.transform.position.y) > 2f) continue;
+            float ang = Vector3.Angle(look, d);
+            if (ang > 80f) continue;
+            float score = dist + ang * 0.01f;
+            if (score < bestScore) { bestScore = score; best = t; }
+        }
+        Vector3 face = best != null ? Flat(best.transform.position - player.transform.position).normalized : look;
+        LastFacing = best != null ? "hırsız " + best.name : "kamera";
+        player.transform.rotation = Quaternion.LookRotation(face, Vector3.up);
     }
 
     private IEnumerator PushRoutine()
@@ -109,7 +157,7 @@ public class PlayerCombat : MonoBehaviour
             if (t == null || !t.CanBeHit || !InCone(t.transform.position, settings.pushRange, settings.pushAngle)) continue;
             Vector3 away = Flat(t.transform.position - player.transform.position);
             if (away.sqrMagnitude < 1e-4f) away = fwd;
-            if (t.Stun(settings.pushStunSeconds, away.normalized * settings.pushKnockback, "itme")) PushHits++;
+            if (t.Hit(settings.pushDamage, settings.pushStunSeconds, away.normalized * settings.pushKnockback, "itme")) PushHits++;
         }
         Play(SynthClips.Cached("Shove", SynthClips.Shove));
         yield return new WaitForSeconds(Mathf.Max(0f, PushSeconds - PushHitTime - 0.1f));
@@ -126,13 +174,21 @@ public class PlayerCombat : MonoBehaviour
         Vector3 fwd = Flat(player.transform.forward);
         if (fwd.sqrMagnitude < 1e-4f) fwd = Vector3.forward;
         fwd.Normalize();
-        // Kayma: zemine ve duvarlara saygılı (CharacterController.Move); kontrol dalış + kalkış boyunca yok
-        player.Lunge(fwd * settings.tackleDistance, TackleSlideSeconds, TackleSeconds + TackleGetUpSeconds);
+        // Kontrol dalış + kalkış boyunca yok. Kayma (zemine ve duvarlara saygılı, CharacterController.Move) klibin havada olduğu
+        // pencereye hizalı: TackleSlideStart'ta başlar, ground_frame'de (0.7 sn) biter (U4b: önce 0'da başlıyordu; ayaklar yerdeyken
+        // kayma "itme" gibi görünüyordu).
+        player.SuspendControl(TackleSeconds + TackleGetUpSeconds);
         if (crew != null) crew.PlayAction(CrewAnimation.StateTackleDive, TackleSeconds + TackleGetUpSeconds);
         float t0 = Time.time;
+        bool slideStarted = false;
         while (Time.time - t0 < TackleSeconds)
         {
             float u = Time.time - t0;
+            if (!slideStarted && u >= TackleSlideStart)
+            {
+                slideStarted = true;
+                player.Lunge(fwd * settings.tackleDistance, TackleSlideSeconds, TackleSeconds + TackleGetUpSeconds - u);
+            }
             if (u >= TackleHitStart && u <= TackleHitEnd)
             {
                 foreach (var t in Thief.All.ToArray())
@@ -142,7 +198,7 @@ public class PlayerCombat : MonoBehaviour
                     bool inPath = d.magnitude <= settings.tackleHitRadius || (d.magnitude <= settings.tackleHitRadius + 0.6f && Vector3.Angle(fwd, d) <= 35f);
                     if (!inPath || Mathf.Abs(t.transform.position.y - player.transform.position.y) > 1.5f) continue;
                     tackleHit.Add(t);
-                    if (t.Stun(settings.tackleStunSeconds, fwd * 0.8f, "tackle")) TackleHits++;
+                    if (t.Hit(settings.tackleDamage, settings.tackleStunSeconds, fwd * 0.8f, "tackle")) TackleHits++;
                 }
             }
             yield return null;
@@ -181,7 +237,7 @@ public class PlayerCombat : MonoBehaviour
         {
             Vector3 dir = AimDirection();
             player.HeldValuable = null;
-            item.Throw(dir * settings.throwSpeed, settings.throwHitStunSeconds, killBelowY);
+            item.Throw(dir * settings.throwSpeed, settings.throwHitStunSeconds, settings.throwHitDamage, killBelowY);
             LastThrown = item;
             Throws++;
         }
@@ -226,7 +282,7 @@ public class PlayerCombat : MonoBehaviour
 
     public bool Whistle()
     {
-        if (!CanWhistle) { Rejected++; return false; }
+        if (!CanWhistle) { Rejected++; LastRejectReason = WhistleReady ? RejectReason() : "düdük beklemede"; return false; }
         StartCoroutine(WhistleRoutine());
         return true;
     }

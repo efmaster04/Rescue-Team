@@ -16,7 +16,7 @@ MonoBehaviour:
   waveIntervalSeconds: 300
   maxThieves: 5
   warnLeadSeconds: 5
-  vanWaitSeconds: 90
+  vanWaitSeconds: 30
   pullOffLength: 5
   shoulderClearance: 0.3
   unloadInterval: 0.8
