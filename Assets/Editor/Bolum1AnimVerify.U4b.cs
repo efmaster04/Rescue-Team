@@ -353,35 +353,39 @@ public static partial class Bolum1AnimVerify
         Time.timeScale = 2f;
         yield return Until(() => { if (A.State == Thief.ThiefState.Surrender) { stateSeen = true; } return stateSeen || A.IsGone; }, 12f, "pes durumu");
         if (A.State == Thief.ThiefState.Surrender) hitRefused = !A.Hit(10f, 1f, Vector3.zero, "test") && A.Health <= 0.01f && !A.CanBeHit;
+        // Yolcu tarafı (banket) yürünemezse hırsız öbür ön kapıyı kullanır: beklenen taraf buna göre
         Vector3 doorPos = Vector3.zero, approachPt = Vector3.zero;
+        approachPt = van.FrontDoorPoint(false, out doorPos, out bool aDriverSide);
+        bool passengerReachable = !aDriverSide;
         float minDoorDist = 99f;
         yield return Until(() =>
         {
             if (A.Target != null) targetStayedNull = false;
-            maxDoor = Mathf.Max(maxDoor, van.FrontDoorAmount(false));
-            approachPt = van.FrontDoorPoint(false, out doorPos);
+            maxDoor = Mathf.Max(maxDoor, van.FrontDoorAmount(aDriverSide));
+            approachPt = van.FrontDoorPoint(false, out doorPos, out aDriverSide);
             if (!A.IsGone) minDoorDist = Mathf.Min(minDoorDist, Flat(A.transform.position - doorPos).magnitude);
-            return A.IsGone || (Flat(A.transform.position - approachPt).magnitude <= 2.0f && van.FrontDoorAmount(false) > 0.3f);
+            return A.IsGone || (Flat(A.transform.position - approachPt).magnitude <= 2.0f && van.FrontDoorAmount(aDriverSide) > 0.3f);
         }, 40f, "ön kapıya yaklaştı");
         Time.timeScale = 1f;
         bool nearDoor = !A.IsGone;
         Vector3 vfwd = Flat(van.transform.forward).normalized, vright = Vector3.Cross(Vector3.up, vfwd);
-        // Kamera ön-çaprazdan (yolcu tarafı), kapıya ve hırsıza bakar
-        yield return Capture("u4b_pes", doorPos + vfwd * 3.2f + vright * 2.6f + Vector3.up * 1.7f, (doorPos + A.transform.position) * 0.5f + Vector3.up * 0.4f, 50f);
+        // Kamera ön-çaprazdan (kullanılan kapı tarafı), kapıya ve hırsıza bakar
+        float doorSide = aDriverSide ? -1f : 1f;
+        yield return Capture("u4b_pes", doorPos + vfwd * 3.2f + vright * doorSide * 2.6f + Vector3.up * 1.7f, (doorPos + A.transform.position) * 0.5f + Vector3.up * 0.4f, 50f);
         int boarded0 = van.Boarded;
         Time.timeScale = 2f;
-        yield return Until(() => { maxDoor = Mathf.Max(maxDoor, van.FrontDoorAmount(false)); if (A.Target != null) targetStayedNull = false; return A.IsGone; }, 20f, "bindi");
+        yield return Until(() => { maxDoor = Mathf.Max(maxDoor, van.FrontDoorAmount(aDriverSide)); if (A.Target != null) targetStayedNull = false; return A.IsGone; }, 20f, "bindi");
         yield return Seconds(1.5f);
         Time.timeScale = 1f;
-        bool doorClosed = van.FrontDoorAmount(false) <= 0.05f;
-        Note("pes → ön (yolcu) kapıya yürür, kapı açılır, biner, gizlenir; vurulamaz, hedef seçmez", stateSeen && hitRefused && targetStayedNull && nearDoor && maxDoor >= 0.5f && A.IsGone && !A.gameObject.activeInHierarchy && !A.UsedDriverDoor && van.Surrendered == 1 && van.Boarded == boarded0 + 1 && doorClosed && !van.Departing,
-            "Surrender görüldü " + stateSeen + ", darbe reddedildi " + hitRefused + ", hedef hep boş " + targetStayedNull + ", kapıya yaklaştı " + nearDoor + " (kapıya en yakın " + M(minDoorDist) + ", yaklaşma noktası kapıya " + M(Flat(approachPt - doorPos).magnitude) + "), kapı en çok " + maxDoor.ToString("F2", Inv) + " → kapandı " + doorClosed + ", gizli " + !A.gameObject.activeInHierarchy + ", şoför kapısı " + A.UsedDriverDoor + ", pes sayısı " + van.Surrendered + ", kamyonet kalkıyor " + van.Departing);
+        bool doorClosed = van.FrontDoorAmount(aDriverSide) <= 0.05f;
+        Note("pes → ön kapıya yürür (yolcu tarafı; yürünemezse şoför tarafı), kapı açılır, biner, gizlenir; vurulamaz, hedef seçmez", stateSeen && hitRefused && targetStayedNull && nearDoor && minDoorDist <= 1.8f && maxDoor >= 0.5f && A.IsGone && !A.gameObject.activeInHierarchy && A.UsedDriverDoor == aDriverSide && van.Surrendered == 1 && van.Boarded == boarded0 + 1 && doorClosed && !van.Departing,
+            "Surrender görüldü " + stateSeen + ", darbe reddedildi " + hitRefused + ", hedef hep boş " + targetStayedNull + ", kapıya yaklaştı " + nearDoor + " (kapıya en yakın " + M(minDoorDist) + ", yaklaşma noktası kapıya " + M(Flat(approachPt - doorPos).magnitude) + ", yolcu tarafı yürünebilir " + passengerReachable + "), kapı en çok " + maxDoor.ToString("F2", Inv) + " → kapandı " + doorClosed + ", gizli " + !A.gameObject.activeInHierarchy + ", şoför kapısı " + A.UsedDriverDoor + ", pes sayısı " + van.Surrendered + ", kamyonet kalkıyor " + van.Departing);
         // Hepsi pes edince: B (yolcu) sonra C (son → şoför kapısı), kamyonet hemen kalkar
         B.ResetForTest(); B.TeleportForTest(LanePoint(dir, 12f, -0.8f), Quaternion.LookRotation(-vf));
         bool bHit = B.Hit(s.thiefHealth, 0.5f, Vector3.zero, "test");
         Time.timeScale = 3f;
         yield return Until(() => B.IsGone, 40f, "B bindi");
-        bool bPassenger = !B.UsedDriverDoor && !van.Departing;
+        bool bPassenger = B.UsedDriverDoor == !passengerReachable && !van.Departing;
         C.ResetForTest(); C.TeleportForTest(LanePoint(dir, 12f, -0.8f), Quaternion.LookRotation(-vf));
         bool cHit = C.Hit(s.thiefHealth, 0.5f, Vector3.zero, "test");
         float maxDriverDoor = 0f;
@@ -390,7 +394,7 @@ public static partial class Bolum1AnimVerify
         yield return Until(() => van.Departing, 5f, "kamyonet kalkış kararı");
         Time.timeScale = 1f;
         Note("hepsi pes: son hırsız şoför kapısından, kamyonet hemen kalkar", bHit && cHit && bPassenger && C.UsedDriverDoor && van.LastBoardWasDriverDoor && maxDriverDoor >= 0.5f && van.Surrendered == 3 && van.Departing && parkedAtC < van.settings.vanWaitSeconds - 2f,
-            "B yolcu " + bPassenger + ", C şoför " + C.UsedDriverDoor + " (kapı " + maxDriverDoor.ToString("F2", Inv) + "), pes " + van.Surrendered + "/3, kalkış " + van.Departing + " park " + S(parkedAtC) + " < bekleme " + van.settings.vanWaitSeconds.ToString(Inv));
+            "B yolcu/öbür kapı " + bPassenger + " (şoför kapısı " + B.UsedDriverDoor + ", yolcu tarafı yürünebilir " + passengerReachable + "), C şoför " + C.UsedDriverDoor + " (kapı " + maxDriverDoor.ToString("F2", Inv) + "), pes " + van.Surrendered + "/3, kalkış " + van.Departing + " park " + S(parkedAtC) + " < bekleme " + van.settings.vanWaitSeconds.ToString(Inv));
         Check("(U4b-1) hırsız canı " + s.thiefHealth.ToString(Inv) + ": başının üstünde can barı; itme " + s.pushDamage.ToString(Inv) + " / fırlatma " + s.throwHitDamage.ToString(Inv) + " / tackle " + s.tackleDamage.ToString(Inv) + "; can 0 → pes: elindekini düşürür, sersemlik bitince ön (yolcu) kapıya yürür, kapı açılır, biner, gizlenir, vurulamaz/hedef seçmez; hepsi pes edince son hırsız şoför kapısından biner, kamyonet hemen kalkar; taşıma pozu avuçlarda; tackle kayması havada",
             ok, string.Join("; ", parts));
         BeforeCapture = null;
@@ -467,7 +471,9 @@ public static partial class Bolum1AnimVerify
         bool backNoHint = !Interaction.CurrentHint.StartsWith(PlayerInteraction.HintRetrievePrefix);
         Player.Teleport(standP, Quaternion.LookRotation(Flat(van.TrunkCenter - standP).normalized));
         yield return null; yield return null;
-        yield return CaptureWithHud("u4b_geri_al", standP - Flat(van.TrunkCenter - standP).normalized * 2.6f + Vector3.Cross(Vector3.up, Flat(van.TrunkCenter - standP).normalized) * 1.4f + Vector3.up * 1.8f, van.TrunkCenter + Vector3.up * 0.2f, 55f);
+        // Kamera yol tarafından (banket ve çekici kabini değil): bagaj + oyuncu + HUD
+        float roadSide = van.ShoulderLateral >= 0f ? -1f : 1f;
+        yield return CaptureWithHud("u4b_geri_al", van.TrunkCenter + vright * roadSide * 3.6f - vfwd * 1.2f + Vector3.up * 1.9f, (standP + van.TrunkCenter) * 0.5f + Vector3.up * 0.3f, 55f);
         // Geri al → elde; çubuk düşer
         floats0 = hud.FloatingSpawned;
         Interaction.Interact();

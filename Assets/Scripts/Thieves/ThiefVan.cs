@@ -324,23 +324,42 @@ public class ThiefVan : MonoBehaviour
     }
 
     // ---- U4b: ön kapılar ----
-    // Kapı noktası (driver: şoför = sol/-sağ; yolcu = sağ) ve hırsızın yürüyeceği NavMesh noktası (kapının 0.7 m dışı).
-    public Vector3 FrontDoorPoint(bool driver, out Vector3 doorPos)
+    // Kapı noktası (driver: şoför = sol/-sağ; yolcu = sağ) ve hırsızın yürüyeceği NavMesh noktası (kapının 0.7 m dışı, yola bağlı).
+    // İstenen tarafın önü yürünemezse (banket eğimi / NavMesh yok) öbür ön kapı kullanılır; usedDriver gerçekte kullanılan taraf.
+    public Vector3 FrontDoorPoint(bool driver, out Vector3 doorPos) { return FrontDoorPoint(driver, out doorPos, out _); }
+
+    public Vector3 FrontDoorPoint(bool driver, out Vector3 doorPos, out bool usedDriver)
     {
         Frame(out var f, out var r, out _, out float front, out float halfW);
-        float side = driver ? -1f : 1f;
-        doorPos = transform.position + f * (front - 1.4f) + r * side * halfW + Vector3.up * 0.9f;
-        Vector3 basePoint = transform.position + f * (front - 1.4f) + r * side * halfW;
-        // Kapının 0.7 m dışı; NavMesh orada yoksa biraz daha dışarı / içeri (kapıya yakın kalsın, uzak bir noktaya oturmasın)
-        foreach (float o in new[] { 0.7f, 1.0f, 1.3f, 0.5f })
+        Vector3 road = Follower != null && Follower.lane != null ? Follower.lane.PointAt(Follower.Distance) : transform.position - r * ShoulderLateral;
+        foreach (bool side in new[] { driver, !driver })
         {
-            Vector3 cand = basePoint + r * side * o;
-            if (UnityEngine.AI.NavMesh.SamplePosition(cand, out UnityEngine.AI.NavMeshHit hit, 0.6f, UnityEngine.AI.NavMesh.AllAreas)) return hit.position;
+            float sgn = side ? -1f : 1f;
+            Vector3 basePoint = transform.position + f * (front - 1.4f) + r * sgn * halfW;
+            // Kapının 0.7 m dışı; orada yoksa biraz daha dışarı / içeri ve öne / arkaya (kapıya yakın kalsın)
+            foreach (float o in new[] { 0.7f, 1.0f, 1.3f, 0.5f })
+                foreach (float dz in new[] { 0f, -0.4f, 0.4f })
+                {
+                    Vector3 cand = basePoint + r * sgn * o + f * dz;
+                    if (UnityEngine.AI.NavMesh.SamplePosition(cand, out UnityEngine.AI.NavMeshHit hit, 0.6f, UnityEngine.AI.NavMesh.AllAreas) && ConnectedTo(hit.position, road))
+                    {
+                        doorPos = basePoint + Vector3.up * 0.9f;
+                        usedDriver = side;
+                        return hit.position;
+                    }
+                }
         }
-        Vector3 approach = basePoint + r * side * 0.7f;
+        float s0 = driver ? -1f : 1f;
+        Vector3 bp = transform.position + f * (front - 1.4f) + r * s0 * halfW;
+        doorPos = bp + Vector3.up * 0.9f;
+        usedDriver = driver;
+        Vector3 approach = bp + r * s0 * 0.7f;
         if (GroundProbe.Find(approach + Vector3.up * 1.5f, 4f, out RaycastHit g)) return g.point;
         return approach;
     }
+
+    // İstenen taraftaki ön kapıya yürünebiliyor mu (testler okur)
+    public bool FrontDoorReachable(bool driver) { FrontDoorPoint(driver, out _, out bool used); return used == driver; }
 
     // Yaklaşan hırsız her kare çağırır: kapı açık kalır (çağrı kesilince kapanır)
     public void RequestFrontDoor(bool driver)

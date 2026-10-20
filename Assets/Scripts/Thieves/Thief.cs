@@ -450,7 +450,8 @@ public class Thief : MonoBehaviour
         PunchTarget = null;
         if (Van == null || Van.IsGone || Van.Departing) { Enter(ThiefState.Flee); return; }
         bool driver = IsLastActive();
-        Vector3 to = Van.FrontDoorPoint(driver, out Vector3 door);
+        Vector3 to = Van.FrontDoorPoint(driver, out Vector3 door, out bool usedDriver);
+        driver = usedDriver; // istenen taraf yürünemezse (banket) öbür ön kapı
         float d = Flat(to - transform.position).magnitude;
         float reach = settings != null ? settings.frontDoorReach : 1.0f;
         bool arrived = d <= reach || (Flat(door - transform.position).magnitude <= reach + 0.6f && stateTimer > 1f)
