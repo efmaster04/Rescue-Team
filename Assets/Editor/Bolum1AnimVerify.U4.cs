@@ -483,6 +483,11 @@ public static partial class Bolum1AnimVerify
         yield return null;
         A.TeleportForTest(LanePoint(dir, 18f, 0.3f), Quaternion.LookRotation(-throwDir));
         A.Stun(4f, Vector3.zero, "test-hedef"); // yerinde dursun
+        // U4c: hedef kameranın merkez ışını → geçici kamera hırsızın göğsüne bakar
+        var throwCam = new GameObject("U4_ThrowCam").transform;
+        throwCam.position = Player.transform.position - throwDir * 2.5f + Vector3.up * 1.6f;
+        throwCam.LookAt(A.transform.position + Vector3.up * 0.9f);
+        Player.cameraTransform = throwCam;
         yield return null;
         combat.SetThrowHeld(true);
         yield return Seconds(0.4f);
@@ -498,6 +503,8 @@ public static partial class Bolum1AnimVerify
         Vector3 throwSide = Vector3.Cross(Vector3.up, throwDir);
         yield return Capture("u4_firlatma", fp - throwDir * 1.5f + throwSide * 3.2f + Vector3.up * 1.8f, fp + throwDir * 2.5f + Vector3.up * 1.2f, 55f);
         yield return Until(() => item.ThrowHits > 0 || !item.IsFlying, 4f, "fırlatma isabeti");
+        Player.cameraTransform = null;
+        UnityEngine.Object.Destroy(throwCam.gameObject);
         bool throwHit = item.ThrowHits == 1 && A.LastStunReason == "firlatma";
         yield return Until(() => !item.IsFlying, 8f, "eşya yere indi");
         bool landed = item.State == LootItem.LootState.Dropped && item.GetComponent<Rigidbody>() == null && item.CanPickUp;

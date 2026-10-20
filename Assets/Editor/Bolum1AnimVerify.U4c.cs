@@ -58,20 +58,17 @@ public static partial class Bolum1AnimVerify
         }
     }
 
-    // Kök uzayında arka bölgedeki üçgen sayısı. rect=false: builder'ın kesim ölçütü (z ≤ arka + derinlik, y ≥ tampon üstü), lamba alt mesh'leri hariç;
+    // Kök uzayında arka bölgedeki üçgen sayısı. rect=false: builder'ın kesim ölçütü (z ≤ arka + derinlik, y ≥ tampon üstü);
     // rect=true: kapak açıklığı dikdörtgeni (|x| < 0.9, y 0.6–2.25).
     private static int RearTriangles(MeshFilter mf, Transform root, float rearZ, bool rect)
     {
         if (mf == null || mf.sharedMesh == null) return -1;
         var m = mf.sharedMesh;
-        var r = mf.GetComponent<MeshRenderer>();
         var verts = m.vertices.Select(v => root.InverseTransformPoint(mf.transform.TransformPoint(v))).ToArray();
         float zCut = rearZ + Bolum1ThiefBuilder.RearCutDepth;
         int n = 0;
         for (int s = 0; s < m.subMeshCount; s++)
         {
-            string mat = r != null && s < r.sharedMaterials.Length && r.sharedMaterials[s] != null ? r.sharedMaterials[s].name : "";
-            if (mat.Contains("light") || mat.Contains("Amber")) continue;
             var tris = m.GetTriangles(s);
             for (int i = 0; i < tris.Length; i += 3)
             {
@@ -193,10 +190,10 @@ public static partial class Bolum1AnimVerify
         Note("atılan 3 valiz kasa zemininde görünür (etkin, renderer açık, kasa içinde, collider kapalı, alınamaz, ayrı yuvalar), hırsız hedef seçmez", itemsOk && notStealable,
             string.Join("; ", slotInfo) + "; kasa " + V(cargo.min) + "–" + V(cargo.max) + ", çalınabilir değil " + notStealable);
         BeforeCapture = FaceLabels;
-        // Görüntü: arkadan, hafif yukarıdan kasaya bak (kapaklar yana açık)
-        Vector3 trunk = van.transform.TransformPoint(new Vector3(0f, van.cargoFloorY + 0.35f, van.cargoRearZ + 0.9f));
-        Vector3 camPos = van.transform.TransformPoint(new Vector3(0.6f, van.cargoFloorY + 1.1f, van.cargoRearZ - 3.4f));
-        yield return Capture("u4c_bagaj_ici", camPos, trunk, 48f);
+        // Görüntü: arka açıklığın hemen gerisinden (tampon → çekici arası 0.7 m), geniş açı, kasa zeminine bak
+        Vector3 trunk = van.transform.TransformPoint(new Vector3(0f, van.cargoFloorY + 0.15f, van.cargoRearZ + 1.3f));
+        Vector3 camPos = van.transform.TransformPoint(new Vector3(0.3f, van.cargoFloorY + 1.25f, van.cargoRearZ - 0.6f));
+        yield return Capture("u4c_bagaj_ici", camPos, trunk, 80f);
         // Geri alma: bagaja yaklaş, ipucu en değerli, vurgu eşyada
         var item1 = items[0];
         float rear = van.Follower.rearOverhang, halfW = van.Vehicle.bodySize.x * 0.5f;
@@ -213,19 +210,21 @@ public static partial class Bolum1AnimVerify
         }
         bool hintItem = Interaction.CurrentHint == PlayerInteraction.HintRetrieve(item1) && Interaction.LootTarget == item1;
         bool hlItem = Interaction.HighlightTarget == item1.transform && Highlight.Current == item1.transform && Highlight.CopyCount >= 1;
+        string hlInfo = "vurgu " + HlName() + " (" + Highlight.CopyCount + " kopya)";
         Vector3 standP = Player.transform.position;
         float roadSide = van.ShoulderLateral >= 0f ? -1f : 1f;
-        yield return CaptureWithHud("u4c_geri_al", van.TrunkCenter + vright * roadSide * 3.2f - vfwd * 1.6f + Vector3.up * 1.7f, (standP + van.TrunkCenter) * 0.5f + Vector3.up * 0.4f, 52f);
+        // Kamera yol tarafından (arkada çekici var: tampon → çekici < 1 m)
+        yield return CaptureWithHud("u4c_geri_al", van.TrunkCenter + vright * roadSide * 3.6f - vfwd * 1.2f + Vector3.up * 1.9f, (standP + van.TrunkCenter) * 0.5f + Vector3.up * 0.3f, 55f);
         int slot1 = item1.VanSlot;
         Interaction.Interact();
         yield return null; yield return null;
-        bool retrieved = Player.HeldValuable == item1 && item1.State == LootItem.LootState.Held && !cargoLoose.Contains(item1.WorldBounds.center) && van.Loot.Count == 2 && item1.VanSlot < 0 && item1.Van == null;
+        bool retrieved = Player.HeldValuable == item1 && item1.State == LootItem.LootState.Held && !item1.IsInVan && item1.Van == null && van.Loot.Count == 2 && item1.VanSlot < 0 && !van.Loot.Contains(item1);
         // Boşalan yuva yeniden kullanılır
         var item4 = luggage.Count > 3 ? luggage[3] : null;
         bool reuse = true;
         if (item4 != null) { item4.gameObject.SetActive(true); van.AddLoot(item4); yield return null; reuse = item4.VanSlot == slot1 && item4.IsInVan && cargoLoose.Contains(item4.WorldBounds.center); }
         Note("\"E: Geri al (en değerli)\" + eşya vurgusu → eşya kasadan çıkar (elde), yuvası boşalır ve yeniden kullanılır", hintOk && hintItem && hlItem && retrieved && reuse,
-            standInfo + ", vurgu " + HlName() + " (" + Highlight.CopyCount + " kopya), elde " + (Player.HeldValuable == item1) + ", kasa dışında " + !cargoLoose.Contains(item1.WorldBounds.center) + ", kamyonette " + van.Loot.Count + ", yuva " + slot1 + " → " + (item4 != null ? item4.name + " yuva " + item4.VanSlot : "4. valiz yok"));
+            standInfo + ", " + hlInfo + ", elde " + (Player.HeldValuable == item1) + ", kamyonet kaydından çıktı " + (!item1.IsInVan && item1.Van == null) + ", kamyonette " + van.Loot.Count + ", yuva " + slot1 + " → " + (item4 != null ? item4.name + " yuva " + item4.VanSlot : "4. valiz yok"));
         Check("(U4c-1) bagaj içi: kapaklar açıkken arka açıklıktan kasa içi görünür (ışın kasa panelini bulur), kamyonete atılan eşyalar kasa zemininde yuvalarda görünür durur (≤ 6 yuva, fazlası üst üste), alınamaz/çalınamaz; \"E: Geri al\" vurgusu eşyada, geri alınan kasadan çıkar",
             ok, string.Join("; ", parts));
         BeforeCapture = null;
@@ -324,20 +323,22 @@ public static partial class Bolum1AnimVerify
     // ---- (U4c-3) pes edenin barı gizli ----
     private static IEnumerator PhaseU4cBar(ThiefVan van, Thief A)
     {
+        A.gameObject.SetActive(true); // nişan fazı kapatmıştı
         A.ResetForTest();
         A.Stun(30f, Vector3.zero, "test-bekleme");
-        yield return null;
+        yield return null; yield return null;
         var label = UnityEngine.Object.FindObjectsByType<ThiefLabel>(FindObjectsSortMode.None).FirstOrDefault(l => l.thief == A);
         bool barBefore = label != null && label.BarVisible;
         bool hit = A.Hit(A.MaxHealth, 2f, Vector3.zero, "test");
         yield return null; yield return null;
-        bool barHidden = label != null && !label.BarVisible && A.Surrendered && A.gameObject.activeInHierarchy && !A.IsGone;
+        bool surrendered = A.Surrendered;
+        bool barHidden = label != null && !label.BarVisible && surrendered && A.gameObject.activeInHierarchy && !A.IsGone;
         A.ResetForTest();
         A.Stun(30f, Vector3.zero, "test-bekleme");
         yield return null; yield return null;
         bool barBack = label != null && label.BarVisible;
         Check("(U4c-3) pes eden hırsızın (can 0) can barı gizlenir; can dolunca (ResetForTest) geri gelir", barBefore && hit && barHidden && barBack,
-            "önce bar " + barBefore + ", darbe " + hit + " → pes " + A.Surrendered + " bar gizli " + barHidden + ", sıfırlayınca bar " + barBack);
+            "önce bar " + barBefore + ", darbe " + hit + " → pes " + surrendered + " bar gizli " + barHidden + ", sıfırlayınca bar " + barBack);
         A.gameObject.SetActive(false);
     }
 }

@@ -292,6 +292,11 @@ public static partial class Bolum1AnimVerify
         yield return null;
         bool held = Player.HeldValuable == item;
         Player.Teleport(LanePoint(dir, 10f, 0.5f), Quaternion.LookRotation(vf));
+        // U4c: hedef kameranın merkez ışını → geçici kamera hırsızın göğsüne bakar
+        var throwCam = new GameObject("U4b_ThrowCam").transform;
+        throwCam.position = Player.transform.position - vf * 2.5f + Vector3.up * 1.6f;
+        throwCam.LookAt(A.transform.position + Vector3.up * 0.9f);
+        Player.cameraTransform = throwCam;
         yield return null;
         hp0 = A.Health;
         int hits0 = item.ThrowHits;
@@ -301,6 +306,8 @@ public static partial class Bolum1AnimVerify
         float tTh = Time.time;
         yield return (Func<bool>)(() => item.ThrowHits > hits0 || (Time.time - tTh > 0.8f && !item.IsFlying) || Time.time - tTh > 5f);
         yield return null;
+        Player.cameraTransform = null;
+        UnityEngine.Object.Destroy(throwCam.gameObject);
         Note("fırlatma isabeti 35", held && item.ThrowHits == hits0 + 1 && Mathf.Abs(hp0 - A.Health - s.throwHitDamage) < 0.01f && Mathf.Abs(A.Health - 40f) < 0.01f && A.LastHitReason == "firlatma",
             "elde " + held + ", isabet +" + (item.ThrowHits - hits0) + ", can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv) + " (" + A.LastHitReason + ", durum " + A.State + ", vurulabilir " + A.CanBeHit + ")");
         yield return Until(() => !item.IsFlying, 8f, "eşya indi");

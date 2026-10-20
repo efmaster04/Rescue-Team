@@ -153,6 +153,7 @@ public class Thief : MonoBehaviour
     {
         if (!All.Contains(this)) All.Add(this);
         if (label == null) label = ThiefLabel.Create(this);
+        else label.gameObject.SetActive(true); // U4c: kapatılıp yeniden açılan hırsızın etiketi/barı geri gelsin (OnDisable kapatır)
     }
 
     private void OnDisable()

@@ -40,7 +40,7 @@ public static class Bolum1ThiefBuilder
     // Arka yüz kesimi: gövdenin arka düzleminden bu kadar derin (m), tampon üstünden (y ≥) başlar
     public const float RearCutDepth = 0.2f, RearCutMinY = 0.40f;
     // Ön bölme (koltukların arkası; iç mesh koltuk arkası z ≈ 0.69) ve panel kalınlığı
-    public const float CargoFrontZ = 0.5f, CargoPanelThickness = 0.04f;
+    public const float CargoFrontZ = 0.5f, CargoPanelThickness = 0.04f, CargoFloorThickness = 0.10f;
     public const string ReportPath = "Captures/Bolum1/thief_build_report.txt";
     public const string NavMeshPath = Bolum1AmbulanceBuilder.SettingsFolder + "/ThiefNavMesh.asset";
     // NavMesh ajanı (hırsız): yarıçap, boy, eğim (kullanıcı kararı: ≤ 35° yürünebilir), basamak
@@ -353,7 +353,8 @@ public static class Bolum1ThiefBuilder
             float midZ = (cargoRear + cargoFront) * 0.5f, lenZ = cargoFront - cargoRear;
             var cargoRoot = new GameObject(CargoInteriorName).transform;
             cargoRoot.SetParent(go.transform, false);
-            MakePanel(cargoRoot, "Floor", new Vector3(0f, bottom, midZ), new Vector3(wi * 2f + panel, panel, lenZ), cargoMat);
+            // Zemin kalın (kapak altından başlar, gövdenin şasi tabanı y 0.60'ın üstüne çıkar: ölçüm "Kasa hacminde kalan" satırı)
+            MakePanel(cargoRoot, "Floor", new Vector3(0f, bottom + CargoFloorThickness * 0.5f, midZ), new Vector3(wi * 2f + panel, CargoFloorThickness, lenZ), cargoMat);
             MakePanel(cargoRoot, "Ceiling", new Vector3(0f, top, midZ), new Vector3(wi * 2f + panel, panel, lenZ), cargoMat);
             MakePanel(cargoRoot, "Wall_L", new Vector3(-(wi + panel * 0.5f), (bottom + top) * 0.5f, midZ), new Vector3(panel, top - bottom + panel, lenZ), cargoMat);
             MakePanel(cargoRoot, "Wall_R", new Vector3(wi + panel * 0.5f, (bottom + top) * 0.5f, midZ), new Vector3(panel, top - bottom + panel, lenZ), cargoMat);
@@ -376,7 +377,7 @@ public static class Bolum1ThiefBuilder
             van.doorLeftOpenAngle = -150f;
             van.doorRightOpenAngle = 150f;
             van.cargoRoot = cargoRoot;
-            van.cargoFloorY = bottom + panel * 0.5f;
+            van.cargoFloorY = bottom + CargoFloorThickness;
             van.cargoCeilingY = top - panel * 0.5f;
             van.cargoHalfWidth = wi;
             van.cargoRearZ = cargoRear;
@@ -405,7 +406,7 @@ public static class Bolum1ThiefBuilder
     }
 
     // U4c: gövde mesh'inin kopyasında arka yüzü kes. Kök uzayında z ≤ rearZ + RearCutDepth ve bütün köşeleri y ≥ RearCutMinY olan
-    // üçgenler (far/stop lambası alt mesh'leri hariç) çıkarılır. Kopya Assets'e kaydedilir; gövde MeshFilter'ı ona bağlanır.
+    // üçgenler (arka lambalar dahil) çıkarılır. Kopya Assets'e kaydedilir; gövde MeshFilter'ı ona bağlanır.
     private static string CutRearFace(GameObject root, float rearZ, out int cut, out int kept)
     {
         cut = 0; kept = 0;
@@ -423,13 +424,13 @@ public static class Bolum1ThiefBuilder
         {
             var tris = src.GetTriangles(s);
             string mat = renderer != null && s < renderer.sharedMaterials.Length && renderer.sharedMaterials[s] != null ? renderer.sharedMaterials[s].name : "?";
-            bool lamp = mat.Contains("light") || mat.Contains("Amber");
+            // Arka lambalar da kesilir: açıklığın içinde kalıyorlar (ölçüm: |x| ≤ 0.95, y 0.84–1.12) ve kapalı kapaklar zaten örtüyordu
             var keepList = new List<int>(tris.Length);
             int removed = 0;
             for (int i = 0; i < tris.Length; i += 3)
             {
                 Vector3 a = verts[tris[i]], b = verts[tris[i + 1]], c = verts[tris[i + 2]];
-                bool rear = !lamp && a.z <= zCut && b.z <= zCut && c.z <= zCut && a.y >= RearCutMinY && b.y >= RearCutMinY && c.y >= RearCutMinY;
+                bool rear = a.z <= zCut && b.z <= zCut && c.z <= zCut && a.y >= RearCutMinY && b.y >= RearCutMinY && c.y >= RearCutMinY;
                 if (rear) { removed++; continue; }
                 keepList.Add(tris[i]); keepList.Add(tris[i + 1]); keepList.Add(tris[i + 2]);
             }
@@ -439,6 +440,30 @@ public static class Bolum1ThiefBuilder
             if (removed > 0) perSub.Add(mat + " −" + removed);
         }
         if (cut == 0) throw new Exception("Kamyonet gövdesinde arka yüz üçgeni bulunamadı (z ≤ " + zCut.ToString("F2", Inv) + ", y ≥ " + RearCutMinY.ToString(Inv) + ")");
+        // Tanı: kasa hacminde (|x| ≤ 0.95, y 0.45–2.3, z arka…ön bölme) kalan gövde üçgenleri (alt mesh, sayı, sınır kutusu)
+        var inner = new List<string>();
+        for (int s = 0; s < src.subMeshCount; s++)
+        {
+            var tris = open.GetTriangles(s);
+            string mat = renderer != null && s < renderer.sharedMaterials.Length && renderer.sharedMaterials[s] != null ? renderer.sharedMaterials[s].name : "?";
+            // y bantları: <0.75, 0.75–1.0, 1.0–1.5, 1.5–2.0, >2.0 (her bant için sayı ve sınır kutusu)
+            var bands = new[] { 0.75f, 1.0f, 1.5f, 2.0f, 9f };
+            var cnt = new int[bands.Length]; var mn = new Vector3[bands.Length]; var mx = new Vector3[bands.Length];
+            for (int k = 0; k < bands.Length; k++) { mn[k] = Vector3.one * 99f; mx[k] = -Vector3.one * 99f; }
+            for (int i = 0; i < tris.Length; i += 3)
+            {
+                Vector3 a = verts[tris[i]], b = verts[tris[i + 1]], c = verts[tris[i + 2]];
+                Vector3 cen = (a + b + c) / 3f;
+                if (Mathf.Abs(cen.x) > 0.95f || cen.y < 0.45f || cen.y > 2.3f || cen.z < rearZ - 0.02f || cen.z > CargoFrontZ) continue;
+                int k = 0; while (cen.y >= bands[k]) k++;
+                cnt[k]++;
+                mn[k] = Vector3.Min(mn[k], Vector3.Min(a, Vector3.Min(b, c))); mx[k] = Vector3.Max(mx[k], Vector3.Max(a, Vector3.Max(b, c)));
+            }
+            var bandInfo = new List<string>();
+            for (int k = 0; k < bands.Length; k++) if (cnt[k] > 0) bandInfo.Add("y<" + bands[k].ToString(Inv) + ": " + cnt[k] + " " + V(mn[k]) + "–" + V(mx[k]));
+            if (bandInfo.Count > 0) inner.Add(mat + " [" + string.Join(" | ", bandInfo) + "]");
+        }
+        Line("Kasa hacminde kalan gövde üçgenleri (tanı): " + (inner.Count > 0 ? string.Join("; ", inner) : "yok"));
         open.RecalculateBounds();
         if (AssetDatabase.LoadAssetAtPath<Mesh>(OpenBodyMeshPath) != null) AssetDatabase.DeleteAsset(OpenBodyMeshPath);
         AssetDatabase.CreateAsset(open, OpenBodyMeshPath);
