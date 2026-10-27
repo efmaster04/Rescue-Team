@@ -1,0 +1,5 @@
+# Blender yedekleri
+*.blend1
+__pycache__/
+optix*cache.db*
+review_build.log

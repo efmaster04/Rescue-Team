@@ -1,0 +1,156 @@
+{
+  "units": "meters",
+  "forward": "-Y",
+  "up": "Z",
+  "bind_pose": "T-pose",
+  "variants": {
+    "Black": {
+      "height_m": 1.497202889196208,
+      "sole_z_m": -1.596622745125842e-08,
+      "head_top_z_m": 1.4972028732299805,
+      "sack_centre_m": [
+        -0.12225721031427383,
+        0.2401624321937561,
+        0.789609432220459
+      ],
+      "sack_offset_from_spine1_m": [
+        -0.12225721031427383,
+        0.24016231298446655,
+        0.07985943555831909
+      ],
+      "triangles": 7244,
+      "mesh_triangles": {
+        "Thief_Black_Head": 2548,
+        "Thief_Black_Torso": 812,
+        "Thief_Black_LeftArm": 852,
+        "Thief_Black_RightArm": 852,
+        "Thief_Black_Legs": 1376,
+        "Thief_Black_Sack": 804
+      }
+    },
+    "Red": {
+      "height_m": 1.497202889196208,
+      "sole_z_m": -1.596622745125842e-08,
+      "head_top_z_m": 1.4972028732299805,
+      "sack_centre_m": [
+        -0.12225721031427383,
+        0.2401624321937561,
+        0.789609432220459
+      ],
+      "sack_offset_from_spine1_m": [
+        -0.12225721031427383,
+        0.24016231298446655,
+        0.07985943555831909
+      ],
+      "triangles": 7244,
+      "mesh_triangles": {
+        "Thief_Red_Head": 2548,
+        "Thief_Red_Torso": 812,
+        "Thief_Red_LeftArm": 852,
+        "Thief_Red_RightArm": 852,
+        "Thief_Red_Legs": 1376,
+        "Thief_Red_Sack": 804
+      }
+    },
+    "Green": {
+      "height_m": 1.497202889196208,
+      "sole_z_m": -1.596622745125842e-08,
+      "head_top_z_m": 1.4972028732299805,
+      "sack_centre_m": [
+        -0.12225721031427383,
+        0.2401624321937561,
+        0.789609432220459
+      ],
+      "sack_offset_from_spine1_m": [
+        -0.12225721031427383,
+        0.24016231298446655,
+        0.07985943555831909
+      ],
+      "triangles": 7244,
+      "mesh_triangles": {
+        "Thief_Green_Head": 2548,
+        "Thief_Green_Torso": 812,
+        "Thief_Green_LeftArm": 852,
+        "Thief_Green_RightArm": 852,
+        "Thief_Green_Legs": 1376,
+        "Thief_Green_Sack": 804
+      }
+    }
+  },
+  "hex_colors": {
+    "M_Thief_Mask_Black": "#1E1E22",
+    "M_Thief_Pants_Black": "#4A4D52",
+    "M_Thief_Mask_Red": "#7A1E22",
+    "M_Thief_Pants_Red": "#2A3350",
+    "M_Thief_Mask_Green": "#2E5A2E",
+    "M_Thief_Pants_Green": "#5A3E2A",
+    "M_Thief_ShirtBlack": "#1A1A1A",
+    "M_Thief_ShirtWhite": "#F2F2F2",
+    "M_Thief_GloveShoe": "#222226",
+    "M_Thief_Sole": "#3A3A3E",
+    "M_Thief_Sack": "#B08A5A",
+    "M_Thief_Skin": "#C68A62"
+  },
+  "variant_materials": {
+    "Black": {
+      "mask": "M_Thief_Mask_Black",
+      "pants": "M_Thief_Pants_Black"
+    },
+    "Red": {
+      "mask": "M_Thief_Mask_Red",
+      "pants": "M_Thief_Pants_Red"
+    },
+    "Green": {
+      "mask": "M_Thief_Mask_Green",
+      "pants": "M_Thief_Pants_Green"
+    }
+  },
+  "color_note": "FBX DiffuseColor is the linear equivalent of the sRGB hex (Blender default) for the Linear URP project.",
+  "skeleton_source": "Export/RescueCrew/SK_RescueCrew_Blue.fbx",
+  "sack": {
+    "mesh_suffix": "_Sack",
+    "bone": "mixamorig:Spine1",
+    "weights": "Hips/Spine/Spine1/Spine2 chain by height (no Neck)",
+    "offset_from_spine1_m": [
+      -0.12225721031427383,
+      0.24016231298446655,
+      0.07985943555831909
+    ]
+  },
+  "bones": {
+    "mixamorig:Hips": null,
+    "mixamorig:Spine": "mixamorig:Hips",
+    "mixamorig:Spine1": "mixamorig:Spine",
+    "mixamorig:Spine2": "mixamorig:Spine1",
+    "mixamorig:Neck": "mixamorig:Spine2",
+    "mixamorig:Head": "mixamorig:Neck",
+    "mixamorig:HeadTop_End": "mixamorig:Head",
+    "mixamorig:LeftShoulder": "mixamorig:Spine2",
+    "mixamorig:LeftArm": "mixamorig:LeftShoulder",
+    "mixamorig:LeftForeArm": "mixamorig:LeftArm",
+    "mixamorig:LeftHand": "mixamorig:LeftForeArm",
+    "mixamorig:LeftHandThumb1": "mixamorig:LeftHand",
+    "mixamorig:LeftHandThumb2": "mixamorig:LeftHandThumb1",
+    "mixamorig:LeftHandIndex1": "mixamorig:LeftHand",
+    "mixamorig:LeftHandIndex2": "mixamorig:LeftHandIndex1",
+    "mixamorig:RightShoulder": "mixamorig:Spine2",
+    "mixamorig:RightArm": "mixamorig:RightShoulder",
+    "mixamorig:RightForeArm": "mixamorig:RightArm",
+    "mixamorig:RightHand": "mixamorig:RightForeArm",
+    "mixamorig:RightHandThumb1": "mixamorig:RightHand",
+    "mixamorig:RightHandThumb2": "mixamorig:RightHandThumb1",
+    "mixamorig:RightHandIndex1": "mixamorig:RightHand",
+    "mixamorig:RightHandIndex2": "mixamorig:RightHandIndex1",
+    "mixamorig:LeftUpLeg": "mixamorig:Hips",
+    "mixamorig:LeftLeg": "mixamorig:LeftUpLeg",
+    "mixamorig:LeftFoot": "mixamorig:LeftLeg",
+    "mixamorig:LeftToeBase": "mixamorig:LeftFoot",
+    "mixamorig:RightUpLeg": "mixamorig:Hips",
+    "mixamorig:RightLeg": "mixamorig:RightUpLeg",
+    "mixamorig:RightFoot": "mixamorig:RightLeg",
+    "mixamorig:RightToeBase": "mixamorig:RightFoot"
+  },
+  "bone_count": 31,
+  "height_m": 1.497202889196208,
+  "head_top_z_m": 1.4972028732299805
+}

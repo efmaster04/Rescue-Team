@@ -1,0 +1,561 @@
+{
+  "passed": true,
+  "build_geometry_sha256": [
+    "25dba8e8b155c8ef016cb452c738dac6d28fb568a5e1bcfbe5b74ac945fcaef5",
+    "25dba8e8b155c8ef016cb452c738dac6d28fb568a5e1bcfbe5b74ac945fcaef5"
+  ],
+  "verify_exit_code": 0,
+  "verify_passed": true,
+  "verify_immutability": {
+    "files_hashed": 846,
+    "changed_files": []
+  },
+  "markers_sha256": "eba21e8287c9c17ca5f72b4de3ddbb422b78807c1b94f9e7c75ee65d4f4132f6",
+  "markers_identical": true,
+  "ramp_camera_and_render_setup_identical": true,
+  "corner_before_after": {
+    "before": {
+      "spacing_m": 0.05,
+      "end_range_m": [
+        -1.5,
+        1.5
+      ],
+      "lateral_range_m": [
+        -1.375,
+        0.875
+      ],
+      "samples": 5720,
+      "missing_samples": 0,
+      "worst_steps": {
+        "longitudinal": {
+          "height_change_cm": 21.770572662353516,
+          "from": {
+            "point": [
+              -12.179981231689453,
+              -11.443419456481934,
+              -8.765195846557617
+            ],
+            "distance_from_end_m": -0.04999999999999982,
+            "offset_m": -1.375,
+            "triangle": 2986,
+            "slope_degrees": 29.762145236057
+          },
+          "to": {
+            "point": [
+              -12.130206108093262,
+              -11.44815444946289,
+              -8.982901573181152
+            ],
+            "distance_from_end_m": 0.0,
+            "offset_m": -1.375,
+            "triangle": 26114,
+            "slope_degrees": 8.510362365659631
+          }
+        },
+        "transverse": {
+          "height_change_cm": 2.2919654846191406,
+          "from": {
+            "point": [
+              -12.66711139678955,
+              -11.020389556884766,
+              -8.757554054260254
+            ],
+            "distance_from_end_m": -0.5750000000000001,
+            "offset_m": -1.0,
+            "triangle": 2988,
+            "slope_degrees": 29.762186514326118
+          },
+          "to": {
+            "point": [
+              -12.662376403808594,
+              -10.970614433288574,
+              -8.780473709106445
+            ],
+            "distance_from_end_m": -0.5750000000000001,
+            "offset_m": -0.9500000000000001,
+            "triangle": 2988,
+            "slope_degrees": 29.762186514326118
+          }
+        }
+      },
+      "worst_slope": {
+        "point": [
+          -12.983549118041992,
+          -10.91495132446289,
+          -8.680802345275879
+        ],
+        "distance_from_end_m": -0.8999999999999999,
+        "offset_m": -0.925,
+        "triangle": 2988,
+        "slope_degrees": 29.762186514326118
+      },
+      "original_bank_slope_degrees": 29.76215340379692
+    },
+    "after": {
+      "spacing_m": 0.05,
+      "end_range_m": [
+        -1.5,
+        1.5
+      ],
+      "lateral_range_m": [
+        -1.375,
+        0.875
+      ],
+      "samples": 5720,
+      "missing_samples": 0,
+      "worst_steps": {
+        "longitudinal": {
+          "height_change_cm": 1.9938468933105469,
+          "from": {
+            "point": [
+              -12.7772855758667,
+              -11.386602401733398,
+              -8.74089241027832
+            ],
+            "distance_from_end_m": -0.6499999999999999,
+            "offset_m": -1.375,
+            "triangle": 27062,
+            "slope_degrees": 21.957375837508536
+          },
+          "to": {
+            "point": [
+              -12.727509498596191,
+              -11.391337394714355,
+              -8.760830879211426
+            ],
+            "distance_from_end_m": -0.6,
+            "offset_m": -1.375,
+            "triangle": 27076,
+            "slope_degrees": 21.93614942269523
+          }
+        },
+        "transverse": {
+          "height_change_cm": 0.7456779479980469,
+          "from": {
+            "point": [
+              -13.597423553466797,
+              -11.032346725463867,
+              -8.44253921508789
+            ],
+            "distance_from_end_m": -1.5,
+            "offset_m": -1.1,
+            "triangle": 26830,
+            "slope_degrees": 21.65734234223614
+          },
+          "to": {
+            "point": [
+              -13.592689514160156,
+              -10.982571601867676,
+              -8.449995994567871
+            ],
+            "distance_from_end_m": -1.5,
+            "offset_m": -1.05,
+            "triangle": 26832,
+            "slope_degrees": 21.20758010761373
+          }
+        }
+      },
+      "worst_slope": {
+        "point": [
+          -13.623465538024902,
+          -11.306111335754395,
+          -8.402121543884277
+        ],
+        "distance_from_end_m": -1.5,
+        "offset_m": -1.375,
+        "triangle": 26824,
+        "slope_degrees": 22.995076593352927
+      },
+      "original_bank_slope_degrees": 29.76215340379692
+    }
+  },
+  "scope": {
+    "changed_meshes": [
+      "SM_B1_Ground"
+    ],
+    "all_other_meshes_including_colors_identical": true,
+    "removed_ground_triangles": 665,
+    "added_ground_triangles": 1900,
+    "changed_triangle_bounds_ramp_coordinates": {
+      "min": [
+        -3.8506383150815964,
+        -2.007632255554199,
+        -12.28
+      ],
+      "max": [
+        2.200101099908352,
+        0.9000001549720764,
+        -7.463339
+      ]
+    },
+    "walking_surface_comparison": {
+      "samples": 19040,
+      "missing": 0,
+      "max_height_difference_m": 5.7220458984375e-06
+    }
+  },
+  "r1_r2_ramp_continuity": {
+    "all_meshes": {
+      "spacing_m": 0.05,
+      "extension_m": 2.0,
+      "length_m": 23.103821110544775,
+      "lines": [
+        {
+          "offset_m": -0.7,
+          "worst_step": {
+            "distance_m": 22.450000000000003,
+            "xy": [
+              -12.717168807983398,
+              -10.714274406433105
+            ],
+            "height_change_cm": 1.849365234375,
+            "grade_degrees": -20.298075452618804,
+            "from_mesh": "SM_B1_Ground",
+            "to_mesh": "SM_B1_Ground",
+            "triangle": 25231
+          },
+          "worst_slope": {
+            "point": [
+              -12.617618560791016,
+              -10.723743438720703,
+              -8.804443359375
+            ],
+            "mesh": "SM_B1_Ground",
+            "triangle": 25257,
+            "slope_degrees": 20.30025829433754
+          },
+          "worst_grade_change": {
+            "distance_m": 23.25,
+            "xy": [
+              -11.92076301574707,
+              -10.790030479431152
+            ],
+            "grade_change_degrees": 2.4976582161837753
+          },
+          "missing_samples": 0
+        },
+        {
+          "offset_m": 0.0,
+          "worst_step": {
+            "distance_m": 22.55,
+            "xy": [
+              -12.551332473754883,
+              -10.026888847351074
+            ],
+            "height_change_cm": 1.85546875,
+            "grade_degrees": -20.359575249777464,
+            "from_mesh": "SM_B1_Ground",
+            "to_mesh": "SM_B1_Ground",
+            "triangle": 25264
+          },
+          "worst_slope": {
+            "point": [
+              -34.004493713378906,
+              -7.986209869384766,
+              -1.413116455078125
+            ],
+            "mesh": "SM_B1_Ground",
+            "triangle": 23565,
+            "slope_degrees": 21.425046603362556
+          },
+          "worst_grade_change": {
+            "distance_m": 23.150000000000002,
+            "xy": [
+              -11.954029083251953,
+              -10.08370590209961
+            ],
+            "grade_change_degrees": 2.7969100352642773
+          },
+          "missing_samples": 0
+        },
+        {
+          "offset_m": 0.7,
+          "worst_step": {
+            "distance_m": 1.1500000000000004,
+            "xy": [
+              -33.78887939453125,
+              -7.303559303283691
+            ],
+            "height_change_cm": 1.9439697265625,
+            "grade_degrees": -21.24578010986676,
+            "from_mesh": "SM_B1_Ground",
+            "to_mesh": "SM_B1_Ground",
+            "triangle": 23605
+          },
+          "worst_slope": {
+            "point": [
+              -33.838653564453125,
+              -7.298824787139893,
+              -1.3746337890625
+            ],
+            "mesh": "SM_B1_Ground",
+            "triangle": 23593,
+            "slope_degrees": 21.343936583258838
+          },
+          "worst_grade_change": {
+            "distance_m": 0.050000000000000266,
+            "xy": [
+              -34.88393783569336,
+              -7.199395179748535
+            ],
+            "grade_change_degrees": 13.614929502572021
+          },
+          "missing_samples": 0
+        }
+      ]
+    },
+    "collision_surfaces": {
+      "spacing_m": 0.05,
+      "extension_m": 2.0,
+      "length_m": 23.103821110544775,
+      "lines": [
+        {
+          "offset_m": -0.7,
+          "worst_step": {
+            "distance_m": 22.450000000000003,
+            "xy": [
+              -12.717168807983398,
+              -10.714274406433105
+            ],
+            "height_change_cm": 1.849365234375,
+            "grade_degrees": -20.298075452618804,
+            "from_mesh": "SM_B1_Ground",
+            "to_mesh": "SM_B1_Ground",
+            "triangle": 25231
+          },
+          "worst_slope": {
+            "point": [
+              -12.617618560791016,
+              -10.723743438720703,
+              -8.804443359375
+            ],
+            "mesh": "SM_B1_Ground",
+            "triangle": 25257,
+            "slope_degrees": 20.30025829433754
+          },
+          "worst_grade_change": {
+            "distance_m": 23.25,
+            "xy": [
+              -11.92076301574707,
+              -10.790030479431152
+            ],
+            "grade_change_degrees": 2.4976582161837753
+          },
+          "missing_samples": 0
+        },
+        {
+          "offset_m": 0.0,
+          "worst_step": {
+            "distance_m": 22.55,
+            "xy": [
+              -12.551332473754883,
+              -10.026888847351074
+            ],
+            "height_change_cm": 1.85546875,
+            "grade_degrees": -20.359575249777464,
+            "from_mesh": "SM_B1_Ground",
+            "to_mesh": "SM_B1_Ground",
+            "triangle": 25264
+          },
+          "worst_slope": {
+            "point": [
+              -34.004493713378906,
+              -7.986209869384766,
+              -1.413116455078125
+            ],
+            "mesh": "SM_B1_Ground",
+            "triangle": 23565,
+            "slope_degrees": 21.425046603362556
+          },
+          "worst_grade_change": {
+            "distance_m": 23.150000000000002,
+            "xy": [
+              -11.954029083251953,
+              -10.08370590209961
+            ],
+            "grade_change_degrees": 2.7969100352642773
+          },
+          "missing_samples": 0
+        },
+        {
+          "offset_m": 0.7,
+          "worst_step": {
+            "distance_m": 1.1500000000000004,
+            "xy": [
+              -33.78887939453125,
+              -7.303559303283691
+            ],
+            "height_change_cm": 1.9439697265625,
+            "grade_degrees": -21.24578010986676,
+            "from_mesh": "SM_B1_Ground",
+            "to_mesh": "SM_B1_Ground",
+            "triangle": 23605
+          },
+          "worst_slope": {
+            "point": [
+              -33.838653564453125,
+              -7.298824787139893,
+              -1.3746337890625
+            ],
+            "mesh": "SM_B1_Ground",
+            "triangle": 23593,
+            "slope_degrees": 21.343936583258838
+          },
+          "worst_grade_change": {
+            "distance_m": 0.050000000000000266,
+            "xy": [
+              -34.88393783569336,
+              -7.199395179748535
+            ],
+            "grade_change_degrees": 13.614929502572021
+          },
+          "missing_samples": 0
+        }
+      ]
+    },
+    "junctions": [
+      {
+        "end": "road",
+        "xy": [
+          -36.34174728393555,
+          -6.1566619873046875
+        ],
+        "gap_cm": 0.0946044921875
+      },
+      {
+        "end": "road",
+        "xy": [
+          -35.843994140625,
+          -6.204009532928467
+        ],
+        "gap_cm": 0.0946044921875
+      },
+      {
+        "end": "road",
+        "xy": [
+          -35.34624099731445,
+          -6.251357078552246
+        ],
+        "gap_cm": 0.1007080078125
+      },
+      {
+        "end": "path",
+        "xy": [
+          -12.06628704071045,
+          -10.776187896728516
+        ],
+        "gap_cm": 1.708984375
+      },
+      {
+        "end": "path",
+        "xy": [
+          -12.0,
+          -10.079333305358887
+        ],
+        "gap_cm": 1.7059326171875
+      },
+      {
+        "end": "path",
+        "xy": [
+          -11.93371295928955,
+          -9.382478713989258
+        ],
+        "gap_cm": 1.6998291015625
+      }
+    ]
+  },
+  "reimported_corner": {
+    "spacing_m": 0.05,
+    "end_range_m": [
+      -1.5,
+      1.5
+    ],
+    "lateral_range_m": [
+      -1.375,
+      0.875
+    ],
+    "samples": 5720,
+    "missing_samples": 0,
+    "worst_steps": {
+      "longitudinal": {
+        "height_change_cm": 1.9939422607421875,
+        "from": {
+          "point": [
+            -12.876835823059082,
+            -11.3771333694458,
+            -8.701014518737793
+          ],
+          "distance_from_end_m": -0.75,
+          "offset_m": -1.375,
+          "triangle": 27034,
+          "slope_degrees": 22.004674458447248
+        },
+        "to": {
+          "point": [
+            -12.82706069946289,
+            -11.381867408752441,
+            -8.720953941345215
+          ],
+          "distance_from_end_m": -0.7,
+          "offset_m": -1.375,
+          "triangle": 27048,
+          "slope_degrees": 21.97965035661982
+        }
+      },
+      "transverse": {
+        "height_change_cm": 0.7458686828613281,
+        "from": {
+          "point": [
+            -13.597423553466797,
+            -11.032346725463867,
+            -8.442536354064941
+          ],
+          "distance_from_end_m": -1.5,
+          "offset_m": -1.1,
+          "triangle": 26830,
+          "slope_degrees": 21.65734234223614
+        },
+        "to": {
+          "point": [
+            -13.592689514160156,
+            -10.982571601867676,
+            -8.449995040893555
+          ],
+          "distance_from_end_m": -1.5,
+          "offset_m": -1.05,
+          "triangle": 26832,
+          "slope_degrees": 21.20758010761373
+        }
+      }
+    },
+    "worst_slope": {
+      "point": [
+        -13.623465538024902,
+        -11.306111335754395,
+        -8.402119636535645
+      ],
+      "distance_from_end_m": -1.5,
+      "offset_m": -1.375,
+      "triangle": 26824,
+      "slope_degrees": 22.995076593352927
+    },
+    "original_bank_slope_degrees": 29.76215340379692
+  },
+  "changed_existing_files": [
+    "tools/blender/build_bolum1_ucurum.py",
+    "tools/blender/verify_bolum1_ucurum.py",
+    "Export/Bolum1_Ucurum/B1_Ucurum.blend",
+    "Export/Bolum1_Ucurum/SM_B1_Ground.fbx",
+    "Export/Bolum1_Ucurum/stats.json",
+    "Export/Bolum1_Ucurum/renders/ramp_bottom.png"
+  ],
+  "new_files": [
+    "Export/Bolum1_Ucurum/ramp_r3_acceptance.json",
+    "Export/Bolum1_Ucurum/ramp_r3_build_1.log",
+    "Export/Bolum1_Ucurum/ramp_r3_build_2.log",
+    "Export/Bolum1_Ucurum/ramp_r3_corner_comparison.json",
+    "Export/Bolum1_Ucurum/ramp_r3_export_preservation.json",
+    "Export/Bolum1_Ucurum/ramp_r3_scope.json",
+    "Export/Bolum1_Ucurum/ramp_r3_verify.log"
+  ]
+}

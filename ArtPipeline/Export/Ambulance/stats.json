@@ -1,0 +1,251 @@
+{
+  "geometry_sha256": "ff80cc63ffd038797d67f7fbf32c3494f60d2e9655622761dbafeb9fe2799211",
+  "canonical_geometry_sha256": "e957db3808e12ada54ee6a4affdcbe70f23a56c425b734e61d37de113af9342b",
+  "total_triangles": 10348,
+  "stretcher_triangles": 808,
+  "object_triangles": {
+    "SM_Ambulance_Body": 2892,
+    "SM_Ambulance_Glass": 60,
+    "SM_Ambulance_Wheel_FL": 608,
+    "SM_Ambulance_Wheel_FR": 608,
+    "SM_Ambulance_Wheel_RL": 608,
+    "SM_Ambulance_Wheel_RR": 608,
+    "SM_Ambulance_Door_RL": 268,
+    "SM_Ambulance_Door_RR": 256,
+    "SM_Ambulance_Step_Rear": 120,
+    "SM_Ambulance_Interior": 4064,
+    "SM_Ambulance_Lightbar": 144,
+    "SM_Ambulance_Light_RearL": 56,
+    "SM_Ambulance_Light_RearR": 56,
+    "SM_Stretcher_Mesh": 808
+  },
+  "last_build": {
+    "geometry_sha256": "ff80cc63ffd038797d67f7fbf32c3494f60d2e9655622761dbafeb9fe2799211",
+    "canonical_geometry_sha256": "e957db3808e12ada54ee6a4affdcbe70f23a56c425b734e61d37de113af9342b",
+    "source_sha256": "1e39e647c2f75e9fd7449d0e1242eda6cc495f62b74e42f1a028a3b32b8386a6",
+    "round": 5,
+    "triangles": 10348,
+    "stretcher_triangles": 808,
+    "render_seconds": 270.54,
+    "camera_render_seconds": {
+      "front": 17.291,
+      "rear": 14.386,
+      "left": 16.71,
+      "right": 16.981,
+      "threequarter_front_left": 24.787,
+      "threequarter_rear_open": 24.072,
+      "interior_top": 25.403,
+      "crew_front": 47.272,
+      "crew_rear_open": 46.118,
+      "scale_with_minivan": 13.946,
+      "stretcher_threequarter": 23.574
+    },
+    "total_build_seconds": 272.394
+  },
+  "build_history": [
+    {
+      "geometry_sha256": "2b59180886c25ca8986cc0efd18f4bea3724a36e0eebf6352bd9a0c64e06bc86",
+      "canonical_geometry_sha256": "a2b184e1e8bf418a3032533b5b69388b3cb93484081f269ca4be21f679717211",
+      "source_sha256": "649ebf8d32f3ef5c95574ac7d47f14b9e2b2aed4efaaeb76a9be87b8401cd4b1",
+      "round": 3,
+      "triangles": 6948,
+      "stretcher_triangles": 808,
+      "render_seconds": 210.719,
+      "camera_render_seconds": {
+        "front": 17.556,
+        "rear": 15.51,
+        "left": 18.447,
+        "right": 18.791,
+        "threequarter_front_left": 35.231,
+        "threequarter_rear_open": 30.4,
+        "interior_top": 34.437,
+        "scale_with_minivan": 14.536,
+        "stretcher_threequarter": 25.811
+      },
+      "total_build_seconds": 212.349
+    },
+    {
+      "geometry_sha256": "2b59180886c25ca8986cc0efd18f4bea3724a36e0eebf6352bd9a0c64e06bc86",
+      "canonical_geometry_sha256": "a2b184e1e8bf418a3032533b5b69388b3cb93484081f269ca4be21f679717211",
+      "source_sha256": "72310c31d27bfa77dc77b58f28591292125b641539c0abb49909ee96f5c1579b",
+      "round": 3,
+      "triangles": 6948,
+      "stretcher_triangles": 808,
+      "render_seconds": 340.046,
+      "camera_render_seconds": {
+        "front": 62.422,
+        "rear": 46.826,
+        "left": 60.462,
+        "right": 63.328,
+        "threequarter_front_left": 25.952,
+        "threequarter_rear_open": 23.826,
+        "interior_top": 26.93,
+        "scale_with_minivan": 11.503,
+        "stretcher_threequarter": 18.797
+      },
+      "total_build_seconds": 341.447
+    },
+    {
+      "geometry_sha256": "2b59180886c25ca8986cc0efd18f4bea3724a36e0eebf6352bd9a0c64e06bc86",
+      "canonical_geometry_sha256": "a2b184e1e8bf418a3032533b5b69388b3cb93484081f269ca4be21f679717211",
+      "source_sha256": "72310c31d27bfa77dc77b58f28591292125b641539c0abb49909ee96f5c1579b",
+      "round": 3,
+      "triangles": 6948,
+      "stretcher_triangles": 808,
+      "render_seconds": 168.363,
+      "camera_render_seconds": {
+        "front": 16.378,
+        "rear": 13.134,
+        "left": 16.025,
+        "right": 16.431,
+        "threequarter_front_left": 25.459,
+        "threequarter_rear_open": 23.44,
+        "interior_top": 27.675,
+        "scale_with_minivan": 11.209,
+        "stretcher_threequarter": 18.612
+      },
+      "total_build_seconds": 170.213
+    },
+    {
+      "geometry_sha256": "2b59180886c25ca8986cc0efd18f4bea3724a36e0eebf6352bd9a0c64e06bc86",
+      "canonical_geometry_sha256": "a2b184e1e8bf418a3032533b5b69388b3cb93484081f269ca4be21f679717211",
+      "source_sha256": "72310c31d27bfa77dc77b58f28591292125b641539c0abb49909ee96f5c1579b",
+      "round": 3,
+      "triangles": 6948,
+      "stretcher_triangles": 808,
+      "render_seconds": 184.769,
+      "camera_render_seconds": {
+        "front": 15.48,
+        "rear": 14.976,
+        "left": 18.452,
+        "right": 20.382,
+        "threequarter_front_left": 25.433,
+        "threequarter_rear_open": 27.01,
+        "interior_top": 29.162,
+        "scale_with_minivan": 11.682,
+        "stretcher_threequarter": 22.192
+      },
+      "total_build_seconds": 186.72
+    },
+    {
+      "geometry_sha256": "90f89e89c1087ad0dfc096924db89cda08688ede6d6872c4e94c9c01fb217e34",
+      "canonical_geometry_sha256": "56364e072acf7885bedee1cb8218837b3e060e23b281cc64ca612655b7c7e879",
+      "source_sha256": "116f92a4bb5e7e60d7035d29818f9352129207f72c8db5ecc38e6ef1ab6a5ea2",
+      "round": 4,
+      "triangles": 7456,
+      "stretcher_triangles": 808,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "total_build_seconds": 0.508
+    },
+    {
+      "geometry_sha256": "90f89e89c1087ad0dfc096924db89cda08688ede6d6872c4e94c9c01fb217e34",
+      "canonical_geometry_sha256": "56364e072acf7885bedee1cb8218837b3e060e23b281cc64ca612655b7c7e879",
+      "source_sha256": "116f92a4bb5e7e60d7035d29818f9352129207f72c8db5ecc38e6ef1ab6a5ea2",
+      "round": 4,
+      "triangles": 7456,
+      "stretcher_triangles": 808,
+      "render_seconds": 245.446,
+      "camera_render_seconds": {
+        "front": 23.982,
+        "rear": 19.843,
+        "left": 23.095,
+        "right": 22.974,
+        "threequarter_front_left": 32.205,
+        "threequarter_rear_open": 34.369,
+        "interior_top": 40.406,
+        "scale_with_minivan": 18.218,
+        "stretcher_threequarter": 30.354
+      },
+      "total_build_seconds": 247.748
+    },
+    {
+      "geometry_sha256": "dde2bd34c1d66871b2f5664e7038f92440bcc3b51e6c13d17b9df6128befcc91",
+      "canonical_geometry_sha256": "0676f654ee32d1a6bfd2fa90a01261b102f1cea43b4ed0f939af9b9fa081b141",
+      "source_sha256": "286b81d1b3af2799a7045c2f700c91862fc313952c6b6b3810c2387dc05bb0fe",
+      "round": 4,
+      "triangles": 7504,
+      "stretcher_triangles": 808,
+      "render_seconds": 298.669,
+      "camera_render_seconds": {
+        "front": 49.811,
+        "rear": 35.281,
+        "left": 26.026,
+        "right": 26.785,
+        "threequarter_front_left": 42.713,
+        "threequarter_rear_open": 34.951,
+        "interior_top": 39.484,
+        "scale_with_minivan": 16.067,
+        "stretcher_threequarter": 27.551
+      },
+      "total_build_seconds": 300.696
+    },
+    {
+      "geometry_sha256": "dde2bd34c1d66871b2f5664e7038f92440bcc3b51e6c13d17b9df6128befcc91",
+      "canonical_geometry_sha256": "0676f654ee32d1a6bfd2fa90a01261b102f1cea43b4ed0f939af9b9fa081b141",
+      "source_sha256": "286b81d1b3af2799a7045c2f700c91862fc313952c6b6b3810c2387dc05bb0fe",
+      "round": 4,
+      "triangles": 7504,
+      "stretcher_triangles": 808,
+      "render_seconds": 268.258,
+      "camera_render_seconds": {
+        "front": 23.456,
+        "rear": 19.21,
+        "left": 24.534,
+        "right": 24.319,
+        "threequarter_front_left": 42.167,
+        "threequarter_rear_open": 44.052,
+        "interior_top": 43.364,
+        "scale_with_minivan": 17.466,
+        "stretcher_threequarter": 29.69
+      },
+      "total_build_seconds": 270.529
+    },
+    {
+      "geometry_sha256": "ff80cc63ffd038797d67f7fbf32c3494f60d2e9655622761dbafeb9fe2799211",
+      "canonical_geometry_sha256": "e957db3808e12ada54ee6a4affdcbe70f23a56c425b734e61d37de113af9342b",
+      "source_sha256": "1e39e647c2f75e9fd7449d0e1242eda6cc495f62b74e42f1a028a3b32b8386a6",
+      "round": 5,
+      "triangles": 10348,
+      "stretcher_triangles": 808,
+      "render_seconds": 288.958,
+      "camera_render_seconds": {
+        "front": 18.121,
+        "rear": 16.152,
+        "left": 18.676,
+        "right": 18.81,
+        "threequarter_front_left": 30.062,
+        "threequarter_rear_open": 28.799,
+        "interior_top": 32.857,
+        "crew_front": 48.895,
+        "crew_rear_open": 42.821,
+        "scale_with_minivan": 12.621,
+        "stretcher_threequarter": 21.144
+      },
+      "total_build_seconds": 290.633
+    },
+    {
+      "geometry_sha256": "ff80cc63ffd038797d67f7fbf32c3494f60d2e9655622761dbafeb9fe2799211",
+      "canonical_geometry_sha256": "e957db3808e12ada54ee6a4affdcbe70f23a56c425b734e61d37de113af9342b",
+      "source_sha256": "1e39e647c2f75e9fd7449d0e1242eda6cc495f62b74e42f1a028a3b32b8386a6",
+      "round": 5,
+      "triangles": 10348,
+      "stretcher_triangles": 808,
+      "render_seconds": 270.54,
+      "camera_render_seconds": {
+        "front": 17.291,
+        "rear": 14.386,
+        "left": 16.71,
+        "right": 16.981,
+        "threequarter_front_left": 24.787,
+        "threequarter_rear_open": 24.072,
+        "interior_top": 25.403,
+        "crew_front": 47.272,
+        "crew_rear_open": 46.118,
+        "scale_with_minivan": 13.946,
+        "stretcher_threequarter": 23.574
+      },
+      "total_build_seconds": 272.394
+    }
+  ]
+}

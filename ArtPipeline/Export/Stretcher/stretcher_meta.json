@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X",
+    "length_axis": "Y",
+    "marker_direction": "Marker local +Y points toward vehicle front (-Y world). All positions/axes below are Blender root coordinates."
+  },
+  "field_descriptions": {
+    "pivot_m": "Object origin XYZ in metres, rest pose.",
+    "motion": "Positive angle uses right-hand rule around signed axis; rest=0 deg.",
+    "axis": "Unit rotation axis in Blender root coordinates; null for blinking lights.",
+    "range_deg": "Mechanical min/max angle; null means continuous spin or no mechanical motion.",
+    "work_pose_deg": "Open demonstration/test pose: doors 100, step 90.",
+    "markers": "Empty position, local +Y heading and rest Euler rotation in Blender coordinates.",
+    "palette_samples": "5x5 median at top-left-origin source pixel coordinates; assumed colors explicitly labelled.",
+    "measurement": "Body envelope excludes mirrors; body height excludes three beacons; ground Z=0."
+  },
+  "parts": {
+    "SM_Stretcher_Mesh": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Stretcher",
+      "motion": null
+    }
+  },
+  "required_game_instances": 2,
+  "asset_note": "Instantiate this same reusable FBX twice; no duplicated geometry asset.",
+  "dimensions": {
+    "pole_length_m": 2.1,
+    "canvas_width_m": 0.55,
+    "canvas_length_m": 1.85,
+    "canvas_edge_height_m": 0.12,
+    "canvas_centre_height_m": 0.112,
+    "handle_spacing_m": 0.586,
+    "foot_rectangle_m": [
+      0.51,
+      1.32
+    ]
+  },
+  "markers": {
+    "Handle_Front": {
+      "position_m": [
+        0.0,
+        -0.9700000286102295,
+        0.12999999523162842
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    },
+    "Handle_Rear": {
+      "position_m": [
+        0.0,
+        0.9700000286102295,
+        0.12999999523162842
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    },
+    "PatientAnchor": {
+      "position_m": [
+        0.0,
+        0.0,
+        0.16200000047683716
+      ],
+      "head_direction": [
+        0,
+        -1,
+        0
+      ],
+      "local_positive_axis": "+Y",
+      "rotation_euler_deg": [
+        0,
+        0,
+        180
+      ]
+    }
+  },
+  "materials": {
+    "M_Stretcher_Canvas": "#D97836",
+    "M_Stretcher_Aluminium": "#AAB3B8",
+    "M_Ambulance_Trim": "#48474F"
+  }
+}

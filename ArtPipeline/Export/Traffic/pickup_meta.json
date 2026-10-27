@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X",
+    "length_axis": "Y"
+  },
+  "field_descriptions": {
+    "measurement": "Body envelope in metres, excludes mirrors only; height from ground.",
+    "parts": "Direct root children; pivot_m is XYZ in Blender root space.",
+    "axles_y_m": "Front negative Y, rear positive Y; wheel rotation axis +X.",
+    "paint_variants": "sRGB hex values; convert once to linear Base Color for Linear URP.",
+    "bed": "Inner free box, floor top Z, hay bottom-centre positions and XYZ dimensions; all metres.",
+    "palette_samples": "5x5 median on concept; XY uses top-left image origin."
+  },
+  "measurement": {
+    "length_m": 5.3,
+    "width_m": 1.9,
+    "height_m": 1.85,
+    "tolerance_m": 0.05
+  },
+  "wheel_radius_m": 0.37,
+  "wheel_x_m": 0.815,
+  "axles_y_m": {
+    "F": -1.62,
+    "R": 1.62
+  },
+  "wheel_axis": [
+    1,
+    0,
+    0
+  ],
+  "parts": {
+    "SM_Pickup_Hay_01": {
+      "pivot_m": [
+        0.0,
+        0.93,
+        0.86
+      ],
+      "parent": "SM_Pickup",
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true
+      }
+    },
+    "SM_Pickup_Hay_02": {
+      "pivot_m": [
+        0.0,
+        1.96,
+        0.86
+      ],
+      "parent": "SM_Pickup",
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true
+      }
+    },
+    "SM_Pickup_Body": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Pickup",
+      "motion": null
+    },
+    "SM_Pickup_Glass": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Pickup",
+      "motion": null
+    },
+    "SM_Pickup_Interior": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_Pickup",
+      "motion": null
+    },
+    "SM_Pickup_Wheel_FL": {
+      "pivot_m": [
+        0.815,
+        -1.62,
+        0.37
+      ],
+      "parent": "SM_Pickup",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.37
+      }
+    },
+    "SM_Pickup_Wheel_FR": {
+      "pivot_m": [
+        -0.815,
+        -1.62,
+        0.37
+      ],
+      "parent": "SM_Pickup",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.37
+      }
+    },
+    "SM_Pickup_Wheel_RL": {
+      "pivot_m": [
+        0.815,
+        1.62,
+        0.37
+      ],
+      "parent": "SM_Pickup",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.37
+      }
+    },
+    "SM_Pickup_Wheel_RR": {
+      "pivot_m": [
+        -0.815,
+        1.62,
+        0.37
+      ],
+      "parent": "SM_Pickup",
+      "motion": {
+        "type": "axle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.37
+      }
+    }
+  },
+  "mirror_exclusion": {
+    "abs_x_above_m": 0.9299999999999999,
+    "y_range_m": [
+      -1.3,
+      -1.06
+    ],
+    "z_range_m": [
+      1.12,
+      1.32
+    ]
+  },
+  "glass_material": "M_Traffic_Glass",
+  "paint_material": "M_Pickup_Paint_Surface",
+  "paint_variants": [
+    {
+      "name": "Burgundy",
+      "srgb_hex": "#4D2731"
+    }
+  ],
+  "default_paint": "Burgundy",
+  "materials": {
+    "M_Traffic_Trim": "#85868A",
+    "M_Traffic_Tire": "#292C30",
+    "M_Traffic_Rim": "#777A80",
+    "M_Traffic_Glass": "#A3BBC0",
+    "M_Traffic_Interior": "#4B5053",
+    "M_Traffic_Seat": "#737276",
+    "M_Traffic_Driver": "#3E514D",
+    "M_Traffic_Headlight": "#E6DEB9",
+    "M_Traffic_Tail": "#943D3C",
+    "M_Traffic_Amber": "#BE9450",
+    "M_Traffic_Hay": "#BDA666",
+    "M_Traffic_HayDark": "#95804C",
+    "M_Traffic_Strap": "#5B5141",
+    "M_Pickup_Paint_Surface": "#4D2731"
+  },
+  "palette_samples": {
+    "Mustard": {
+      "srgb_hex": "#95713C",
+      "source_pixel_xy_top_left": [
+        170,
+        620
+      ],
+      "median_patch_px": 5
+    },
+    "Sage": {
+      "srgb_hex": "#506056",
+      "source_pixel_xy_top_left": [
+        413,
+        620
+      ],
+      "median_patch_px": 5
+    },
+    "Burgundy": {
+      "srgb_hex": "#4D2731",
+      "source_pixel_xy_top_left": [
+        652,
+        613
+      ],
+      "median_patch_px": 5
+    },
+    "Charcoal": {
+      "srgb_hex": "#545252",
+      "source_pixel_xy_top_left": [
+        262,
+        570
+      ],
+      "median_patch_px": 5
+    }
+  },
+  "palette_reference": "ArtSource/Traffic/references/01_traffic_lineup.jpg",
+  "bed": {
+    "floor_z_m": 0.86,
+    "inner_x_m": [
+      -0.84,
+      0.84
+    ],
+    "inner_y_m": [
+      0.39,
+      2.48
+    ],
+    "hay": [
+      {
+        "name": "SM_Pickup_Hay_01",
+        "position_m": [
+          0,
+          0.93,
+          0.86
+        ],
+        "dimensions_xyz_m": [
+          1.3,
+          0.87,
+          0.62
+        ]
+      },
+      {
+        "name": "SM_Pickup_Hay_02",
+        "position_m": [
+          0,
+          1.96,
+          0.86
+        ],
+        "dimensions_xyz_m": [
+          1.3,
+          0.87,
+          0.62
+        ]
+      }
+    ]
+  },
+  "unity_import": {
+    "scale_factor": 1,
+    "bake_axis_conversion": false,
+    "color_note": "sRGB hex -> linear Base Color -> FBX DiffuseColor unchanged.",
+    "glass_note": "URP transparent, alpha 0.30; separate glass object."
+  }
+}

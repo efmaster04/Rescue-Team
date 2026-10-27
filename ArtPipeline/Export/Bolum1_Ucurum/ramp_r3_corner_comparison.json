@@ -1,0 +1,156 @@
+{
+  "before": {
+    "spacing_m": 0.05,
+    "end_range_m": [
+      -1.5,
+      1.5
+    ],
+    "lateral_range_m": [
+      -1.375,
+      0.875
+    ],
+    "samples": 5720,
+    "missing_samples": 0,
+    "worst_steps": {
+      "longitudinal": {
+        "height_change_cm": 21.770572662353516,
+        "from": {
+          "point": [
+            -12.179981231689453,
+            -11.443419456481934,
+            -8.765195846557617
+          ],
+          "distance_from_end_m": -0.04999999999999982,
+          "offset_m": -1.375,
+          "triangle": 2986,
+          "slope_degrees": 29.762145236057
+        },
+        "to": {
+          "point": [
+            -12.130206108093262,
+            -11.44815444946289,
+            -8.982901573181152
+          ],
+          "distance_from_end_m": 0.0,
+          "offset_m": -1.375,
+          "triangle": 26114,
+          "slope_degrees": 8.510362365659631
+        }
+      },
+      "transverse": {
+        "height_change_cm": 2.2919654846191406,
+        "from": {
+          "point": [
+            -12.66711139678955,
+            -11.020389556884766,
+            -8.757554054260254
+          ],
+          "distance_from_end_m": -0.5750000000000001,
+          "offset_m": -1.0,
+          "triangle": 2988,
+          "slope_degrees": 29.762186514326118
+        },
+        "to": {
+          "point": [
+            -12.662376403808594,
+            -10.970614433288574,
+            -8.780473709106445
+          ],
+          "distance_from_end_m": -0.5750000000000001,
+          "offset_m": -0.9500000000000001,
+          "triangle": 2988,
+          "slope_degrees": 29.762186514326118
+        }
+      }
+    },
+    "worst_slope": {
+      "point": [
+        -12.983549118041992,
+        -10.91495132446289,
+        -8.680802345275879
+      ],
+      "distance_from_end_m": -0.8999999999999999,
+      "offset_m": -0.925,
+      "triangle": 2988,
+      "slope_degrees": 29.762186514326118
+    },
+    "original_bank_slope_degrees": 29.76215340379692
+  },
+  "after": {
+    "spacing_m": 0.05,
+    "end_range_m": [
+      -1.5,
+      1.5
+    ],
+    "lateral_range_m": [
+      -1.375,
+      0.875
+    ],
+    "samples": 5720,
+    "missing_samples": 0,
+    "worst_steps": {
+      "longitudinal": {
+        "height_change_cm": 1.9938468933105469,
+        "from": {
+          "point": [
+            -12.7772855758667,
+            -11.386602401733398,
+            -8.74089241027832
+          ],
+          "distance_from_end_m": -0.6499999999999999,
+          "offset_m": -1.375,
+          "triangle": 27062,
+          "slope_degrees": 21.957375837508536
+        },
+        "to": {
+          "point": [
+            -12.727509498596191,
+            -11.391337394714355,
+            -8.760830879211426
+          ],
+          "distance_from_end_m": -0.6,
+          "offset_m": -1.375,
+          "triangle": 27076,
+          "slope_degrees": 21.93614942269523
+        }
+      },
+      "transverse": {
+        "height_change_cm": 0.7456779479980469,
+        "from": {
+          "point": [
+            -13.597423553466797,
+            -11.032346725463867,
+            -8.44253921508789
+          ],
+          "distance_from_end_m": -1.5,
+          "offset_m": -1.1,
+          "triangle": 26830,
+          "slope_degrees": 21.65734234223614
+        },
+        "to": {
+          "point": [
+            -13.592689514160156,
+            -10.982571601867676,
+            -8.449995994567871
+          ],
+          "distance_from_end_m": -1.5,
+          "offset_m": -1.05,
+          "triangle": 26832,
+          "slope_degrees": 21.20758010761373
+        }
+      }
+    },
+    "worst_slope": {
+      "point": [
+        -13.623465538024902,
+        -11.306111335754395,
+        -8.402121543884277
+      ],
+      "distance_from_end_m": -1.5,
+      "offset_m": -1.375,
+      "triangle": 26824,
+      "slope_degrees": 22.995076593352927
+    },
+    "original_bank_slope_degrees": 29.76215340379692
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "name": "SM_RopeCoil",
+  "file": "SM_RopeCoil.fbx",
+  "units": "meters",
+  "up": "Z",
+  "forward": "-Y",
+  "triangles": 686,
+  "dimensions_m": [
+    0.433166,
+    0.113252,
+    0.433184
+  ],
+  "bounds_min_m": [
+    -0.2177434116601944,
+    -0.0579960010945797,
+    -0.21935531497001648
+  ],
+  "bounds_max_m": [
+    0.21542271971702576,
+    0.05525576323270798,
+    0.2138291448354721
+  ],
+  "pivot_m": [
+    0,
+    0,
+    0
+  ],
+  "grips": {
+    "Grip_L": {
+      "position_m": [
+        0.204,
+        0,
+        0
+      ],
+      "parent": "SM_RopeCoil"
+    },
+    "Grip_R": {
+      "position_m": [
+        -0.204,
+        0,
+        0
+      ],
+      "parent": "SM_RopeCoil"
+    }
+  },
+  "rope_radius_m": 0.015,
+  "turn_count": 6,
+  "bundle_depth_m": 0.113252,
+  "tail_length_m": 0.1438,
+  "tail_note": "İç sarımdan alt-sağ siluetin dışına çıkan kısa uç aynı rijit mesh içindedir.",
+  "color_hex": "#F29E1F",
+  "color_srgb": [
+    0.95,
+    0.62,
+    0.12
+  ],
+  "color_note": "Eski kazıkla aynı kesin sRGB (0.95,0.62,0.12); hex en yakın 8-bit gösterim. Base Color lineer.",
+  "towtruck_slot": {
+    "cabinet_part": "SM_TowTruck_LockerDoor_L1",
+    "parent": "SM_TowTruck",
+    "position_m": [
+      1.1,
+      -0.1,
+      1.08
+    ],
+    "rotation_euler_deg": [
+      0,
+      0,
+      90
+    ],
+    "rotation_order": "XYZ",
+    "up": "Z",
+    "units": "meters",
+    "floor_m": 0.455,
+    "door_bounds_min_m": [
+      1.2000000476837158,
+      -0.5649999380111694,
+      0.4549999535083771
+    ],
+    "door_bounds_max_m": [
+      1.25,
+      0.36500024795532227,
+      1.6400001049041748
+    ],
+    "side": "road_shoulder",
+    "side_root_normal": [
+      1,
+      0,
+      0
+    ],
+    "door_motion": {
+      "type": "hinge",
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "range_deg": [
+        0,
+        90
+      ],
+      "work_pose_deg": 90,
+      "note": "Front vertical hinge on outer face; positive angle swings the rear edge outward."
+    },
+    "placement_evidence": "build_bolum1_ucurum.py place_towtruck: Z=+90deg, road_at_x(15)+(0,-6.5,0); +X becomes +Y toward road/mountain",
+    "note": "En alçak yol tarafı L1; L2 teker üstünde. Merkez z=1.08 m, ön yüz kapak iç yüzünden içeride. Dikey kangal dolap içinde askıda saklanır."
+  },
+  "mesh_sha256": "b9d62f441210189d9428945ec8fc6c7a5e5c6e7acb3a2017d9f2f5ee0ed36930",
+  "source_sha256": "e78972317d8f395b1118e1e47105c8c3b53fceb6b1fef75d73bc866a017f07b9"
+}

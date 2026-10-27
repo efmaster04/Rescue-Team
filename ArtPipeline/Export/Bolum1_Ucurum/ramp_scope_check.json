@@ -1,0 +1,47 @@
+{
+  "changed_meshes": [
+    "SM_B1_Vegetation"
+  ],
+  "outside_strip_tufts_identical": true,
+  "all_other_meshes_identical": true,
+  "removed_tufts": {
+    "half_width_m": 0.9,
+    "end_extension_m": 1.0,
+    "removed_tufts": 3,
+    "remaining_tufts": 158,
+    "removed": [
+      {
+        "index": 78,
+        "position": [
+          -32.98237399702995,
+          -7.433878377677605,
+          -1.7770114135742188
+        ],
+        "vertices": 20,
+        "triangles": 15
+      },
+      {
+        "index": 88,
+        "position": [
+          -32.56175890062841,
+          -7.35254782396703,
+          -1.9175448608398438
+        ],
+        "vertices": 40,
+        "triangles": 76
+      },
+      {
+        "index": 93,
+        "position": [
+          -30.74777916073252,
+          -7.400450296173851,
+          -2.5365786743164063
+        ],
+        "vertices": 20,
+        "triangles": 15
+      }
+    ]
+  },
+  "vegetation_sha256": "d9fd7e7f3fb3025319d73622bfad4e2f856faa0a584ef7067f00c684c8b48138",
+  "ground_sha256": "6c9673309ef529ff327a4d03ae0d64f93309001b613c61d901e27a1d1224c407"
+}

@@ -1,0 +1,151 @@
+{
+  "units": "meters",
+  "forward": "-Y",
+  "up": "Z",
+  "variants": {
+    "Tourist": {
+      "height_m": 1.5150000010094296,
+      "sole_z_m": -1.5314544299371846e-08,
+      "hips_to_back_m": 0.13899992409145767,
+      "hips_to_top_m": 1.0578571259975433,
+      "hips_to_heel_m": 0.4571428750118862,
+      "hips_bind_position_m": [
+        0.0,
+        7.447803085369742e-08,
+        0.4571428596973419
+      ],
+      "triangles": 7792,
+      "mesh_triangles": {
+        "Patient_Tourist_Head": 3010,
+        "Patient_Tourist_Torso": 1470,
+        "Patient_Tourist_LeftArm": 876,
+        "Patient_Tourist_RightArm": 772,
+        "Patient_Tourist_Legs": 1664
+      }
+    },
+    "Civilian": {
+      "height_m": 1.4999998961052547,
+      "sole_z_m": -1.5314544299371846e-08,
+      "hips_to_back_m": 0.14099992814457352,
+      "hips_to_top_m": 1.0428570210933685,
+      "hips_to_heel_m": 0.4571428750118862,
+      "hips_bind_position_m": [
+        0.0,
+        7.447803085369742e-08,
+        0.4571428596973419
+      ],
+      "triangles": 5966,
+      "mesh_triangles": {
+        "Patient_Civilian_Head": 2646,
+        "Patient_Civilian_Torso": 524,
+        "Patient_Civilian_LeftArm": 744,
+        "Patient_Civilian_RightArm": 900,
+        "Patient_Civilian_Legs": 1104,
+        "Patient_Civilian_Sling": 48
+      }
+    },
+    "Elder": {
+      "height_m": 1.4999998961052547,
+      "sole_z_m": -1.5314544299371846e-08,
+      "hips_to_back_m": 0.13899992409145767,
+      "hips_to_top_m": 1.0428570210933685,
+      "hips_to_heel_m": 0.4571428750118862,
+      "hips_bind_position_m": [
+        0.0,
+        7.447803085369742e-08,
+        0.4571428596973419
+      ],
+      "triangles": 6566,
+      "mesh_triangles": {
+        "Patient_Elder_Head": 2934,
+        "Patient_Elder_Torso": 720,
+        "Patient_Elder_LeftArm": 744,
+        "Patient_Elder_RightArm": 744,
+        "Patient_Elder_Legs": 1424
+      }
+    }
+  },
+  "hex_colors": {
+    "M_Patient_Skin": "#BD865A",
+    "M_Patient_SkinLight": "#CD9670",
+    "M_Patient_Wrinkle": "#91603F",
+    "M_Patient_Hair": "#49352C",
+    "M_Patient_GrayHair": "#BAB9B5",
+    "M_Patient_White": "#F2EFE5",
+    "M_Patient_Pupil": "#151412",
+    "M_Patient_Mouth": "#59382A",
+    "M_Patient_Turquoise": "#328F8B",
+    "M_Patient_Pink": "#E67BA2",
+    "M_Patient_Orange": "#F1AB4D",
+    "M_Patient_Khaki": "#A69A64",
+    "M_Patient_Hat": "#CDBB92",
+    "M_Patient_HatBand": "#A48D69",
+    "M_Patient_Brown": "#735341",
+    "M_Patient_DarkBrown": "#523D31",
+    "M_Patient_Green": "#56864A",
+    "M_Patient_GreenTrim": "#426D3B",
+    "M_Patient_Denim": "#526C87",
+    "M_Patient_GrayShoe": "#888887",
+    "M_Patient_Sole": "#B9B6AE",
+    "M_Patient_Purple": "#8B68A1",
+    "M_Patient_PurpleDark": "#684880",
+    "M_Patient_Tee": "#D5C9B2",
+    "M_Patient_GrayPants": "#777A7C",
+    "M_Patient_Visor": "#477EB8",
+    "M_Patient_Yellow": "#EBCB43",
+    "M_Patient_Camera": "#ACA89D",
+    "M_Patient_Lens": "#333743",
+    "M_Patient_Strap": "#947757",
+    "M_Patient_Watch": "#655348"
+  },
+  "pose_convention": "Upright root/hips. Unity rotates whole object onto stretcher.",
+  "skeleton_source": "Export/RescueCrew/SK_RescueCrew_Blue.fbx",
+  "bones": {
+    "mixamorig:Hips": null,
+    "mixamorig:Spine": "mixamorig:Hips",
+    "mixamorig:Spine1": "mixamorig:Spine",
+    "mixamorig:Spine2": "mixamorig:Spine1",
+    "mixamorig:Neck": "mixamorig:Spine2",
+    "mixamorig:Head": "mixamorig:Neck",
+    "mixamorig:HeadTop_End": "mixamorig:Head",
+    "mixamorig:LeftShoulder": "mixamorig:Spine2",
+    "mixamorig:LeftArm": "mixamorig:LeftShoulder",
+    "mixamorig:LeftForeArm": "mixamorig:LeftArm",
+    "mixamorig:LeftHand": "mixamorig:LeftForeArm",
+    "mixamorig:LeftHandThumb1": "mixamorig:LeftHand",
+    "mixamorig:LeftHandThumb2": "mixamorig:LeftHandThumb1",
+    "mixamorig:LeftHandIndex1": "mixamorig:LeftHand",
+    "mixamorig:LeftHandIndex2": "mixamorig:LeftHandIndex1",
+    "mixamorig:RightShoulder": "mixamorig:Spine2",
+    "mixamorig:RightArm": "mixamorig:RightShoulder",
+    "mixamorig:RightForeArm": "mixamorig:RightArm",
+    "mixamorig:RightHand": "mixamorig:RightForeArm",
+    "mixamorig:RightHandThumb1": "mixamorig:RightHand",
+    "mixamorig:RightHandThumb2": "mixamorig:RightHandThumb1",
+    "mixamorig:RightHandIndex1": "mixamorig:RightHand",
+    "mixamorig:RightHandIndex2": "mixamorig:RightHandIndex1",
+    "mixamorig:LeftUpLeg": "mixamorig:Hips",
+    "mixamorig:LeftLeg": "mixamorig:LeftUpLeg",
+    "mixamorig:LeftFoot": "mixamorig:LeftLeg",
+    "mixamorig:LeftToeBase": "mixamorig:LeftFoot",
+    "mixamorig:RightUpLeg": "mixamorig:Hips",
+    "mixamorig:RightLeg": "mixamorig:RightUpLeg",
+    "mixamorig:RightFoot": "mixamorig:RightLeg",
+    "mixamorig:RightToeBase": "mixamorig:RightFoot"
+  },
+  "hips_to_back_m": {
+    "Tourist": 0.13899992409145767,
+    "Civilian": 0.14099992814457352,
+    "Elder": 0.13899992409145767
+  },
+  "hips_to_top_m": {
+    "Tourist": 1.0578571259975433,
+    "Civilian": 1.0428570210933685,
+    "Elder": 1.0428570210933685
+  },
+  "hips_to_heel_m": {
+    "Tourist": 0.4571428750118862,
+    "Civilian": 0.4571428750118862,
+    "Elder": 0.4571428750118862
+  }
+}

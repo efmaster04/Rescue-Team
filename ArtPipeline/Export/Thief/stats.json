@@ -1,0 +1,133 @@
+{
+  "geometry_sha256": "ac47288231bd066804d2a9f789b157e0eb88b65a6127b829385209c7ece88262",
+  "variants": {
+    "Black": {
+      "height_m": 1.497202889196208,
+      "sole_z_m": -1.596622745125842e-08,
+      "head_top_z_m": 1.4972028732299805,
+      "sack_centre_m": [
+        -0.12225721031427383,
+        0.2401624321937561,
+        0.789609432220459
+      ],
+      "sack_offset_from_spine1_m": [
+        -0.12225721031427383,
+        0.24016231298446655,
+        0.07985943555831909
+      ],
+      "triangles": 7244,
+      "mesh_triangles": {
+        "Thief_Black_Head": 2548,
+        "Thief_Black_Torso": 812,
+        "Thief_Black_LeftArm": 852,
+        "Thief_Black_RightArm": 852,
+        "Thief_Black_Legs": 1376,
+        "Thief_Black_Sack": 804
+      }
+    },
+    "Red": {
+      "height_m": 1.497202889196208,
+      "sole_z_m": -1.596622745125842e-08,
+      "head_top_z_m": 1.4972028732299805,
+      "sack_centre_m": [
+        -0.12225721031427383,
+        0.2401624321937561,
+        0.789609432220459
+      ],
+      "sack_offset_from_spine1_m": [
+        -0.12225721031427383,
+        0.24016231298446655,
+        0.07985943555831909
+      ],
+      "triangles": 7244,
+      "mesh_triangles": {
+        "Thief_Red_Head": 2548,
+        "Thief_Red_Torso": 812,
+        "Thief_Red_LeftArm": 852,
+        "Thief_Red_RightArm": 852,
+        "Thief_Red_Legs": 1376,
+        "Thief_Red_Sack": 804
+      }
+    },
+    "Green": {
+      "height_m": 1.497202889196208,
+      "sole_z_m": -1.596622745125842e-08,
+      "head_top_z_m": 1.4972028732299805,
+      "sack_centre_m": [
+        -0.12225721031427383,
+        0.2401624321937561,
+        0.789609432220459
+      ],
+      "sack_offset_from_spine1_m": [
+        -0.12225721031427383,
+        0.24016231298446655,
+        0.07985943555831909
+      ],
+      "triangles": 7244,
+      "mesh_triangles": {
+        "Thief_Green_Head": 2548,
+        "Thief_Green_Torso": 812,
+        "Thief_Green_LeftArm": 852,
+        "Thief_Green_RightArm": 852,
+        "Thief_Green_Legs": 1376,
+        "Thief_Green_Sack": 804
+      }
+    }
+  },
+  "last_build": {
+    "geometry_sha256": "ac47288231bd066804d2a9f789b157e0eb88b65a6127b829385209c7ece88262",
+    "source_sha256": "a3b77981f33d1b7bee187175e70a92b3a3ffc2ff9261246b9721089fda74380c",
+    "render_seconds": 3.843,
+    "render_engine": "BLENDER_WORKBENCH",
+    "build_seconds": 4.442
+  },
+  "build_history": [
+    {
+      "geometry_sha256": "8e11a158d9e9f7da1f586569f1a36aa87864aea83f951e73f0c015e25a3ca053",
+      "source_sha256": "9bf9497f2317bd4ae77d652ef6a97f5cd8634e790d14779d15c43e9a63ed0457",
+      "render_seconds": 4.815,
+      "render_engine": "BLENDER_WORKBENCH",
+      "build_seconds": 5.681
+    },
+    {
+      "geometry_sha256": "fb51eeb8180e8f1f76cb8859cad2e601bacc198b9b4c9ec434bd2eeedf60f2dd",
+      "source_sha256": "b2518f1f21a85c79d37dba6daaa4bf32482119442edf0fbcf9a420d7f1a508a2",
+      "render_seconds": 3.085,
+      "render_engine": "BLENDER_WORKBENCH",
+      "build_seconds": 3.548
+    },
+    {
+      "geometry_sha256": "ac47288231bd066804d2a9f789b157e0eb88b65a6127b829385209c7ece88262",
+      "source_sha256": "a3b77981f33d1b7bee187175e70a92b3a3ffc2ff9261246b9721089fda74380c",
+      "render_seconds": 3.715,
+      "render_engine": "BLENDER_WORKBENCH",
+      "build_seconds": 4.339
+    },
+    {
+      "geometry_sha256": "ac47288231bd066804d2a9f789b157e0eb88b65a6127b829385209c7ece88262",
+      "source_sha256": "a3b77981f33d1b7bee187175e70a92b3a3ffc2ff9261246b9721089fda74380c",
+      "render_seconds": 3.825,
+      "render_engine": "BLENDER_WORKBENCH",
+      "build_seconds": 4.404
+    },
+    {
+      "geometry_sha256": "ac47288231bd066804d2a9f789b157e0eb88b65a6127b829385209c7ece88262",
+      "source_sha256": "a3b77981f33d1b7bee187175e70a92b3a3ffc2ff9261246b9721089fda74380c",
+      "render_seconds": 3.839,
+      "render_engine": "BLENDER_WORKBENCH",
+      "build_seconds": 4.488
+    },
+    {
+      "geometry_sha256": "ac47288231bd066804d2a9f789b157e0eb88b65a6127b829385209c7ece88262",
+      "source_sha256": "a3b77981f33d1b7bee187175e70a92b3a3ffc2ff9261246b9721089fda74380c",
+      "render_seconds": 3.843,
+      "render_engine": "BLENDER_WORKBENCH",
+      "build_seconds": 4.442
+    }
+  ],
+  "fbx_sha256": {
+    "SK_Thief_Black.fbx": "60f35e4a615b665d93c39599232d9b50279986962ae8a9d34651c2d1017a7c48",
+    "SK_Thief_Green.fbx": "31f8f8f4bf89bb4f4f5af258dc2fa742bfcbc91e8d9d6003efc73e8165f68c15",
+    "SK_Thief_Red.fbx": "8ded7bf46d39c803b55736c952e7d073dee2c4e1426858d6457e0e6f13fcc830"
+  }
+}

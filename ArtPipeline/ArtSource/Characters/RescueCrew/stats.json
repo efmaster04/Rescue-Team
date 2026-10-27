@@ -1,0 +1,119 @@
+{
+  "total_triangles": 9838,
+  "object_triangles": {
+    "SK_RescueCrew_Body": 7332,
+    "SK_RescueCrew_Helmet": 1370,
+    "SK_RescueCrew_Face": 1136
+  },
+  "height_m": 1.5,
+  "bones": [
+    "mixamorig:Hips",
+    "mixamorig:Spine",
+    "mixamorig:Spine1",
+    "mixamorig:Spine2",
+    "mixamorig:Neck",
+    "mixamorig:Head",
+    "mixamorig:HeadTop_End",
+    "mixamorig:LeftShoulder",
+    "mixamorig:LeftArm",
+    "mixamorig:LeftForeArm",
+    "mixamorig:LeftHand",
+    "mixamorig:LeftHandThumb1",
+    "mixamorig:LeftHandThumb2",
+    "mixamorig:LeftHandIndex1",
+    "mixamorig:LeftHandIndex2",
+    "mixamorig:RightShoulder",
+    "mixamorig:RightArm",
+    "mixamorig:RightForeArm",
+    "mixamorig:RightHand",
+    "mixamorig:RightHandThumb1",
+    "mixamorig:RightHandThumb2",
+    "mixamorig:RightHandIndex1",
+    "mixamorig:RightHandIndex2",
+    "mixamorig:LeftUpLeg",
+    "mixamorig:LeftLeg",
+    "mixamorig:LeftFoot",
+    "mixamorig:LeftToeBase",
+    "mixamorig:RightUpLeg",
+    "mixamorig:RightLeg",
+    "mixamorig:RightFoot",
+    "mixamorig:RightToeBase"
+  ],
+  "shape_keys": [
+    "Blink_L",
+    "Blink_R",
+    "Brows_Angry",
+    "Brows_Worried",
+    "Mouth_Smile",
+    "Mouth_Open",
+    "Mouth_Frown",
+    "Pupils_Small",
+    "Eyes_Happy"
+  ],
+  "materials": [
+    "M_Belt",
+    "M_Boots",
+    "M_EyeWhite",
+    "M_Gloves",
+    "M_Hair",
+    "M_Helmet",
+    "M_HelmetStrap",
+    "M_Helmet_Blue",
+    "M_Helmet_Green",
+    "M_Helmet_Yellow",
+    "M_Jacket",
+    "M_Lamp",
+    "M_Mouth",
+    "M_Pants",
+    "M_Pupil",
+    "M_Radio",
+    "M_RadioScreen",
+    "M_Reflective_Blue",
+    "M_Reflective_Green",
+    "M_Reflective_Orange",
+    "M_Reflective_Silver",
+    "M_Reflective_Yellow",
+    "M_Skin",
+    "M_Sole"
+  ],
+  "units": "meters",
+  "forward": "-Y",
+  "max_vertex_influences": 4,
+  "expression_presets": {
+    "NEUTRAL": {},
+    "SURPRISED": {
+      "Mouth_Open": 1,
+      "Pupils_Small": 0.3,
+      "Brows_Worried": 0.35
+    },
+    "HAPPY": {
+      "Eyes_Happy": 1,
+      "Mouth_Smile": 1
+    },
+    "SCARED": {
+      "Mouth_Open": 0.7,
+      "Mouth_Frown": 0.65,
+      "Brows_Worried": 1,
+      "Pupils_Small": 0.65
+    },
+    "ANGRY": {
+      "Brows_Angry": 1,
+      "Mouth_Frown": 1,
+      "Pupils_Small": 0.15
+    }
+  },
+  "geometry_sha256": "39fab8dea75073ed208ba1384862c1666500f99885044f91e2bfa6055173170d",
+  "proportions": {
+    "head_helmet": 0.3933,
+    "shoulder_hip": 0.29,
+    "legs_boots": 0.3137
+  },
+  "render": {
+    "engine": "CYCLES",
+    "device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "samples": 64,
+    "hero_samples": 96,
+    "seconds": 46.1,
+    "view_transform": "AgX"
+  }
+}

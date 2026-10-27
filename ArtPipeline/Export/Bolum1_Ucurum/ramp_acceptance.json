@@ -1,0 +1,443 @@
+﻿{
+    "status":  "PASS",
+    "task":  "bolum1-rampa-r2",
+    "geometry_sha256":  "47beaae3030f94c9b695987a3ad610378f8757f0b520f124a84a19dae686ff9c",
+    "consecutive_build_logs":  [
+                                   "ramp_r2_build_1.log",
+                                   "ramp_r2_build_2.log"
+                               ],
+    "both_builds_ok":  true,
+    "build_exit_codes":  [
+                             0,
+                             0
+                         ],
+    "deterministic":  true,
+    "markers_unchanged":  true,
+    "grass_exclusion":  {
+                            "half_width_m":  0.9,
+                            "end_extension_m":  1.0,
+                            "removed_tufts":  3,
+                            "remaining_tufts":  158,
+                            "removed":  [
+                                            {
+                                                "index":  78,
+                                                "position":  [
+                                                                 -32.98237399702995,
+                                                                 -7.433878377677605,
+                                                                 -1.7770114135742188
+                                                             ],
+                                                "vertices":  20,
+                                                "triangles":  15
+                                            },
+                                            {
+                                                "index":  88,
+                                                "position":  [
+                                                                 -32.56175890062841,
+                                                                 -7.35254782396703,
+                                                                 -1.9175448608398438
+                                                             ],
+                                                "vertices":  40,
+                                                "triangles":  76
+                                            },
+                                            {
+                                                "index":  93,
+                                                "position":  [
+                                                                 -30.74777916073252,
+                                                                 -7.400450296173851,
+                                                                 -2.5365786743164063
+                                                             ],
+                                                "vertices":  20,
+                                                "triangles":  15
+                                            }
+                                        ]
+                        },
+    "scope":  {
+                  "changed_meshes":  [
+                                         "SM_B1_Vegetation"
+                                     ],
+                  "outside_strip_tufts_identical":  true,
+                  "all_other_meshes_identical":  true,
+                  "removed_tufts":  {
+                                        "half_width_m":  0.9,
+                                        "end_extension_m":  1.0,
+                                        "removed_tufts":  3,
+                                        "remaining_tufts":  158,
+                                        "removed":  [
+                                                        {
+                                                            "index":  78,
+                                                            "position":  [
+                                                                             -32.98237399702995,
+                                                                             -7.433878377677605,
+                                                                             -1.7770114135742188
+                                                                         ],
+                                                            "vertices":  20,
+                                                            "triangles":  15
+                                                        },
+                                                        {
+                                                            "index":  88,
+                                                            "position":  [
+                                                                             -32.56175890062841,
+                                                                             -7.35254782396703,
+                                                                             -1.9175448608398438
+                                                                         ],
+                                                            "vertices":  40,
+                                                            "triangles":  76
+                                                        },
+                                                        {
+                                                            "index":  93,
+                                                            "position":  [
+                                                                             -30.74777916073252,
+                                                                             -7.400450296173851,
+                                                                             -2.5365786743164063
+                                                                         ],
+                                                            "vertices":  20,
+                                                            "triangles":  15
+                                                        }
+                                                    ]
+                                    },
+                  "vegetation_sha256":  "d9fd7e7f3fb3025319d73622bfad4e2f856faa0a584ef7067f00c684c8b48138",
+                  "ground_sha256":  "6c9673309ef529ff327a4d03ae0d64f93309001b613c61d901e27a1d1224c407"
+              },
+    "export_preservation":  {
+                                "restored_identical_geometry_exports":  [
+                                                                            "SM_B1_Backdrop.fbx",
+                                                                            "SM_B1_Ground.fbx",
+                                                                            "SM_B1_Guardrail.fbx",
+                                                                            "SM_B1_LooseRock_01.fbx",
+                                                                            "SM_B1_LooseRock_02.fbx",
+                                                                            "SM_B1_LooseRock_03.fbx",
+                                                                            "SM_B1_LooseRock_04.fbx",
+                                                                            "SM_B1_LooseRock_05.fbx",
+                                                                            "SM_B1_LooseRock_06.fbx",
+                                                                            "SM_B1_LooseRock_07.fbx",
+                                                                            "SM_B1_LooseRock_08.fbx",
+                                                                            "SM_B1_Prop_Bag_03.fbx",
+                                                                            "SM_B1_Prop_Bag_04.fbx",
+                                                                            "SM_B1_Prop_Bag_05.fbx",
+                                                                            "SM_B1_Prop_Chevron_East_1.fbx",
+                                                                            "SM_B1_Prop_Chevron_East_2.fbx",
+                                                                            "SM_B1_Prop_Chevron_West_1.fbx",
+                                                                            "SM_B1_Prop_Chevron_West_2.fbx",
+                                                                            "SM_B1_Prop_FallingRock.fbx",
+                                                                            "SM_B1_Prop_Suitcase_01.fbx",
+                                                                            "SM_B1_Prop_Suitcase_02.fbx",
+                                                                            "SM_B1_Road.fbx",
+                                                                            "SM_B1_RoadMarkings.fbx"
+                                                                        ],
+                                "changed_fbx":  [
+                                                    "SM_B1_Vegetation.fbx"
+                                                ]
+                            },
+    "verify_immutability":  {
+                                "changed_files":  [
+
+                                                  ],
+                                "files_checked":  842,
+                                "passed":  true
+                            },
+    "verify_exit_code":  0,
+    "verify_errors":  [
+
+                      ],
+    "ramp":  {
+                 "all_meshes":  {
+                                    "spacing_m":  0.05,
+                                    "extension_m":  2.0,
+                                    "length_m":  23.103821110544775,
+                                    "lines":  [
+                                                  {
+                                                      "offset_m":  -0.7,
+                                                      "worst_step":  {
+                                                                         "distance_m":  22.55,
+                                                                         "xy":  [
+                                                                                    -12.617618560791016,
+                                                                                    -10.723743438720703
+                                                                                ],
+                                                                         "height_change_cm":  1.8524169921875,
+                                                                         "grade_degrees":  -20.32883146531078,
+                                                                         "from_mesh":  "SM_B1_Ground",
+                                                                         "to_mesh":  "SM_B1_Ground",
+                                                                         "triangle":  25224
+                                                                     },
+                                                      "worst_slope":  {
+                                                                          "point":  [
+                                                                                        -12.617618560791016,
+                                                                                        -10.723743438720703,
+                                                                                        -8.804443359375
+                                                                                    ],
+                                                                          "mesh":  "SM_B1_Ground",
+                                                                          "triangle":  25224,
+                                                                          "slope_degrees":  20.299707052479754
+                                                                      },
+                                                      "worst_grade_change":  {
+                                                                                 "distance_m":  23.25,
+                                                                                 "xy":  [
+                                                                                            -11.92076301574707,
+                                                                                            -10.790030479431152
+                                                                                        ],
+                                                                                 "grade_change_degrees":  2.4976582161837753
+                                                                             },
+                                                      "missing_samples":  0
+                                                  },
+                                                  {
+                                                      "offset_m":  0.0,
+                                                      "worst_step":  {
+                                                                         "distance_m":  22.55,
+                                                                         "xy":  [
+                                                                                    -12.551332473754883,
+                                                                                    -10.026888847351074
+                                                                                ],
+                                                                         "height_change_cm":  1.85546875,
+                                                                         "grade_degrees":  -20.359575249777464,
+                                                                         "from_mesh":  "SM_B1_Ground",
+                                                                         "to_mesh":  "SM_B1_Ground",
+                                                                         "triangle":  25230
+                                                                     },
+                                                      "worst_slope":  {
+                                                                          "point":  [
+                                                                                        -34.004493713378906,
+                                                                                        -7.986209869384766,
+                                                                                        -1.413116455078125
+                                                                                    ],
+                                                                          "mesh":  "SM_B1_Ground",
+                                                                          "triangle":  23540,
+                                                                          "slope_degrees":  21.425046603362556
+                                                                      },
+                                                      "worst_grade_change":  {
+                                                                                 "distance_m":  23.150000000000002,
+                                                                                 "xy":  [
+                                                                                            -11.954029083251953,
+                                                                                            -10.08370590209961
+                                                                                        ],
+                                                                                 "grade_change_degrees":  2.7969100352642773
+                                                                             },
+                                                      "missing_samples":  0
+                                                  },
+                                                  {
+                                                      "offset_m":  0.7,
+                                                      "worst_step":  {
+                                                                         "distance_m":  1.1500000000000004,
+                                                                         "xy":  [
+                                                                                    -33.78887939453125,
+                                                                                    -7.303559303283691
+                                                                                ],
+                                                                         "height_change_cm":  1.9439697265625,
+                                                                         "grade_degrees":  -21.24578010986676,
+                                                                         "from_mesh":  "SM_B1_Ground",
+                                                                         "to_mesh":  "SM_B1_Ground",
+                                                                         "triangle":  23580
+                                                                     },
+                                                      "worst_slope":  {
+                                                                          "point":  [
+                                                                                        -33.838653564453125,
+                                                                                        -7.298824787139893,
+                                                                                        -1.3746337890625
+                                                                                    ],
+                                                                          "mesh":  "SM_B1_Ground",
+                                                                          "triangle":  23568,
+                                                                          "slope_degrees":  21.343936583258838
+                                                                      },
+                                                      "worst_grade_change":  {
+                                                                                 "distance_m":  0.050000000000000266,
+                                                                                 "xy":  [
+                                                                                            -34.88393783569336,
+                                                                                            -7.199395179748535
+                                                                                        ],
+                                                                                 "grade_change_degrees":  13.614929502572021
+                                                                             },
+                                                      "missing_samples":  0
+                                                  }
+                                              ]
+                                },
+                 "collision_surfaces":  {
+                                            "spacing_m":  0.05,
+                                            "extension_m":  2.0,
+                                            "length_m":  23.103821110544775,
+                                            "lines":  [
+                                                          {
+                                                              "offset_m":  -0.7,
+                                                              "worst_step":  {
+                                                                                 "distance_m":  22.55,
+                                                                                 "xy":  [
+                                                                                            -12.617618560791016,
+                                                                                            -10.723743438720703
+                                                                                        ],
+                                                                                 "height_change_cm":  1.8524169921875,
+                                                                                 "grade_degrees":  -20.32883146531078,
+                                                                                 "from_mesh":  "SM_B1_Ground",
+                                                                                 "to_mesh":  "SM_B1_Ground",
+                                                                                 "triangle":  25224
+                                                                             },
+                                                              "worst_slope":  {
+                                                                                  "point":  [
+                                                                                                -12.617618560791016,
+                                                                                                -10.723743438720703,
+                                                                                                -8.804443359375
+                                                                                            ],
+                                                                                  "mesh":  "SM_B1_Ground",
+                                                                                  "triangle":  25224,
+                                                                                  "slope_degrees":  20.299707052479754
+                                                                              },
+                                                              "worst_grade_change":  {
+                                                                                         "distance_m":  23.25,
+                                                                                         "xy":  [
+                                                                                                    -11.92076301574707,
+                                                                                                    -10.790030479431152
+                                                                                                ],
+                                                                                         "grade_change_degrees":  2.4976582161837753
+                                                                                     },
+                                                              "missing_samples":  0
+                                                          },
+                                                          {
+                                                              "offset_m":  0.0,
+                                                              "worst_step":  {
+                                                                                 "distance_m":  22.55,
+                                                                                 "xy":  [
+                                                                                            -12.551332473754883,
+                                                                                            -10.026888847351074
+                                                                                        ],
+                                                                                 "height_change_cm":  1.85546875,
+                                                                                 "grade_degrees":  -20.359575249777464,
+                                                                                 "from_mesh":  "SM_B1_Ground",
+                                                                                 "to_mesh":  "SM_B1_Ground",
+                                                                                 "triangle":  25230
+                                                                             },
+                                                              "worst_slope":  {
+                                                                                  "point":  [
+                                                                                                -34.004493713378906,
+                                                                                                -7.986209869384766,
+                                                                                                -1.413116455078125
+                                                                                            ],
+                                                                                  "mesh":  "SM_B1_Ground",
+                                                                                  "triangle":  23540,
+                                                                                  "slope_degrees":  21.425046603362556
+                                                                              },
+                                                              "worst_grade_change":  {
+                                                                                         "distance_m":  23.150000000000002,
+                                                                                         "xy":  [
+                                                                                                    -11.954029083251953,
+                                                                                                    -10.08370590209961
+                                                                                                ],
+                                                                                         "grade_change_degrees":  2.7969100352642773
+                                                                                     },
+                                                              "missing_samples":  0
+                                                          },
+                                                          {
+                                                              "offset_m":  0.7,
+                                                              "worst_step":  {
+                                                                                 "distance_m":  1.1500000000000004,
+                                                                                 "xy":  [
+                                                                                            -33.78887939453125,
+                                                                                            -7.303559303283691
+                                                                                        ],
+                                                                                 "height_change_cm":  1.9439697265625,
+                                                                                 "grade_degrees":  -21.24578010986676,
+                                                                                 "from_mesh":  "SM_B1_Ground",
+                                                                                 "to_mesh":  "SM_B1_Ground",
+                                                                                 "triangle":  23580
+                                                                             },
+                                                              "worst_slope":  {
+                                                                                  "point":  [
+                                                                                                -33.838653564453125,
+                                                                                                -7.298824787139893,
+                                                                                                -1.3746337890625
+                                                                                            ],
+                                                                                  "mesh":  "SM_B1_Ground",
+                                                                                  "triangle":  23568,
+                                                                                  "slope_degrees":  21.343936583258838
+                                                                              },
+                                                              "worst_grade_change":  {
+                                                                                         "distance_m":  0.050000000000000266,
+                                                                                         "xy":  [
+                                                                                                    -34.88393783569336,
+                                                                                                    -7.199395179748535
+                                                                                                ],
+                                                                                         "grade_change_degrees":  13.614929502572021
+                                                                                     },
+                                                              "missing_samples":  0
+                                                          }
+                                                      ]
+                                        },
+                 "junctions":  [
+                                   {
+                                       "end":  "road",
+                                       "xy":  [
+                                                  -36.34174728393555,
+                                                  -6.1566619873046875
+                                              ],
+                                       "gap_cm":  0.0946044921875
+                                   },
+                                   {
+                                       "end":  "road",
+                                       "xy":  [
+                                                  -35.843994140625,
+                                                  -6.204009532928467
+                                              ],
+                                       "gap_cm":  0.0946044921875
+                                   },
+                                   {
+                                       "end":  "road",
+                                       "xy":  [
+                                                  -35.34624099731445,
+                                                  -6.251357078552246
+                                              ],
+                                       "gap_cm":  0.1007080078125
+                                   },
+                                   {
+                                       "end":  "path",
+                                       "xy":  [
+                                                  -12.06628704071045,
+                                                  -10.776187896728516
+                                              ],
+                                       "gap_cm":  1.708984375
+                                   },
+                                   {
+                                       "end":  "path",
+                                       "xy":  [
+                                                  -12.0,
+                                                  -10.079333305358887
+                                              ],
+                                       "gap_cm":  1.7059326171875
+                                   },
+                                   {
+                                       "end":  "path",
+                                       "xy":  [
+                                                  -11.93371295928955,
+                                                  -9.382478713989258
+                                              ],
+                                       "gap_cm":  1.6998291015625
+                                   }
+                               ]
+             },
+    "before_findings":  [
+                            {
+                                "step_cm":  38.7664794921875,
+                                "xy":  [
+                                           -33.987979888916016,
+                                           -7.28462028503418
+                                       ],
+                                "cause":  "Axis-aligned terrain section clipping does not match the oriented ramp footprint; independent gravel entrance overlaps the ramp.",
+                                "mesh":  "SM_B1_Ground",
+                                "end":  "road"
+                            },
+                            {
+                                "step_cm":  12.7105712890625,
+                                "xy":  [
+                                           -11.091335296630859,
+                                           -9.4626073837280273
+                                       ],
+                                "cause":  "The next slope profile after X=-12 crosses the ramp continuation and its edge.",
+                                "mesh":  "SM_B1_Ground",
+                                "end":  "path"
+                            }
+                        ],
+    "render_files":  [
+                         "renders/ramp_before_top.png",
+                         "renders/ramp_before_bottom.png",
+                         "renders/ramp_top.png",
+                         "renders/ramp_bottom.png"
+                     ],
+    "decision":  "Remove whole grass tufts intersecting the centerline +/-0.9 m strip, extended 1 m at each end; retain all-mesh ramp limits.",
+    "git_commands_run":  false,
+    "commit_created":  false
+}

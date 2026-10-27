@@ -1,0 +1,172 @@
+{
+  "geometry_sha256": "663de5e85eea7d8523440ffea66a145c2eca56f01438c0748593d6c1052cb22b",
+  "canonical_geometry_sha256": "dfef9a3dd8d684eb7acea61780e0f518a27cdbc08560a527a9dd012efad1b047",
+  "vehicle_triangles": {
+    "Sedan": 4976,
+    "Hatchback": 4976,
+    "Pickup": 5280
+  },
+  "object_triangles": {
+    "SM_Sedan_Body": 2656,
+    "SM_Sedan_Glass": 72,
+    "SM_Sedan_Interior": 552,
+    "SM_Sedan_Wheel_FL": 424,
+    "SM_Sedan_Wheel_FR": 424,
+    "SM_Sedan_Wheel_RL": 424,
+    "SM_Sedan_Wheel_RR": 424,
+    "SM_Hatchback_Body": 2656,
+    "SM_Hatchback_Glass": 72,
+    "SM_Hatchback_Interior": 552,
+    "SM_Hatchback_Wheel_FL": 424,
+    "SM_Hatchback_Wheel_FR": 424,
+    "SM_Hatchback_Wheel_RL": 424,
+    "SM_Hatchback_Wheel_RR": 424,
+    "SM_Pickup_Hay_01": 164,
+    "SM_Pickup_Hay_02": 164,
+    "SM_Pickup_Body": 2656,
+    "SM_Pickup_Glass": 48,
+    "SM_Pickup_Interior": 552,
+    "SM_Pickup_Wheel_FL": 424,
+    "SM_Pickup_Wheel_FR": 424,
+    "SM_Pickup_Wheel_RL": 424,
+    "SM_Pickup_Wheel_RR": 424
+  },
+  "last_build": {
+    "geometry_sha256": "663de5e85eea7d8523440ffea66a145c2eca56f01438c0748593d6c1052cb22b",
+    "canonical_geometry_sha256": "dfef9a3dd8d684eb7acea61780e0f518a27cdbc08560a527a9dd012efad1b047",
+    "source_sha256": "f278473331aaac9ce18902bf5455b68cc0c0f5f7428329b3b68f0ca420be0542",
+    "round": 2,
+    "triangles": {
+      "Sedan": 4976,
+      "Hatchback": 4976,
+      "Pickup": 5280
+    },
+    "render_seconds": 209.855,
+    "camera_render_seconds": {
+      "sedan_threequarter_front": 22.73,
+      "sedan_left": 11.371,
+      "sedan_rear": 10.1,
+      "hatchback_threequarter_front": 26.326,
+      "hatchback_left": 13.825,
+      "hatchback_rear": 11.083,
+      "pickup_threequarter_front": 25.653,
+      "pickup_left": 11.838,
+      "pickup_rear": 9.131,
+      "lineup": 24.15,
+      "paint_variants": 26.305,
+      "scale_with_minivan": 17.343
+    },
+    "total_build_seconds": 211.478
+  },
+  "build_history": [
+    {
+      "geometry_sha256": "ba0195ba8e7f67f7b4541b5b078318e730ef3209336fee597c0f52b1efd453fc",
+      "canonical_geometry_sha256": "e2add0b95662b22df236112fb6ef64d13aef0c14290ad0a7e922270dc54fb03c",
+      "source_sha256": "a1ca3d302ec9c142e0d249e545702ee52958f9ce6955b74c17bf41c9502f5aad",
+      "round": 1,
+      "triangles": {
+        "Sedan": 4532,
+        "Hatchback": 4532,
+        "Pickup": 4908
+      },
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "total_build_seconds": 0.392
+    },
+    {
+      "geometry_sha256": "ba0195ba8e7f67f7b4541b5b078318e730ef3209336fee597c0f52b1efd453fc",
+      "canonical_geometry_sha256": "e2add0b95662b22df236112fb6ef64d13aef0c14290ad0a7e922270dc54fb03c",
+      "source_sha256": "57e1b3ef83795fd637381ee249b823af8f990cd10dd0f5b6d43ea25dde11b8b6",
+      "round": 1,
+      "triangles": {
+        "Sedan": 4532,
+        "Hatchback": 4532,
+        "Pickup": 4908
+      },
+      "render_seconds": 315.0,
+      "camera_render_seconds": {
+        "sedan_threequarter_front": 27.386,
+        "sedan_left": 23.701,
+        "sedan_rear": 29.379,
+        "hatchback_threequarter_front": 30.254,
+        "hatchback_left": 24.736,
+        "hatchback_rear": 28.054,
+        "pickup_threequarter_front": 25.84,
+        "pickup_left": 14.277,
+        "pickup_rear": 27.842,
+        "lineup": 27.009,
+        "paint_variants": 32.161,
+        "scale_with_minivan": 24.361
+      },
+      "total_build_seconds": 317.27
+    },
+    {
+      "geometry_sha256": "73bb956624cf84d8c98316f943b9118eaf4db1f2f78ba575b9c56e535d79d8a1",
+      "canonical_geometry_sha256": "b58115c64ff457afeb990ae31b513a391bdcaf311cc50f634d3cd6ad48eefe2d",
+      "source_sha256": "8278c773c035d82f23d07e4b3c569f60363f94994d38be6334f4161740fb1b48",
+      "round": 2,
+      "triangles": {
+        "Sedan": 4952,
+        "Hatchback": 4952,
+        "Pickup": 5256
+      },
+      "render_seconds": 202.394,
+      "camera_render_seconds": {
+        "sedan_threequarter_front": 29.115,
+        "sedan_left": 13.107,
+        "sedan_rear": 11.602,
+        "hatchback_threequarter_front": 24.983,
+        "hatchback_left": 12.05,
+        "hatchback_rear": 9.65,
+        "pickup_threequarter_front": 21.675,
+        "pickup_left": 10.037,
+        "pickup_rear": 8.143,
+        "lineup": 20.763,
+        "paint_variants": 23.632,
+        "scale_with_minivan": 17.637
+      },
+      "total_build_seconds": 204.096
+    },
+    {
+      "geometry_sha256": "663de5e85eea7d8523440ffea66a145c2eca56f01438c0748593d6c1052cb22b",
+      "canonical_geometry_sha256": "dfef9a3dd8d684eb7acea61780e0f518a27cdbc08560a527a9dd012efad1b047",
+      "source_sha256": "f278473331aaac9ce18902bf5455b68cc0c0f5f7428329b3b68f0ca420be0542",
+      "round": 2,
+      "triangles": {
+        "Sedan": 4976,
+        "Hatchback": 4976,
+        "Pickup": 5280
+      },
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "total_build_seconds": 0.392
+    },
+    {
+      "geometry_sha256": "663de5e85eea7d8523440ffea66a145c2eca56f01438c0748593d6c1052cb22b",
+      "canonical_geometry_sha256": "dfef9a3dd8d684eb7acea61780e0f518a27cdbc08560a527a9dd012efad1b047",
+      "source_sha256": "f278473331aaac9ce18902bf5455b68cc0c0f5f7428329b3b68f0ca420be0542",
+      "round": 2,
+      "triangles": {
+        "Sedan": 4976,
+        "Hatchback": 4976,
+        "Pickup": 5280
+      },
+      "render_seconds": 209.855,
+      "camera_render_seconds": {
+        "sedan_threequarter_front": 22.73,
+        "sedan_left": 11.371,
+        "sedan_rear": 10.1,
+        "hatchback_threequarter_front": 26.326,
+        "hatchback_left": 13.825,
+        "hatchback_rear": 11.083,
+        "pickup_threequarter_front": 25.653,
+        "pickup_left": 11.838,
+        "pickup_rear": 9.131,
+        "lineup": 24.15,
+        "paint_variants": 26.305,
+        "scale_with_minivan": 17.343
+      },
+      "total_build_seconds": 211.478
+    }
+  ]
+}

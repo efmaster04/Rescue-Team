@@ -1,0 +1,29 @@
+{
+  "objects": {
+    "SM_B1_Road": "bf3936e18dc3081e88185d8ac5f09e538b874b7455a7b16891fd4da52927910e",
+    "SM_B1_RoadMarkings": "f9cdf0cafa42059deb2933cef21cf7cfdfcb0df586a654e4b1168ef580e93481",
+    "SM_B1_Ground": "b3d03a3f665fe455c6c9200546e70c08caa756aef1e4f30c35b40d47ae967803",
+    "SM_B1_Guardrail": "e8824b1d44c71286aa4e02129beec61b4b90e6de19decbd9a840564d214b414f",
+    "SM_B1_LooseRock_01": "3e01a161c35de4f561add07d869e7674a355101b117fc60fd6b4ce808e6866a0",
+    "SM_B1_LooseRock_02": "293d9d68826eed11d0ddcacd695be74848904ca003c500225465ada616f947dc",
+    "SM_B1_LooseRock_03": "3c95cd5881484bfd92da376764ebd00cdcb3ab99b39f2170ff2c8244382e94fe",
+    "SM_B1_LooseRock_04": "31b3c9590187896e4e0f718ecefdda806356c831320367ac2d12a080f6cdd0d0",
+    "SM_B1_LooseRock_05": "54192bd84571d971a8ff579b03276e96f891b73a968a3c59e4cbd166e4f7e88e",
+    "SM_B1_LooseRock_06": "de6d7c6a9edb8647c91d3f7e48ffed5f94c3560f80432d339db690e7cd293ae6",
+    "SM_B1_LooseRock_07": "c8f80018d6889a2cc60767e5b9f4aacf14cec6060f91abc4231771b2279aacd3",
+    "SM_B1_LooseRock_08": "f7707232ca433dac970974e75e96d0b42758df556c6393850ef82a1b14d084ff",
+    "SM_B1_Prop_Suitcase_01": "df3540992380c4cf1f505f2f23646091c10bf68c6df8263d0593fe0307db1c2a",
+    "SM_B1_Prop_Suitcase_02": "a4f6e30b897192d1a1b6106c12c8562d5b620b76d7b180c3d2cd61733ece7d82",
+    "SM_B1_Prop_Bag_03": "dcd889c3f21a812c952c5fcadc36192474eec61a08421547a98f58138fc268b2",
+    "SM_B1_Prop_Bag_04": "80a8a0a2d1398219e1a54d9718378e19cd8ce152e8f3120135db769f5294e640",
+    "SM_B1_Prop_Bag_05": "70c9aab73522b67964cb24b5438851366ba9937e464c3839c7ff37887a89b312",
+    "SM_B1_Prop_Chevron_West_1": "6b1523eedc2c1d1ac9e16b85f9696fd33422a96ac2219aae77e1dd014d6bae42",
+    "SM_B1_Prop_Chevron_West_2": "c0d3886953715c6d190c8cd17934138c80c201bbe972a1023644c241c3e65d98",
+    "SM_B1_Prop_Chevron_East_1": "6e043b7418bf15f4b7eb09ff2f8dc7c1bcbfbea0b76bdd1ea32126687ca2a57c",
+    "SM_B1_Prop_Chevron_East_2": "f464d8c4436cb66c9451dbd4b1a42af8d31581e0101b75cb184096f7ca5b4663",
+    "SM_B1_Prop_FallingRock": "6a1e3d84fad07948270d27d7476b3e7e0abba4395ef10954d68156e2a0a4d7a9",
+    "SM_B1_Vegetation": "61d6c93464f035aa6a6e33b0e251d139d6447750aa9db50a1c8745c9b67e893d",
+    "SM_B1_Backdrop": "2c45cc85e68ad4470f1abe7eabe700f1a7310c3ba4c70e50e6112d84c3190ae2"
+  },
+  "markers_sha256": "eba21e8287c9c17ca5f72b4de3ddbb422b78807c1b94f9e7c75ee65d4f4132f6"
+}

@@ -1,0 +1,1203 @@
+{
+  "verified": true,
+  "errors": [],
+  "total_triangles": 6552,
+  "object_triangles": {
+    "SM_Minivan_Body": 2060,
+    "SM_Minivan_Door_FL": 156,
+    "SM_Minivan_Door_FR": 156,
+    "SM_Minivan_Door_Slide_R": 120,
+    "SM_Minivan_Glass": 24,
+    "SM_Minivan_Interior": 1520,
+    "SM_Minivan_RackSuitcase_01": 152,
+    "SM_Minivan_RackSuitcase_02": 152,
+    "SM_Minivan_Tailgate": 132,
+    "SM_Minivan_Wheel_FL": 520,
+    "SM_Minivan_Wheel_FR": 520,
+    "SM_Minivan_Wheel_RL": 520,
+    "SM_Minivan_Wheel_RR": 520
+  },
+  "dimensions": {
+    "length_m": 4.998999834060669,
+    "width_m": 1.9484999775886536,
+    "ground_to_roof_m": 2.000000238418579
+  },
+  "dimension_exclusions": {
+    "mirrors": 72,
+    "rack": 64,
+    "tow": 91
+  },
+  "overall_height_m": 2.4195001125335693,
+  "pivots": {
+    "SM_Minivan_Body": {
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "bbox_min_m": [
+        -1.162000060081482,
+        -2.498999834060669,
+        0.37499967217445374
+      ],
+      "bbox_max_m": [
+        1.162000060081482,
+        2.6440000534057617,
+        2.172499895095825
+      ]
+    },
+    "SM_Minivan_Glass": {
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "bbox_min_m": [
+        -0.8100000023841858,
+        -1.739999771118164,
+        1.1800001859664917
+      ],
+      "bbox_max_m": [
+        0.9252499938011169,
+        0.8200002908706665,
+        1.885000228881836
+      ]
+    },
+    "SM_Minivan_Door_FL": {
+      "position_m": [
+        0.9629999995231628,
+        -1.679999828338623,
+        0.8150002956390381
+      ],
+      "bbox_min_m": [
+        0.81312495470047,
+        -1.679999828338623,
+        0.5740001201629639
+      ],
+      "bbox_max_m": [
+        0.9710000157356262,
+        -0.5729997754096985,
+        1.8850001096725464
+      ]
+    },
+    "SM_Minivan_Door_FR": {
+      "position_m": [
+        -0.9629999995231628,
+        -1.679999828338623,
+        0.8150002956390381
+      ],
+      "bbox_min_m": [
+        -0.9710000157356262,
+        -1.679999828338623,
+        0.5740001201629639
+      ],
+      "bbox_max_m": [
+        -0.81312495470047,
+        -0.5729997754096985,
+        1.8850001096725464
+      ]
+    },
+    "SM_Minivan_Door_Slide_R": {
+      "position_m": [
+        -0.949999988079071,
+        -0.458999902009964,
+        0.5800000429153442
+      ],
+      "bbox_min_m": [
+        -0.9774999618530273,
+        -0.458999902009964,
+        0.5799998044967651
+      ],
+      "bbox_max_m": [
+        -0.81312495470047,
+        0.8900002837181091,
+        1.8850001096725464
+      ]
+    },
+    "SM_Minivan_Tailgate": {
+      "position_m": [
+        0.0,
+        2.4030003547668457,
+        1.8844996690750122
+      ],
+      "bbox_min_m": [
+        -0.8050000071525574,
+        2.3274998664855957,
+        0.6154996156692505
+      ],
+      "bbox_max_m": [
+        0.8050000071525574,
+        2.426500082015991,
+        1.8844996690750122
+      ]
+    },
+    "SM_Minivan_Wheel_FL": {
+      "position_m": [
+        0.8299999833106995,
+        -1.5999999046325684,
+        0.3750002682209015
+      ],
+      "bbox_min_m": [
+        0.6973999738693237,
+        -1.9749999046325684,
+        2.682209014892578e-07
+      ],
+      "bbox_max_m": [
+        0.9625999927520752,
+        -1.2249999046325684,
+        0.7500002384185791
+      ]
+    },
+    "SM_Minivan_Wheel_RL": {
+      "position_m": [
+        0.8299999833106995,
+        1.6000001430511475,
+        0.3749997317790985
+      ],
+      "bbox_min_m": [
+        0.6973999738693237,
+        1.2250001430511475,
+        -2.682209014892578e-07
+      ],
+      "bbox_max_m": [
+        0.9625999927520752,
+        1.9750001430511475,
+        0.7499997615814209
+      ]
+    },
+    "SM_Minivan_Wheel_FR": {
+      "position_m": [
+        -0.8299999833106995,
+        -1.5999999046325684,
+        0.3750002682209015
+      ],
+      "bbox_min_m": [
+        -0.9625999927520752,
+        -1.9749999046325684,
+        2.682209014892578e-07
+      ],
+      "bbox_max_m": [
+        -0.6973999738693237,
+        -1.2249999046325684,
+        0.7500002384185791
+      ]
+    },
+    "SM_Minivan_Wheel_RR": {
+      "position_m": [
+        -0.8299999833106995,
+        1.6000001430511475,
+        0.3749997317790985
+      ],
+      "bbox_min_m": [
+        -0.9625999927520752,
+        1.2250001430511475,
+        -2.682209014892578e-07
+      ],
+      "bbox_max_m": [
+        -0.6973999738693237,
+        1.9750001430511475,
+        0.7499997615814209
+      ]
+    },
+    "SM_Minivan_Interior": {
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "bbox_min_m": [
+        -0.9049999713897705,
+        -1.6029999256134033,
+        0.45299965143203735
+      ],
+      "bbox_max_m": [
+        0.9049999713897705,
+        2.299999952316284,
+        1.436000108718872
+      ]
+    },
+    "SM_Minivan_RackSuitcase_01": {
+      "position_m": [
+        -0.36000001430511475,
+        0.2000003457069397,
+        2.137500047683716
+      ],
+      "bbox_min_m": [
+        -0.6389999985694885,
+        -0.26449963450431824,
+        2.13349986076355
+      ],
+      "bbox_max_m": [
+        -0.08100000023841858,
+        0.6400004029273987,
+        2.4195001125335693
+      ]
+    },
+    "SM_Minivan_RackSuitcase_02": {
+      "position_m": [
+        0.3100000023841858,
+        0.6700003743171692,
+        2.137500047683716
+      ],
+      "bbox_min_m": [
+        0.025999993085861206,
+        0.29550039768218994,
+        2.13349986076355
+      ],
+      "bbox_max_m": [
+        0.593999981880188,
+        1.0200003385543823,
+        2.4045000076293945
+      ]
+    }
+  },
+  "markers": {
+    "Seat_03": [
+      0.4300000071525574,
+      0.4500001072883606,
+      0.7809999585151672
+    ],
+    "Seat_04": [
+      -0.4300000071525574,
+      0.4500001072883606,
+      0.7809999585151672
+    ],
+    "Seat_01": [
+      0.4300000071525574,
+      -0.7099998593330383,
+      0.7810001373291016
+    ],
+    "TowPoint": [
+      0.0,
+      2.565000057220459,
+      0.4999995827674866
+    ],
+    "Seat_02": [
+      -0.4300000071525574,
+      -0.7099998593330383,
+      0.7810001373291016
+    ],
+    "Seat_05": [
+      0.4300000071525574,
+      1.540000081062317,
+      0.7809997797012329
+    ],
+    "Seat_06": [
+      -0.4300000071525574,
+      1.540000081062317,
+      0.7809997797012329
+    ]
+  },
+  "colors": {
+    "M_Minivan_Paint": {
+      "expected_hex": "#9AC4D2",
+      "fbx_diffuse_rgb": [
+        0.6039215922355652,
+        0.7686274647712708,
+        0.8235294222831726
+      ],
+      "imported_rgb": [
+        0.6039215922355652,
+        0.7686274647712708,
+        0.8235294222831726
+      ]
+    },
+    "M_Minivan_Trim": {
+      "expected_hex": "#93909B",
+      "fbx_diffuse_rgb": [
+        0.5764706134796143,
+        0.5647059082984924,
+        0.6078431606292725
+      ],
+      "imported_rgb": [
+        0.5764706134796143,
+        0.5647059082984924,
+        0.6078431606292725
+      ]
+    },
+    "M_Minivan_Tire": {
+      "expected_hex": "#1E2129",
+      "fbx_diffuse_rgb": [
+        0.11764705926179886,
+        0.12941177189350128,
+        0.16078431904315948
+      ],
+      "imported_rgb": [
+        0.11764705926179886,
+        0.12941177189350128,
+        0.16078431904315948
+      ]
+    },
+    "M_Minivan_Rim": {
+      "expected_hex": "#4D494D",
+      "fbx_diffuse_rgb": [
+        0.3019607961177826,
+        0.2862745225429535,
+        0.3019607961177826
+      ],
+      "imported_rgb": [
+        0.3019607961177826,
+        0.2862745225429535,
+        0.3019607961177826
+      ]
+    },
+    "M_Minivan_Glass": {
+      "expected_hex": "#D7D7DB",
+      "fbx_diffuse_rgb": [
+        0.843137264251709,
+        0.843137264251709,
+        0.8588235378265381
+      ],
+      "imported_rgb": [
+        0.843137264251709,
+        0.843137264251709,
+        0.8588235378265381
+      ]
+    },
+    "M_Minivan_Interior": {
+      "expected_hex": "#686270",
+      "fbx_diffuse_rgb": [
+        0.40784314274787903,
+        0.3843137323856354,
+        0.43921568989753723
+      ],
+      "imported_rgb": [
+        0.40784314274787903,
+        0.3843137323856354,
+        0.43921568989753723
+      ]
+    },
+    "M_Minivan_Headlight": {
+      "expected_hex": "#CAC8CC",
+      "fbx_diffuse_rgb": [
+        0.7921568751335144,
+        0.7843137383460999,
+        0.800000011920929
+      ],
+      "imported_rgb": [
+        0.7921568751335144,
+        0.7843137383460999,
+        0.800000011920929
+      ]
+    },
+    "M_Minivan_Taillight": {
+      "expected_hex": "#CB4136",
+      "fbx_diffuse_rgb": [
+        0.7960784435272217,
+        0.2549019753932953,
+        0.21176470816135406
+      ],
+      "imported_rgb": [
+        0.7960784435272217,
+        0.2549019753932953,
+        0.21176470816135406
+      ]
+    },
+    "M_Minivan_Suitcase_A": {
+      "expected_hex": "#A87958",
+      "fbx_diffuse_rgb": [
+        0.658823549747467,
+        0.4745098054409027,
+        0.3450980484485626
+      ],
+      "imported_rgb": [
+        0.658823549747467,
+        0.4745098054409027,
+        0.3450980484485626
+      ]
+    },
+    "M_Minivan_Suitcase_B": {
+      "expected_hex": "#566A82",
+      "fbx_diffuse_rgb": [
+        0.33725491166114807,
+        0.4156862795352936,
+        0.5098039507865906
+      ],
+      "imported_rgb": [
+        0.33725491166114807,
+        0.4156862795352936,
+        0.5098039507865906
+      ]
+    },
+    "M_Minivan_Strap": {
+      "expected_hex": "#86A1B8",
+      "fbx_diffuse_rgb": [
+        0.5254902243614197,
+        0.6313725709915161,
+        0.7215686440467834
+      ],
+      "imported_rgb": [
+        0.5254902243614197,
+        0.6313725709915161,
+        0.7215686440467834
+      ]
+    },
+    "M_Minivan_Damage": {
+      "expected_hex": "#171716",
+      "fbx_diffuse_rgb": [
+        0.09019608050584793,
+        0.09019608050584793,
+        0.08627451211214066
+      ],
+      "imported_rgb": [
+        0.09019608050584793,
+        0.09019608050584793,
+        0.08627451211214066
+      ]
+    }
+  },
+  "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+  "fbx_canonical_sha256": "e76f90e54c0fdf71b6589be38e3e4c28e92ef69125f6ac06eb427b615fb19245",
+  "two_consecutive_builds_identical": true,
+  "renders": {
+    "front": [
+      1920,
+      1080
+    ],
+    "rear": [
+      1920,
+      1080
+    ],
+    "left": [
+      1920,
+      1080
+    ],
+    "right": [
+      1920,
+      1080
+    ],
+    "threequarter_front_left": [
+      1920,
+      1080
+    ],
+    "threequarter_rear_right_open": [
+      1920,
+      1080
+    ],
+    "interior_top": [
+      1920,
+      1080
+    ]
+  },
+  "archived_visual_rounds": [
+    "round_01",
+    "round_02",
+    "round_03",
+    "round_04"
+  ],
+  "glass_alpha": 0.3400000035762787,
+  "collision_method": "BVHTree triangle overlap, barycentric/vertex samples, nearest surface depth + 3-ray inside vote; reciprocal test at 11 poses.",
+  "open_pose_tests": {
+    "SM_Minivan_Door_FL": [
+      {
+        "open_fraction": 0.1,
+        "bvh_overlap_triangle_pairs": 12,
+        "max_penetration_m": 0.0026749,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 214
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0026749,
+          "worst_point_m": [
+            0.9049999713897705,
+            -1.6626663208007812,
+            1.1410002708435059
+          ],
+          "inside_samples": 10,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.2,
+        "bvh_overlap_triangle_pairs": 8,
+        "max_penetration_m": 0.0018802,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 158
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0018802,
+          "worst_point_m": [
+            0.9049999713897705,
+            -1.6626663208007812,
+            1.1410002708435059
+          ],
+          "inside_samples": 10,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.25,
+        "bvh_overlap_triangle_pairs": 8,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 158
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.3,
+        "bvh_overlap_triangle_pairs": 8,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 158
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.4,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.5,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.6,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.7,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.8,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.9,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 1.0,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      }
+    ],
+    "SM_Minivan_Door_FR": [
+      {
+        "open_fraction": 0.1,
+        "bvh_overlap_triangle_pairs": 12,
+        "max_penetration_m": 0.0026749,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 214
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0026749,
+          "worst_point_m": [
+            -0.9049999713897705,
+            -1.6626663208007812,
+            1.1410003900527954
+          ],
+          "inside_samples": 10,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.2,
+        "bvh_overlap_triangle_pairs": 8,
+        "max_penetration_m": 0.0018803,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 158
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0018803,
+          "worst_point_m": [
+            -0.9049999713897705,
+            -1.6626663208007812,
+            1.1410003900527954
+          ],
+          "inside_samples": 10,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.25,
+        "bvh_overlap_triangle_pairs": 8,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 158
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.3,
+        "bvh_overlap_triangle_pairs": 8,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 158
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.4,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.5,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.6,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.7,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.8,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.9,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 1.0,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 102
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      }
+    ],
+    "SM_Minivan_Door_Slide_R": [
+      {
+        "open_fraction": 0.1,
+        "bvh_overlap_triangle_pairs": 15,
+        "max_penetration_m": 0.0127615,
+        "door_into_body": {
+          "max_penetration_m": 0.0052084,
+          "worst_point_m": [
+            -0.9552916288375854,
+            0.8900001645088196,
+            1.0966665744781494
+          ],
+          "inside_samples": 7,
+          "sample_count": 192
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0127615,
+          "worst_point_m": [
+            -0.9605000019073486,
+            0.41500020027160645,
+            1.1019998788833618
+          ],
+          "inside_samples": 93,
+          "sample_count": 1528
+        }
+      },
+      {
+        "open_fraction": 0.2,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.25,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.3,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.4,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.5,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.6,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.7,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.8,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.9,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 1.0,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 80
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      }
+    ],
+    "SM_Minivan_Tailgate": [
+      {
+        "open_fraction": 0.1,
+        "bvh_overlap_triangle_pairs": 12,
+        "max_penetration_m": 0.0045126,
+        "door_into_body": {
+          "max_penetration_m": 0.0032456,
+          "worst_point_m": [
+            0.5366666316986084,
+            2.3711869716644287,
+            1.8797452449798584
+          ],
+          "inside_samples": 40,
+          "sample_count": 200
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.0045126,
+          "worst_point_m": [
+            -0.5499999523162842,
+            2.380000352859497,
+            1.8764996528625488
+          ],
+          "inside_samples": 34,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.2,
+        "bvh_overlap_triangle_pairs": 12,
+        "max_penetration_m": 0.000926,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 200
+        },
+        "body_into_door": {
+          "max_penetration_m": 0.000926,
+          "worst_point_m": [
+            0.2749999761581421,
+            2.380000352859497,
+            1.8764996528625488
+          ],
+          "inside_samples": 10,
+          "sample_count": 1416
+        }
+      },
+      {
+        "open_fraction": 0.25,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.3,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.4,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.5,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.6,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.7,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.8,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 0.9,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      },
+      {
+        "open_fraction": 1.0,
+        "bvh_overlap_triangle_pairs": 0,
+        "max_penetration_m": 0.0,
+        "door_into_body": {
+          "max_penetration_m": 0.0,
+          "worst_point_m": null,
+          "inside_samples": 0,
+          "sample_count": 88
+        },
+        "body_into_door": {
+          "max_penetration_m": 0
+        }
+      }
+    ]
+  },
+  "last_build": {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "c7c760eb1e3df9dbcc5cf742a45ad8c4a8a491d89dacf8b5fae4947d985c70d4",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 38.136,
+    "camera_render_seconds": {
+      "front": 5.104,
+      "rear": 5.108,
+      "left": 5.289,
+      "right": 5.218,
+      "threequarter_front_left": 5.993,
+      "threequarter_rear_right_open": 5.643,
+      "interior_top": 5.781
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 39.192
+  }
+}

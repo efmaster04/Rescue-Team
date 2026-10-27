@@ -1,0 +1,52 @@
+{
+  "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+  "canonical_geometry_sha256": "e76f90e54c0fdf71b6589be38e3e4c28e92ef69125f6ac06eb427b615fb19245",
+  "object_triangles": {
+    "SM_Minivan_Body": 2060,
+    "SM_Minivan_Glass": 24,
+    "SM_Minivan_Door_FL": 156,
+    "SM_Minivan_Door_FR": 156,
+    "SM_Minivan_Door_Slide_R": 120,
+    "SM_Minivan_Tailgate": 132,
+    "SM_Minivan_Wheel_FL": 520,
+    "SM_Minivan_Wheel_RL": 520,
+    "SM_Minivan_Wheel_FR": 520,
+    "SM_Minivan_Wheel_RR": 520,
+    "SM_Minivan_Interior": 1520,
+    "SM_Minivan_RackSuitcase_01": 152,
+    "SM_Minivan_RackSuitcase_02": 152
+  },
+  "total_triangles": 6552,
+  "materials": {
+    "M_Minivan_Paint": "#9AC4D2",
+    "M_Minivan_Trim": "#93909B",
+    "M_Minivan_Tire": "#1E2129",
+    "M_Minivan_Rim": "#4D494D",
+    "M_Minivan_Glass": "#D7D7DB",
+    "M_Minivan_Interior": "#686270",
+    "M_Minivan_Headlight": "#CAC8CC",
+    "M_Minivan_Taillight": "#CB4136",
+    "M_Minivan_Suitcase_A": "#A87958",
+    "M_Minivan_Suitcase_B": "#566A82",
+    "M_Minivan_Strap": "#86A1B8",
+    "M_Minivan_Damage": "#171716"
+  },
+  "last_build": {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "527e6e5b005df1b2e4ad6877a9a17235d375c98bed9e57114ab8b12de0ae4da9",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 38.303,
+    "camera_render_seconds": {
+      "front": 6.44,
+      "rear": 4.908,
+      "left": 5.148,
+      "right": 5.127,
+      "threequarter_front_left": 5.568,
+      "threequarter_rear_right_open": 5.486,
+      "interior_top": 5.626
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 39.575
+  }
+}

@@ -1,0 +1,27 @@
+﻿[
+    {
+        "value":  [
+                      "Export\\Bolum1_Ucurum\\B1_Ucurum.blend",
+                      "Export\\Bolum1_Ucurum\\ramp_acceptance.json",
+                      "Export\\Bolum1_Ucurum\\ramp_after_measurement.json",
+                      "Export\\Bolum1_Ucurum\\ramp_export_preservation.json",
+                      "Export\\Bolum1_Ucurum\\ramp_r2_build_1.log",
+                      "Export\\Bolum1_Ucurum\\ramp_r2_build_2.log",
+                      "Export\\Bolum1_Ucurum\\ramp_r2_measure.log",
+                      "Export\\Bolum1_Ucurum\\ramp_r2_scope.json",
+                      "Export\\Bolum1_Ucurum\\ramp_r2_verify.log",
+                      "Export\\Bolum1_Ucurum\\ramp_r2_verify_immutability.json",
+                      "Export\\Bolum1_Ucurum\\ramp_scope_check.json",
+                      "Export\\Bolum1_Ucurum\\ramp_verify.log",
+                      "Export\\Bolum1_Ucurum\\ramp_verify_immutability.json",
+                      "Export\\Bolum1_Ucurum\\SM_B1_Vegetation.fbx",
+                      "Export\\Bolum1_Ucurum\\stats.json",
+                      "Export\\Bolum1_Ucurum\\renders\\ramp_bottom.png",
+                      "Export\\Bolum1_Ucurum\\renders\\ramp_top.png",
+                      "tools\\blender\\build_bolum1_ucurum.py",
+                      "tools\\blender\\verify_bolum1_ucurum.py"
+                  ],
+        "Count":  19
+    },
+    "Export\\Bolum1_Ucurum\\ramp_r2_changed_files.json"
+]

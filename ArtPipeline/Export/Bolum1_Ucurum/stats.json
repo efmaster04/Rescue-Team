@@ -1,0 +1,206 @@
+{
+  "seed": 120126,
+  "geometry_sha256": "25dba8e8b155c8ef016cb452c738dac6d28fb568a5e1bcfbe5b74ac945fcaef5",
+  "previous_geometry_sha256": "25dba8e8b155c8ef016cb452c738dac6d28fb568a5e1bcfbe5b74ac945fcaef5",
+  "minivan_placement_sha256": "436721b3b8f7b83cc93151baeb81319cc0ba5d06e79f054d3ef06d76d67055a4",
+  "towtruck_placement_sha256": "796106e69af001fecfc7cbb21034cd7017f68ef27e1d97c3f65f796b58e15e48",
+  "matches_previous_towtruck_placement": true,
+  "matches_previous_placement": true,
+  "matches_previous_geometry": true,
+  "consecutive_identical_builds": 3,
+  "ramp_grass_exclusion": {
+    "half_width_m": 0.9,
+    "end_extension_m": 1.0,
+    "removed_tufts": 3,
+    "remaining_tufts": 158,
+    "removed": [
+      {
+        "index": 78,
+        "position": [
+          -32.98237399702995,
+          -7.433878377677605,
+          -1.7770114135742188
+        ],
+        "vertices": 20,
+        "triangles": 15
+      },
+      {
+        "index": 88,
+        "position": [
+          -32.56175890062841,
+          -7.35254782396703,
+          -1.9175448608398438
+        ],
+        "vertices": 40,
+        "triangles": 76
+      },
+      {
+        "index": 93,
+        "position": [
+          -30.74777916073252,
+          -7.400450296173851,
+          -2.5365786743164063
+        ],
+        "vertices": 20,
+        "triangles": 15
+      }
+    ]
+  },
+  "object_triangles": {
+    "SM_B1_Road": 792,
+    "SM_B1_RoadMarkings": 2164,
+    "SM_B1_Ground": 27890,
+    "SM_B1_Guardrail": 8624,
+    "SM_B1_LooseRock_01": 46,
+    "SM_B1_LooseRock_02": 44,
+    "SM_B1_LooseRock_03": 80,
+    "SM_B1_LooseRock_04": 60,
+    "SM_B1_LooseRock_05": 68,
+    "SM_B1_LooseRock_06": 96,
+    "SM_B1_LooseRock_07": 84,
+    "SM_B1_LooseRock_08": 140,
+    "SM_B1_Prop_Suitcase_01": 120,
+    "SM_B1_Prop_Suitcase_02": 120,
+    "SM_B1_Prop_Bag_03": 120,
+    "SM_B1_Prop_Bag_04": 120,
+    "SM_B1_Prop_Bag_05": 120,
+    "SM_B1_Prop_Chevron_West_1": 24,
+    "SM_B1_Prop_Chevron_West_2": 24,
+    "SM_B1_Prop_Chevron_East_1": 24,
+    "SM_B1_Prop_Chevron_East_2": 24,
+    "SM_B1_Prop_FallingRock": 22,
+    "SM_B1_Vegetation": 4810,
+    "SM_B1_Backdrop": 17698
+  },
+  "playable_triangles": 44280,
+  "backdrop_triangles": 17698,
+  "prop_triangles": 1336,
+  "total_triangles": 63314,
+  "budgets": {
+    "playable": 60000,
+    "backdrop": 30000,
+    "luggage_each": [
+      100,
+      300
+    ]
+  },
+  "palette": {
+    "reference_samples_srgb": {
+      "Rock": [
+        0.6980392336845398,
+        0.5058823823928833,
+        0.3333333432674408
+      ],
+      "Dirt": [
+        0.5607843399047852,
+        0.3490196168422699,
+        0.21176472306251526
+      ],
+      "Grass": [
+        0.40392160415649414,
+        0.3764706254005432,
+        0.1411764770746231
+      ],
+      "Asphalt": [
+        0.03921568766236305,
+        0.06666667014360428,
+        0.13333334028720856
+      ],
+      "Metal": [
+        0.7529412508010864,
+        0.6745098233222961,
+        0.6078431606292725
+      ],
+      "Backdrop": [
+        0.3764706254005432,
+        0.38823533058166504,
+        0.4392157196998596
+      ]
+    },
+    "albedo_srgb": {
+      "Asphalt": [
+        0.2,
+        0.2,
+        0.215
+      ],
+      "LineYellow": [
+        0.91,
+        0.65,
+        0.25
+      ],
+      "LineWhite": [
+        0.86,
+        0.84,
+        0.73
+      ],
+      "Rock": [
+        0.6434117701053619,
+        0.508764714717865,
+        0.3555000029802322
+      ],
+      "Dirt": [
+        0.5042353019714355,
+        0.32870588505268095,
+        0.20352941691875456
+      ],
+      "Gravel": [
+        0.49,
+        0.435,
+        0.34
+      ],
+      "Grass": [
+        0.36617648124694824,
+        0.38594118762016294,
+        0.11585294312238692
+      ],
+      "Metal": [
+        0.48,
+        0.48,
+        0.46
+      ],
+      "Sign": [
+        0.78,
+        0.08,
+        0.07
+      ],
+      "Backdrop": [
+        0.55,
+        0.5,
+        0.59
+      ]
+    },
+    "sampling_uv": {
+      "Rock": [
+        0.26,
+        0.28
+      ],
+      "Dirt": [
+        0.413,
+        0.842
+      ],
+      "Grass": [
+        0.561,
+        0.762
+      ],
+      "Asphalt": [
+        0.08,
+        0.63
+      ],
+      "Metal": [
+        0.162,
+        0.623
+      ],
+      "Backdrop": [
+        0.719,
+        0.211
+      ]
+    }
+  },
+  "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+  "samples": 64,
+  "render_seconds": 12.781,
+  "camera_render_seconds": {},
+  "total_build_seconds": 15.064,
+  "visual_round": 0,
+  "sign_colors": "Tehlike \u00fc\u00e7geni: beyaz zemin, k\u0131rm\u0131z\u0131 \u00e7er\u00e7eve, siyah sembol. Chevron: k\u0131rm\u0131z\u0131 zemin, beyaz ok."
+}

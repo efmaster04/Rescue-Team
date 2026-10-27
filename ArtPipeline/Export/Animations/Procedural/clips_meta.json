@@ -1,0 +1,4452 @@
+{
+  "fps": 30,
+  "units": "meters",
+  "forward": "-Y",
+  "up": "Z",
+  "skeleton_source": "Export/RescueCrew/SK_RescueCrew_Blue.fbx",
+  "bone_count": 31,
+  "pose_convention": "Lying_* klipleri Patient_LiePose gibi dik tanımlı; Unity objeyi sedyeye yatırır.",
+  "clips": {
+    "Carry_Stretcher_Walk": {
+      "file": "Carry_Stretcher_Walk.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki el önde sedye saplarında, kollar gergin; dizler kırık, kalça sallanan, yük altında sendeleyen ağır paytak yürüyüş (1.4 m/sn).",
+      "action_sha256": "8ea7f250c1139e36386a5e2fb7c57954c7ba82eda288c04f9d64255a7b82fc8d",
+      "target_speed_mps": 1.4,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.35,
+      "stance_travel_m": 0.35,
+      "handle_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.278,
+            -0.252,
+            0.665
+          ],
+          "Right": [
+            -0.278,
+            -0.252,
+            0.665
+          ]
+        },
+        "grip_z_range_m": {
+          "Left": [
+            0.64,
+            0.682
+          ],
+          "Right": [
+            0.641,
+            0.682
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            0.049,
+            -0.988,
+            -0.148
+          ],
+          "Right": [
+            -0.049,
+            -0.988,
+            -0.148
+          ]
+        },
+        "handle_axis_root_local": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "stretcher_marker": "Handle_Rear",
+        "stretcher_side": "önde (-Y)",
+        "marker_root_local_m": [
+          -0.0,
+          -0.252,
+          0.665
+        ],
+        "stretcher_root_local_m": [
+          -0.0,
+          -1.222,
+          0.535
+        ],
+        "handle_spacing_m": 0.556,
+        "note": "Avuç noktası = el kemiği başı + kemik yönünde 0.05 m (parmaklara doğru). Konumlar kök yerel Blender koordinatı (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)), döngü ortalaması; adım sallantısıyla z aralığında oynar. Sedye taşıyanla aynı yöne bakar (sedye -Y = yürüyüş yönü); Handle_Rear işareti iki avucun ortasına oturur, sap ekseni kök +Y boyunca. Unity IK: iki el hedefini sedyenin sap noktalarına kilitleyin (sol el +X, sağ el -X direği)."
+      }
+    },
+    "Carry_OneHand_Walk": {
+      "file": "Carry_OneHand_Walk.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sağ el yanda koni tutuyor, sol kol serbest sallanıyor; alçak, uçuş fazlı telaşlı seğirtme (2.4 m/sn).",
+      "action_sha256": "6fba176c1cbd3816eca16450033dd62aa2fe63c380109bb65fa17d87d7816aeb",
+      "target_speed_mps": 2.4,
+      "stance_ratio": 0.4,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.384
+    },
+    "PickUp": {
+      "file": "PickUp.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Çömelip öne eğilerek iki elle yerden alma, doğrulma; önde taşıma pozunda biter.",
+      "action_sha256": "eae5f8d68324ffee4942a1a0a70ee5579f849cdb84b980734cd26ad56be9abb1"
+    },
+    "PutDown": {
+      "file": "PutDown.fbx",
+      "duration_s": 0.9,
+      "frames": 28,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Önde taşıma pozundan öne eğilip iki elle yere bırakma, doğrulma.",
+      "action_sha256": "35d05a2c1ce23e775a20c323b70b23a382ec0152f1cf34ced47692ed4141b673"
+    },
+    "GetUp_FromBack": {
+      "file": "GetUp_FromBack.fbx",
+      "duration_s": 1.6,
+      "frames": 49,
+      "loop": false,
+      "in_place": false,
+      "root_motion": true,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırt üstü yatıştan sendeleyerek kalkma, baş sallayıp toparlanma (kalça yerden ayağa).",
+      "action_sha256": "1e8c28757fc09f07d0c58e92141527e30bec3ef337bf0e5e0f427fbed70698d4"
+    },
+    "Revive_Helper": {
+      "file": "Revive_Helper.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Diz çökmüş, yerdekini iki eliyle omzundan sallıyor (\"hadi kalk!\").",
+      "action_sha256": "239ce6ad8c3f14612497b35b82f80160826b4d4bb3e255a7a461e737364c1aca"
+    },
+    "Jump": {
+      "file": "Jump.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Çömelme, kollar yukarı savrulur, iniş ve küçük sekme.",
+      "action_sha256": "aa284dbe500d312cefefd0e4407e36cabeeb1df42b87141e9fc2d1e49e603eda"
+    },
+    "Startled": {
+      "file": "Startled.fbx",
+      "duration_s": 0.9,
+      "frames": 28,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Korna irkilmesi: kollar havaya, sol bacak kalkar, gövde geriye kaykılır, toparlanır.",
+      "action_sha256": "b6e83f71c2ca9b5f7f4da0af508fa22ee16b7c0bcf084263c76a3ef2ee5ccf57"
+    },
+    "Lying_HelpWave": {
+      "file": "Lying_HelpWave.fbx",
+      "duration_s": 1.4,
+      "frames": 43,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Yatma pozu (dik tanımlı): sol kol havada sallanıyor, kafa kalkıp iniyor.",
+      "action_sha256": "1e3eecf40bff47ad572d42ef8eca6161e2ffef5d93bf54995823f13389fc7386"
+    },
+    "Lying_Groan": {
+      "file": "Lying_Groan.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Yatma pozu (dik tanımlı): omuz ve dizler kıvranıyor, kafa yana dönüp geliyor.",
+      "action_sha256": "6221158fb6a979e46c6f21f15e7c3bc916b86670084ca9f7200a376e32ef5d49"
+    },
+    "Celebrate": {
+      "file": "Celebrate.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Zıplayıp iki yumruk havaya, kalça sallama.",
+      "action_sha256": "3aa6305a49b83ad7f646023ef118623a8bf8cea9b5d0cdb3bda889679b0b5cc1"
+    },
+    "Patient_SitDazed": {
+      "file": "Patient_SitDazed.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Koltukta oturan sersem hasta: kafa yavaş daireler çizip öne düşer, eller kucakta, kısa bacaklar sarkıp sallanır.",
+      "action_sha256": "bc7e6ad830b312f1ea9cac09afc4b068a59b70ccd36dcf0d836184b799f9c9ef",
+      "seat_surface_root_local_z": 0.262
+    },
+    "Patient_SitDazed_ArmSling": {
+      "file": "Patient_SitDazed_ArmSling.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Civilian",
+      "description": "Patient_SitDazed ile aynı; sağ kol askı pozunda (SK_Patient_Civilian için).",
+      "action_sha256": "2a48766db8b8d459a4c25703a434dc597f5312a59068a29131919cfc39c27484",
+      "seat_surface_root_local_z": 0.262
+    },
+    "Patient_DraggedOut": {
+      "file": "Patient_DraggedOut.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": false,
+      "root_motion": true,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Oturuştan geriye (+Y) çekilip sırt üstü yatışa: kollar yel değirmeni, bacaklar havada çırpınır, sonra düşer. Kök hareketi var; sonda fiziksel olarak yatık (kalça z≈0.14, GetUp_FromBack başlangıcı gibi), uzuvlar Patient_LiePose düzeninde.",
+      "action_sha256": "12cd5c2b568a1114ecb4ec494fb1537cb6e68da22f1ebb28ea04074666bc57b4",
+      "hips_displacement_m": [
+        0.0,
+        0.86,
+        -0.227
+      ],
+      "start_pose": "Patient_SitDazed t=0 (oturuş)",
+      "end_pose": "fiziksel sırt üstü yatış (kalça z≈0.14, gövde yatay); kollar yanda, bacaklar düz (Patient_LiePose düzeni). Dik tanımlı Lying_* kliplerine geçerken obje -90° X döndürülür.",
+      "sync": "Extract_Pull t≈0.45 sn (kare 14) anında başlatılırsa büyük çekişle eşleşir."
+    },
+    "Piggyback_Rider": {
+      "file": "Piggyback_Rider.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Sırttaki hasta: kollar taşıyanın omuzlarında, bacaklar yanlarda sallanır, kafa sersem sallanır. Kök, taşıyanın Spine1 soketine bağlanır (bkz. piggyback_socket).",
+      "action_sha256": "016a42f859f03f3db333b001781b825d244572f02fd9aae945fd027aff56fc94",
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      }
+    },
+    "Extract_Pull": {
+      "file": "Extract_Pull.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Arka kapıda öne eğilip içeriden iki elle tutar; iki küçük, bir büyük çekiş; son çekişte eller boşalır, geri sendeleyip toparlanır.",
+      "action_sha256": "c0126d8617067a1bbab52c668b133f8edb200d8f894e3bc4710c363243f49a3a",
+      "grab_time_s": 0.42,
+      "big_pull_time_s": [
+        0.8,
+        1.0
+      ],
+      "hands_inside_root_local_m": [
+        0.13,
+        -0.48,
+        0.6
+      ],
+      "sync": "Patient_DraggedOut bu klibin t≈0.45 sn anında başlatılır."
+    },
+    "Rope_Descend": {
+      "file": "Rope_Descend.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halatta iniş: eller halatta (sol üstte), ayaklar duvarda döngüde ayak başına iki tıpış adım; kafa yukarı, gözler kenarda.",
+      "action_sha256": "33769e244fcc511ced5a2751ea61f0fffa7ca23e333e470642f22de179226195",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "Left": 1.03,
+          "Right": 0.92
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36,
+      "vertical_speed_mps": -0.6
+    },
+    "Rope_Climb": {
+      "file": "Rope_Climb.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halatta elden ele tırmanış: üstteki el tutup aşağı çeker, alttaki bırakıp yukarı uzanır; ayaklar duvarda adımlar.",
+      "action_sha256": "22676c28bd6cad17e6c244fa8b23b3387f44fa09cec4444efaf1d014d765a1b1",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "range": [
+            0.89,
+            1.07
+          ]
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36,
+      "vertical_speed_mps": 0.3
+    },
+    "Rope_Hang_Idle": {
+      "file": "Rope_Hang_Idle.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halatta asılı bekleme: hafif sarkaç sallanması, aşağıya ürkek bakışlar, titreyen dizler.",
+      "action_sha256": "b3f471af6517022867016ecbe18b36dbe37c3300d0f86579b87a3de8c91800fd",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "Left": 1.03,
+          "Right": 0.91
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36
+    },
+    "Piggyback_PickUp": {
+      "file": "Piggyback_PickUp.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırtı dönük çömelip \"hadi bin!\" diye ellerini arkada sallar, diz altlarını kavrar, yük altında titreyerek doğrulur.",
+      "action_sha256": "488e637244e21103af9d8759ba71bdf934a5835fb9af8224c878ac2012130ed8",
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      },
+      "rider_attached_frames": [
+        17,
+        "son"
+      ]
+    },
+    "Piggyback_Rope_Climb": {
+      "file": "Piggyback_Rope_Climb.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırtta hastayla halatta tırmanış: öne eğik, çene yukarı, titreyerek zorlanan elden ele çekiş.",
+      "action_sha256": "aedf48601704832bfbc42da377c2a28d12eaf254fb980c389ab655cda81ed77f",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "y": -0.29,
+          "vertical": true
+        },
+        "grip_heights_root_local_m": {
+          "range": [
+            0.92,
+            1.07
+          ]
+        },
+        "note": "Halat kök yerel (x=0, y=-0.29) dikey çizgisi; tutan elin avucu bu çizgide (el kemiğinin ~5 cm ilerisi). Tırmanışta tutan el köke göre aşağı kayar (halat dünyada sabit), bırakan el ~6 cm açılıp yukarı uzanır. LineRenderer: kazıktan üstteki ele, oradan alttaki ele, sonra aşağı sarkar."
+      },
+      "wall_plane_root_local_y": -0.36,
+      "vertical_speed_mps": 0.25,
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      }
+    },
+    "Piggyback_Walk": {
+      "file": "Piggyback_Walk.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sırtta hastayla çömelmiş, öne eğik, sallanan ağır yürüyüş; eller binenin diz altlarında (1.2 m/sn).",
+      "action_sha256": "9f3555ce362a7e923dad829c81a6f1415a26b87e9f325552dc89c3f091a15ef1",
+      "target_speed_mps": 1.2,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.48,
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      }
+    },
+    "Piggyback_PutDown": {
+      "file": "Piggyback_PutDown.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Çömelip sırttakini bırakır, elleri belinde bel ağrısıyla geriye kaykılır, doğrulur.",
+      "action_sha256": "c5ed5b1a5e629f9b28a293cd20cc332a6f2e3924d28f30b9bbf699c24558fce1",
+      "piggyback_socket": {
+        "carrier_bone": "mixamorig:Spine1",
+        "offset_carrier_bind_m": [
+          0.0,
+          0.312,
+          0.292
+        ],
+        "note": "Binen (Piggyback_Rider oynatan hasta) kökü taşıyanın Spine1 kemiğine rijit bağlanır: taşıyan bağ pozundayken soket taşıyan kökünün 0.31 m arkasında, 0.29 m yukarısında (Blender +Y = Unity -Z), dönüşü taşıyan köküyle aynı. Unity: Spine1 altında boş \"PiggybackSocket\" oluşturup hastayı ona sıfır yerel dönüşümle bağlayın."
+      },
+      "rider_attached_frames": [
+        1,
+        16
+      ]
+    },
+    "Rope_Pull": {
+      "file": "Rope_Pull.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kazığın yanında, ayaklar açık, dizler kırık: halatı elden ele çeker; her çekişte gövde geriye kaykılır, dizler titrer.",
+      "action_sha256": "6d72e16134d6af06f77b62352b3b42b04cb014f57bc854326dc67654f6985bc9",
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "rope_line_root_local_m": {
+          "x": 0.0,
+          "z": 0.8,
+          "y_from": -0.4,
+          "y_to": -0.26
+        },
+        "note": "Halat önden (-Y, uçurum kenarı) gelir; kök yerel x=0, z≈0.80 yatay çizgisinde elden ele çekilir: her el y=-0.40 noktasında tutar, y=-0.26 noktasına çeker, bırakıp öne uzanır (iki el yarım faz kaydırmalı). LineRenderer: uçurumdan öndeki ele, iki el arası, arkadaki elden kazığa. Tutma noktası el kemiğinin ~5 cm ilerisi (avuç)."
+      },
+      "rope_speed_mps": 0.255
+    },
+    "Carry_Stretcher_Front_Walk": {
+      "file": "Carry_Stretcher_Front_Walk.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sedyenin ön ucu: kollar arkada, iki el kalçanın arkasında aşağıda sedye saplarında; gövde öne eğik, yük çeker gibi; Carry_Stretcher_Walk ile aynı ritimde sendeleyen paytak yürüyüş (1.4 m/sn).",
+      "action_sha256": "b634dc64006519e07a1a1d19be7d6cc513c337f445d163b22e260fd26ff4b042",
+      "target_speed_mps": 1.4,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.35,
+      "stance_travel_m": 0.35,
+      "handle_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.293,
+            0.19,
+            0.665
+          ],
+          "Right": [
+            -0.293,
+            0.19,
+            0.665
+          ]
+        },
+        "grip_z_range_m": {
+          "Left": [
+            0.657,
+            0.673
+          ],
+          "Right": [
+            0.657,
+            0.673
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            0.114,
+            0.285,
+            -0.952
+          ],
+          "Right": [
+            -0.114,
+            0.285,
+            -0.952
+          ]
+        },
+        "handle_axis_root_local": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "stretcher_marker": "Handle_Front",
+        "stretcher_side": "arkada (+Y)",
+        "marker_root_local_m": [
+          -0.0,
+          0.19,
+          0.665
+        ],
+        "stretcher_root_local_m": [
+          -0.0,
+          1.16,
+          0.535
+        ],
+        "handle_spacing_m": 0.586,
+        "note": "Avuç noktası = el kemiği başı + kemik yönünde 0.05 m (parmaklara doğru). Konumlar kök yerel Blender koordinatı (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)), döngü ortalaması; adım sallantısıyla z aralığında oynar. Sedye taşıyanla aynı yöne bakar (sedye -Y = yürüyüş yönü); Handle_Front işareti iki avucun ortasına oturur, sap ekseni kök +Y boyunca. Unity IK: iki el hedefini sedyenin sap noktalarına kilitleyin (sol el +X, sağ el -X direği)."
+      }
+    },
+    "Cabinet_TakeCoil": {
+      "file": "Cabinet_TakeCoil.fbx",
+      "duration_s": 1.4,
+      "frames": 43,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Açık dolaba uzanır, kangalı çeker; geri kaykılıp göğsüne bastırarak Carry_Coil pozunda biter.",
+      "action_sha256": "82d5995732cf6c96b445a6a5372881f3d151e5827145fd4aca55928f1410cde9",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.368277,
+            -0.05532,
+            0.612945
+          ],
+          "Right": [
+            -0.368277,
+            -0.05532,
+            0.612945
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.368277,
+                -0.05532,
+                0.612945
+              ],
+              "Right": [
+                -0.368277,
+                -0.05532,
+                0.612945
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.364057,
+                -0.065832,
+                0.618048
+              ],
+              "Right": [
+                -0.362545,
+                -0.065832,
+                0.618048
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.352645,
+                -0.094231,
+                0.631807
+              ],
+              "Right": [
+                -0.347071,
+                -0.094231,
+                0.631807
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.335907,
+                -0.135813,
+                0.651902
+              ],
+              "Right": [
+                -0.324444,
+                -0.135813,
+                0.651902
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.315716,
+                -0.185867,
+                0.676029
+              ],
+              "Right": [
+                -0.297251,
+                -0.185867,
+                0.676029
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.293958,
+                -0.239674,
+                0.701904
+              ],
+              "Right": [
+                -0.268058,
+                -0.239674,
+                0.701904
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.272542,
+                -0.292507,
+                0.727274
+              ],
+              "Right": [
+                -0.239414,
+                -0.292507,
+                0.727274
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.253399,
+                -0.339634,
+                0.749914
+              ],
+              "Right": [
+                -0.213846,
+                -0.339634,
+                0.749914
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.238473,
+                -0.376326,
+                0.767608
+              ],
+              "Right": [
+                -0.193865,
+                -0.376326,
+                0.767608
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.228323,
+                -0.387399,
+                0.781131
+              ],
+              "Right": [
+                -0.182148,
+                -0.389769,
+                0.780448
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.226967,
+                -0.391061,
+                0.782868
+              ],
+              "Right": [
+                -0.17994,
+                -0.393226,
+                0.782269
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.22752,
+                -0.392734,
+                0.782218
+              ],
+              "Right": [
+                -0.179601,
+                -0.394958,
+                0.781611
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.228148,
+                -0.393498,
+                0.78174
+              ],
+              "Right": [
+                -0.179128,
+                -0.395787,
+                0.781127
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.229137,
+                -0.393202,
+                0.781348
+              ],
+              "Right": [
+                -0.178231,
+                -0.395591,
+                0.780723
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.230601,
+                -0.391733,
+                0.78101
+              ],
+              "Right": [
+                -0.176791,
+                -0.394265,
+                0.780365
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.232294,
+                -0.38906,
+                0.780817
+              ],
+              "Right": [
+                -0.175044,
+                -0.391755,
+                0.780149
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.233964,
+                -0.385155,
+                0.780853
+              ],
+              "Right": [
+                -0.173237,
+                -0.388008,
+                0.780168
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.235335,
+                -0.379823,
+                0.781233
+              ],
+              "Right": [
+                -0.171626,
+                -0.382799,
+                0.780545
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.236051,
+                -0.372286,
+                0.782176
+              ],
+              "Right": [
+                -0.170497,
+                -0.375314,
+                0.781509
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.235979,
+                -0.363072,
+                0.783584
+              ],
+              "Right": [
+                -0.170045,
+                -0.366072,
+                0.78296
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.235115,
+                -0.353007,
+                0.785273
+              ],
+              "Right": [
+                -0.170369,
+                -0.355907,
+                0.784714
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.233816,
+                -0.34285,
+                0.78705
+              ],
+              "Right": [
+                -0.171242,
+                -0.34562,
+                0.786576
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.232199,
+                -0.333081,
+                0.78879
+              ],
+              "Right": [
+                -0.172542,
+                -0.3357,
+                0.788403
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.230334,
+                -0.324252,
+                0.790413
+              ],
+              "Right": [
+                -0.174186,
+                -0.326704,
+                0.790105
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.228294,
+                -0.316997,
+                0.791872
+              ],
+              "Right": [
+                -0.176099,
+                -0.31927,
+                0.791628
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.226151,
+                -0.311999,
+                0.793128
+              ],
+              "Right": [
+                -0.178215,
+                -0.314085,
+                0.792924
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.223961,
+                -0.309991,
+                0.794109
+              ],
+              "Right": [
+                -0.180486,
+                -0.311887,
+                0.793918
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.221491,
+                -0.312905,
+                0.794711
+              ],
+              "Right": [
+                -0.183303,
+                -0.314587,
+                0.794512
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.218655,
+                -0.320023,
+                0.794725
+              ],
+              "Right": [
+                -0.186748,
+                -0.321452,
+                0.79451
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.215538,
+                -0.329433,
+                0.79393
+              ],
+              "Right": [
+                -0.190636,
+                -0.33057,
+                0.793713
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.212289,
+                -0.339362,
+                0.792329
+              ],
+              "Right": [
+                -0.194717,
+                -0.340179,
+                0.792137
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.209142,
+                -0.348299,
+                0.790238
+              ],
+              "Right": [
+                -0.198661,
+                -0.348795,
+                0.7901
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.206147,
+                -0.35065,
+                0.789631
+              ],
+              "Right": [
+                -0.201853,
+                -0.35065,
+                0.789631
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.35,
+                0.79
+              ],
+              "Right": [
+                -0.204,
+                -0.35,
+                0.79
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202781,
+                -0.348339,
+                0.790831
+              ],
+              "Right": [
+                -0.205219,
+                -0.348339,
+                0.790831
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202133,
+                -0.345982,
+                0.792009
+              ],
+              "Right": [
+                -0.205867,
+                -0.345982,
+                0.792009
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.201942,
+                -0.343169,
+                0.793416
+              ],
+              "Right": [
+                -0.206058,
+                -0.343169,
+                0.793416
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202095,
+                -0.340136,
+                0.794932
+              ],
+              "Right": [
+                -0.205905,
+                -0.340136,
+                0.794932
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202476,
+                -0.337121,
+                0.79644
+              ],
+              "Right": [
+                -0.205524,
+                -0.337121,
+                0.79644
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.202971,
+                -0.334362,
+                0.797819
+              ],
+              "Right": [
+                -0.205029,
+                -0.334362,
+                0.797819
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.203467,
+                -0.332097,
+                0.798952
+              ],
+              "Right": [
+                -0.204534,
+                -0.332097,
+                0.798952
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.203848,
+                -0.330564,
+                0.799718
+              ],
+              "Right": [
+                -0.204152,
+                -0.330564,
+                0.799718
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      },
+      "grab_frame": 11,
+      "cabinet_coil_root_local_m": [
+        0.025,
+        -0.4,
+        0.78
+      ]
+    },
+    "Carry_Coil_Idle": {
+      "file": "Carry_Coil_Idle.fbx",
+      "duration_s": 1.5,
+      "frames": 46,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki el kangalın yanlarında; göğüs önünde yükü sarar, nefes ve sabırsız kafa hareketi.",
+      "action_sha256": "4ab5050143574fd0fce0c8d2acddd2d7684332efb18bad048c742f9464565e4b",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.33,
+            0.8
+          ],
+          "Right": [
+            -0.204,
+            -0.33,
+            0.8
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800039
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800039
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800155
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800155
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800346
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800346
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800608
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800608
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800936
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800936
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801324
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801324
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801763
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801763
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802247
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802247
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802764
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802764
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803306
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803306
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803861
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803861
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804418
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804418
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804968
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804968
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.805499
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.805499
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806463
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806463
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806877
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806877
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807236
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807236
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807532
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807532
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807759
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807759
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807913
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807913
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.80799
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.80799
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.80799
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.80799
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807913
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807913
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807759
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807759
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807532
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807532
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.807236
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.807236
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806877
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806877
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806463
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806463
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.806
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.806
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.805499
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.805499
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804968
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804968
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.804418
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.804418
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803861
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803861
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.803306
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.803306
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802764
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802764
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.802247
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.802247
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801763
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801763
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.801324
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.801324
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800936
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800936
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800608
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800608
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800346
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800346
+              ]
+            }
+          },
+          {
+            "frame": 44,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800155
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800155
+              ]
+            }
+          },
+          {
+            "frame": 45,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.800039
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.800039
+              ]
+            }
+          },
+          {
+            "frame": 46,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      }
+    },
+    "Carry_Coil_Walk": {
+      "file": "Carry_Coil_Walk.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki elle kangalı göğüste tutarak telaşlı kısa adımlarla 2.4 m/sn yürür (yerinde).",
+      "action_sha256": "46cb01bbf88c71cf4e088c1186ac66b950e2ac497733eefdc9a237d0dc81bb15",
+      "target_speed_mps": 2.4,
+      "stance_ratio": 0.4,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.384,
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.32,
+            0.754369
+          ],
+          "Right": [
+            -0.204,
+            -0.32,
+            0.754369
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754369
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754369
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.749436
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.749436
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745067
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745067
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745631
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745631
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.750565
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.750565
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754933
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754933
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754369
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754369
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.749436
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.749436
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745067
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745067
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.745631
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.745631
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.750565
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.750565
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754933
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754933
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.32,
+                0.754369
+              ],
+              "Right": [
+                -0.204,
+                -0.32,
+                0.754369
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      }
+    },
+    "Rope_TieStake": {
+      "file": "Rope_TieStake.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kangalı yere koyar, kazık yakasında üç abartılı çekişle düğüm atar, tekrar kucaklayıp doğrulur.",
+      "action_sha256": "7c47fb3230d5ccd78cfef1c343f845dd7941a23558324646066db1e88c713275",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.33,
+            0.8
+          ],
+          "Right": [
+            -0.204,
+            -0.33,
+            0.8
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.207434,
+                -0.329686,
+                0.792636
+              ],
+              "Right": [
+                -0.200554,
+                -0.332862,
+                0.792636
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.21703,
+                -0.328805,
+                0.771914
+              ],
+              "Right": [
+                -0.19079,
+                -0.340914,
+                0.771914
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.231668,
+                -0.327449,
+                0.739888
+              ],
+              "Right": [
+                -0.175508,
+                -0.353351,
+                0.739888
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.25019,
+                -0.325724,
+                0.698615
+              ],
+              "Right": [
+                -0.15547,
+                -0.369358,
+                0.698615
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.271447,
+                -0.323753,
+                0.650148
+              ],
+              "Right": [
+                -0.131447,
+                -0.388099,
+                0.650148
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.294342,
+                -0.321672,
+                0.596544
+              ],
+              "Right": [
+                -0.104262,
+                -0.408728,
+                0.596544
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.317858,
+                -0.319625,
+                0.539857
+              ],
+              "Right": [
+                -0.074818,
+                -0.43039,
+                0.539857
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.341077,
+                -0.317745,
+                0.482143
+              ],
+              "Right": [
+                -0.044117,
+                -0.452241,
+                0.482143
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.361103,
+                -0.313893,
+                0.429372
+              ],
+              "Right": [
+                -0.013265,
+                -0.473459,
+                0.425456
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.374991,
+                -0.307404,
+                0.387823
+              ],
+              "Right": [
+                0.016531,
+                -0.493265,
+                0.371852
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.386553,
+                -0.30307,
+                0.351313
+              ],
+              "Right": [
+                0.043978,
+                -0.510927,
+                0.323386
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.39588,
+                -0.300461,
+                0.320681
+              ],
+              "Right": [
+                0.067722,
+                -0.525765,
+                0.282112
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.402886,
+                -0.299054,
+                0.297066
+              ],
+              "Right": [
+                0.086374,
+                -0.537139,
+                0.250087
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.407338,
+                -0.298402,
+                0.281816
+              ],
+              "Right": [
+                0.098547,
+                -0.544432,
+                0.229364
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.408908,
+                -0.298216,
+                0.276398
+              ],
+              "Right": [
+                0.102893,
+                -0.54701,
+                0.222
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.380802,
+                -0.334247,
+                0.265497
+              ],
+              "Right": [
+                0.076492,
+                -0.534321,
+                0.231844
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.290371,
+                -0.4139,
+                0.254527
+              ],
+              "Right": [
+                0.024443,
+                -0.512822,
+                0.254527
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.162458,
+                -0.474493,
+                0.279778
+              ],
+              "Right": [
+                -0.022458,
+                -0.504026,
+                0.279778
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.069356,
+                -0.5098,
+                0.294609
+              ],
+              "Right": [
+                -0.050837,
+                -0.512318,
+                0.294609
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.498751,
+                0.308035
+              ],
+              "Right": [
+                -0.055,
+                -0.498751,
+                0.308035
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.475878,
+                0.324373
+              ],
+              "Right": [
+                -0.055,
+                -0.475878,
+                0.324373
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.482636,
+                0.319546
+              ],
+              "Right": [
+                -0.055,
+                -0.482636,
+                0.319546
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.51,
+                0.3
+              ],
+              "Right": [
+                -0.055,
+                -0.51,
+                0.3
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.064558,
+                -0.521719,
+                0.296588
+              ],
+              "Right": [
+                -0.064558,
+                -0.521719,
+                0.296588
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.06866,
+                -0.520753,
+                0.29951
+              ],
+              "Right": [
+                -0.06866,
+                -0.520753,
+                0.29951
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.056498,
+                -0.522933,
+                0.291517
+              ],
+              "Right": [
+                -0.056498,
+                -0.522933,
+                0.291517
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.494814,
+                0.310847
+              ],
+              "Right": [
+                -0.055,
+                -0.494814,
+                0.310847
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.475878,
+                0.324373
+              ],
+              "Right": [
+                -0.055,
+                -0.475878,
+                0.324373
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.482636,
+                0.319546
+              ],
+              "Right": [
+                -0.055,
+                -0.482636,
+                0.319546
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.51,
+                0.3
+              ],
+              "Right": [
+                -0.055,
+                -0.51,
+                0.3
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.064558,
+                -0.521719,
+                0.296588
+              ],
+              "Right": [
+                -0.064558,
+                -0.521719,
+                0.296588
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.06866,
+                -0.520753,
+                0.29951
+              ],
+              "Right": [
+                -0.06866,
+                -0.520753,
+                0.29951
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.056498,
+                -0.522933,
+                0.291517
+              ],
+              "Right": [
+                -0.056498,
+                -0.522933,
+                0.291517
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.494814,
+                0.310847
+              ],
+              "Right": [
+                -0.055,
+                -0.494814,
+                0.310847
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.475878,
+                0.324373
+              ],
+              "Right": [
+                -0.055,
+                -0.475878,
+                0.324373
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.482636,
+                0.319546
+              ],
+              "Right": [
+                -0.055,
+                -0.482636,
+                0.319546
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.51,
+                0.3
+              ],
+              "Right": [
+                -0.055,
+                -0.51,
+                0.3
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.064558,
+                -0.521719,
+                0.296588
+              ],
+              "Right": [
+                -0.064558,
+                -0.521719,
+                0.296588
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.06866,
+                -0.520753,
+                0.29951
+              ],
+              "Right": [
+                -0.06866,
+                -0.520753,
+                0.29951
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.055,
+                -0.521249,
+                0.291965
+              ],
+              "Right": [
+                -0.055,
+                -0.521249,
+                0.291965
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.069356,
+                -0.502195,
+                0.300041
+              ],
+              "Right": [
+                -0.050837,
+                -0.504714,
+                0.300041
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.162458,
+                -0.474493,
+                0.279778
+              ],
+              "Right": [
+                -0.022458,
+                -0.504026,
+                0.279778
+              ]
+            }
+          },
+          {
+            "frame": 44,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.290371,
+                -0.4139,
+                0.254527
+              ],
+              "Right": [
+                0.024443,
+                -0.512822,
+                0.254527
+              ]
+            }
+          },
+          {
+            "frame": 45,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.380802,
+                -0.334247,
+                0.265497
+              ],
+              "Right": [
+                0.076492,
+                -0.534321,
+                0.231844
+              ]
+            }
+          },
+          {
+            "frame": 46,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.408908,
+                -0.298216,
+                0.276398
+              ],
+              "Right": [
+                0.102893,
+                -0.54701,
+                0.222
+              ]
+            }
+          },
+          {
+            "frame": 47,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.407338,
+                -0.298402,
+                0.281816
+              ],
+              "Right": [
+                0.098547,
+                -0.544432,
+                0.229364
+              ]
+            }
+          },
+          {
+            "frame": 48,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.402886,
+                -0.299054,
+                0.297066
+              ],
+              "Right": [
+                0.086374,
+                -0.537139,
+                0.250087
+              ]
+            }
+          },
+          {
+            "frame": 49,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.39588,
+                -0.300461,
+                0.320681
+              ],
+              "Right": [
+                0.067722,
+                -0.525765,
+                0.282112
+              ]
+            }
+          },
+          {
+            "frame": 50,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.386553,
+                -0.30307,
+                0.351313
+              ],
+              "Right": [
+                0.043978,
+                -0.510927,
+                0.323386
+              ]
+            }
+          },
+          {
+            "frame": 51,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.374991,
+                -0.307404,
+                0.387823
+              ],
+              "Right": [
+                0.016531,
+                -0.493265,
+                0.371852
+              ]
+            }
+          },
+          {
+            "frame": 52,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.361103,
+                -0.313893,
+                0.429372
+              ],
+              "Right": [
+                -0.013265,
+                -0.473459,
+                0.425456
+              ]
+            }
+          },
+          {
+            "frame": 53,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.341077,
+                -0.317745,
+                0.482143
+              ],
+              "Right": [
+                -0.044117,
+                -0.452241,
+                0.482143
+              ]
+            }
+          },
+          {
+            "frame": 54,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.317858,
+                -0.319625,
+                0.539857
+              ],
+              "Right": [
+                -0.074818,
+                -0.43039,
+                0.539857
+              ]
+            }
+          },
+          {
+            "frame": 55,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.294342,
+                -0.321672,
+                0.596544
+              ],
+              "Right": [
+                -0.104262,
+                -0.408728,
+                0.596544
+              ]
+            }
+          },
+          {
+            "frame": 56,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.271447,
+                -0.323753,
+                0.650148
+              ],
+              "Right": [
+                -0.131447,
+                -0.388099,
+                0.650148
+              ]
+            }
+          },
+          {
+            "frame": 57,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.25019,
+                -0.325724,
+                0.698615
+              ],
+              "Right": [
+                -0.15547,
+                -0.369358,
+                0.698615
+              ]
+            }
+          },
+          {
+            "frame": 58,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.231668,
+                -0.327449,
+                0.739888
+              ],
+              "Right": [
+                -0.175508,
+                -0.353351,
+                0.739888
+              ]
+            }
+          },
+          {
+            "frame": 59,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.21703,
+                -0.328805,
+                0.771914
+              ],
+              "Right": [
+                -0.19079,
+                -0.340914,
+                0.771914
+              ]
+            }
+          },
+          {
+            "frame": 60,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.207434,
+                -0.329686,
+                0.792636
+              ],
+              "Right": [
+                -0.200554,
+                -0.332862,
+                0.792636
+              ]
+            }
+          },
+          {
+            "frame": 61,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      },
+      "stake_hand_frames": [
+        21,
+        40
+      ],
+      "stake_root_local_m": [
+        0,
+        -0.51,
+        0
+      ],
+      "coil_ground_frames": [
+        17,
+        45
+      ],
+      "coil_ground_root_local_m": [
+        0.27,
+        -0.43,
+        0.222
+      ],
+      "coil_ground_rotation_euler_deg": [
+        0,
+        0,
+        35
+      ],
+      "tug_frames": [
+        22,
+        29,
+        36
+      ]
+    },
+    "Rope_Throw": {
+      "file": "Rope_Throw.fbx",
+      "duration_s": 1.4,
+      "frames": 43,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kangalı geriye çeker, ileri-aşağı fırlatır; kollar açık iki komik denge salınımından sonra dik durur.",
+      "action_sha256": "20c2a8bf1c3a0a2a131ba1cdc7c69d2914f7ac6b7749870c41380650d8965bc8",
+      "coil_grip": {
+        "prop": "SM_RopeCoil",
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "markers": {
+          "Left": "Grip_L",
+          "Right": "Grip_R"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.204,
+            -0.33,
+            0.8
+          ],
+          "Right": [
+            -0.204,
+            -0.33,
+            0.8
+          ]
+        },
+        "samples": [
+          {
+            "frame": 1,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.33,
+                0.8
+              ],
+              "Right": [
+                -0.204,
+                -0.33,
+                0.8
+              ]
+            }
+          },
+          {
+            "frame": 2,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.179631,
+                -0.344087,
+                0.797398
+              ],
+              "Right": [
+                -0.227305,
+                -0.314635,
+                0.797398
+              ]
+            }
+          },
+          {
+            "frame": 3,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.109066,
+                -0.373059,
+                0.790301
+              ],
+              "Right": [
+                -0.284357,
+                -0.264971,
+                0.790301
+              ]
+            }
+          },
+          {
+            "frame": 4,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.001955,
+                -0.389456,
+                0.779777
+              ],
+              "Right": [
+                -0.348429,
+                -0.174003,
+                0.779777
+              ]
+            }
+          },
+          {
+            "frame": 5,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.130483,
+                -0.360864,
+                0.769354
+              ],
+              "Right": [
+                -0.384922,
+                -0.042782,
+                0.76797
+              ]
+            }
+          },
+          {
+            "frame": 6,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.248186,
+                -0.283925,
+                0.758637
+              ],
+              "Right": [
+                -0.369953,
+                0.103809,
+                0.755391
+              ]
+            }
+          },
+          {
+            "frame": 7,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.330131,
+                -0.171619,
+                0.74772
+              ],
+              "Right": [
+                -0.30473,
+                0.233059,
+                0.741862
+              ]
+            }
+          },
+          {
+            "frame": 8,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.365788,
+                -0.049961,
+                0.737097
+              ],
+              "Right": [
+                -0.209428,
+                0.323195,
+                0.728392
+              ]
+            }
+          },
+          {
+            "frame": 9,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.364292,
+                0.053592,
+                0.727488
+              ],
+              "Right": [
+                -0.113993,
+                0.37053,
+                0.716287
+              ]
+            }
+          },
+          {
+            "frame": 10,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.348059,
+                0.120424,
+                0.719985
+              ],
+              "Right": [
+                -0.045758,
+                0.387422,
+                0.707022
+              ]
+            }
+          },
+          {
+            "frame": 11,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.340267,
+                0.141244,
+                0.715986
+              ],
+              "Right": [
+                -0.023801,
+                0.390752,
+                0.702164
+              ]
+            }
+          },
+          {
+            "frame": 12,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.343292,
+                0.143802,
+                0.720957
+              ],
+              "Right": [
+                -0.026614,
+                0.393752,
+                0.708864
+              ]
+            }
+          },
+          {
+            "frame": 13,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.350198,
+                0.149135,
+                0.734332
+              ],
+              "Right": [
+                -0.024906,
+                0.391233,
+                0.729112
+              ]
+            }
+          },
+          {
+            "frame": 14,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.358348,
+                0.155269,
+                0.750146
+              ],
+              "Right": [
+                -0.024474,
+                0.389773,
+                0.750146
+              ]
+            }
+          },
+          {
+            "frame": 15,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.380659,
+                0.099507,
+                0.760965
+              ],
+              "Right": [
+                -0.087759,
+                0.383538,
+                0.760965
+              ]
+            }
+          },
+          {
+            "frame": 16,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.398969,
+                -0.037408,
+                0.754145
+              ],
+              "Right": [
+                -0.228023,
+                0.332692,
+                0.753417
+              ]
+            }
+          },
+          {
+            "frame": 17,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.349407,
+                -0.219004,
+                0.736237
+              ],
+              "Right": [
+                -0.366082,
+                0.18783,
+                0.736657
+              ]
+            }
+          },
+          {
+            "frame": 18,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.212615,
+                -0.377326,
+                0.710304
+              ],
+              "Right": [
+                -0.425756,
+                -0.030903,
+                0.713257
+              ]
+            }
+          },
+          {
+            "frame": 19,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                -0.026463,
+                -0.456508,
+                0.680869
+              ],
+              "Right": [
+                -0.376301,
+                -0.248407,
+                0.684263
+              ]
+            }
+          },
+          {
+            "frame": 20,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.132871,
+                -0.458879,
+                0.653648
+              ],
+              "Right": [
+                -0.269261,
+                -0.392097,
+                0.654902
+              ]
+            }
+          },
+          {
+            "frame": 21,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.203201,
+                -0.448948,
+                0.632711
+              ],
+              "Right": [
+                -0.204602,
+                -0.44946,
+                0.632037
+              ]
+            }
+          },
+          {
+            "frame": 22,
+            "attached": true,
+            "hands_root_local_m": {
+              "Left": [
+                0.204,
+                -0.46,
+                0.62
+              ],
+              "Right": [
+                -0.204,
+                -0.46,
+                0.62
+              ]
+            }
+          },
+          {
+            "frame": 23,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.253004,
+                -0.47048,
+                0.612999
+              ],
+              "Right": [
+                -0.251028,
+                -0.469961,
+                0.611183
+              ]
+            }
+          },
+          {
+            "frame": 24,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.281199,
+                -0.480279,
+                0.638204
+              ],
+              "Right": [
+                -0.257901,
+                -0.465906,
+                0.635968
+              ]
+            }
+          },
+          {
+            "frame": 25,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.328718,
+                -0.488406,
+                0.673946
+              ],
+              "Right": [
+                -0.253728,
+                -0.457387,
+                0.669188
+              ]
+            }
+          },
+          {
+            "frame": 26,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.381821,
+                -0.483272,
+                0.710608
+              ],
+              "Right": [
+                -0.245593,
+                -0.447858,
+                0.703591
+              ]
+            }
+          },
+          {
+            "frame": 27,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.412075,
+                -0.458675,
+                0.740008
+              ],
+              "Right": [
+                -0.250445,
+                -0.437092,
+                0.736412
+              ]
+            }
+          },
+          {
+            "frame": 28,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.397111,
+                -0.420169,
+                0.760078
+              ],
+              "Right": [
+                -0.281321,
+                -0.411968,
+                0.765161
+              ]
+            }
+          },
+          {
+            "frame": 29,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.35211,
+                -0.371781,
+                0.767924
+              ],
+              "Right": [
+                -0.327381,
+                -0.373299,
+                0.782309
+              ]
+            }
+          },
+          {
+            "frame": 30,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.303767,
+                -0.323662,
+                0.766605
+              ],
+              "Right": [
+                -0.375088,
+                -0.332142,
+                0.788406
+              ]
+            }
+          },
+          {
+            "frame": 31,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.268267,
+                -0.288782,
+                0.759451
+              ],
+              "Right": [
+                -0.409049,
+                -0.30063,
+                0.786344
+              ]
+            }
+          },
+          {
+            "frame": 32,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.260341,
+                -0.27702,
+                0.755334
+              ],
+              "Right": [
+                -0.416352,
+                -0.290185,
+                0.787544
+              ]
+            }
+          },
+          {
+            "frame": 33,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.28085,
+                -0.289583,
+                0.758104
+              ],
+              "Right": [
+                -0.396787,
+                -0.302562,
+                0.794878
+              ]
+            }
+          },
+          {
+            "frame": 34,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.317427,
+                -0.317759,
+                0.763652
+              ],
+              "Right": [
+                -0.361493,
+                -0.327655,
+                0.798739
+              ]
+            }
+          },
+          {
+            "frame": 35,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.360651,
+                -0.346533,
+                0.761001
+              ],
+              "Right": [
+                -0.327565,
+                -0.350154,
+                0.785527
+              ]
+            }
+          },
+          {
+            "frame": 36,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.398588,
+                -0.354325,
+                0.744779
+              ],
+              "Right": [
+                -0.31314,
+                -0.352714,
+                0.752917
+              ]
+            }
+          },
+          {
+            "frame": 37,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.41115,
+                -0.313735,
+                0.727709
+              ],
+              "Right": [
+                -0.316432,
+                -0.312072,
+                0.720344
+              ]
+            }
+          },
+          {
+            "frame": 38,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.415421,
+                -0.258578,
+                0.702318
+              ],
+              "Right": [
+                -0.331082,
+                -0.256993,
+                0.691283
+              ]
+            }
+          },
+          {
+            "frame": 39,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.415465,
+                -0.199529,
+                0.671363
+              ],
+              "Right": [
+                -0.351167,
+                -0.198405,
+                0.666176
+              ]
+            }
+          },
+          {
+            "frame": 40,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.413549,
+                -0.144891,
+                0.640692
+              ],
+              "Right": [
+                -0.372282,
+                -0.144331,
+                0.643405
+              ]
+            }
+          },
+          {
+            "frame": 41,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.411213,
+                -0.100966,
+                0.616313
+              ],
+              "Right": [
+                -0.390769,
+                -0.100805,
+                0.622231
+              ]
+            }
+          },
+          {
+            "frame": 42,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.409361,
+                -0.072133,
+                0.601858
+              ],
+              "Right": [
+                -0.403708,
+                -0.072119,
+                0.604965
+              ]
+            }
+          },
+          {
+            "frame": 43,
+            "attached": false,
+            "hands_root_local_m": {
+              "Left": [
+                0.420784,
+                -0.025323,
+                0.569432
+              ],
+              "Right": [
+                -0.420784,
+                -0.025323,
+                0.569432
+              ]
+            }
+          }
+        ],
+        "attachment": "İki avucun ortası kangal merkezi; Grip_R→Grip_L kangal +X ekseni. Kangal +Z taşıyan kök +Z yönüne en yakın dikeydir.",
+        "spacing_m": 0.408,
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "El mesafesi yalnız attached=true karelerde Grip_L/R ile eşleşir. IK hedefleri prop boşlarıdır; uç bırakılınca eller serbesttir."
+      },
+      "release_frame": 22,
+      "release_hand_root_local_m": {
+        "Left": [
+          0.204,
+          -0.46,
+          0.62
+        ],
+        "Right": [
+          -0.204,
+          -0.46,
+          0.62
+        ]
+      },
+      "release_position_root_local_m": [
+        0.0,
+        -0.46,
+        0.62
+      ],
+      "throw_direction_root_local": [
+        0.042619,
+        -0.65683,
+        -0.752834
+      ],
+      "stumble_frames": [
+        25,
+        40
+      ],
+      "preview_flight_speed_mps": 1.8,
+      "preview_flight_note": "Şeritte bırakış sonrası balistik uçuş; oyunda aynı olayda fizik devralır."
+    },
+    "Push_Shove": {
+      "file": "Push_Shove.fbx",
+      "duration_s": 0.6,
+      "frames": 19,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki avuçla öne itiş; çömelip yüklenir, hızla toparlanır. Slapstick, temas koddan.",
+      "action_sha256": "d198f3b2bd1f458b2b0463b8a6383abf2413d7148afc8c2ca690432109725b12",
+      "hit_frame": 9
+    },
+    "Tackle_Dive": {
+      "file": "Tackle_Dive.fbx",
+      "duration_s": 0.9,
+      "frames": 28,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Koşu hazırlığından öne sıçrar; kollar açık yüzüstü yere iner. İleri hareket Unity kodundan.",
+      "action_sha256": "11490477ba98bffe261bfa2f74a0bce97428b13c520c9cebe068dad8669d0c7e",
+      "hit_frame": 12,
+      "ground_frame": 22,
+      "vertical_pose_motion": "Kalça yüksekliği klipte; yatay ilerleme Unity kodundan."
+    },
+    "Tackle_GetUp": {
+      "file": "Tackle_GetUp.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Tackle_Dive sonundan avuçlarla yerden iterek diz üstüne, ardından ayağa kalkar.",
+      "action_sha256": "2b549a0e50b4c2108042ffe263ddd0d2efc258db339e268e93ed5f55b3498056",
+      "vertical_pose_motion": "Kalça yüksekliği klipte; yatay ilerleme Unity kodundan."
+    },
+    "Throw_Aim": {
+      "file": "Throw_Aim.fbx",
+      "duration_s": 1.0,
+      "frames": 31,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sağ elde yukarı-geride nesne, küçük nişan salınımı; fırlatışa hazır döngü.",
+      "action_sha256": "b0dba6f1bd87fe51aa14f897b15cc8663fd5fa65a2f59dba9a5add9311c47e30",
+      "hold_grip": {
+        "bone": "mixamorig:RightHand",
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ]
+      }
+    },
+    "Throw_Release": {
+      "file": "Throw_Release.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Throw_Aim sınır pozundan omuz üstü fırlatış, kol öne takip eder ve açılır.",
+      "action_sha256": "e2cb2fee746c9547fedce33a25b289734ed7ebc80d6861196eefe327826d81aa",
+      "release_frame": 8
+    },
+    "Whistle_Blow": {
+      "file": "Whistle_Blow.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sağ el ağızda düdük; nefes alır, kollar açılıp öne eğilir, komik titreyerek üfler.",
+      "action_sha256": "572a99753d774cae75ed3c531950000a528ece01f10455e1b0360522bdd36ac1",
+      "blow_frames": [
+        15,
+        27
+      ]
+    },
+    "HitReact": {
+      "file": "HitReact.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Geri kaykılma, savrulan kollar, kısa sendeleme ve toparlanma; kök yerinde.",
+      "action_sha256": "c9473ac766b88f0f06966fb7457906bd2cf135a74af12f9d3b019dcc0c02711b"
+    },
+    "Thief_Sneak_Walk": {
+      "file": "Thief_Sneak_Walk.fbx",
+      "duration_s": 0.6,
+      "frames": 19,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Çömelmiş, parmak ucunda sinsi yürüyüş; önde pati eller, abartılı yan bakışlar (1.6 m/sn).",
+      "action_sha256": "aa2d3bbc3054f375825adabcedb7f4c7cf160cce7faedbd6d63ab42164d96174",
+      "target_speed_mps": 1.6,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.48
+    },
+    "Thief_Run_Carry": {
+      "file": "Thief_Run_Carry.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Ganimeti göğüs önünde iki elle kavrayarak telaşlı kaçış koşusu (3.6 m/sn).",
+      "action_sha256": "3316900500d03279d88e393eaa7bf5a5c49b1f77d74b30ed838509f84b6f008d",
+      "target_speed_mps": 3.6,
+      "stance_ratio": 0.32,
+      "step_length_m": 0.72,
+      "stance_travel_m": 0.4608,
+      "loot_grip": {
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "palm_offset_hand_local_m": [
+          0,
+          0.05,
+          0
+        ],
+        "spacing_m": 0.408,
+        "attachment": "Ganimet merkezi iki avucun ortası; nesne boyutuna göre Unity el IK hedefleri."
+      }
+    },
+    "Thief_Run": {
+      "file": "Thief_Run.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Eller boş, geniş kol salınımlı telaşlı kaçış koşusu (3.6 m/sn).",
+      "action_sha256": "2fb1e4c2239a51811b429aefd315fd4f471d6062f1d2b13777946720fe28c817",
+      "target_speed_mps": 3.6,
+      "stance_ratio": 0.32,
+      "step_length_m": 0.72,
+      "stance_travel_m": 0.4608
+    },
+    "Thief_Grab": {
+      "file": "Thief_Grab.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Öne-aşağı uzanır, ganimeti kapıp göğse çeker; Thief_Run_Carry ilk pozunda biter.",
+      "action_sha256": "b4e1ab9bc74162b6e5d4447ebada5f1117f382a63a98a59221202a762e8a8386",
+      "grab_frame": 11
+    },
+    "Thief_Punch": {
+      "file": "Thief_Punch.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Büyük hazırlık dönüşü ve geniş yandan savurma; komik haymaker, kan/silah yok.",
+      "action_sha256": "2cb620fef523b753fc0e1cdb06eb69496030285b245f92f3c473fac0a5c0e8a6",
+      "hit_frame": 14
+    },
+    "Thief_Stunned": {
+      "file": "Thief_Stunned.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Dizler kırık, kollar sarkık, baş daire çizerken sersem gövde salınımı.",
+      "action_sha256": "2d953dd9c70fc0822c9d7e6b1f0d78eb57fa3b308bfb5c04307d0ba365c488e0"
+    },
+    "Thief_ThrowInVan": {
+      "file": "Thief_ThrowInVan.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "thief",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Göğüste tuttuğu ganimeti iki elle ileri-yukarı kamyonet kasasına atar.",
+      "action_sha256": "90c18c7fb0875929f5f5ec02070f80c479ec998e692224c66eeee726e01082b3",
+      "release_frame": 14
+    }
+  },
+  "actions_sha256": "9b27956e687026b8c7938b348ec8d1185883e1bb46dec389bfdc2e66e4e0c72e",
+  "source_sha256": "a33cf9b5dea6996d66a7baa66c1b34800ceab3d4069583459007a8e6b65410e3"
+}

@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X",
+    "length_axis": "Y"
+  },
+  "field_descriptions": {
+    "dimensions_m": "Length Y, width X excluding mirrors, height Z above ground; metres.",
+    "axles_y_m": "Axle centres along Blender root Y; all wheels lie at Z=radius.",
+    "wheelbase_m": "Front axle to rear tandem midpoint (BoxTruck); front to rear axle (PanelVan).",
+    "contact_rectangle_wheelbase_m": "Frontmost to rearmost axle; its midpoint is root Y=0.",
+    "pivot_m": "XYZ object origin in root space; wheel origins at geometric axle centre.",
+    "axis": "Signed unit spin axis in Blender root coordinates; right-hand rule.",
+    "materials": "Material name to sRGB hex. FBX DiffuseColor contains its linear RGB conversion.",
+    "palette_samples": "5x5 median; reference pixel XY measured from top left; assumptions labelled."
+  },
+  "dimensions_m": {
+    "length": 5.4,
+    "width": 2.0,
+    "height": 2.4
+  },
+  "dimension_exclusion_vertex_group": "mirrors_excluded_from_dimensions",
+  "wheel_radius_m": 0.43,
+  "wheel_x_m": 0.84,
+  "axles_y_m": {
+    "F": -1.7,
+    "R": 1.7
+  },
+  "wheelbase_m": 3.4,
+  "contact_rectangle_wheelbase_m": 3.4,
+  "rear_tandem_spacing_m": null,
+  "root_pivot": "Centre of wheel contact rectangle, Z=0.",
+  "parts": {
+    "SM_PanelVan_Body": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_PanelVan",
+      "motion": null
+    },
+    "SM_PanelVan_Glass": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_PanelVan",
+      "motion": null
+    },
+    "SM_PanelVan_Wheel_FL": {
+      "pivot_m": [
+        0.84,
+        -1.7,
+        0.43
+      ],
+      "parent": "SM_PanelVan",
+      "motion": {
+        "type": "continuous_rotation",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.43
+      }
+    },
+    "SM_PanelVan_Wheel_FR": {
+      "pivot_m": [
+        -0.84,
+        -1.7,
+        0.43
+      ],
+      "parent": "SM_PanelVan",
+      "motion": {
+        "type": "continuous_rotation",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.43
+      }
+    },
+    "SM_PanelVan_Wheel_RL": {
+      "pivot_m": [
+        0.84,
+        1.7,
+        0.43
+      ],
+      "parent": "SM_PanelVan",
+      "motion": {
+        "type": "continuous_rotation",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.43
+      }
+    },
+    "SM_PanelVan_Wheel_RR": {
+      "pivot_m": [
+        -0.84,
+        1.7,
+        0.43
+      ],
+      "parent": "SM_PanelVan",
+      "motion": {
+        "type": "continuous_rotation",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.43
+      }
+    },
+    "SM_PanelVan_Interior": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_PanelVan",
+      "motion": null
+    }
+  },
+  "materials": {
+    "M_TrafficTrucks_VanPaint": "#C5C5C6",
+    "M_TrafficTrucks_Trim": "#A49A9A",
+    "M_TrafficTrucks_Tire": "#2C2A2F",
+    "M_TrafficTrucks_Rim": "#4C4D60",
+    "M_TrafficTrucks_Glass": "#95949B",
+    "M_TrafficTrucks_Seat": "#3C4447",
+    "M_TrafficTrucks_Headlight": "#D7D3CF",
+    "M_TrafficTrucks_Amber": "#BC865C",
+    "M_TrafficTrucks_Chassis": "#343940",
+    "M_TrafficTrucks_Interior": "#66656A",
+    "M_TrafficTrucks_Driver": "#39494A",
+    "M_TrafficTrucks_Taillight": "#783F40",
+    "M_TrafficTrucks_Seal": "#353A40"
+  },
+  "paint_materials": [
+    "M_TrafficTrucks_VanPaint"
+  ],
+  "glass_material": "M_TrafficTrucks_Glass",
+  "palette_samples": {
+    "VanPaint": {
+      "hex": "#C5C5C6",
+      "source_pixel_xy_top_left": [
+        987,
+        591
+      ],
+      "median_patch_px": 5
+    },
+    "TruckPaint": {
+      "hex": "#2B3963",
+      "source_pixel_xy_top_left": [
+        1175,
+        574
+      ],
+      "median_patch_px": 5
+    },
+    "Cargo": {
+      "hex": "#DCD5C9",
+      "source_pixel_xy_top_left": [
+        1126,
+        439
+      ],
+      "median_patch_px": 5
+    },
+    "Trim": {
+      "hex": "#A49A9A",
+      "source_pixel_xy_top_left": [
+        1276,
+        638
+      ],
+      "median_patch_px": 5
+    },
+    "Tire": {
+      "hex": "#2C2A2F",
+      "source_pixel_xy_top_left": [
+        1270,
+        649
+      ],
+      "median_patch_px": 5
+    },
+    "Rim": {
+      "hex": "#4C4D60",
+      "source_pixel_xy_top_left": [
+        1152,
+        650
+      ],
+      "median_patch_px": 5
+    },
+    "Glass": {
+      "hex": "#95949B",
+      "source_pixel_xy_top_left": [
+        1186,
+        505
+      ],
+      "median_patch_px": 5
+    },
+    "Seat": {
+      "hex": "#3C4447",
+      "source_pixel_xy_top_left": [
+        1230,
+        524
+      ],
+      "median_patch_px": 5
+    },
+    "Headlight": {
+      "hex": "#D7D3CF",
+      "source_pixel_xy_top_left": [
+        1225,
+        602
+      ],
+      "median_patch_px": 5
+    },
+    "Amber": {
+      "hex": "#BC865C",
+      "source_pixel_xy_top_left": [
+        1227,
+        623
+      ],
+      "median_patch_px": 5
+    },
+    "Chassis": {
+      "hex": "#343940",
+      "source": "neutral assumption; not visible as a flat sample in reference"
+    },
+    "Interior": {
+      "hex": "#66656A",
+      "source": "neutral assumption; not visible as a flat sample in reference"
+    },
+    "Driver": {
+      "hex": "#39494A",
+      "source": "neutral assumption; not visible as a flat sample in reference"
+    },
+    "Taillight": {
+      "hex": "#783F40",
+      "source": "neutral assumption; not visible as a flat sample in reference"
+    },
+    "Seal": {
+      "hex": "#353A40",
+      "source": "neutral assumption; not visible as a flat sample in reference"
+    }
+  },
+  "palette_reference": "ArtSource/Traffic/references/01_traffic_lineup.jpg",
+  "driver": {
+    "object": "SM_PanelVan_Interior",
+    "components": [
+      "head",
+      "torso"
+    ],
+    "rigged": false,
+    "face": false
+  },
+  "unity_import": {
+    "scale_factor": 1,
+    "bake_axis_conversion": false,
+    "color_note": "sRGB hex -> linear Base Color -> unchanged FBX DiffuseColor; Linear URP.",
+    "glass_note": "Use transparent URP material; exported alpha 0.30."
+  }
+}

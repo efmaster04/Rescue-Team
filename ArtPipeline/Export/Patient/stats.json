@@ -1,0 +1,277 @@
+{
+  "geometry_sha256": "dcccc1d09633d919a63a3e8f6c51e0f465340fdffd28227f7bec7afaab76efe5",
+  "variants": {
+    "Tourist": {
+      "height_m": 1.5150000010094296,
+      "sole_z_m": -1.5314544299371846e-08,
+      "hips_to_back_m": 0.13899992409145767,
+      "hips_to_top_m": 1.0578571259975433,
+      "hips_to_heel_m": 0.4571428750118862,
+      "hips_bind_position_m": [
+        0.0,
+        7.447803085369742e-08,
+        0.4571428596973419
+      ],
+      "triangles": 7792,
+      "mesh_triangles": {
+        "Patient_Tourist_Head": 3010,
+        "Patient_Tourist_Torso": 1470,
+        "Patient_Tourist_LeftArm": 876,
+        "Patient_Tourist_RightArm": 772,
+        "Patient_Tourist_Legs": 1664
+      }
+    },
+    "Civilian": {
+      "height_m": 1.4999998961052547,
+      "sole_z_m": -1.5314544299371846e-08,
+      "hips_to_back_m": 0.14099992814457352,
+      "hips_to_top_m": 1.0428570210933685,
+      "hips_to_heel_m": 0.4571428750118862,
+      "hips_bind_position_m": [
+        0.0,
+        7.447803085369742e-08,
+        0.4571428596973419
+      ],
+      "triangles": 5966,
+      "mesh_triangles": {
+        "Patient_Civilian_Head": 2646,
+        "Patient_Civilian_Torso": 524,
+        "Patient_Civilian_LeftArm": 744,
+        "Patient_Civilian_RightArm": 900,
+        "Patient_Civilian_Legs": 1104,
+        "Patient_Civilian_Sling": 48
+      }
+    },
+    "Elder": {
+      "height_m": 1.4999998961052547,
+      "sole_z_m": -1.5314544299371846e-08,
+      "hips_to_back_m": 0.13899992409145767,
+      "hips_to_top_m": 1.0428570210933685,
+      "hips_to_heel_m": 0.4571428750118862,
+      "hips_bind_position_m": [
+        0.0,
+        7.447803085369742e-08,
+        0.4571428596973419
+      ],
+      "triangles": 6566,
+      "mesh_triangles": {
+        "Patient_Elder_Head": 2934,
+        "Patient_Elder_Torso": 720,
+        "Patient_Elder_LeftArm": 744,
+        "Patient_Elder_RightArm": 744,
+        "Patient_Elder_Legs": 1424
+      }
+    }
+  },
+  "last_build": {
+    "geometry_sha256": "dcccc1d09633d919a63a3e8f6c51e0f465340fdffd28227f7bec7afaab76efe5",
+    "source_sha256": "db6bd5219aab34aea3dff78cd6af5dff109307ae94ec0cf84c92b9e86cee949d",
+    "round": 4,
+    "render_seconds": 256.08,
+    "camera_render_seconds": {
+      "tourist_front": 18.075,
+      "tourist_left": 9.055,
+      "tourist_back": 12.491,
+      "civilian_front": 12.944,
+      "civilian_left": 8.966,
+      "civilian_back": 12.55,
+      "elder_front": 13.252,
+      "elder_left": 9.206,
+      "elder_back": 12.389,
+      "three_front": 13.361,
+      "three_lie": 106.763,
+      "scale_with_crew": 24.418
+    },
+    "render_device": "CPU",
+    "build_seconds": 257.818
+  },
+  "build_history": [
+    {
+      "geometry_sha256": "cf8799d44129105edb6ede750b19615123f762407047aaf64b8942122f1d2098",
+      "source_sha256": "7cb6e40d8c98a8a1903af13ed1cae6e849c09a4d5e94148ffd0fae3414ed66c1",
+      "round": 3,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "build_seconds": 1.181
+    },
+    {
+      "geometry_sha256": "cf8799d44129105edb6ede750b19615123f762407047aaf64b8942122f1d2098",
+      "source_sha256": "7cb6e40d8c98a8a1903af13ed1cae6e849c09a4d5e94148ffd0fae3414ed66c1",
+      "round": 3,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "build_seconds": 0.999
+    },
+    {
+      "geometry_sha256": "5e944567df62101dffe786696fa7b7be8d3f7e238e2bee33e9b9b2913e7e2fd5",
+      "source_sha256": "0b9cd7c621a5c59713e2e0bb471ec7952e092224d0ba47d501f1127a0ceed089",
+      "round": 3,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "build_seconds": 0.579
+    },
+    {
+      "geometry_sha256": "5e944567df62101dffe786696fa7b7be8d3f7e238e2bee33e9b9b2913e7e2fd5",
+      "source_sha256": "0b9cd7c621a5c59713e2e0bb471ec7952e092224d0ba47d501f1127a0ceed089",
+      "round": 3,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "build_seconds": 0.568
+    },
+    {
+      "geometry_sha256": "5e944567df62101dffe786696fa7b7be8d3f7e238e2bee33e9b9b2913e7e2fd5",
+      "source_sha256": "4d9943bf299b1eceb73f1db00edfd61a44a8d1cbf6bf7d30bdf6fb7529180f7c",
+      "round": 2,
+      "render_seconds": 231.763,
+      "camera_render_seconds": {
+        "tourist_front": 17.478,
+        "tourist_left": 10.199,
+        "tourist_back": 13.169,
+        "civilian_front": 12.934,
+        "civilian_left": 10.024,
+        "civilian_back": 13.654,
+        "elder_front": 14.163,
+        "elder_left": 10.245,
+        "elder_back": 13.077,
+        "three_front": 13.274,
+        "three_lie": 89.368,
+        "scale_with_crew": 13.061
+      },
+      "render_device": "CPU",
+      "build_seconds": 232.924
+    },
+    {
+      "geometry_sha256": "c97a6e3037d1c234b64bfd1ac39bcf9005d99592dc91d1f4cc4eb410b98ac3f8",
+      "source_sha256": "cbe71934007888cdc6a07ebb640277cdd7515ad8e11396419b872981f500d303",
+      "round": 3,
+      "render_seconds": 207.658,
+      "camera_render_seconds": {
+        "tourist_front": 17.849,
+        "tourist_left": 9.827,
+        "tourist_back": 13.714,
+        "civilian_front": 14.826,
+        "civilian_left": 10.432,
+        "civilian_back": 14.803,
+        "elder_front": 13.453,
+        "elder_left": 9.138,
+        "elder_back": 13.213,
+        "three_front": 14.096,
+        "three_lie": 67.983,
+        "scale_with_crew": 6.901
+      },
+      "render_device": "CPU",
+      "build_seconds": 210.071
+    },
+    {
+      "geometry_sha256": "c97a6e3037d1c234b64bfd1ac39bcf9005d99592dc91d1f4cc4eb410b98ac3f8",
+      "source_sha256": "cbe71934007888cdc6a07ebb640277cdd7515ad8e11396419b872981f500d303",
+      "round": 3,
+      "render_seconds": 225.741,
+      "camera_render_seconds": {
+        "tourist_front": 17.281,
+        "tourist_left": 9.951,
+        "tourist_back": 15.019,
+        "civilian_front": 13.501,
+        "civilian_left": 9.159,
+        "civilian_back": 12.957,
+        "elder_front": 13.642,
+        "elder_left": 10.016,
+        "elder_back": 12.629,
+        "three_front": 12.569,
+        "three_lie": 82.823,
+        "scale_with_crew": 14.36
+      },
+      "render_device": "CPU",
+      "build_seconds": 226.908
+    },
+    {
+      "geometry_sha256": "7570bf02933ca693c5f1ab17911f7e8aef4bebaecaa5fb9180a8005450344533",
+      "source_sha256": "d8de36d10a700865ae1861cf6b7f672bb0e428c49c7e88033809abfb5a750e98",
+      "round": 4,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "build_seconds": 0.591
+    },
+    {
+      "geometry_sha256": "9f784928924f3daf29f3825f6f93c1307e8d4e36717585844ba3848965e9f1d8",
+      "source_sha256": "66e7a8d6db1aca721a3f8fabdff4e645fa82a78ef730f63062e144b5e46346fa",
+      "round": 4,
+      "render_seconds": 0,
+      "camera_render_seconds": {},
+      "build_seconds": 0.534
+    },
+    {
+      "geometry_sha256": "9f784928924f3daf29f3825f6f93c1307e8d4e36717585844ba3848965e9f1d8",
+      "source_sha256": "66e7a8d6db1aca721a3f8fabdff4e645fa82a78ef730f63062e144b5e46346fa",
+      "round": 4,
+      "render_seconds": 111.029,
+      "camera_render_seconds": {
+        "tourist_front": 8.113,
+        "tourist_left": 5.111,
+        "tourist_back": 6.805,
+        "civilian_front": 6.513,
+        "civilian_left": 4.759,
+        "civilian_back": 6.486,
+        "elder_front": 6.553,
+        "elder_left": 4.841,
+        "elder_back": 6.699,
+        "three_front": 6.704,
+        "three_lie": 39.643,
+        "scale_with_crew": 7.742
+      },
+      "render_device": "CPU",
+      "build_seconds": 111.769
+    },
+    {
+      "geometry_sha256": "dcccc1d09633d919a63a3e8f6c51e0f465340fdffd28227f7bec7afaab76efe5",
+      "source_sha256": "db6bd5219aab34aea3dff78cd6af5dff109307ae94ec0cf84c92b9e86cee949d",
+      "round": 4,
+      "render_seconds": 161.652,
+      "camera_render_seconds": {
+        "tourist_front": 8.428,
+        "tourist_left": 5.278,
+        "tourist_back": 6.966,
+        "civilian_front": 6.715,
+        "civilian_left": 4.968,
+        "civilian_back": 6.871,
+        "elder_front": 6.836,
+        "elder_left": 5.07,
+        "elder_back": 6.648,
+        "three_front": 7.069,
+        "three_lie": 81.023,
+        "scale_with_crew": 14.039
+      },
+      "render_device": "CPU",
+      "build_seconds": 162.479
+    },
+    {
+      "geometry_sha256": "dcccc1d09633d919a63a3e8f6c51e0f465340fdffd28227f7bec7afaab76efe5",
+      "source_sha256": "db6bd5219aab34aea3dff78cd6af5dff109307ae94ec0cf84c92b9e86cee949d",
+      "round": 4,
+      "render_seconds": 256.08,
+      "camera_render_seconds": {
+        "tourist_front": 18.075,
+        "tourist_left": 9.055,
+        "tourist_back": 12.491,
+        "civilian_front": 12.944,
+        "civilian_left": 8.966,
+        "civilian_back": 12.55,
+        "elder_front": 13.252,
+        "elder_left": 9.206,
+        "elder_back": 12.389,
+        "three_front": 13.361,
+        "three_lie": 106.763,
+        "scale_with_crew": 24.418
+      },
+      "render_device": "CPU",
+      "build_seconds": 257.818
+    }
+  ],
+  "fbx_sha256": {
+    "Patient_LiePose.fbx": "c7eca9224722ce37808f8fce16bdd112851d19be06af7caf0ab69c56d991e9b6",
+    "Patient_LiePose_ArmSling.fbx": "896046b8cc1beb79eaadc5225bbe471cc6394d3816a5d3d59abf5595e181b4da",
+    "SK_Patient_Civilian.fbx": "b39d6e5fe0892b1783a2c1f3869e1f7afc0485bccf41bedd29ef46ba094c3008",
+    "SK_Patient_Elder.fbx": "49209710d2b497bf26514a656e65c12cadf63b574ddae64b0085ddc8dc5b2db6",
+    "SK_Patient_Tourist.fbx": "68994c21675d4101bc998fd6c908602d76bd0f07231c1def7e6d8d7b2dec1bf8"
+  }
+}

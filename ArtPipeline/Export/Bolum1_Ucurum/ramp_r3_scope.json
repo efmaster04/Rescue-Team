@@ -1,0 +1,25 @@
+{
+  "changed_meshes": [
+    "SM_B1_Ground"
+  ],
+  "all_other_meshes_including_colors_identical": true,
+  "removed_ground_triangles": 665,
+  "added_ground_triangles": 1900,
+  "changed_triangle_bounds_ramp_coordinates": {
+    "min": [
+      -3.8506383150815964,
+      -2.007632255554199,
+      -12.28
+    ],
+    "max": [
+      2.200101099908352,
+      0.9000001549720764,
+      -7.463339
+    ]
+  },
+  "walking_surface_comparison": {
+    "samples": 19040,
+    "missing": 0,
+    "max_height_difference_m": 5.7220458984375e-06
+  }
+}

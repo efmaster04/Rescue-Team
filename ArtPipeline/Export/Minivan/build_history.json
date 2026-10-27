@@ -1,0 +1,232 @@
+[
+  {
+    "geometry_sha256": "503f7a105bb2b5882c6852916f5f979c152f8dee7487283fe04bce9c4b56722e",
+    "source_sha256": "85a977d02975995b01b8461af6ca452fd2caaa259e9ff30d8f30a311f156421c",
+    "round": 1,
+    "triangles": 6480,
+    "render_seconds": 17.571,
+    "camera_render_seconds": {
+      "threequarter_front_left": 6.647,
+      "threequarter_rear_right_open": 5.4,
+      "interior_top": 5.524
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 18.631
+  },
+  {
+    "geometry_sha256": "b198d260f876ec58404e1e794cb0cdc0896d8a705a4d08d8602c86d8efe34673",
+    "source_sha256": "23ea36a3a2e18a9d5cb7dd8ab7c1fa800f918c714ecba03aaabb2caf3c6a8fda",
+    "round": 2,
+    "triangles": 6384,
+    "render_seconds": 16.7,
+    "camera_render_seconds": {
+      "threequarter_front_left": 5.697,
+      "threequarter_rear_right_open": 5.428,
+      "interior_top": 5.575
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 17.72
+  },
+  {
+    "geometry_sha256": "fa94ccdbf6b4fc5cea4e90f63ba58aab5a990564816b39dc9626229273c6ab8f",
+    "source_sha256": "e0fce4356a945f902dbaf5bb4714bfd89752ca8019f7fdb55388761d63819e1c",
+    "round": 3,
+    "triangles": 6336,
+    "render_seconds": 0,
+    "camera_render_seconds": {},
+    "render_device": "not rendered",
+    "total_build_seconds": 0.405
+  },
+  {
+    "geometry_sha256": "f341d03b5e3195edea57eefde9a2226e407047d07b4b8f7be445c3048eba0254",
+    "source_sha256": "34abba442ed659dae8d18765dc1f0c5fd561bef8341ed56815b18c3e6ecb1649",
+    "round": 3,
+    "triangles": 6336,
+    "render_seconds": 57.81,
+    "camera_render_seconds": {
+      "front": 9.22,
+      "rear": 7.606,
+      "left": 7.741,
+      "right": 7.671,
+      "threequarter_front_left": 8.432,
+      "threequarter_rear_right_open": 8.575,
+      "interior_top": 8.565
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 58.999
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "346bb1464bffd477b439d0eba89a554f80ccca455e63c6ba14c52fb453878b24",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 0,
+    "camera_render_seconds": {},
+    "render_device": "not rendered",
+    "total_build_seconds": 0.422
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "346bb1464bffd477b439d0eba89a554f80ccca455e63c6ba14c52fb453878b24",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 36.487,
+    "camera_render_seconds": {
+      "front": 5.262,
+      "rear": 4.966,
+      "left": 5.196,
+      "right": 4.925,
+      "threequarter_front_left": 5.386,
+      "threequarter_rear_right_open": 5.307,
+      "interior_top": 5.445
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 37.608
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "7fb620d328800e68dd92be53f015a5f6f9db8fbb4776dbfab0ccf0e4b9ee3ee6",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 36.464,
+    "camera_render_seconds": {
+      "front": 5.097,
+      "rear": 4.876,
+      "left": 4.933,
+      "right": 4.929,
+      "threequarter_front_left": 5.349,
+      "threequarter_rear_right_open": 5.502,
+      "interior_top": 5.778
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 37.549
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "7fb620d328800e68dd92be53f015a5f6f9db8fbb4776dbfab0ccf0e4b9ee3ee6",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 36.45,
+    "camera_render_seconds": {
+      "front": 5.202,
+      "rear": 4.861,
+      "left": 5.008,
+      "right": 4.998,
+      "threequarter_front_left": 5.435,
+      "threequarter_rear_right_open": 5.421,
+      "interior_top": 5.525
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 37.51
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "7fb620d328800e68dd92be53f015a5f6f9db8fbb4776dbfab0ccf0e4b9ee3ee6",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 36.175,
+    "camera_render_seconds": {
+      "front": 5.019,
+      "rear": 4.742,
+      "left": 5.21,
+      "right": 4.904,
+      "threequarter_front_left": 5.356,
+      "threequarter_rear_right_open": 5.301,
+      "interior_top": 5.643
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 37.223
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "7fb620d328800e68dd92be53f015a5f6f9db8fbb4776dbfab0ccf0e4b9ee3ee6",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 35.868,
+    "camera_render_seconds": {
+      "front": 5.015,
+      "rear": 4.758,
+      "left": 4.897,
+      "right": 4.918,
+      "threequarter_front_left": 5.443,
+      "threequarter_rear_right_open": 5.321,
+      "interior_top": 5.516
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 36.909
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "c7c760eb1e3df9dbcc5cf742a45ad8c4a8a491d89dacf8b5fae4947d985c70d4",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 37.275,
+    "camera_render_seconds": {
+      "front": 5.091,
+      "rear": 5.127,
+      "left": 5.218,
+      "right": 5.031,
+      "threequarter_front_left": 5.643,
+      "threequarter_rear_right_open": 5.49,
+      "interior_top": 5.675
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 38.336
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "c7c760eb1e3df9dbcc5cf742a45ad8c4a8a491d89dacf8b5fae4947d985c70d4",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 38.136,
+    "camera_render_seconds": {
+      "front": 5.104,
+      "rear": 5.108,
+      "left": 5.289,
+      "right": 5.218,
+      "threequarter_front_left": 5.993,
+      "threequarter_rear_right_open": 5.643,
+      "interior_top": 5.781
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 39.192
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "527e6e5b005df1b2e4ad6877a9a17235d375c98bed9e57114ab8b12de0ae4da9",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 0,
+    "camera_render_seconds": {},
+    "render_device": "not rendered",
+    "total_build_seconds": 0.479
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "527e6e5b005df1b2e4ad6877a9a17235d375c98bed9e57114ab8b12de0ae4da9",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 0,
+    "camera_render_seconds": {},
+    "render_device": "not rendered",
+    "total_build_seconds": 0.4
+  },
+  {
+    "geometry_sha256": "4d9d9cf66e373d452c38c80156590f21edc2e275e9ca70e3fcbe96bfaf92ed9a",
+    "source_sha256": "527e6e5b005df1b2e4ad6877a9a17235d375c98bed9e57114ab8b12de0ae4da9",
+    "round": 4,
+    "triangles": 6552,
+    "render_seconds": 38.303,
+    "camera_render_seconds": {
+      "front": 6.44,
+      "rear": 4.908,
+      "left": 5.148,
+      "right": 5.127,
+      "threequarter_front_left": 5.568,
+      "threequarter_rear_right_open": 5.486,
+      "interior_top": 5.626
+    },
+    "render_device": "OPTIX: NVIDIA GeForce RTX 5080",
+    "total_build_seconds": 39.575
+  }
+]
