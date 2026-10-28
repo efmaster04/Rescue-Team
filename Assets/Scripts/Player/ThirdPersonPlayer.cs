@@ -53,6 +53,9 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // Bağlı olunan halat (D2); halattayken CharacterController kapalı, konum halattan gelir.
     public RopeAnchor Rope { get; private set; }
     public bool IsDown { get { return knockdown != null && knockdown.IsDown; } }
+    // FP (kullanıcı kararı 2, 2026-10-28): açıkken gövde yürüme yönüne değil kameranın yatay bakışına (yaw) döner; A/D yana adım
+    // olur. OrbitCamera birinci şahısta açar, üçüncü şahısta kapatır (TP davranışı aynen kalır).
+    public bool FaceCameraYaw { get; set; }
 
     // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13); araç çarpıp düşünce kaldırılana kadar kontrol yok.
     public bool HasControl { get { return Time.time >= controlLostUntil && !IsDown; } }
@@ -311,7 +314,16 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         // yarım hızla duvara sokuyordu (ölçüldü: duvarda bot gövdesi 38.6 cm içeride).
         StretcherHelperBot follower = stretcherWallGuard ? FollowerBot() : null;
         CarryBlockedNow = false;
-        if (wish.sqrMagnitude > 0.01f)
+        if (FaceCameraYaw && cameraTransform != null && HasControl)
+        {
+            // Birinci şahıs: gövde kamera yönüne (yaw) bakar; E4 kilidi burada da geçerli (bot izleyemeyecekse dönmez). Kontrol
+            // yokken (itme / tackle / fırlatma penceresi, itilme) TP'deki gibi dönmez: FaceForAttack'in hırsıza çevirdiği yüz korunur.
+            Quaternion target = Quaternion.LookRotation(forward, Vector3.up);
+            if (follower == null || follower.CanFollowFrom(transform.position, target))
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * dt);
+            else { CarryTurnBlocks++; CarryBlockedNow = true; LastCarryBlockReason = follower.LastBlockReason; }
+        }
+        else if (wish.sqrMagnitude > 0.01f)
         {
             Quaternion target = Quaternion.LookRotation(wish.normalized, Vector3.up);
             // Dönüş İSTENEN SON yöne göre sınanır: o yönde sedye dik yüzeye bakacaksa dönüş hiç başlamaz. Ara adımlar

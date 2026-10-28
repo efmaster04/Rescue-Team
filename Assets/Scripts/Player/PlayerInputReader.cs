@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 // InputSystem_Actions.inputactions'a dokunmamak için eylemler burada kodla tanımlanır:
 // WASD hareket, fare bakış, Space zıplama, E etkileşim, R yeniden başlat (görev bitince).
 // U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük. U4b tanı: basış sayaçları ve bağlama özeti (doğrulama okur).
+// FP: V birinci şahıs ↔ üçüncü şahıs (OrbitCamera.ToggleMode).
 public class PlayerInputReader : MonoBehaviour
 {
     public ThirdPersonPlayer player;
@@ -14,18 +15,21 @@ public class PlayerInputReader : MonoBehaviour
     public PlayerCombat combat;
 
     public const string AttackPath = "<Mouse>/leftButton", ThrowPath = "<Mouse>/rightButton", WhistlePath = "<Keyboard>/q", RunPath = "<Keyboard>/leftShift";
+    public const string ViewTogglePath = "<Keyboard>/v";
 
     // U4b tanı
     public int AttackPresses { get; private set; }
     public int AttackAccepted { get; private set; }
     public int WhistlePresses { get; private set; }
     public int ThrowHoldFrames { get; private set; }
+    public int ViewTogglePresses { get; private set; }
     public InputAction AttackAction { get { return attack; } }
     public InputAction ThrowAction { get { return throwHold; } }
     public InputAction WhistleAction { get { return whistle; } }
     public InputAction RunAction { get { return run; } }
+    public InputAction ViewToggleAction { get { return viewToggle; } }
 
-    private InputAction move, look, jump, interact, restart, run, attack, throwHold, whistle;
+    private InputAction move, look, jump, interact, restart, run, attack, throwHold, whistle, viewToggle;
 
     private void Awake()
     {
@@ -43,26 +47,27 @@ public class PlayerInputReader : MonoBehaviour
         jump = new InputAction("Jump", InputActionType.Button, "<Keyboard>/space");
         interact = new InputAction("Interact", InputActionType.Button, "<Keyboard>/e");
         restart = new InputAction("Restart", InputActionType.Button, "<Keyboard>/r");
+        viewToggle = new InputAction("ViewToggle", InputActionType.Button, ViewTogglePath);
     }
 
     private void OnEnable()
     {
         run.Enable(); move.Enable(); look.Enable(); jump.Enable(); interact.Enable(); restart.Enable();
-        attack.Enable(); throwHold.Enable(); whistle.Enable();
+        attack.Enable(); throwHold.Enable(); whistle.Enable(); viewToggle.Enable();
     }
 
     private void OnDisable()
     {
         run.Disable(); move.Disable();
         if (player != null) player.SetRunInput(false); look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
-        attack.Disable(); throwHold.Disable(); whistle.Disable();
+        attack.Disable(); throwHold.Disable(); whistle.Disable(); viewToggle.Disable();
         if (combat != null) combat.SetThrowHeld(false);
     }
 
     private void OnDestroy()
     {
         run.Dispose(); move.Dispose(); look.Dispose(); jump.Dispose(); interact.Dispose(); restart.Dispose();
-        attack.Dispose(); throwHold.Dispose(); whistle.Dispose();
+        attack.Dispose(); throwHold.Dispose(); whistle.Dispose(); viewToggle.Dispose();
     }
 
     private void Update()
@@ -74,6 +79,7 @@ public class PlayerInputReader : MonoBehaviour
             if (jump.WasPressedThisFrame()) player.RequestJump();
         }
         if (orbitCamera != null) orbitCamera.Rotate(look.ReadValue<Vector2>());
+        if (viewToggle.WasPressedThisFrame()) { ViewTogglePresses++; if (orbitCamera != null) orbitCamera.ToggleMode(); } // V: FP ↔ TP
         if (interact.WasPressedThisFrame() && interaction != null) interaction.Interact();
         if (interaction != null) interaction.SetInteractHeld(interact.IsPressed()); // basılı tutma (arkadaşı kaldırma)
         if (restart.WasPressedThisFrame() && MissionDirector.Instance != null) MissionDirector.Instance.RequestRestart();

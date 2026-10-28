@@ -905,6 +905,7 @@ public static class Bolum1AmbulanceBuilder
         interaction.player = player;
         var orbit = cam.gameObject.AddComponent<OrbitCamera>();
         orbit.target = character.transform;
+        character.AddComponent<FirstPersonBody>(); // FP: V ile birinci şahısta baş gizlenir (sahnede yoksa OrbitCamera çalışma zamanında ekler)
         var input = character.AddComponent<PlayerInputReader>();
         input.player = player;
         input.interaction = interaction;
