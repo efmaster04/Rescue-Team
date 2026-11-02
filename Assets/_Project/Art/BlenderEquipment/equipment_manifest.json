@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "blender": "5.2",
+  "models": [
+    {
+      "id": "toolbox",
+      "lods": [
+        {
+          "name": "toolbox_LOD0",
+          "triangles": 45836,
+          "materials": [
+            "PressedRed",
+            "CastGraphite",
+            "Rubber",
+            "BrushedAlloy"
+          ]
+        },
+        {
+          "name": "toolbox_LOD1",
+          "triangles": 16454,
+          "materials": [
+            "PressedRed",
+            "CastGraphite",
+            "Rubber",
+            "BrushedAlloy"
+          ]
+        },
+        {
+          "name": "toolbox_LOD2",
+          "triangles": 4518,
+          "materials": [
+            "PressedRed",
+            "CastGraphite",
+            "Rubber",
+            "BrushedAlloy"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/toolbox.blend",
+      "bounds_blender": {
+        "min": [
+          -0.22550000250339508,
+          -0.1549999862909317,
+          0.0
+        ],
+        "max": [
+          0.22550000250339508,
+          0.16180001199245453,
+          0.3050000071525574
+        ]
+      }
+    },
+    {
+      "id": "case",
+      "lods": [
+        {
+          "name": "case_LOD0",
+          "triangles": 54544,
+          "materials": [
+            "MouldedGraphite",
+            "Rubber",
+            "CastGraphite",
+            "BrushedAlloy"
+          ],
+          "rawTriangles": 54632
+        },
+        {
+          "name": "case_LOD1",
+          "triangles": 19578,
+          "materials": [
+            "MouldedGraphite",
+            "Rubber",
+            "CastGraphite",
+            "BrushedAlloy"
+          ],
+          "rawTriangles": 19666
+        },
+        {
+          "name": "case_LOD2",
+          "triangles": 5374,
+          "materials": [
+            "MouldedGraphite",
+            "Rubber",
+            "CastGraphite",
+            "BrushedAlloy"
+          ],
+          "rawTriangles": 5462
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/case.blend",
+      "bounds_blender": {
+        "min": [
+          -0.2680000066757202,
+          -0.16750000417232513,
+          0.009000003337860107
+        ],
+        "max": [
+          0.2680000066757202,
+          0.16966401040554047,
+          0.29649999737739563
+        ]
+      }
+    },
+    {
+      "id": "parts",
+      "lods": [
+        {
+          "name": "parts_LOD0",
+          "triangles": 97988,
+          "materials": [
+            "MouldedGraphite",
+            "SlateBlue",
+            "Rubber",
+            "BrushedAlloy",
+            "CastGraphite",
+            "BucketIvory"
+          ],
+          "rawTriangles": 97988
+        },
+        {
+          "name": "parts_LOD1",
+          "triangles": 35274,
+          "materials": [
+            "MouldedGraphite",
+            "SlateBlue",
+            "Rubber",
+            "BrushedAlloy",
+            "CastGraphite",
+            "BucketIvory"
+          ],
+          "rawTriangles": 35274
+        },
+        {
+          "name": "parts_LOD2",
+          "triangles": 9798,
+          "materials": [
+            "MouldedGraphite",
+            "SlateBlue",
+            "Rubber",
+            "BrushedAlloy",
+            "CastGraphite",
+            "BucketIvory"
+          ],
+          "rawTriangles": 9798
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/parts.blend",
+      "bounds_blender": {
+        "min": [
+          -0.24700000882148743,
+          -0.24700000882148743,
+          0.0
+        ],
+        "max": [
+          0.24700000882148743,
+          0.24700000882148743,
+          0.43299999833106995
+        ]
+      }
+    },
+    {
+      "id": "bin",
+      "lods": [
+        {
+          "name": "bin_LOD0",
+          "triangles": 27480,
+          "materials": [
+            "SlateBlue",
+            "MouldedGraphite",
+            "ServiceOlive"
+          ],
+          "rawTriangles": 27552
+        },
+        {
+          "name": "bin_LOD1",
+          "triangles": 9846,
+          "materials": [
+            "SlateBlue",
+            "MouldedGraphite",
+            "ServiceOlive"
+          ],
+          "rawTriangles": 9918
+        },
+        {
+          "name": "bin_LOD2",
+          "triangles": 2682,
+          "materials": [
+            "SlateBlue",
+            "MouldedGraphite",
+            "ServiceOlive"
+          ],
+          "rawTriangles": 2754
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/bin.blend",
+      "bounds_blender": {
+        "min": [
+          -0.25600001215934753,
+          -0.19499999284744263,
+          0.008999999612569809
+        ],
+        "max": [
+          0.25600001215934753,
+          0.19499999284744263,
+          0.3084999918937683
+        ]
+      }
+    },
+    {
+      "id": "fuel",
+      "lods": [
+        {
+          "name": "fuel_LOD0",
+          "triangles": 41044,
+          "materials": [
+            "ServiceOlive",
+            "CastGraphite",
+            "BrushedAlloy"
+          ],
+          "rawTriangles": 41684
+        },
+        {
+          "name": "fuel_LOD1",
+          "triangles": 14366,
+          "materials": [
+            "ServiceOlive",
+            "CastGraphite",
+            "BrushedAlloy"
+          ],
+          "rawTriangles": 15006
+        },
+        {
+          "name": "fuel_LOD2",
+          "triangles": 3528,
+          "materials": [
+            "ServiceOlive",
+            "CastGraphite",
+            "BrushedAlloy"
+          ],
+          "rawTriangles": 4168
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/fuel.blend",
+      "bounds_blender": {
+        "min": [
+          -0.1509999930858612,
+          -0.11900000274181366,
+          0.007499999366700649
+        ],
+        "max": [
+          0.1509999930858612,
+          0.11900000274181366,
+          0.4740481674671173
+        ]
+      }
+    },
+    {
+      "id": "grease",
+      "lods": [
+        {
+          "name": "grease_LOD0",
+          "triangles": 28076,
+          "materials": [
+            "BucketIvory",
+            "SlateBlue",
+            "BrushedAlloy",
+            "CastGraphite"
+          ],
+          "rawTriangles": 28156
+        },
+        {
+          "name": "grease_LOD1",
+          "triangles": 10136,
+          "materials": [
+            "BucketIvory",
+            "SlateBlue",
+            "BrushedAlloy",
+            "CastGraphite"
+          ],
+          "rawTriangles": 10136
+        },
+        {
+          "name": "grease_LOD2",
+          "triangles": 2814,
+          "materials": [
+            "BucketIvory",
+            "SlateBlue",
+            "BrushedAlloy",
+            "CastGraphite"
+          ],
+          "rawTriangles": 2814
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/grease.blend",
+      "bounds_blender": {
+        "min": [
+          -0.11100000143051147,
+          -0.11100000143051147,
+          0.00599999725818634
+        ],
+        "max": [
+          0.11100000143051147,
+          0.11100000143051147,
+          0.2214999943971634
+        ]
+      }
+    },
+    {
+      "id": "absorbent",
+      "lods": [
+        {
+          "name": "absorbent_LOD0",
+          "triangles": 37160,
+          "materials": [
+            "BucketIvory",
+            "ServiceOlive",
+            "CastGraphite",
+            "BrushedAlloy",
+            "Rubber"
+          ]
+        },
+        {
+          "name": "absorbent_LOD1",
+          "triangles": 13376,
+          "materials": [
+            "BucketIvory",
+            "ServiceOlive",
+            "CastGraphite",
+            "BrushedAlloy",
+            "Rubber"
+          ]
+        },
+        {
+          "name": "absorbent_LOD2",
+          "triangles": 3715,
+          "materials": [
+            "BucketIvory",
+            "ServiceOlive",
+            "CastGraphite",
+            "BrushedAlloy",
+            "Rubber"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/absorbent.blend",
+      "bounds_blender": {
+        "min": [
+          -0.18275001645088196,
+          -0.1770000010728836,
+          0.006999999284744263
+        ],
+        "max": [
+          0.18275001645088196,
+          0.1770000010728836,
+          0.3824999928474426
+        ]
+      }
+    },
+    {
+      "id": "jack",
+      "lods": [
+        {
+          "name": "jack_LOD0",
+          "triangles": 143532,
+          "materials": [
+            "PressedRed",
+            "BrushedAlloy",
+            "CastGraphite",
+            "Rubber"
+          ]
+        },
+        {
+          "name": "jack_LOD1",
+          "triangles": 51670,
+          "materials": [
+            "PressedRed",
+            "BrushedAlloy",
+            "CastGraphite",
+            "Rubber"
+          ]
+        },
+        {
+          "name": "jack_LOD2",
+          "triangles": 14352,
+          "materials": [
+            "PressedRed",
+            "BrushedAlloy",
+            "CastGraphite",
+            "Rubber"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedEquipment/jack.blend",
+      "bounds_blender": {
+        "min": [
+          -0.3187499940395355,
+          -0.43699997663497925,
+          0.0010000021429732442
+        ],
+        "max": [
+          0.3187499940395355,
+          0.4300000071525574,
+          0.28199997544288635
+        ]
+      }
+    }
+  ]
+}

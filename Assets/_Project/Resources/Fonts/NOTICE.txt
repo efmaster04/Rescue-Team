@@ -1,0 +1,5 @@
+Roboto Regular and Medium
+Font data copyright Google 2012.
+Licensed under the Apache License, Version 2.0; see Roboto-LICENSE.txt.
+The original font binaries were copied from Unity's installed Searcher package.
+Desktop-Regular.ttf and Desktop-Medium.ttf are unchanged Roboto font binaries.

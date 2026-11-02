@@ -1,0 +1,147 @@
+[
+  {
+    "path": "Assets\\_Project\\Resources\\Fonts\\SourceSans3-Regular.ttf",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-sans/release/TTF/SourceSans3-Regular.ttf",
+    "sha256": "4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f"
+  },
+  {
+    "path": "Assets\\_Project\\Resources\\Fonts\\SourceSans3-Semibold.ttf",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-sans/release/TTF/SourceSans3-Semibold.ttf",
+    "sha256": "a3f4f8dcf343a8f24dc61951de93f3ba1558b15cd250ba24af8a40e957081b7d"
+  },
+  {
+    "path": "Assets\\_Project\\Resources\\Fonts\\SourceSans3-OFL.md",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-sans/release/LICENSE.md",
+    "sha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/LICENSE",
+    "sha256": "b5b1f1da112d18ea2147decfd48ddc1bf2b5aeb6c265381579340e95b15a2bb2"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\clipboard-text.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/clipboard-text.svg",
+    "sha256": "1b1116133ad78d227c8d77f52856bde049dc02a351a1810d5dc91b2475cb873f"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\truck.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/truck.svg",
+    "sha256": "bd8d8f6c139f016398677ad6d724f10f714b0a9908dd7eeed479e5c9e6561dde"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\package.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/package.svg",
+    "sha256": "b190e7e8f5c6e68be08e9fca1310d0f2c341aa7f1384aa99457206fab755e1f6"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\toolbox.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/toolbox.svg",
+    "sha256": "1bc3a40ba89821d9defb144b0fa4ae3f40aefcda58b62216c7f30a5d64e7144e"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\calculator.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/calculator.svg",
+    "sha256": "83c7343dba80b2359cfe617ffdc89b80f7555a53cb2d6ff13b48ce16a062f644"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\buildings.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/buildings.svg",
+    "sha256": "76f3325b87588fc6786953e8b964d5b7cae58983b3dc1399f7b7a672a6c1b553"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\envelope-simple.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/envelope-simple.svg",
+    "sha256": "f114441afbd3c3da8aee24ba4cddea1576cf55aa304eb507410fca494c8ee169"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\desktop.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/desktop.svg",
+    "sha256": "875a31fd2dc493c6ba9aa5187a91e0364de6704876704e1bf81ef4b7e785ad79"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\floppy-disk.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/floppy-disk.svg",
+    "sha256": "067b385ee62469be500d2d5bcd10e2aedd7529cd615ed180fa8414aaef0e40ab"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\power.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/power.svg",
+    "sha256": "7c493f7a807a08a5fcaadd33493fd4ad66cb0aa752a822c71a5f5cf5fd665b53"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\minus.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/minus.svg",
+    "sha256": "5a068d1cfd707fde5ddb0ce0623958123b6a5afba98401318983aeb0fdad6382"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\square.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/square.svg",
+    "sha256": "b576b2c78227d150d8d5dab88557b0f6236ad8530179ef671cdc118d5aa3c7bc"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\x.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/x.svg",
+    "sha256": "7397b15e1fa66eaf6ff9b59fe91d483cb5c3bcf75b2fe052097ab6f0593b513a"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\check.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/check.svg",
+    "sha256": "cbb89a8c42f283d4f846eb935e05d88c1be04462f16480e068c0f82b9ce40b12"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\circle.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/circle.svg",
+    "sha256": "efc9ee22b165d0d40c21b1c5ebe2463c99744af44ab6f530b4d6c44f25181974"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\wrench.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/wrench.svg",
+    "sha256": "690d657aa4a9c99d620583cf6247cfefa5372c10e2bc60e9255a3ce19e3e9c47"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\tire.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/tire.svg",
+    "sha256": "9201b3dc3cdf452bf0a3133d0a7c17c051209300197a749ae33ce49d885a8d0f"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\hammer.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/hammer.svg",
+    "sha256": "286bddc0b30f4b0b0864cf8ca871b07a9c0a16d1df1f743b2cbabb15b6d9140d"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\clock.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/clock.svg",
+    "sha256": "b8c6c2899d2b9af48a55ba02ba6d7faf89b757915772dd24f5397f7b0d02aa5c"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\map-pin.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/map-pin.svg",
+    "sha256": "523f024fa467fc285d95c1db4ed6c32b640513c79780d14310bebf342b6f94fb"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\arrow-left.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/arrow-left.svg",
+    "sha256": "3c2001cf957d182fc54927e4b286cc8cf66dd97830f441ca2650d42a63a9006a"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\gear-six.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/gear-six.svg",
+    "sha256": "2bb05ec80cc37505a3f21c74989dbb297ab8442a668f5ffbd6a8f7c1d5794c7b"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\keyboard.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/keyboard.svg",
+    "sha256": "96646775c552eb7944a88071ec3d7b93f28fd0e19ae995cfb52957403e38422e"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\shield-check.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/shield-check.svg",
+    "sha256": "bb04d552c0baaaabd90f7eb60760cb0c7ddb7e9f47e4b76e9599ddd7dfd8eaa7"
+  },
+  {
+    "path": "Art\\UI\\Phosphor\\file-text.svg",
+    "url": "https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/file-text.svg",
+    "sha256": "9a580a038cce9f6dd223597864abe1b5c5c03bf8176d2f7171574598468b16f7"
+  }
+]

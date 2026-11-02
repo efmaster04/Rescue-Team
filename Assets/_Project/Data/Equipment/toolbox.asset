@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d707983f6294ce743bb07f58cf7fe54b, type: 3}
+  m_Name: toolbox
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.EquipmentDefinition
+  id: toolbox
+  displayName: "Alet \xE7antas\u0131"
+  category: Field equipment
+  weightKg: 12
+  size: {x: 0.46, y: 0.32, z: 0.33}
+  price: 120
+  portable: 1
+  visualPrefab: {fileID: 5516397707557354112, guid: 782c624da07f0474c9fc0973264191da, type: 3}

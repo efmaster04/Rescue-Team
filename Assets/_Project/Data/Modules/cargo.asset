@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 541e3f6001aafac4096b9394518fe980, type: 3}
+  m_Name: cargo
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.ModuleDefinition
+  id: cargo
+  displayName: "Nakliye Kasas\u0131"
+  category: Cargo
+  connections: ISO-style four-point lock; hydraulic/electric service
+  weightKg: 1150
+  payloadKg: 420
+  cargoSlots: 8
+  price: 900
+  sellable: 1
+  visualPrefab: {fileID: 6357979607777223188, guid: 58e72dba843b88846a042404c5345512, type: 3}

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d707983f6294ce743bb07f58cf7fe54b, type: 3}
+  m_Name: tire
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.EquipmentDefinition
+  id: tire
+  displayName: Yedek lastik
+  category: Field equipment
+  weightKg: 24
+  size: {x: 0.85, y: 0.85, z: 0.28}
+  price: 210
+  portable: 1
+  visualPrefab: {fileID: 4182935717621120878, guid: 6cbfa80113672c843ad8496865fbc095, type: 3}

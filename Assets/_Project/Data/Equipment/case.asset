@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d707983f6294ce743bb07f58cf7fe54b, type: 3}
+  m_Name: case
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.EquipmentDefinition
+  id: case
+  displayName: "Ekipman \xE7antas\u0131"
+  category: Field equipment
+  weightKg: 9
+  size: {x: 0.55, y: 0.3, z: 0.34}
+  price: 100
+  portable: 1
+  visualPrefab: {fileID: 4222738472930268209, guid: b08ff86c1fd982a4f99c1b19c0a393f2, type: 3}

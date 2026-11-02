@@ -11,3 +11,6 @@
 *.mp4 filter=lfs diff=lfs merge=lfs -text
 *.exr filter=lfs diff=lfs merge=lfs -text
 *.tga filter=lfs diff=lfs merge=lfs -text
+# Ofis-Garaj (arkadaşın projesi): üretilmiş mesh asset'leri ve dokümantasyon yedekleri
+Assets/_Project/Art/**/*.asset filter=lfs diff=lfs merge=lfs -text
+Documentation/Backups/** filter=lfs diff=lfs merge=lfs -text

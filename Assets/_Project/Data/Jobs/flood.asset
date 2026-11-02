@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4678dc9699a8774cb8e84dc73540aa8, type: 3}
+  m_Name: flood
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.JobDefinition
+  id: flood
+  title: Bodrum Su Tahliyesi
+  client: "Y\u0131ld\u0131z Apartman\u0131"
+  description: "Bodrum kat\u0131ndaki suyu bo\u015Faltmak i\xE7in pompa haz\u0131rlay\u0131n."
+  category: Su Tahliye
+  location: "Y\u0131ld\u0131z Sokak"
+  specialTerms: "Ekipman\u0131n sabitlenmi\u015F ve \xE7al\u0131\u015F\u0131r durumda
+    olmas\u0131 istenir."
+  distanceKm: 9
+  payment: 810
+  difficulty: 3
+  risk: 3
+  durationMinutes: 80
+  minimumReputation: 0
+  contractTitle: "\xD6zenli teslimat"
+  contractBonus: 122
+  contractMaxEquipmentWear: 10
+  contractMaxVehicleWear: 10
+  requiredModule: water
+  requiredEquipment:
+  - absorbent
+  - fuel
+  recommendedEquipment:
+  - case

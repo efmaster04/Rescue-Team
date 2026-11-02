@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 541e3f6001aafac4096b9394518fe980, type: 3}
+  m_Name: fire
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.ModuleDefinition
+  id: fire
+  displayName: "Yang\u0131n Mod\xFCl\xFC"
+  category: Fire
+  connections: ISO-style four-point lock; hydraulic/electric service
+  weightKg: 1900
+  payloadKg: 310
+  cargoSlots: 5
+  price: 1900
+  sellable: 1
+  visualPrefab: {fileID: 3744342463968012525, guid: 8ad0527c72940644883823ad643ec18b, type: 3}

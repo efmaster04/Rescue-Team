@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "blender": "5.2",
+  "models": [
+    {
+      "id": "towing",
+      "lods": [
+        {
+          "name": "towing_LOD0",
+          "triangles": 195896,
+          "materials": [
+            "CastAlloy",
+            "GraphiteEnamel",
+            "Rubber",
+            "SatinSteel",
+            "MachinedRecess",
+            "WireRope",
+            "SafetyOrange"
+          ]
+        },
+        {
+          "name": "towing_LOD1",
+          "triangles": 69325,
+          "materials": [
+            "CastAlloy",
+            "GraphiteEnamel",
+            "Rubber",
+            "SatinSteel",
+            "MachinedRecess",
+            "WireRope",
+            "SafetyOrange"
+          ]
+        },
+        {
+          "name": "towing_LOD2",
+          "triangles": 17902,
+          "materials": [
+            "CastAlloy",
+            "GraphiteEnamel",
+            "Rubber",
+            "SatinSteel",
+            "MachinedRecess",
+            "WireRope",
+            "SafetyOrange"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedModules/towing.blend",
+      "bounds_blender": {
+        "min": [
+          -0.2821999788284302,
+          -0.14355625212192535,
+          0.08100000023841858
+        ],
+        "max": [
+          0.2751999795436859,
+          0.20999999344348907,
+          0.36719998717308044
+        ]
+      }
+    },
+    {
+      "id": "water",
+      "lods": [
+        {
+          "name": "water_LOD0",
+          "triangles": 203160,
+          "materials": [
+            "EquipmentEnamel",
+            "CastAlloy",
+            "GraphiteEnamel",
+            "MachinedRecess",
+            "SatinSteel",
+            "Rubber",
+            "ValveBrass"
+          ]
+        },
+        {
+          "name": "water_LOD1",
+          "triangles": 73080,
+          "materials": [
+            "EquipmentEnamel",
+            "CastAlloy",
+            "GraphiteEnamel",
+            "MachinedRecess",
+            "SatinSteel",
+            "Rubber",
+            "ValveBrass"
+          ]
+        },
+        {
+          "name": "water_LOD2",
+          "triangles": 20236,
+          "materials": [
+            "EquipmentEnamel",
+            "CastAlloy",
+            "GraphiteEnamel",
+            "MachinedRecess",
+            "SatinSteel",
+            "Rubber",
+            "ValveBrass"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/RefinedModules/water.blend",
+      "bounds_blender": {
+        "min": [
+          -0.2785000205039978,
+          -0.1474946141242981,
+          0.07750000059604645
+        ],
+        "max": [
+          0.2785000205039978,
+          0.15014129877090454,
+          0.34549999237060547
+        ]
+      }
+    }
+  ]
+}

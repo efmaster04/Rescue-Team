@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4678dc9699a8774cb8e84dc73540aa8, type: 3}
+  m_Name: generator
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.JobDefinition
+  id: generator
+  title: "Jenerat\xF6r Ar\u0131zas\u0131"
+  client: "\xC7\u0131nar Market"
+  description: "Kesilen elektri\u011Fi tekrar sa\u011Flay\u0131n."
+  category: Teknik Servis
+  location: "Do\u011Fu Mahallesi"
+  specialTerms: "Ekipman\u0131n sabitlenmi\u015F ve \xE7al\u0131\u015F\u0131r durumda
+    olmas\u0131 istenir."
+  distanceKm: 12
+  payment: 760
+  difficulty: 3
+  risk: 2
+  durationMinutes: 70
+  minimumReputation: 0
+  contractTitle: "\xD6zenli teslimat"
+  contractBonus: 114
+  contractMaxEquipmentWear: 10
+  contractMaxVehicleWear: 10
+  requiredModule: tech
+  requiredEquipment:
+  - toolbox
+  - parts
+  recommendedEquipment:
+  - fuel

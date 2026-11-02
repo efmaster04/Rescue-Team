@@ -34,3 +34,13 @@ crashlytics-build.properties
 *.aab
 *.unitypackage
 *.tmp
+
+# Ofis-Garaj (arkadaşın projesinden birleştirildi)
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+crashlytics-buildid.txt
+# Python önbellekleri ve Blender otomatik yedekleri (.blend kaynakları izlenir)
+__pycache__/
+*.py[cod]
+*.blend[1-9]
