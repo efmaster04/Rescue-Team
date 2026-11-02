@@ -21,7 +21,7 @@ using UnityEngine.UI;
 [InitializeOnLoad]
 public static class Bolum1AmbulanceVerify
 {
-    private const string OutDir = "Temp/Bolum1Verify";
+    private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1AmbulanceVerify.Stage";
     private const string ReportKey = "Bolum1AmbulanceVerify.Report";
     private const string OkKey = "Bolum1AmbulanceVerify.Ok";

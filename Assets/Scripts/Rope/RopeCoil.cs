@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// U2 (üçüncü test turu kararı 3): halat kangalı (SM_RopeCoil). Oyun başında çekicinin L1 dolabında asılıdır; oyuncu alır,
+// U2 (üçüncü test turu kararı 3): halat kangalı (SM_RopeCoil). Oyun başında servis minibüsünün arka dolabında durur; oyuncu alır,
 // iki eliyle göğsünde taşır (Carry_Coil_*), yere bırakabilir, kazığa bağlar (Rope_TieStake) ve uçuruma atar (Rope_Throw).
 // Attıktan sonra kangal kaya çıkıntısında halatın dibinde küçük bir yığın olarak kalır; halat (RopeAnchor) o anda hazır olur.
 //  - Elde: iki avucun ortası kangal merkezi, Grip_R → Grip_L ekseni sağ avuçtan sol avuca, kangal dik (clips_meta coil_grip).

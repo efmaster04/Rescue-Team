@@ -692,9 +692,9 @@ public static class Bolum1AmbulanceBuilder
         // 3) Hastalar
         var patients = Bolum1RescueBuilder.PlacePatients(markers, minivan, root);
 
-        // 4) Sedyeler: çekicinin arkasında, bankette yerde
+        // 4) Sedyeler: servis minibüsünün yük zemininde, arka sapları açıklığa yakın
         PlaceStretchers(truck, root);
-        // 4b) U2: halat kangalı çekicinin L1 dolabında, dolap kapağı kontrolü (halat başta hazır değil)
+        // 4b) U2: halat kangalı minibüsün arka dolabında, dolap kapağı kontrolü (halat başta hazır değil)
         Bolum1RescueBuilder.SetupRopeCoil(truck, root);
 
         // 5) Oyuncu ve 6) test botu
@@ -848,7 +848,7 @@ public static class Bolum1AmbulanceBuilder
         return false;
     }
 
-    // Sedyeler çekicinin arkasında bankette, yan yana ve yerden alınabilir yükseklikte.
+    // Sedyeler servis minibüsünün yük zemininde yan yana; arka saplar açıklıktan (yerden) tutulur (Bolum1ServiceVan.StretcherLocalPosition).
     public static StretcherController[] PlaceStretchers(GameObject truck, Transform parent)
     {
         var result = new List<StretcherController>();
@@ -864,7 +864,7 @@ public static class Bolum1AmbulanceBuilder
             go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(forward, Vector3.up));
             PrefabUtility.RecordPrefabInstancePropertyModifications(go.transform);
             result.Add(go.GetComponent<StretcherController>());
-            Line("Sedye " + go.name + ": çekicinin arkasında yerde " + V(at));
+            Line("Sedye " + go.name + ": minibüs yük zemininde " + V(at) + " (kök-yerel " + V(Bolum1ServiceVan.StretcherLocalPosition(i)) + ")");
         }
         Physics.SyncTransforms();
         return result.ToArray();

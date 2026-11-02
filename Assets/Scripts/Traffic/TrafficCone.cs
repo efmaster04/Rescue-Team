@@ -7,7 +7,7 @@ using UnityEngine;
 // (geri getirme mekaniği YOK).
 //
 // Bu bileşen koninin kendisinde değil, ayrı bir kontrol objesinde durur ve koniyi (target) yönetir: koniler
-// çekici modelinin parçasıdır, çekici hiyerarşisine oyun betiği eklenmez. Kontrol objesi koniyi izler (ses kaynağı onunla gider).
+// servis minibüsünün yük bölümündeki raflarda duran bağımsız fizik objesidir (Bolum1ServiceVan), araca oyun betiği eklenmez. Kontrol objesi koniyi izler (ses kaynağı onunla gider).
 [DefaultExecutionOrder(60)] // taşıyıcı hareket ettikten sonra elde konumlanır
 public class TrafficCone : MonoBehaviour
 {

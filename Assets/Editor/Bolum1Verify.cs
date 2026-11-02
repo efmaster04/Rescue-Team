@@ -20,7 +20,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static partial class Bolum1Verify
 {
-    private const string OutDir = "Temp/Bolum1Verify";
+    private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1Verify.Stage";
     private const string ReportKey = "Bolum1Verify.Report";
     private const string OkKey = "Bolum1Verify.Ok";
@@ -173,7 +173,7 @@ public static partial class Bolum1Verify
             if (imp != null && Bolum1ImportSettings.IsApplied(imp) && AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) ok++;
             else Line("  ayar hatalı: " + path);
         }
-        Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 25 && total == 25, ok + "/" + total + " (beklenen 26: 24 mekân + minibüs + çekici)");
+        Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 25 && total == 25, ok + "/" + total + " (beklenen 25: 24 mekân + minibüs; servis minibüsü _Project altında)");
     }
 
     // ---------- (a2) materyal renkleri: minibüs, mekân, karakter ----------

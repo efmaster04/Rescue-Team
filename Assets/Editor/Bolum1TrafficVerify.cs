@@ -20,7 +20,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class Bolum1TrafficVerify
 {
-    private const string OutDir = "Temp/Bolum1Verify";
+    private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1TrafficVerify.Stage";
     private const string ReportKey = "Bolum1TrafficVerify.Report";
     private const string OkKey = "Bolum1TrafficVerify.Ok";

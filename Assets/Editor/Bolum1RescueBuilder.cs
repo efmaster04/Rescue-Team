@@ -314,33 +314,29 @@ public static class Bolum1RescueBuilder
     private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
 
     // =====================================================================================
-    // U2: halat kangalı ve çekici dolabı
+    // U2: halat kangalı ve servis minibüsünün halat dolabı
     // =====================================================================================
 
-    // Çekici kök uzayı = Blender çekici uzayı, X işareti ters (Bolum1ServiceVan.AddBox ile aynı).
-    private static Vector3 TruckLocal(Vector3 blender) { return new Vector3(-blender.x, blender.y, blender.z); }
-
-    // rope_coil_meta.json towtruck_slot: kangal L1 dolabında (kök-yerel konum, kapak parçası, dış yön);
-    // towtruck_meta.json parts[LockerDoor_L1].motion: menteşe ekseni ve çalışma açısı. Kapak ve kangal betikleri çekici
-    // hiyerarşisine EKLENMEZ (Bolum1Verify: parçalarda betik/collider yok); ayrı kontrol objeleri parçayı dışarıdan sürer.
+    // rope_coil_meta.json service_van_slot: dolap kutusunun merkezi (araç kök-yerel; +Y yukarı, +Z arka), kapak parçası
+    // (Bolum1ServiceVan.BuildEquipment kurar), dış yön ve menteşe hareketi. Kapak ve kangal betikleri araç hiyerarşisine
+    // EKLENMEZ (Bolum1Verify: araçta betik yok); TowTruckLocker ayrı kontrol objesinden kapağı dışarıdan sürer.
     public static void SetupRopeCoil(GameObject truck, Transform parent)
     {
         var rope = UnityEngine.Object.FindAnyObjectByType<RopeAnchor>();
         if (rope == null) throw new Exception("RopeAnchor yok: halat kangalı kurulamaz");
         var coilMeta = Bolum1Coordinates.LoadJson(RopeCoilMetaPath);
-        var slot = Bolum1Coordinates.Obj(coilMeta, "towtruck_slot");
+        var slot = Bolum1Coordinates.Obj(coilMeta, "service_van_slot");
         string doorName = (string)slot["cabinet_part"];
-        Vector3 slotLocal = TruckLocal(Bolum1Coordinates.Vec3(slot, "position_m"));
+        Vector3 slotLocal = Bolum1Coordinates.Vec3(slot, "position_m");
         Vector3 slotWorld = truck.transform.TransformPoint(slotLocal);
-        Vector3 outward = truck.transform.TransformDirection(TruckLocal(Bolum1Coordinates.Vec3(slot, "side_root_normal"))).normalized;
+        Vector3 outward = truck.transform.TransformDirection(Bolum1Coordinates.Vec3(slot, "side_root_normal")).normalized;
         outward.y = 0f; outward.Normalize();
 
-        // Kapak: menteşe (parça pivotu), eksen ebeveyn (kök) uzayında; işaret, açılınca kapağın dışa gitmesinden seçilir
+        // Kapak: menteşe (parça pivotu), eksen ebeveyn (araç kökü) uzayında; işaret, açılınca kapağın dışa gitmesinden doğrulanır
         var door = Bolum1ServiceVan.Part(truck, doorName);
-        var towMeta = Bolum1Coordinates.LoadJson(Bolum1Coordinates.TowTruckMetaPath);
-        var motion = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(towMeta, "parts"), doorName), "motion");
-        Vector3 axisLocal = TruckLocal(Bolum1Coordinates.Vec3(motion, "axis")).normalized;
-        float angle = Mathf.Abs(Convert.ToSingle(motion["work_pose_deg"], Inv));
+        var motion = Bolum1Coordinates.Obj(slot, "door_motion");
+        Vector3 axisLocal = Bolum1Coordinates.Vec3(motion, "axis").normalized;
+        float angle = Convert.ToSingle(motion["work_pose_deg"], Inv);
         var doorRenderers = door.GetComponentsInChildren<Renderer>();
         Bounds db = doorRenderers[0].bounds;
         foreach (var r in doorRenderers) db.Encapsulate(r.bounds);
@@ -388,186 +384,7 @@ public static class Bolum1RescueBuilder
         Vector3 doorLocal = truck.transform.InverseTransformPoint(door.position);
         Line("Halat kangalı: " + RopeCoilName + " dolap " + doorName + " slotunda, dünya " + V(slotWorld) + " (kök-yerel " + V(slotLocal) + "), dış yön " + V(outward)
             + "; kangal sınırları " + V(cb.size) + ", disk normali·dış yön " + thinAlongOutward.ToString("F2", Inv) + "; tutuş aralığı " + Vector3.Distance(coil.gripL.position, coil.gripR.position).ToString("F3", Inv) + " m");
-        Line("Dolap kapağı " + doorName + ": pivot kök-yerel " + V(doorLocal) + " (meta " + V(Bolum1Coordinates.Vec3(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(towMeta, "parts"), doorName), "pivot_m")) + "), eksen kök " + V(axisLocal)
-            + ", açık açı " + signed.ToString("F0", Inv) + "° (meta " + angle.ToString("F0", Inv) + "), " + LockerOpenSeconds.ToString(Inv) + " sn; kapak merkezi " + V(db.center));
-        Line("Halat zinciri: kazık " + System.IO.Path.GetFileName(RopeAnchorModelPath) + ", başlangıç durumu Stowed (çizgi yok, bağlanılamaz); atış " + rope.throwSeconds.ToString(Inv) + " sn, menzil " + rope.throwRange.ToString(Inv) + " m");
-    }
-
-    // Oyuncunun sırt soketi: taşıyan bağ pozundayken kökünün 0.312 m arkası, 0.292 m yukarısı; dönüşü kökle aynı; Spine1'e bağlı.
-    public static Transform SetupPiggybackSocket(GameObject character)
-    {
-        var spine1 = character.GetComponentsInChildren<Transform>(true).First(t => t.name == "mixamorig:Spine1");
-        var old = spine1.Find(SocketName);
-        if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
-        var socket = new GameObject(SocketName).transform;
-        float back = 0.312f, up = 0.292f;
-        try
-        {
-            var meta = Bolum1Coordinates.LoadJson(Bolum1AnimBuilder.ClipsMetaPath);
-            var s = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(meta, "clips"), "Piggyback_Rider"), "piggyback_socket");
-            var off = (List<object>)s["offset_carrier_bind_m"];
-            back = Convert.ToSingle(off[1], Inv); up = Convert.ToSingle(off[2], Inv);
-        }
-        catch { }
-        var root = character.transform;
-        socket.SetPositionAndRotation(root.TransformPoint(new Vector3(0f, up, -back)), root.rotation);
-        socket.SetParent(spine1, true);
-        return socket;
-    }
-}    // Servis minib?s?n?n arka dolab?; PlayerInteraction i?in mevcut bile?en s?zle?mesi korunur.
-    public static void SetupRopeCoil(GameObject truck, Transform parent)
-    {
-        var rope = UnityEngine.Object.FindAnyObjectByType<RopeAnchor>();
-        if (rope == null) throw new Exception("RopeAnchor yok: halat kangal? kurulamaz");
-        var coilMeta = Bolum1Coordinates.LoadJson(RopeCoilMetaPath);
-        var slot = Bolum1Coordinates.Obj(coilMeta, "service_van_slot");
-        string doorName = (string)slot["cabinet_part"];
-        Vector3 slotLocal = Bolum1Coordinates.Vec3(slot, "position_m");
-        Vector3 slotWorld = truck.transform.TransformPoint(slotLocal);
-        Vector3 outward = truck.transform.TransformDirection(Bolum1Coordinates.Vec3(slot, "side_root_normal")).normalized;
-        var door = Bolum1ServiceVan.Part(truck, doorName);
-        var motion = Bolum1Coordinates.Obj(slot, "door_motion");
-        Vector3 axisLocal = Bolum1Coordinates.Vec3(motion, "axis");
-        float signed = Convert.ToSingle(motion["work_pose_deg"], Inv);
-        var locker = door.gameObject.AddComponent<TowTruckLocker>();
-        locker.door = door;
-        locker.hingeAxis = axisLocal;
-        locker.openAngle = signed;
-        locker.openSeconds = LockerOpenSeconds;
-        locker.outward = outward;
-
-        // Kangal: sarmal obje + FBX kökü; dolapta dik, disk yüzü kapağa dönük
-        var coilFbx = AssetDatabase.LoadAssetAtPath<GameObject>(RopeCoilModelPath);
-        if (coilFbx == null) throw new Exception("SM_RopeCoil yok: " + RopeCoilModelPath);
-        var coilGo = new GameObject(RopeCoilName);
-        coilGo.transform.SetParent(parent, false);
-        var model = (GameObject)PrefabUtility.InstantiatePrefab(coilFbx);
-        model.transform.SetParent(coilGo.transform, false);
-        var coil = coilGo.AddComponent<RopeCoil>();
-        coil.model = model.transform;
-        coil.gripL = model.GetComponentsInChildren<Transform>(true).First(t => t.name == "Grip_L");
-        coil.gripR = model.GetComponentsInChildren<Transform>(true).First(t => t.name == "Grip_R");
-        coil.anchor = rope;
-        coil.locker = locker;
-        try
-        {
-            coil.halfDepth = Convert.ToSingle(coilMeta["bundle_depth_m"], Inv) * 0.5f;
-            coil.radius = Bolum1Coordinates.Vec3(coilMeta, "dimensions_m").x * 0.5f;
-        }
-        catch { }
-        coil.PlaceInLocker(slotWorld, outward);
-        rope.coil = coil;
-        locker.coil = coil;
-
-        // Ölçüm: kangal kapak sınırlarının içinde mi (yatayda), ince ekseni kapak normali boyunca mı
-        Bounds cb = coil.WorldBounds;
-        float thinAlongOutward = Mathf.Abs(Vector3.Dot(coil.Normal, outward));
-        Vector3 doorLocal = truck.transform.InverseTransformPoint(door.position);
-        Line("Halat kangalı: " + RopeCoilName + " dolap " + doorName + " slotunda, dünya " + V(slotWorld) + " (kök-yerel " + V(slotLocal) + "), dış yön " + V(outward)
-            + "; kangal sınırları " + V(cb.size) + ", disk normali·dış yön " + thinAlongOutward.ToString("F2", Inv) + "; tutuş aralığı " + Vector3.Distance(coil.gripL.position, coil.gripR.position).ToString("F3", Inv) + " m");
-        Line("Dolap kapağı " + doorName + ": pivot kök-yerel " + V(doorLocal) + " (meta " + V(Bolum1Coordinates.Vec3(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(towMeta, "parts"), doorName), "pivot_m")) + "), eksen kök " + V(axisLocal)
-            + ", açık açı " + signed.ToString("F0", Inv) + "° (meta " + angle.ToString("F0", Inv) + "), " + LockerOpenSeconds.ToString(Inv) + " sn; kapak merkezi " + V(db.center));
-        Line("Halat zinciri: kazık " + System.IO.Path.GetFileName(RopeAnchorModelPath) + ", başlangıç durumu Stowed (çizgi yok, bağlanılamaz); atış " + rope.throwSeconds.ToString(Inv) + " sn, menzil " + rope.throwRange.ToString(Inv) + " m");
-    }
-
-    // Oyuncunun sırt soketi: taşıyan bağ pozundayken kökünün 0.312 m arkası, 0.292 m yukarısı; dönüşü kökle aynı; Spine1'e bağlı.
-    public static Transform SetupPiggybackSocket(GameObject character)
-    {
-        var spine1 = character.GetComponentsInChildren<Transform>(true).First(t => t.name == "mixamorig:Spine1");
-        var old = spine1.Find(SocketName);
-        if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
-        var socket = new GameObject(SocketName).transform;
-        float back = 0.312f, up = 0.292f;
-        try
-        {
-            var meta = Bolum1Coordinates.LoadJson(Bolum1AnimBuilder.ClipsMetaPath);
-            var s = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(meta, "clips"), "Piggyback_Rider"), "piggyback_socket");
-            var off = (List<object>)s["offset_carrier_bind_m"];
-            back = Convert.ToSingle(off[1], Inv); up = Convert.ToSingle(off[2], Inv);
-        }
-        catch { }
-        var root = character.transform;
-        socket.SetPositionAndRotation(root.TransformPoint(new Vector3(0f, up, -back)), root.rotation);
-        socket.SetParent(spine1, true);
-        return socket;
-    }
-}        Line("Servis minib?s? dolap kapa??: " + doorName + ", a?? " + signed + "?, merkez " + V(locker.DoorCenter));
-        Line("Halat zinciri: kazık " + System.IO.Path.GetFileName(RopeAnchorModelPath) + ", başlangıç durumu Stowed (çizgi yok, bağlanılamaz); atış " + rope.throwSeconds.ToString(Inv) + " sn, menzil " + rope.throwRange.ToString(Inv) + " m");
-    }
-
-    // Oyuncunun sırt soketi: taşıyan bağ pozundayken kökünün 0.312 m arkası, 0.292 m yukarısı; dönüşü kökle aynı; Spine1'e bağlı.
-    public static Transform SetupPiggybackSocket(GameObject character)
-    {
-        var spine1 = character.GetComponentsInChildren<Transform>(true).First(t => t.name == "mixamorig:Spine1");
-        var old = spine1.Find(SocketName);
-        if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
-        var socket = new GameObject(SocketName).transform;
-        float back = 0.312f, up = 0.292f;
-        try
-        {
-            var meta = Bolum1Coordinates.LoadJson(Bolum1AnimBuilder.ClipsMetaPath);
-            var s = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(meta, "clips"), "Piggyback_Rider"), "piggyback_socket");
-            var off = (List<object>)s["offset_carrier_bind_m"];
-            back = Convert.ToSingle(off[1], Inv); up = Convert.ToSingle(off[2], Inv);
-        }
-        catch { }
-        var root = character.transform;
-        socket.SetPositionAndRotation(root.TransformPoint(new Vector3(0f, up, -back)), root.rotation);
-        socket.SetParent(spine1, true);
-        return socket;
-    }
-}    // Servis minib?s?n?n arka dolab?; PlayerInteraction i?in mevcut bile?en s?zle?mesi korunur.
-    public static void SetupRopeCoil(GameObject truck, Transform parent)
-    {
-        var rope = UnityEngine.Object.FindAnyObjectByType<RopeAnchor>();
-        if (rope == null) throw new Exception("RopeAnchor yok: halat kangal? kurulamaz");
-        var coilMeta = Bolum1Coordinates.LoadJson(RopeCoilMetaPath);
-        var slot = Bolum1Coordinates.Obj(coilMeta, "service_van_slot");
-        string doorName = (string)slot["cabinet_part"];
-        Vector3 slotLocal = Bolum1Coordinates.Vec3(slot, "position_m");
-        Vector3 slotWorld = truck.transform.TransformPoint(slotLocal);
-        Vector3 outward = truck.transform.TransformDirection(Bolum1Coordinates.Vec3(slot, "side_root_normal")).normalized;
-        var door = Bolum1ServiceVan.Part(truck, doorName);
-        var motion = Bolum1Coordinates.Obj(slot, "door_motion");
-        Vector3 axisLocal = Bolum1Coordinates.Vec3(motion, "axis");
-        float signed = Convert.ToSingle(motion["work_pose_deg"], Inv);
-        var locker = door.gameObject.AddComponent<TowTruckLocker>();
-        locker.door = door;
-        locker.hingeAxis = axisLocal;
-        locker.openAngle = signed;
-        locker.openSeconds = LockerOpenSeconds;
-        locker.outward = outward;
-
-        // Kangal: sarmal obje + FBX kökü; dolapta dik, disk yüzü kapağa dönük
-        var coilFbx = AssetDatabase.LoadAssetAtPath<GameObject>(RopeCoilModelPath);
-        if (coilFbx == null) throw new Exception("SM_RopeCoil yok: " + RopeCoilModelPath);
-        var coilGo = new GameObject(RopeCoilName);
-        coilGo.transform.SetParent(parent, false);
-        var model = (GameObject)PrefabUtility.InstantiatePrefab(coilFbx);
-        model.transform.SetParent(coilGo.transform, false);
-        var coil = coilGo.AddComponent<RopeCoil>();
-        coil.model = model.transform;
-        coil.gripL = model.GetComponentsInChildren<Transform>(true).First(t => t.name == "Grip_L");
-        coil.gripR = model.GetComponentsInChildren<Transform>(true).First(t => t.name == "Grip_R");
-        coil.anchor = rope;
-        coil.locker = locker;
-        try
-        {
-            coil.halfDepth = Convert.ToSingle(coilMeta["bundle_depth_m"], Inv) * 0.5f;
-            coil.radius = Bolum1Coordinates.Vec3(coilMeta, "dimensions_m").x * 0.5f;
-        }
-        catch { }
-        coil.PlaceInLocker(slotWorld, outward);
-        rope.coil = coil;
-        locker.coil = coil;
-
-        // Ölçüm: kangal kapak sınırlarının içinde mi (yatayda), ince ekseni kapak normali boyunca mı
-        Bounds cb = coil.WorldBounds;
-        float thinAlongOutward = Mathf.Abs(Vector3.Dot(coil.Normal, outward));
-        Vector3 doorLocal = truck.transform.InverseTransformPoint(door.position);
-        Line("Halat kangalı: " + RopeCoilName + " dolap " + doorName + " slotunda, dünya " + V(slotWorld) + " (kök-yerel " + V(slotLocal) + "), dış yön " + V(outward)
-            + "; kangal sınırları " + V(cb.size) + ", disk normali·dış yön " + thinAlongOutward.ToString("F2", Inv) + "; tutuş aralığı " + Vector3.Distance(coil.gripL.position, coil.gripR.position).ToString("F3", Inv) + " m");
-        Line("Dolap kapağı " + doorName + ": pivot kök-yerel " + V(doorLocal) + " (meta " + V(Bolum1Coordinates.Vec3(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(towMeta, "parts"), doorName), "pivot_m")) + "), eksen kök " + V(axisLocal)
+        Line("Dolap kapağı " + doorName + ": menteşe kök-yerel " + V(doorLocal) + ", eksen kök " + V(axisLocal)
             + ", açık açı " + signed.ToString("F0", Inv) + "° (meta " + angle.ToString("F0", Inv) + "), " + LockerOpenSeconds.ToString(Inv) + " sn; kapak merkezi " + V(db.center));
         Line("Halat zinciri: kazık " + System.IO.Path.GetFileName(RopeAnchorModelPath) + ", başlangıç durumu Stowed (çizgi yok, bağlanılamaz); atış " + rope.throwSeconds.ToString(Inv) + " sn, menzil " + rope.throwRange.ToString(Inv) + " m");
     }

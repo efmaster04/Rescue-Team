@@ -10,8 +10,8 @@ using UnityEngine;
 // U3 (kullanıcı kararı "Can ve para" + gece kararları, 2026-10-19): can, değerli eşyalar, para ve çalınan çubuğu sahne kurulumu.
 // Bolum1SceneBuilder.Build sonunda (9. adım) çağrılır; sahne her kurulumda baştan kurulur.
 //  - Ayarlar: Assets/Settings/Bolum1/LootValues.asset (değerler), HealthRules.asset (can). Varsa dokunulmaz.
-//  - Oyuncuya PlayerHealth; çekicinin yanında yeniden doğma noktası (yolun üstünde değil).
-//  - Bolum1_Loot: LootRegistry, SafeDrop (çekici kasasının arka ucunun gerisinde, yoldan uzak yanda, zemin halkası).
+//  - Oyuncuya PlayerHealth; servis minibüsünün yanında yeniden doğma noktası (yolun üstünde değil).
+//  - Bolum1_Loot: LootRegistry, SafeDrop (minibüsün arka tamponunun gerisinde, yoldan uzak yanda, zemin halkası).
 //  - Eşyalar: yerdeki valiz/çanta prop'ları (Bolum1_Props; sabit tohumlu 2–4 içerik), her hastada bir eşya (koyu kutu, hastanın
 //    kökünde karnında), ekipman kaydı (sedyeler, halat kangalı, koniler; sağlık çantası sahnede yok).
 //  - Minibüs tavan bagajındaki valizler (SM_Minivan_RackSuitcase_01/02) minibüs parçasıdır ve 2 m'de tavandadır: sayılmaz (rapor).
@@ -28,9 +28,9 @@ public static class Bolum1LootBuilder
     public const string RespawnPointName = "HealthRespawnPoint";
     public const string PatientItemPrefix = "Valuable_";
     public const string PropsRootName = "Bolum1_Props";
-    // Çekici kök uzayı = Blender çekici uzayı, X ters (Bolum1ServiceVan.AddBox): kasa arka ucu y 3.92, ön −Y.
-    public const float DeckRearLocalY = 3.92f;
-    public const float SafeDropBehind = 0.9f, SafeDropSide = 1.7f;
+    // Arka uç ve ileri yön Bolum1ServiceVan.RearEnd / Forward'dan (kapalı gövde tamponu; açık arka kapılar ±108° ile
+    // tamponun 1 m gerisine, 1.3 m yanına uzanır; teslim halkası kapı ucundan uzak tutulur).
+    public const float SafeDropBehind = 1.6f, SafeDropSide = 1.9f;
     public const float RespawnBehind = 2.5f, RespawnSide = 3.0f;
     public const float RingDiameter = 1.3f;
 
@@ -70,13 +70,13 @@ public static class Bolum1LootBuilder
         registry.values = values;
         registry.mission = mission;
 
-        // 2) Çekici eksenleri; yoldan uzak yan
+        // 2) Minibüs eksenleri; yoldan uzak yan
         Vector3 forward = Vector3.ProjectOnPlane(Bolum1ServiceVan.Forward(truck), Vector3.up).normalized;
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         Vector3 rearEnd = Bolum1ServiceVan.RearEnd(truck);
         float sideSign = OffRoadSide(rearEnd, forward, right, out string sideInfo);
 
-        // 3) Güvenli yer: kasa arka ucunun gerisinde, yoldan uzak yanda (sedyeler tam arkada, ±0.5 m'de)
+        // 3) Güvenli yer: arka tamponun gerisinde, yoldan uzak yanda (açık kapının dışında)
         Vector3 sd = rearEnd - forward * SafeDropBehind + right * sideSign * SafeDropSide;
         sd = Ground(sd, truck.transform, out bool sdGround);
         if (!sdGround) throw new Exception("Teslim noktası için zemin bulunamadı: " + V(sd));
@@ -93,9 +93,9 @@ public static class Bolum1LootBuilder
         ring.GetComponent<MeshRenderer>().sharedMaterial = MakeMaterial(SafeDropMaterialPath, new Color(0.45f, 0.95f, 0.55f, 1f), new Color(0.1f, 0.5f, 0.2f));
         ring.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         safe.marker = ring.transform;
-        Line("Teslim noktası (SafeDrop): " + V(sd) + ", kasa arka ucu " + V(rearEnd) + ", yan " + (sideSign > 0 ? "+sağ" : "−sağ") + " (" + sideInfo + "), halka Ø " + RingDiameter.ToString(Inv) + " m, menzil " + safe.interactRange.ToString(Inv) + " m");
+        Line("Teslim noktası (SafeDrop): " + V(sd) + ", arka tampon " + V(rearEnd) + ", yan " + (sideSign > 0 ? "+sağ" : "−sağ") + " (" + sideInfo + "), halka Ø " + RingDiameter.ToString(Inv) + " m, menzil " + safe.interactRange.ToString(Inv) + " m");
 
-        // 4) Yeniden doğma noktası: çekicinin yanı (yoldan uzak), kasanın gerisinde
+        // 4) Yeniden doğma noktası: minibüsün yanı (yoldan uzak), tamponun gerisinde
         Vector3 rp = rearEnd - forward * RespawnBehind + right * sideSign * RespawnSide;
         rp = Ground(rp, truck.transform, out bool rpGround);
         if (!rpGround) { rp = Ground(sd + right * sideSign * 1.5f, truck.transform, out rpGround); }
@@ -104,7 +104,7 @@ public static class Bolum1LootBuilder
         rpT.SetParent(root, false);
         rpT.SetPositionAndRotation(rp + Vector3.up * 0.02f, Quaternion.LookRotation(forward, Vector3.up));
         bool rpOnRoad = OnRoad(rp);
-        Line("Yeniden doğma noktası: " + V(rp) + ", yolda " + rpOnRoad + ", çekici köküne " + Vector3.Distance(rp, truck.transform.position).ToString("F2", Inv) + " m");
+        Line("Yeniden doğma noktası: " + V(rp) + ", yolda " + rpOnRoad + ", minibüs köküne " + Vector3.Distance(rp, truck.transform.position).ToString("F2", Inv) + " m");
 
         // 5) Oyuncu canı
         var player = character.GetComponent<ThirdPersonPlayer>();
@@ -246,7 +246,7 @@ public static class Bolum1LootBuilder
         return false;
     }
 
-    // Çekicinin hangi yanı yoldan uzak: kasa arkasının 3 m yanındaki noktalardan yolda olmayan, zemini bulunan taraf (+1 sağ / −1 sol).
+    // Minibüsün hangi yanı yoldan uzak: tamponun gerisinin 3 m yanındaki noktalardan yolda olmayan, zemini bulunan taraf (+1 sağ / −1 sol).
     private static float OffRoadSide(Vector3 rearEnd, Vector3 forward, Vector3 right, out string info)
     {
         var scores = new List<string>();

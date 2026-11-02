@@ -24,7 +24,7 @@ using UnityEngine.InputSystem.LowLevel;
 [InitializeOnLoad]
 public static class Bolum1FirstPersonVerify
 {
-    private const string OutDir = "Temp/Bolum1Verify";
+    private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1FirstPersonVerify.Stage";
     private const string ReportKey = "Bolum1FirstPersonVerify.Report";
     private const string OkKey = "Bolum1FirstPersonVerify.Ok";

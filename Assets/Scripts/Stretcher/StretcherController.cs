@@ -4,7 +4,7 @@ using UnityEngine;
 // Sedye (kullanıcı kararları 8, 10, 11). Kinematik: konumu fizikle değil, taşıyıcıların el noktalarıyla belirlenir.
 //
 // Durumlar:
-//  Resting  — yerde (ya da çekici kasasında) duruyor. Tek taşıyıcı tutsa bile kalkmaz.
+//  Resting  — yerde (ya da servis minibüsünün yük zemininde) duruyor. Tek taşıyıcı tutsa bile kalkmaz.
 //  Raised   — yeterli taşıyıcı var; iki sap, o uçtaki taşıyıcıların el noktalarında.
 //  Tilted   — kalkıkken bir uç bırakıldı, öbürü hâlâ tutuluyor: bırakılan uç yerde, tutulan uç elde.
 //

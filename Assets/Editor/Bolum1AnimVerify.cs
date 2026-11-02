@@ -22,7 +22,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static partial class Bolum1AnimVerify
 {
-    private const string OutDir = "Temp/Bolum1Verify";
+    private const string OutDir = "Captures/Bolum1";
     private const string StageKey = "Bolum1AnimVerify.Stage";
     private const string ReportKey = "Bolum1AnimVerify.Report";
     private const string OkKey = "Bolum1AnimVerify.Ok";

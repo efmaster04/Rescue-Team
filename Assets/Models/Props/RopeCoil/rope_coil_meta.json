@@ -60,11 +60,11 @@
   "service_van_slot": {
     "cabinet_part": "ServiceVan_RopeLockerDoor",
     "parent": "ServiceVan_Recovery",
-    "coordinate_space": "Unity vehicle local; +Y up, +Z rear",
+    "coordinate_space": "Unity vehicle local; +Y up, +Z rear, +X left",
     "position_m": [
-      1.12,
-      1.12,
-      2.68
+      0.62,
+      1.35,
+      2.3
     ],
     "side_root_normal": [
       0,
@@ -77,8 +77,8 @@
         1,
         0
       ],
-      "work_pose_deg": -90
+      "work_pose_deg": 90
     },
-    "note": "Bolum1ServiceVan creates the rear locker. Coil hangs behind its door."
+    "note": "Bolum1ServiceVan.BuildEquipment kurar: sol iç duvarda 0.50 × 0.50 × 0.30 m kutu (LockerCenter/LockerSize), kapak arkaya (+Z) bakar, menteşe dış kenarda (x +0.87); kangal kutunun merkezinde dik durur."
   }
 }

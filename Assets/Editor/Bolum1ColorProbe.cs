@@ -20,7 +20,7 @@ using UnityEngine.Rendering;
 // Çıktı: Captures/Bolum1/renk_<tag>_sahne.png, renk_<tag>_notr.png, renk_<tag>_karakter.png, renk_<tag>_rapor.txt
 public static class Bolum1ColorProbe
 {
-    private const string OutDir = "Temp/Bolum1Verify";
+    private const string OutDir = "Captures/Bolum1";
     private const string PaintName = "M_Minivan_Paint";
     private const string GlassName = "M_Minivan_Glass";
     private static readonly Color32 ExpectedPaint = new Color32(0x9A, 0xC4, 0xD2, 255);
@@ -131,9 +131,6 @@ public static class Bolum1ColorProbe
             .ToDictionary(kv => kv.Key, kv => { ColorUtility.TryParseHtmlString((string)kv.Value, out Color c); return c; });
         Measure("minibüs", Bolum1SceneBuilder.MinivanPath, vanExpected, vanExpected.Keys, results, problems);
 
-        var truckExpected = Bolum1Coordinates.Obj(Bolum1Coordinates.LoadJson(Bolum1Coordinates.TowTruckMetaPath), "materials")
-            .ToDictionary(kv => kv.Key, kv => { ColorUtility.TryParseHtmlString((string)kv.Value, out Color c); return c; });
-        Measure("çekici", Bolum1SceneBuilder.TowTruckPath, truckExpected, truckExpected.Keys, results, problems);
 
         // (b) mekân: 24 FBX
         var envSeen = new HashSet<string>();

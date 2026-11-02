@@ -2,10 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// U2: çekicinin servis dolabı kapağı (SM_TowTruck_LockerDoor_L1; towtruck_meta.json parts → hinge). Halat kangalı başta
-// bu dolapta durur. Oyuncu dolabın DIŞINDA, kapağa ≤ interactRange yakın ve yüzü kapağa dönükken E → kapak menteşede
+// U2: kurtarma aracının halat dolabı kapağı. Araç artık servis minibüsü (Bolum1ServiceVan): dolap yük bölümünün sol iç
+// duvarında küçük bir kutudur, kapağı ServiceVan_RopeLockerDoor (rope_coil_meta.json service_van_slot → door_motion).
+// Sınıf adı PlayerInteraction'ın sözleşmesi olduğu için TowTruckLocker kalır. Halat kangalı başta bu dolapta durur. Oyuncu dolabın DIŞINDA, kapağa ≤ interactRange yakın ve yüzü kapağa dönükken E → kapak menteşede
 // openSeconds içinde çalışma açısına açılır; açıkken aynı kuralla E → kapanır (kangal içindeyse önce kangal hedeflenir).
-// Bu bileşen çekici hiyerarşisinde DEĞİL, ayrı bir kontrol objesindedir (Bolum1Verify: çekici parçalarında betik yok);
+// Bu bileşen araç hiyerarşisinde DEĞİL, ayrı bir kontrol objesindedir (Bolum1Verify: araç parçalarında betik yok);
 // kapağı (door) dışarıdan döndürür. Kapak parçasının pivotu menteşededir.
 public class TowTruckLocker : MonoBehaviour
 {
@@ -13,9 +14,9 @@ public class TowTruckLocker : MonoBehaviour
 
     [Tooltip("Kapak parçası (pivot menteşede).")]
     public Transform door;
-    [Tooltip("Menteşe ekseni, kapağın ebeveyn (çekici kökü) uzayında.")]
+    [Tooltip("Menteşe ekseni, kapağın ebeveyn (araç kökü) uzayında.")]
     public Vector3 hingeAxis = Vector3.up;
-    [Tooltip("Açık açı (derece, işaretli; towtruck_meta work_pose_deg, dışa açılan yön).")]
+    [Tooltip("Açık açı (derece, işaretli; rope_coil_meta service_van_slot.door_motion.work_pose_deg, dışa açılan yön).")]
     public float openAngle = 90f;
     [Tooltip("Açılma / kapanma süresi (sn).")]
     public float openSeconds = 0.4f;
