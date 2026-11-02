@@ -176,6 +176,17 @@ public class MissionDirector : MonoBehaviour
         MissionFailed?.Invoke(null);
     }
 
+    // Görev köprüsü doğrulaması: görevi verilen sonuçla hemen bitirir (MissionBridgeVerify çağırır; oyunda kullanılmaz).
+    public void ForceFinishForTest(bool success)
+    {
+        if (IsFinished) return;
+        IsFinished = true;
+        Succeeded = success;
+        FailedPatient = null;
+        ResultMessage = success ? SuccessText : "Görev başarısız (test)";
+        if (success) MissionSucceeded?.Invoke(); else MissionFailed?.Invoke(null);
+    }
+
     // R tuşu: görev bittiyse sahneyi yeniden başlatır.
     public void RequestRestart()
     {

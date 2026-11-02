@@ -98,7 +98,15 @@ namespace CompanySim
         public CompanySave Data { get; private set; } = new CompanySave();
         public event Action Changed;
         public event Action<string> Notice;
-        string SavePath => Path.Combine(Application.persistentDataPath, "office_garage_v1.json");
+        // Görev köprüsü: doğrulama betikleri gerçek kaydı ezmemek için geçici bir yol verir (null = normal kayıt).
+        public static string SavePathOverride;
+        string SavePath => !string.IsNullOrEmpty(SavePathOverride) ? SavePathOverride :
+            Path.Combine(Application.persistentDataPath, "office_garage_v1.json");
+        // Görev köprüsü: sahası olan bir iş için ekip yola çıktığında (Depart / ResumeField) yayınlanır.
+        // Sahne geçişini köprü yapar; Core saha sahnesini tanımaz.
+        public static event Action<CompanyRuntime, JobDefinition> FieldDeparture;
+        // Start bitti ve kayıt yüklendi mi (köprü ReturnFromField'ı bundan sonra çağırır).
+        public bool IsReady { get; private set; }
 
         void Start()
         {
@@ -117,6 +125,7 @@ namespace CompanySim
             vehicle.Initialize(this);
             if(manualModules) manualModules.Initialize(this);
             StartCoroutine(DeliverOrders());
+            IsReady = true;
             Changed?.Invoke();
         }
 
@@ -145,6 +154,8 @@ namespace CompanySim
         {
             if (Data.phase != JobPhase.None) { Notify("Önce aktif işi tamamlayın."); return false; }
             var job = catalog.Job(id);
+            // Görev köprüsü: saha sahnesi olmayan işler kilitli ("Yakında").
+            if (job && !job.HasFieldScene) { Notify("Bu iş yakında açılacak."); return false; }
             if (!job || (acceptContract && (string.IsNullOrEmpty(job.contractTitle) || job.contractBonus <= 0))) return false;
             if (Data.reputation < job.minimumReputation)
             {
@@ -177,7 +188,19 @@ namespace CompanySim
             var missing = MissingPreparation();
             if (missing.Count > 0) { Notify("Hazırlık eksik: " + string.Join(", ", missing)); return false; }
             Data.phase = JobPhase.Deployed;
-            Mutated("Ekip göreve çıktı. Saha görevi entegrasyonu bekleniyor.");
+            var job = catalog.Job(Data.activeJobId);
+            Mutated("Ekip göreve çıktı.");
+            if (job && job.HasFieldScene) FieldDeparture?.Invoke(this, job);
+            return true;
+        }
+
+        // Görev köprüsü: ekip sahadayken oyun kapanmışsa (kayıt "Deployed" kalır) sahaya yeniden gidilir.
+        public bool ResumeField()
+        {
+            if (Data.phase != JobPhase.Deployed) return false;
+            var job = catalog.Job(Data.activeJobId);
+            if (!job || !job.HasFieldScene) return false;
+            FieldDeparture?.Invoke(this, job);
             return true;
         }
 

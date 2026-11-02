@@ -13,13 +13,12 @@ MonoBehaviour:
   m_Name: recovery
   m_EditorClassIdentifier: Assembly-CSharp::CompanySim.JobDefinition
   id: recovery
-  title: "\xC7amura Saplanan Ara\xE7"
-  client: Kuzey Nakliyat
-  description: "Dere kenar\u0131nda mahsur kalan servis arac\u0131n\u0131 \xE7\u0131kar\u0131n."
+  title: "U\xE7urumda Mahsur Minib\xFCs"
+  client: "\u0130l Afet Koordinasyon Merkezi"
+  description: "U\xE7urum kenar\u0131nda mahsur kalan minib\xFCsteki yolcular\u0131 kurtar\u0131n, ambulansa yeti\u015Ftirin ve e\u015Fyalar\u0131n\u0131 h\u0131rs\u0131zlara kapt\u0131rmay\u0131n."
   category: Kurtarma
-  location: "\xC7aml\u0131dere"
-  specialTerms: "Ekipman\u0131n sabitlenmi\u015F ve \xE7al\u0131\u015F\u0131r durumda
-    olmas\u0131 istenir."
+  location: "U\xE7urum yolu"
+  specialTerms: "Halat ve sedye olmadan yola \xE7\u0131k\u0131lmaz. Koniler \u015Feridi kapatmak i\xE7in \xF6nerilir; y\xFCklenen koni kadar koni sahaya gelir."
   distanceKm: 18
   payment: 850
   difficulty: 2
@@ -32,7 +31,8 @@ MonoBehaviour:
   contractMaxVehicleWear: 10
   requiredModule: towing
   requiredEquipment:
-  - toolbox
-  - jack
+  - rope
+  - stretcher
   recommendedEquipment:
-  - tire
+  - cone
+  fieldScene: Bolum1_Ucurum

@@ -17,5 +17,10 @@ namespace CompanySim
         public string requiredModule;
         public string[] requiredEquipment = Array.Empty<string>();
         public string[] recommendedEquipment = Array.Empty<string>();
+        // Görev köprüsü: işin saha sahnesi (Build Settings'teki sahne adı, ör. "Bolum1_Ucurum").
+        // Boşsa iş listede "Yakında" olarak kilitli görünür ve kabul edilemez.
+        [Tooltip("Saha görevi sahnesinin adı. Boşsa iş kilitli (Yakında).")]
+        public string fieldScene = "";
+        public bool HasFieldScene => !string.IsNullOrEmpty(fieldScene);
     }
 }

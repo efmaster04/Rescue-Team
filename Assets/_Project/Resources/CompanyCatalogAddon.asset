@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2155f98c556d6f042ad1e84660a0957a, type: 3}
+  m_Name: CompanyCatalogAddon
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.CatalogAddon
+  equipment:
+  - {fileID: 11400000, guid: 6897752a47baf6e4fa11532db0e08fb5, type: 2}
+  - {fileID: 11400000, guid: dcea17b8b99fe1942a4a7e749ccc6175, type: 2}
+  - {fileID: 11400000, guid: 719b4051cf7a13242abc7cacce1ad00d, type: 2}

@@ -165,7 +165,12 @@ namespace CompanySim
                     if(appSection=="upgrades") { SectionHeading("Geliştirmeler"); Building(); }
                     else if(appSection=="inspection") { SectionHeading("Denetim"); Safety(); }
                     else { SectionHeading("Şirket"); Stats(); } break;
-                case "MailBox": RenderNavigation(("inbox","Gelen kutusu")); MailView(); break;
+                case "MailBox":
+                    RenderNavigation(("inbox","Gelen kutusu"));
+                    // Görev köprüsü: sahadan dönen ekibin raporu Posta'da da duyurulur.
+                    if(Runtime.Data.phase==JobPhase.AwaitingReport)
+                        ToolbarButton("FieldReportMail","Saha raporu geldi · Aç",()=>Show("Reports"));
+                    MailView(); break;
             }
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(mainContent);
@@ -183,8 +188,17 @@ namespace CompanySim
             JobColumns(out var list,out var detail);
             var parent=mainContent; mainContent=list;
             Row("İlanlar",22,Paper,46);
-            foreach(var job in catalog.jobs) JobCard(job);
+            foreach(var job in catalog.jobs) { JobCard(job); if(!job.HasFieldScene) MarkComingSoon(list,job); }
             mainContent=detail; JobDetail(); mainContent=parent;
+        }
+        // Görev köprüsü: saha sahnesi olmayan iş kartı "Yakında" etiketiyle kilitli görünür (kart yine seçilebilir).
+        const string ComingSoonText="Yakında · kilitli";
+        void MarkComingSoon(Transform list,JobDefinition job)
+        {
+            var card=list.Find("Job_"+job.id); if(!card) return;
+            var meta=card.Find("JobMeta")?.GetComponent<Text>();
+            if(meta) { meta.text=ComingSoonText; meta.color=selectedJob==job.id?Surface:Peach; }
+            var fee=card.Find("JobPayment"); if(fee) fee.gameObject.SetActive(false);
         }
         void JobDetail()
         {
@@ -197,8 +211,15 @@ namespace CompanySim
             foreach(var id in job.requiredEquipment) RequirementRow(id,catalog.Item(id)?.displayName??id);
             if(job.recommendedEquipment.Length>0) Row("Önerilen: "+string.Join(", ",job.recommendedEquipment.Select(x=>catalog.Item(x)?.displayName??x)),17,Soft,34);
             if(!string.IsNullOrWhiteSpace(job.specialTerms)) Row(job.specialTerms,17,Soft,48);
-            bool available=Runtime.Data.phase==JobPhase.None && Runtime.Data.reputation>=job.minimumReputation;
+            if(!job.HasFieldScene) Row("Yakında: bu işin saha görevi henüz hazır değil.",17,Peach,34);
+            bool available=Runtime.Data.phase==JobPhase.None && Runtime.Data.reputation>=job.minimumReputation && job.HasFieldScene;
             JobActions(job,available);
+            if(!job.HasFieldScene && jobFooter)
+            {
+                // Kabul düğmesi ve gerekçe "Yakında" der (itibar/aktif iş gerekçesi yerine).
+                var caption=jobFooter.Find("AcceptJob/Caption")?.GetComponent<Text>(); if(caption) caption.text="Yakında";
+                var reason=jobFooter.Find("AcceptDisabledReason")?.GetComponent<Text>(); if(reason) reason.text="Bu iş yakında açılacak.";
+            }
         }
         void Fleet()
         {
@@ -354,7 +375,11 @@ namespace CompanySim
                 ToolbarButton("DepartJob","Göreve çık",()=>Runtime.Depart(),missing.Count==0);
             }
             else if (Runtime.Data.phase==JobPhase.Deployed)
-                Row("Saha sonucu bekleniyor. Saha oynanışı henüz bağlı değil.",14,Soft,36);
+            {
+                // Görev köprüsü: oyun sahadayken kapandıysa ekip sahaya yeniden gönderilir.
+                Row("Ekip sahada. Görev bitince rapor burada görünür.",14,Soft,36);
+                if(job.HasFieldScene) ToolbarButton("ResumeField","Sahaya git",()=>Runtime.ResumeField());
+            }
             else ToolbarButton("DispatchReports","Raporu aç",()=>Show("Reports"));
         }
         void Reports()
