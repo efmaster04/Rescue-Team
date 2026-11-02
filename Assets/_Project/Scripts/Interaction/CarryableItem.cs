@@ -11,6 +11,15 @@ namespace CompanySim
     {
         public string uid, definitionId;
         [Range(0,100)] public float durability = 100;
+        // Sert çarpma (fırlatma, düşme): çarpışma hızı ImpactDamageSpeed'i (m/sn) geçerse dayanıklılık ImpactDamage kadar düşer.
+        // Tek ayar yeri burası (kullanıcı kararı: eşik ve miktar ayarlanabilir sabit).
+        public const float ImpactDamageSpeed = 4f;
+        public const float ImpactDamage = 4f;
+        // Tanı: sert çarpma sayısı ve son çarpışma hızı (doğrulama okur)
+        public int ImpactHits { get; private set; }
+        public float LastImpactSpeed { get; private set; }
+        // Fırlatıldı (henüz durmadı); durunca köprü WorldChanged ile kaydeder
+        public bool Thrown { get; private set; }
         public bool Loaded { get; private set; }
         public int CargoSlot { get; private set; } = -1;
         Rigidbody body;
@@ -51,8 +60,24 @@ namespace CompanySim
         {
             float speed=collision.relativeVelocity.magnitude;
             if(Loaded || body.isKinematic || speed<.9f || Time.time-lastImpact<.18f) return;
-            lastImpact=Time.time;
+            lastImpact=Time.time; LastImpactSpeed=speed;
             if(feedback) feedback.Impact(transform.position,Mathf.Clamp01(speed/5));
+            if(speed>=ImpactDamageSpeed)
+            {
+                // Sert çarpma: dayanıklılık düşer (fırlatılan ya da düşen eşya); kayıt ve HUD için dünya değişti
+                durability=Mathf.Max(0,durability-ImpactDamage); ImpactHits++;
+                var runtime=FindAnyObjectByType<CompanyRuntime>(); if(runtime) runtime.WorldChanged();
+            }
+        }
+        void FixedUpdate()
+        {
+            if(!Thrown) return;
+            if(body.isKinematic || Loaded) {Thrown=false; return;}
+            if(body.linearVelocity.sqrMagnitude<.01f && body.angularVelocity.sqrMagnitude<.01f)
+            {
+                Thrown=false;
+                var runtime=FindAnyObjectByType<CompanyRuntime>(); if(runtime) runtime.WorldChanged();
+            }
         }
         public void CenterInHand()
         {
@@ -118,6 +143,22 @@ namespace CompanySim
             body.interpolation=freeInterpolation;
             foreach (var col in colliders) col.enabled = true;
             IgnorePlayerCollision();
+        }
+        // Elden fırlat (bizim PlayerCombat sağ tık; CompanyPlayerBridge çağırır): Drop gibi serbest kalır, verilen hızla uçar.
+        public void Throw(Vector3 position, Quaternion rotation, Vector3 velocity)
+        {
+            SetHandOccluded(false);
+            Loaded = false; CargoSlot = -1;
+            body.interpolation=RigidbodyInterpolation.None;
+            transform.SetParent(null, true);
+            transform.SetPositionAndRotation(position, rotation);
+            body.isKinematic = false;
+            body.position=position; body.rotation=rotation;
+            body.interpolation=freeInterpolation;
+            foreach (var col in colliders) col.enabled = true;
+            IgnorePlayerCollision();
+            body.linearVelocity=velocity; body.angularVelocity=UnityEngine.Random.insideUnitSphere*3f;
+            Thrown=true; lastImpact=Time.time-.18f;
         }
         public void LoadInto(Transform socket, int slot)
         {

@@ -291,6 +291,8 @@ public class PlayerInteraction : MonoBehaviour
             CurrentHint = HintPlaceCone;
             return;
         }
+        // ---- Ofis-garaj: elde dış eşya (CarryableItem) varken bu sistemin eylemi yok; E'yi köprü (CompanyPlayerBridge) kullanır ----
+        if (player.HeldProp != null) return;
         // ---- U3: değerli eşya elde: güvenli yerdeysen koy, değilse bırak (elde 1 şey kuralı) ----
         if (player.HeldValuable != null)
         {

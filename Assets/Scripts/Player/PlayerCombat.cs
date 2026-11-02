@@ -48,6 +48,8 @@ public class PlayerCombat : MonoBehaviour
     public int Rejected { get; private set; }
     public string LastRejectReason { get; private set; } = "";
     public LootItem LastThrown { get; private set; }
+    // Ofis-garaj: fırlatılan dış eşya (HeldProp) sayısı
+    public int PropThrows { get; private set; }
     // U4b tanı: son saldırıda yüz hangi yöne çevrildi (kamera / hedef hırsız)
     public string LastFacing { get; private set; } = "";
 
@@ -76,13 +78,14 @@ public class PlayerCombat : MonoBehaviour
         }
     }
     public bool CanAttack { get { return CanAct && !Aiming; } }
-    public bool CanThrow { get { return CanAct && player.HeldValuable != null && player.HeldValuable.kind != LootKind.Equipment; } }
+    // Ofis-garaj: elde dış eşya (HeldProp, CarryableItem köprüsü) de fırlatılır.
+    public bool CanThrow { get { return CanAct && ((player.HeldValuable != null && player.HeldValuable.kind != LootKind.Equipment) || player.HeldProp != null); } }
     public bool CanWhistle { get { return CanAct && !Aiming && WhistleReady; } }
 
     private void Update()
     {
         // Nişan alırken eşya elden gittiyse (hırsız kaptı / düştü) ya da kontrol kaybolduysa nişan biter
-        if (Aiming && (player == null || player.HeldValuable == null || player.IsDown || player.HeldStretcher != null))
+        if (Aiming && (player == null || (player.HeldValuable == null && player.HeldProp == null) || player.IsDown || player.HeldStretcher != null))
         {
             Aiming = false;
             if (crew != null) crew.ReleaseAction();
@@ -243,6 +246,7 @@ public class PlayerCombat : MonoBehaviour
         if (crew != null) crew.PlayAction(CrewAnimation.StateThrowRelease, ThrowReleaseSeconds);
         yield return new WaitForSeconds(ThrowReleaseTime);
         var item = player.HeldValuable;
+        var prop = player.HeldProp;
         if (item != null && item.kind != LootKind.Equipment)
         {
             Vector3 target = AimPoint();
@@ -251,6 +255,17 @@ public class PlayerCombat : MonoBehaviour
             player.HeldValuable = null;
             item.Throw(dir * settings.throwSpeed, settings.throwHitStunSeconds, settings.throwHitDamage, killBelowY);
             LastThrown = item;
+            Throws++;
+        }
+        else if (prop != null)
+        {
+            // Ofis-garaj eşyası: aynı balistik hedef, fırlatmayı köprü yapar (fizik gövdesi eşyanın kendisinde)
+            Vector3 target = AimPoint();
+            Vector3 dir = BallisticDirection(prop.Center, target, settings.throwSpeed, out string arc);
+            LastAimArc = arc;
+            player.HeldProp = null;
+            prop.ThrowFrom(player, dir * settings.throwSpeed);
+            PropThrows++;
             Throws++;
         }
         yield return new WaitForSeconds(Mathf.Max(0f, ThrowReleaseSeconds - ThrowReleaseTime - 0.05f));
@@ -310,6 +325,7 @@ public class PlayerCombat : MonoBehaviour
         Vector3 from = player.transform.position + Vector3.up * 1.4f;
         var item = player.HeldValuable;
         if (item != null) from = item.Center;
+        else if (player.HeldProp != null) from = player.HeldProp.Center;
         return BallisticDirection(from, target, settings.throwSpeed, out string arc);
     }
 

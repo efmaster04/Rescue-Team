@@ -61,7 +61,8 @@ namespace CompanySim
             {
                 while(progress<1)
                 {
-                    if(Keyboard.current==null || !Keyboard.current[player.interactKey].isPressed || player.InputLocked || player.FindTarget()!=this || !system.CanWork(player,out _)) break;
+                    // E basılı bilgisi oyuncudan (bizim karakterde PlayerInputReader; UI açıkken false)
+                    if(!player.InteractHeld || player.InputLocked || player.FindTarget()!=this || !system.CanWork(player,out _)) break;
                     progress=Mathf.Clamp01(progress+Time.deltaTime/.65f);
                     SetPose(loosening?progress:1-progress,(loosening?1:-1)*progress*810+(loosening?0:90));
                     yield return null;

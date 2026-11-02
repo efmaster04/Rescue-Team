@@ -6,6 +6,9 @@ using UnityEngine.InputSystem;
 // WASD hareket, fare bakış, Space zıplama, E etkileşim, R yeniden başlat (görev bitince).
 // U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük. U4b tanı: basış sayaçları ve bağlama özeti (doğrulama okur).
 // FP: V birinci şahıs ↔ üçüncü şahıs (OrbitCamera.ToggleMode).
+// Ofis-garaj: InputBlocked açıkken (bilgisayar arayüzü / duraklatma menüsü; CompanyPlayerBridge.SetCursor yazar) hareket, kamera,
+// etkileşim ve saldırı girdisi durur (hareket sıfırlanır, basılı tutmalar bırakılır); kapanınca geri gelir. E basışı InteractPressed
+// olayıyla köprüye de iletilir (bizim PlayerInteraction'ın eylemi yoksa köprü kullanır).
 public class PlayerInputReader : MonoBehaviour
 {
     public ThirdPersonPlayer player;
@@ -23,6 +26,13 @@ public class PlayerInputReader : MonoBehaviour
     public int WhistlePresses { get; private set; }
     public int ThrowHoldFrames { get; private set; }
     public int ViewTogglePresses { get; private set; }
+    public int InteractPresses { get; private set; }
+    // Ofis-garaj: UI açıkken oyun girdisi kilitli (bkz. sınıf yorumu)
+    public bool InputBlocked { get; set; }
+    // E basılı mı (bu karede; kilitliyken false)
+    public bool InteractHeld { get; private set; }
+    // E'ye basıldı (kilitli değilken; PlayerInteraction.Interact çağrıldıktan sonra)
+    public event System.Action InteractPressed;
     public InputAction AttackAction { get { return attack; } }
     public InputAction ThrowAction { get { return throwHold; } }
     public InputAction WhistleAction { get { return whistle; } }
@@ -72,6 +82,16 @@ public class PlayerInputReader : MonoBehaviour
 
     private void Update()
     {
+        if (InputBlocked)
+        {
+            // UI açık: hareket durur, basılı tutmalar bırakılır, tıklamalar oyuna gitmez
+            if (player != null) { player.SetMoveInput(Vector2.zero); player.SetRunInput(false); }
+            if (interaction != null) interaction.SetInteractHeld(false);
+            InteractHeld = false;
+            if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
+            if (combat != null) combat.SetThrowHeld(false);
+            return;
+        }
         if (player != null)
         {
             player.SetMoveInput(move.ReadValue<Vector2>());
@@ -80,8 +100,14 @@ public class PlayerInputReader : MonoBehaviour
         }
         if (orbitCamera != null) orbitCamera.Rotate(look.ReadValue<Vector2>());
         if (viewToggle.WasPressedThisFrame()) { ViewTogglePresses++; if (orbitCamera != null) orbitCamera.ToggleMode(); } // V: FP ↔ TP
-        if (interact.WasPressedThisFrame() && interaction != null) interaction.Interact();
-        if (interaction != null) interaction.SetInteractHeld(interact.IsPressed()); // basılı tutma (arkadaşı kaldırma)
+        InteractHeld = interact.IsPressed(); // basış olayından önce: basılı tutma işi (cıvata) ilk karede de "basılı" görsün
+        if (interaction != null) interaction.SetInteractHeld(InteractHeld); // basılı tutma (arkadaşı kaldırma)
+        if (interact.WasPressedThisFrame())
+        {
+            InteractPresses++;
+            if (interaction != null) interaction.Interact();
+            InteractPressed?.Invoke();
+        }
         if (restart.WasPressedThisFrame() && MissionDirector.Instance != null) MissionDirector.Instance.RequestRestart();
         // U4: savunma
         if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();

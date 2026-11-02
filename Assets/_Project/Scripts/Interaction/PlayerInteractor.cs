@@ -9,8 +9,10 @@ namespace CompanySim
         public abstract void Interact(PlayerInteractor player);
     }
 
+    // Arkadaşın basit FPS kontrolcüsü. Ofis-garaj sahnesinde artık kullanılmaz: bizim karakterde bundan türeyen CompanyPlayerBridge
+    // durur (ComputerUI.player ve CompanyRuntime bu tipi beklediğinden tip korunur). Türetilebilmesi için üyeler sanal.
     [RequireComponent(typeof(CharacterController))]
-    public sealed class PlayerInteractor : MonoBehaviour
+    public class PlayerInteractor : MonoBehaviour
     {
         public const float BodyHeight=1.72f, BodyRadius=.28f, EyeHeight=1.57f;
         public Camera viewCamera;
@@ -19,9 +21,9 @@ namespace CompanySim
         public float interactionDistance = 2.4f, gravity = -20f;
         public Key interactKey = Key.E, dropKey = Key.F, rotateKey = Key.R;
         public bool InputLocked { get; set; }
-        public CarryableItem HeldItem { get; private set; }
+        public CarryableItem HeldItem { get; protected set; }
         CharacterController controller;
-        Transform holdPoint;
+        protected Transform holdPoint;
         float pitch, verticalVelocity;
         Vector3 horizontalVelocity;
         Vector2 lookDelta;
@@ -29,10 +31,12 @@ namespace CompanySim
         readonly RaycastHit[] reachHits=new RaycastHit[32];
         readonly Collider[] placementHits=new Collider[32];
         public bool carrySway=true;
-        public InteractableBehaviour FocusedTarget { get; private set; }
+        public InteractableBehaviour FocusedTarget { get; protected set; }
         public Transform HoldPoint => holdPoint;
+        // E basılı mı (ModuleFastener cıvata sıkma/sökme okur). Köprü bizim girdi okuyucusundan verir.
+        public virtual bool InteractHeld => Keyboard.current != null && Keyboard.current[interactKey].isPressed;
 
-        void Awake()
+        protected virtual void Awake()
         {
             controller = GetComponent<CharacterController>();
             holdPoint = new GameObject("Equipment_HoldPoint").transform;
@@ -42,13 +46,13 @@ namespace CompanySim
             Cursor.visible = false;
         }
 
-        void Start()
+        protected virtual void Start()
         {
             foreach (var item in FindObjectsByType<CarryableItem>(FindObjectsSortMode.None))
                 item.IgnorePlayerCollision();
         }
 
-        void Update()
+        protected virtual void Update()
         {
             var kb = Keyboard.current;
             var mouse = Mouse.current;
@@ -96,7 +100,7 @@ namespace CompanySim
             if (kb[Key.F9].wasPressedThisFrame) ui.Runtime.DevCompleteFieldJob();
 #endif
         }
-        public InteractableBehaviour FindTarget()
+        public virtual InteractableBehaviour FindTarget()
         {
             int count=Physics.SphereCastNonAlloc(viewCamera.transform.position,.025f,viewCamera.transform.forward,
                 reachHits,interactionDistance,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide);
@@ -109,7 +113,7 @@ namespace CompanySim
             }
             return target;
         }
-        void LateUpdate()
+        protected virtual void LateUpdate()
         {
             if(!HeldItem) return;
             float size=HeldItem.HalfSize.magnitude;
@@ -136,7 +140,7 @@ namespace CompanySim
             HeldItem.UpdateHandVisibility(viewCamera);
         }
 
-        public void Hold(CarryableItem item)
+        public virtual void Hold(CarryableItem item)
         {
             if (HeldItem) return;
             HeldItem = item;
@@ -144,7 +148,7 @@ namespace CompanySim
             ui.SetCarriedItem(item);
         }
 
-        public void DropHeld()
+        public virtual void DropHeld()
         {
             if (!HeldItem) return;
             if(!TryGetDropPosition(HeldItem,out var position))
@@ -156,7 +160,7 @@ namespace CompanySim
             ui.SetCarriedItem(null);
             ui.Runtime.WorldChanged();
         }
-        public bool TryGetDropPosition(CarryableItem item,out Vector3 position)
+        public virtual bool TryGetDropPosition(CarryableItem item,out Vector3 position)
         {
             position=Vector3.zero;
             float radius=Mathf.Clamp(item.HalfSize.magnitude,.12f,.7f), distance=1.25f;
@@ -177,14 +181,14 @@ namespace CompanySim
             return false;
         }
 
-        public CarryableItem TakeHeld()
+        public virtual CarryableItem TakeHeld()
         {
             var item = HeldItem; HeldItem = null;
             ui.SetCarriedItem(null);
             return item;
         }
 
-        public void SetCursor(bool free)
+        public virtual void SetCursor(bool free)
         {
             InputLocked = free;
             horizontalVelocity=Vector3.zero; lookDelta=Vector2.zero;

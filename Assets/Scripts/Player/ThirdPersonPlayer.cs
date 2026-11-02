@@ -48,6 +48,9 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public RopeCoil HeldCoil { get; set; }
     // U3: tek elle taşınan değerli eşya (valiz, hasta eşyası; koni kuralı: koşu serbest). Yalnız PlayerInteraction yazar.
     public LootItem HeldValuable { get; set; }
+    // Ofis-garaj: tek elle taşınan dış eşya (CarryableItem köprüsü; IHeldProp). Yalnız köprü (CompanyPlayerBridge) ve PlayerCombat yazar.
+    // Koni kuralı: koşu ve zıplama serbest. Çarpılma / yeniden doğmada düşer (DropValuable).
+    public IHeldProp HeldProp { get; set; }
     // Sırttaki hasta (D2). Yalnız PlayerInteraction yazar (SetPiggyback).
     public Patient Piggyback { get; private set; }
     // Bağlı olunan halat (D2); halattayken CharacterController kapalı, konum halattan gelir.
@@ -230,6 +233,12 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // U3: elindeki değerli eşya önüne, yere düşer (çarpılma / can 0 / yeniden doğma).
     private void DropValuable()
     {
+        if (HeldProp != null)
+        {
+            var prop = HeldProp;
+            HeldProp = null;
+            prop.DropFrom(this);
+        }
         if (HeldValuable == null) return;
         var v = HeldValuable;
         HeldValuable = null;
