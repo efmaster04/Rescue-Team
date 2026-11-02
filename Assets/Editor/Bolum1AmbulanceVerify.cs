@@ -21,7 +21,7 @@ using UnityEngine.UI;
 [InitializeOnLoad]
 public static class Bolum1AmbulanceVerify
 {
-    private const string OutDir = "Captures/Bolum1";
+    private const string OutDir = "Temp/Bolum1Verify";
     private const string StageKey = "Bolum1AmbulanceVerify.Stage";
     private const string ReportKey = "Bolum1AmbulanceVerify.Report";
     private const string OkKey = "Bolum1AmbulanceVerify.Ok";
@@ -94,7 +94,7 @@ public static class Bolum1AmbulanceVerify
             + "; requiredCarriers " + (rules != null ? rules.requiredCarriers.ToString() : "YOK") + "; oyuncu bileşenleri " + playerOk);
 
         var stretchers = Bolum1AmbulanceBuilder.StretcherNames.Select(n => GameObject.Find(n)).ToList();
-        var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName);
+        var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
         Line("  sedyeler: " + string.Join(", ", stretchers.Select(s => s.name + " " + V(s.transform.position))) + " (çekici kökü " + V(truck.transform.position) + ")");
         foreach (var t in Bolum1AmbulanceBuilder.PatientTypes)
         {
@@ -372,7 +372,7 @@ public static class Bolum1AmbulanceVerify
         var s2 = Stretcher(1);
 
         // (h) koni: şeride, durağın 25 m gerisine bir koni konur (çekici kasasındaki ilk koni).
-        var cone = GameObject.Find("SM_TowTruck_Cone_01").GetComponent<Rigidbody>();
+        var cone = GameObject.Find("ServiceVan_Cone_01").GetComponent<Rigidbody>();
         var lane = Mission.lane;
         float coneS = Mission.StopDistance - 25f;
         Vector3 coneStart = lane.PointAt(coneS) + Vector3.up * 0.05f;

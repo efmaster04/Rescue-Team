@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 // Yalnız editörde kurulum: hareketli parçalara oyun mekaniği eklemez.
-public static class Bolum1TowTruck
+public static class Bolum1ServiceVan
 {
     public const float ConeMass = 3f;
     public static readonly string[] WheelNames = {
@@ -12,7 +12,7 @@ public static class Bolum1TowTruck
         "SM_TowTruck_Wheel_R2_L", "SM_TowTruck_Wheel_R2_R"
     };
     public static readonly string[] ConeNames = {
-        "SM_TowTruck_Cone_01", "SM_TowTruck_Cone_02", "SM_TowTruck_Cone_03", "SM_TowTruck_Cone_04"
+        "ServiceVan_Cone_01", "ServiceVan_Cone_02", "ServiceVan_Cone_03", "ServiceVan_Cone_04"
     };
 
     public static Transform Part(GameObject truck, string name)

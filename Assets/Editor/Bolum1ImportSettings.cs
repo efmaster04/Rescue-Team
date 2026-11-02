@@ -10,9 +10,6 @@ internal class Bolum1ImportSettings : AssetPostprocessor
 {
     public const string EnvironmentFolder = "Assets/Models/Environment/Bolum1/";
     public const string VehicleFolder = "Assets/Models/Vehicles/Minivan/";
-    public const string TowTruckFolder = "Assets/Models/Vehicles/TowTruck/";
-    public const string TowTruckGlassMaterial = "M_TowTruck_Glass";
-    public const float TowTruckGlassAlpha = 0.34f;
     public const string AppliedMarker = "Bolum1Defaults:v1";
     public const string AmbulanceFolder = "Assets/Models/Vehicles/Ambulance/";
     public const string PropsFolder = "Assets/Models/Props/Stretcher/";
@@ -25,7 +22,7 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     public static bool IsBolum1Model(string path)
     {
         return path.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)
-            && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder) || path.StartsWith(TowTruckFolder)
+            && (path.StartsWith(EnvironmentFolder) || path.StartsWith(VehicleFolder)
                 || path.StartsWith(AmbulanceFolder) || path.StartsWith(PropsFolder) || path.StartsWith(PatientFolder)
                 || path.StartsWith(TrafficFolder));
     }
@@ -61,14 +58,13 @@ internal class Bolum1ImportSettings : AssetPostprocessor
     private void OnPreprocessMaterialDescription(MaterialDescription description, Material material, AnimationClip[] clips)
     {
         bool vanGlass = assetPath.StartsWith(VehicleFolder) && description.materialName == GlassMaterial;
-        bool truckGlass = assetPath.StartsWith(TowTruckFolder) && description.materialName == TowTruckGlassMaterial;
         bool ambulanceGlass = assetPath.StartsWith(AmbulanceFolder) && description.materialName == "M_Ambulance_Glass";
         bool trafficGlass = assetPath.StartsWith(TrafficFolder) && (description.materialName == TrafficGlassMaterial || description.materialName == TrafficTrucksGlassMaterial);
-        if ((!vanGlass && !truckGlass && !ambulanceGlass && !trafficGlass) || !material.HasProperty("_BaseColor"))
+        if ((!vanGlass && !ambulanceGlass && !trafficGlass) || !material.HasProperty("_BaseColor"))
             return;
 
         Color c = material.GetColor("_BaseColor");
-        c.a = trafficGlass ? TrafficGlassAlpha : ambulanceGlass ? 0.3f : truckGlass ? TowTruckGlassAlpha : GlassAlpha;
+        c.a = trafficGlass ? TrafficGlassAlpha : ambulanceGlass ? 0.3f : GlassAlpha;
         MakeTransparent(material);
         material.SetColor("_BaseColor", c);
         if (material.HasProperty("_Color"))

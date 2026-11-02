@@ -18,7 +18,7 @@ public static partial class Bolum1AnimVerify
 {
     private static ThiefDirector Thieves { get { return ThiefDirector.Instance; } }
     private static PlayerCombat Combat { get { return player.GetComponent<PlayerCombat>(); } }
-    private static Transform Truck { get { return GameObject.Find(Bolum1SceneBuilder.TowTruckName).transform; } }
+    private static Transform Truck { get { return GameObject.Find(Bolum1SceneBuilder.ServiceVanName).transform; } }
 
     private static ThiefSettings TestThiefSettings(float first, float interval, float vanWait = 30f, int maxThieves = 5)
     {

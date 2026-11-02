@@ -7,9 +7,9 @@ using UnityEngine.Rendering;
 
 public static partial class Bolum1Verify
 {
-    private static void CheckTowTruck(Dictionary<string, object> markers)
+    private static void CheckServiceVan(Dictionary<string, object> markers)
     {
-        var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName);
+        var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1SceneBuilder.TowTruckPath);
         var placement = Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(markers, "markers"), "TowTruckPlacement");
         var position = Bolum1Coordinates.ToUnity(Bolum1Coordinates.Vec3(placement, "position"));
@@ -22,26 +22,26 @@ public static partial class Bolum1Verify
         bool hierarchyOk = true;
         foreach (var entry in Bolum1Coordinates.Obj(meta, "parts"))
         {
-            var part = Bolum1TowTruck.Part(truck, entry.Key);
+            var part = Bolum1ServiceVan.Part(truck, entry.Key);
             string parent = (string)((Dictionary<string, object>)entry.Value)["parent"];
             hierarchyOk &= part.parent != null && part.parent.name == parent;
-            if (!Bolum1TowTruck.WheelNames.Contains(entry.Key) && !Bolum1TowTruck.ConeNames.Contains(entry.Key)
+            if (!Bolum1ServiceVan.WheelNames.Contains(entry.Key) && !Bolum1ServiceVan.ConeNames.Contains(entry.Key)
                 && entry.Key != "SM_TowTruck_Crane_Hook")
                 hierarchyOk &= part.GetComponents<Collider>().Length == 0 && part.GetComponents<Rigidbody>().Length == 0;
         }
         hierarchyOk &= truck.GetComponentsInChildren<MonoBehaviour>(true).Length == 0;
         bool physicsOk = truck.GetComponent<Rigidbody>() == null && truck.GetComponents<BoxCollider>().Length >= 3
             && truck.GetComponentsInChildren<Rigidbody>().Length == 4
-            && truck.GetComponentsInChildren<MeshCollider>().All(c => Bolum1TowTruck.ConeNames.Contains(c.name) && c.convex);
-        foreach (string name in Bolum1TowTruck.ConeNames)
+            && truck.GetComponentsInChildren<MeshCollider>().All(c => Bolum1ServiceVan.ConeNames.Contains(c.name) && c.convex);
+        foreach (string name in Bolum1ServiceVan.ConeNames)
         {
-            var cone = Bolum1TowTruck.Part(truck, name);
+            var cone = Bolum1ServiceVan.Part(truck, name);
             var rb = cone.GetComponent<Rigidbody>();
             var mc = cone.GetComponent<MeshCollider>();
             physicsOk &= rb != null && Mathf.Approximately(rb.mass, 3f) && rb.useGravity && !rb.isKinematic
                 && rb.constraints == RigidbodyConstraints.None && mc != null && mc.convex && mc.enabled && !mc.isTrigger;
         }
-        var hook = Bolum1TowTruck.Part(truck, "SM_TowTruck_Crane_Hook");
+        var hook = Bolum1ServiceVan.Part(truck, "SM_TowTruck_Crane_Hook");
         var hookCollider = hook.GetComponent<SphereCollider>();
         physicsOk &= hook.GetComponent<Rigidbody>() == null && hookCollider != null && hookCollider.radius < 0.25f;
         bool noPlaceholder = !UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Any(t => t.name.StartsWith("PH_"));
@@ -49,9 +49,9 @@ public static partial class Bolum1Verify
             "statik kök; kutu " + truck.GetComponents<BoxCollider>().Length + "; 6 teker + kanca küre; 4 serbest koni × 3 kg; PH yok=" + noPlaceholder);
 
         bool wheelsOk = true;
-        foreach (string name in Bolum1TowTruck.WheelNames)
+        foreach (string name in Bolum1ServiceVan.WheelNames)
         {
-            var wheel = Bolum1TowTruck.Part(truck, name);
+            var wheel = Bolum1ServiceVan.Part(truck, name);
             var col = wheel.GetComponent<SphereCollider>();
             bool groundFound = RayDownToModule(wheel.position, "SM_B1_Ground", out RaycastHit hit);
             float gap = groundFound ? WorldMinY(wheel.GetComponent<MeshFilter>()) - hit.point.y : 999f;
@@ -156,8 +156,8 @@ public static partial class Bolum1Verify
 
         public ConePhysicsProbe()
         {
-            var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName);
-            bodies = Bolum1TowTruck.ConeNames.Select(n => Bolum1TowTruck.Part(truck, n).GetComponent<Rigidbody>()).ToArray();
+            var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
+            bodies = Bolum1ServiceVan.ConeNames.Select(n => Bolum1ServiceVan.Part(truck, n).GetComponent<Rigidbody>()).ToArray();
             starts = bodies.Select(b => b.position).ToArray();
         }
 
@@ -187,9 +187,9 @@ public static partial class Bolum1Verify
         }
     }
 
-    private static void CaptureTowTruck()
+    private static void CaptureServiceVan()
     {
-        var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName);
+        var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
         Capture("cekici_sahne", Bolum1Coordinates.ToUnity(new Vector3(-11f, -40f, 13f)),
             Bolum1Coordinates.ToUnity(new Vector3(9f, -14f, -3.5f)), 48f);
         var look = truck.transform.position + Vector3.up * 1.5f;

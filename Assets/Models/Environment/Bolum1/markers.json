@@ -2134,8 +2134,8 @@
         -8.91015338897705,
         0.463874489068985
       ],
-      "asset": "Export/TowTruck/SM_TowTruck.fbx",
-      "root_object": "SM_TowTruck",
+      "asset": "Assets/_Project/Art/Models/Vehicles/Vehicle_ServiceVan_Complete.fbx",
+      "root_object": "ServiceVan_Recovery",
       "coordinate_system": "Blender: X east, Y mountain, Z up; meters",
       "rotation_quaternion_wxyz": [
         0.7069510817527771,
@@ -2493,8 +2493,8 @@
       "source_sha256": "c2f3141a9dc23d6cfc68b3d70c8c21cb38cb23d4a2307733e84683ee85f1be88"
     },
     "TowTruckPlacement": {
-      "asset": "Export/TowTruck/SM_TowTruck.fbx",
-      "root_object": "SM_TowTruck",
+      "asset": "Assets/_Project/Art/Models/Vehicles/Vehicle_ServiceVan_Complete.fbx",
+      "root_object": "ServiceVan_Recovery",
       "coordinate_system": "Blender: X east, Y mountain, Z up; meters",
       "position": [
         15.0,

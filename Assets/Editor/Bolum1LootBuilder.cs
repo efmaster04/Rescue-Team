@@ -28,7 +28,7 @@ public static class Bolum1LootBuilder
     public const string RespawnPointName = "HealthRespawnPoint";
     public const string PatientItemPrefix = "Valuable_";
     public const string PropsRootName = "Bolum1_Props";
-    // Çekici kök uzayı = Blender çekici uzayı, X ters (Bolum1TowTruck.AddBox): kasa arka ucu y 3.92, ön −Y.
+    // Çekici kök uzayı = Blender çekici uzayı, X ters (Bolum1ServiceVan.AddBox): kasa arka ucu y 3.92, ön −Y.
     public const float DeckRearLocalY = 3.92f;
     public const float SafeDropBehind = 0.9f, SafeDropSide = 1.7f;
     public const float RespawnBehind = 2.5f, RespawnSide = 3.0f;
@@ -71,9 +71,9 @@ public static class Bolum1LootBuilder
         registry.mission = mission;
 
         // 2) Çekici eksenleri; yoldan uzak yan
-        Vector3 forward = Vector3.ProjectOnPlane(truck.transform.TransformDirection(new Vector3(0f, -1f, 0f)), Vector3.up).normalized;
+        Vector3 forward = Vector3.ProjectOnPlane(Bolum1ServiceVan.Forward(truck), Vector3.up).normalized;
         Vector3 right = Vector3.Cross(Vector3.up, forward);
-        Vector3 rearEnd = truck.transform.TransformPoint(new Vector3(0f, DeckRearLocalY, 0f));
+        Vector3 rearEnd = Bolum1ServiceVan.RearEnd(truck);
         float sideSign = OffRoadSide(rearEnd, forward, right, out string sideInfo);
 
         // 3) Güvenli yer: kasa arka ucunun gerisinde, yoldan uzak yanda (sedyeler tam arkada, ±0.5 m'de)
@@ -96,7 +96,7 @@ public static class Bolum1LootBuilder
         Line("Teslim noktası (SafeDrop): " + V(sd) + ", kasa arka ucu " + V(rearEnd) + ", yan " + (sideSign > 0 ? "+sağ" : "−sağ") + " (" + sideInfo + "), halka Ø " + RingDiameter.ToString(Inv) + " m, menzil " + safe.interactRange.ToString(Inv) + " m");
 
         // 4) Yeniden doğma noktası: çekicinin yanı (yoldan uzak), kasanın gerisinde
-        Vector3 rp = truck.transform.position - forward * RespawnBehind + right * sideSign * RespawnSide;
+        Vector3 rp = rearEnd - forward * RespawnBehind + right * sideSign * RespawnSide;
         rp = Ground(rp, truck.transform, out bool rpGround);
         if (!rpGround) { rp = Ground(sd + right * sideSign * 1.5f, truck.transform, out rpGround); }
         if (!rpGround) throw new Exception("Yeniden doğma noktası için zemin bulunamadı");
@@ -181,7 +181,7 @@ public static class Bolum1LootBuilder
         var coil = UnityEngine.Object.FindAnyObjectByType<RopeCoil>();
         if (coil != null) equipTotal += Equipment(coil.gameObject, "Halat", values.ropeValue);
         int cones = 0;
-        foreach (var n in Bolum1TowTruck.ConeNames)
+        foreach (var n in Bolum1ServiceVan.ConeNames)
         {
             var go = GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n));
             if (go == null) continue;

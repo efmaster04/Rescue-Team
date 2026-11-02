@@ -852,7 +852,7 @@ public static class Bolum1AmbulanceBuilder
     public static StretcherController[] PlaceStretchers(GameObject truck, Transform parent)
     {
         var result = new List<StretcherController>();
-        Vector3 forward = Vector3.ProjectOnPlane(truck.transform.TransformDirection(new Vector3(0f, -1f, 0f)), Vector3.up).normalized;
+        Vector3 forward = Vector3.ProjectOnPlane(Bolum1ServiceVan.Forward(truck), Vector3.up).normalized;
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         for (int i = 0; i < 2; i++)
         {
@@ -860,10 +860,8 @@ public static class Bolum1AmbulanceBuilder
             var go = existing != null ? existing : (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(StretcherPrefabPath));
             go.name = StretcherNames[i];
             go.transform.SetParent(parent, true);
-            Vector3 at = truck.transform.position - forward * 5.55f + right * (i == 0 ? -.52f : .52f);
-            if (!GroundProbe.Find(at + Vector3.up * 5f, 10f, out var hit)) throw new Exception("Sedye arkasında banket bulunamadı");
-            at.y = hit.point.y + .025f;
-            go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(Vector3.ProjectOnPlane(forward, hit.normal), hit.normal));
+            Vector3 at = truck.transform.TransformPoint(Bolum1ServiceVan.StretcherLocalPosition(i));
+            go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(forward, Vector3.up));
             PrefabUtility.RecordPrefabInstancePropertyModifications(go.transform);
             result.Add(go.GetComponent<StretcherController>());
             Line("Sedye " + go.name + ": çekicinin arkasında yerde " + V(at));

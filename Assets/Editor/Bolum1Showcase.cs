@@ -16,7 +16,7 @@ public static class Bolum1Showcase
         EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
 
         var minivan = GameObject.Find(Bolum1SceneBuilder.MinivanName);
-        var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName);
+        var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
         if (minivan != null)
             Selection.activeGameObject = minivan; // Hierarchy'de minibüs seçili olsun
 

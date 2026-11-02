@@ -55,56 +55,30 @@
     0.12
   ],
   "color_note": "Eski kazıkla aynı kesin sRGB (0.95,0.62,0.12); hex en yakın 8-bit gösterim. Base Color lineer.",
-  "towtruck_slot": {
-    "cabinet_part": "SM_TowTruck_LockerDoor_L1",
-    "parent": "SM_TowTruck",
+  "mesh_sha256": "b9d62f441210189d9428945ec8fc6c7a5e5c6e7acb3a2017d9f2f5ee0ed36930",
+  "source_sha256": "e78972317d8f395b1118e1e47105c8c3b53fceb6b1fef75d73bc866a017f07b9",
+  "service_van_slot": {
+    "cabinet_part": "ServiceVan_RopeLockerDoor",
+    "parent": "ServiceVan_Recovery",
+    "coordinate_space": "Unity vehicle local; +Y up, +Z rear",
     "position_m": [
-      1.1,
-      -0.1,
-      1.08
+      1.12,
+      1.12,
+      2.68
     ],
-    "rotation_euler_deg": [
-      0,
-      0,
-      90
-    ],
-    "rotation_order": "XYZ",
-    "up": "Z",
-    "units": "meters",
-    "floor_m": 0.455,
-    "door_bounds_min_m": [
-      1.2000000476837158,
-      -0.5649999380111694,
-      0.4549999535083771
-    ],
-    "door_bounds_max_m": [
-      1.25,
-      0.36500024795532227,
-      1.6400001049041748
-    ],
-    "side": "road_shoulder",
     "side_root_normal": [
-      1,
       0,
-      0
+      0,
+      1
     ],
     "door_motion": {
-      "type": "hinge",
       "axis": [
         0,
-        0,
-        -1
+        1,
+        0
       ],
-      "range_deg": [
-        0,
-        90
-      ],
-      "work_pose_deg": 90,
-      "note": "Front vertical hinge on outer face; positive angle swings the rear edge outward."
+      "work_pose_deg": -90
     },
-    "placement_evidence": "build_bolum1_ucurum.py place_towtruck: Z=+90deg, road_at_x(15)+(0,-6.5,0); +X becomes +Y toward road/mountain",
-    "note": "En alçak yol tarafı L1; L2 teker üstünde. Merkez z=1.08 m, ön yüz kapak iç yüzünden içeride. Dikey kangal dolap içinde askıda saklanır."
-  },
-  "mesh_sha256": "b9d62f441210189d9428945ec8fc6c7a5e5c6e7acb3a2017d9f2f5ee0ed36930",
-  "source_sha256": "e78972317d8f395b1118e1e47105c8c3b53fceb6b1fef75d73bc866a017f07b9"
+    "note": "Bolum1ServiceVan creates the rear locker. Coil hangs behind its door."
+  }
 }

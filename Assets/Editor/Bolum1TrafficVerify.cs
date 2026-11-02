@@ -20,7 +20,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class Bolum1TrafficVerify
 {
-    private const string OutDir = "Captures/Bolum1";
+    private const string OutDir = "Temp/Bolum1Verify";
     private const string StageKey = "Bolum1TrafficVerify.Stage";
     private const string ReportKey = "Bolum1TrafficVerify.Report";
     private const string OkKey = "Bolum1TrafficVerify.Ok";
@@ -80,7 +80,7 @@ public static class Bolum1TrafficVerify
         var director = GameObject.Find(Bolum1TrafficBuilder.DirectorName)?.GetComponent<TrafficDirector>();
         bool prefabs = Bolum1TrafficBuilder.Types.All(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1TrafficBuilder.PrefabPath(t)) != null);
         bool dirOk = director != null && director.settings != null && director.eastBound != null && director.westBound != null && director.prefabs.Length == 5 && director.prefabs.All(p => p != null) && director.mission != null;
-        var cones = Bolum1TowTruck.ConeNames.Select(n => GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n))?.GetComponent<TrafficCone>()).ToList();
+        var cones = Bolum1ServiceVan.ConeNames.Select(n => GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n))?.GetComponent<TrafficCone>()).ToList();
         bool conesOk = cones.All(c => c != null && c.road != null && c.target != null && c.target.name == c.name.Replace("TrafficCone_", ""));
         var player = GameObject.Find(Bolum1SceneBuilder.CharacterName)?.GetComponent<ThirdPersonPlayer>();
         bool playerOk = player != null && player.knockdown != null && player.knockdown.ragdollBodies.Length >= 10 && player.knockdown.ragdollBodies.All(b => b != null && b.isKinematic)
@@ -122,7 +122,7 @@ public static class Bolum1TrafficVerify
         var cone = SynthClips.ConeHit();
         clips.Add(cone);
         float rc = SynthClips.Rms(cone);
-        var coneSrc = Bolum1TowTruck.ConeNames.Select(n => GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n)).GetComponent<TrafficCone>().hitSource).ToList();
+        var coneSrc = Bolum1ServiceVan.ConeNames.Select(n => GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(n)).GetComponent<TrafficCone>().hitSource).ToList();
         bool coneOk = rc > 0.01f && coneSrc.All(s => s != null && s.spatialBlend == 1f && s.dopplerLevel > 0f);
         ok &= coneOk;
         parts.Add("koni çarpma RMS " + rc.ToString("F3", Inv) + ", koni kaynakları 3D/Doppler " + coneOk);
@@ -217,7 +217,7 @@ public static class Bolum1TrafficVerify
     private static PlayerInteraction Interaction { get { return player.GetComponent<PlayerInteraction>(); } }
     private static StretcherHelperBot Bot { get { return UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>(); } }
     private static StretcherController Stretcher(int i) { return GameObject.Find(Bolum1AmbulanceBuilder.StretcherNames[i]).GetComponent<StretcherController>(); }
-    private static TrafficCone Cone(int i) { var go = GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(Bolum1TowTruck.ConeNames[i])); return go != null ? go.GetComponent<TrafficCone>() : null; }
+    private static TrafficCone Cone(int i) { var go = GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(Bolum1ServiceVan.ConeNames[i])); return go != null ? go.GetComponent<TrafficCone>() : null; }
 
     // ---- her kare örneklenen ölçümler ----
     private static int overlapFrames;

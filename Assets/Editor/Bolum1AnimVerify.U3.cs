@@ -145,7 +145,7 @@ public static partial class Bolum1AnimVerify
         yield return Seconds(1.2f);
         // Teslim noktası
         Vector3 sd = safe.Center;
-        var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName).transform;
+        var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName).transform;
         Vector3 away = Flat(sd - truck.position).normalized;
         Vector3 sdStand = U3Ground(sd + away * 1.0f, sd.y);
         Player.Teleport(sdStand, Quaternion.LookRotation(away));
@@ -230,7 +230,7 @@ public static partial class Bolum1AnimVerify
         var parts = new List<string>();
         bool ok = true;
         void Note(string what, bool c, string detail) { ok &= c; parts.Add(what + (c ? " ✓" : " ✗") + " " + detail); }
-        Vector3 truckPos = GameObject.Find(Bolum1SceneBuilder.TowTruckName).transform.position;
+        Vector3 truckPos = GameObject.Find(Bolum1SceneBuilder.ServiceVanName).transform.position;
 
         // Sedyeyi tut (bot kapalı: kalkmaz ama elde)
         TeleportPlayerToHandle(s0, false);

@@ -20,7 +20,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static partial class Bolum1Verify
 {
-    private const string OutDir = "Captures/Bolum1";
+    private const string OutDir = "Temp/Bolum1Verify";
     private const string StageKey = "Bolum1Verify.Stage";
     private const string ReportKey = "Bolum1Verify.Report";
     private const string OkKey = "Bolum1Verify.Ok";
@@ -68,7 +68,7 @@ public static partial class Bolum1Verify
             CheckCoordinates(markers);                         // dönüşüm doğrulaması
             CheckRoadAndPath(markers);                         // (c)
             CheckRearWheels(GameObject.Find(Bolum1SceneBuilder.MinivanName)); // (d)
-            CheckTowTruck(markers);
+            CheckServiceVan(markers);
             var character = GameObject.Find(Bolum1SceneBuilder.CharacterName);
             bindPoseGap = SoleGap(character);
             SessionState.SetFloat("Bolum1Verify.BindHeight", MeasureHeight(character, out _));
@@ -123,7 +123,7 @@ public static partial class Bolum1Verify
             Vector3 vanLook = minivan.transform.position + Vector3.up * 0.3f;
             Vector3 closeCam = Bolum1Coordinates.ToUnity(new Vector3(-3.5f, -24f, -6.5f));
             Capture("closeup_minivan_character", closeCam, (vanLook + character.transform.position) * 0.5f, 45f);
-            CaptureTowTruck();
+            CaptureServiceVan();
 
             PhysicsTest(minivan, closeCam, vanLook);           // yalnızca rapor
         }
@@ -162,7 +162,7 @@ public static partial class Bolum1Verify
     // ---------- (a) import ayarları ----------
     private static void CheckImports()
     {
-        var guids = AssetDatabase.FindAssets("t:Model", new[] { "Assets/Models/Environment/Bolum1", "Assets/Models/Vehicles/Minivan", "Assets/Models/Vehicles/TowTruck" });
+        var guids = AssetDatabase.FindAssets("t:Model", new[] { "Assets/Models/Environment/Bolum1", "Assets/Models/Vehicles/Minivan" });
         int ok = 0, total = 0;
         foreach (string guid in guids)
         {
@@ -173,7 +173,7 @@ public static partial class Bolum1Verify
             if (imp != null && Bolum1ImportSettings.IsApplied(imp) && AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) ok++;
             else Line("  ayar hatalı: " + path);
         }
-        Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 26 && total == 26, ok + "/" + total + " (beklenen 26: 24 mekân + minibüs + çekici)");
+        Check("(a) FBX import + ayarlar (importer'dan geri okundu)", ok == 25 && total == 25, ok + "/" + total + " (beklenen 26: 24 mekân + minibüs + çekici)");
     }
 
     // ---------- (a2) materyal renkleri: minibüs, mekân, karakter ----------
@@ -207,7 +207,7 @@ public static partial class Bolum1Verify
     // ---------- (b) sahne ----------
     private static void CheckSceneObjects()
     {
-        var expected = new List<string>(Bolum1SceneBuilder.Modules) { Bolum1SceneBuilder.MinivanName, Bolum1SceneBuilder.TowTruckName, Bolum1SceneBuilder.CharacterName, "Sun", "Main Camera" };
+        var expected = new List<string>(Bolum1SceneBuilder.Modules) { Bolum1SceneBuilder.MinivanName, Bolum1SceneBuilder.ServiceVanName, Bolum1SceneBuilder.CharacterName, "Sun", "Main Camera" };
         expected.AddRange(Bolum1SceneBuilder.MarkerNames);
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         foreach (var kv in Bolum1Coordinates.Obj(markers, "placements"))

@@ -22,15 +22,15 @@ public static partial class Bolum1AnimVerify
         bot.assistEnabled = false;
         // Sahnedeki ilk yerleşim: her iki sap gerçekten yerden tutulabiliyor.
         Vector3 center = (Stretcher(0).transform.position + Stretcher(1).transform.position) * .5f;
-        var truck = GameObject.Find(Bolum1SceneBuilder.TowTruckName);
+        var truck = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
         for (int i = 0; i < 2; i++)
         {
             var s = Stretcher(i);
             var box = s.GetComponent<BoxCollider>();
-            bool grounded = GroundProbe.Find(s.transform.position + Vector3.up, 2f, out var g) && Mathf.Abs(s.transform.position.y - g.point.y) < .08f;
+            bool grounded = Vector3.Distance(truck.transform.InverseTransformPoint(s.transform.position), Bolum1ServiceVan.StretcherLocalPosition(i)) < .08f;
             var overlaps = Physics.OverlapBox(box.bounds.center, box.size * .48f, s.transform.rotation, ~0, QueryTriggerInteraction.Ignore)
                 .Where(c => !c.transform.IsChildOf(s.transform)).Select(c => c.name).ToArray();
-            TeleportPlayerToHandle(s, true);
+            TeleportPlayerToHandle(s, false);
             yield return Seconds(.2f);
             Interaction.Interact();
             bool grabbed = Player.HeldStretcher == s;

@@ -22,7 +22,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static partial class Bolum1AnimVerify
 {
-    private const string OutDir = "Captures/Bolum1";
+    private const string OutDir = "Temp/Bolum1Verify";
     private const string StageKey = "Bolum1AnimVerify.Stage";
     private const string ReportKey = "Bolum1AnimVerify.Report";
     private const string OkKey = "Bolum1AnimVerify.Ok";
@@ -289,7 +289,7 @@ public static partial class Bolum1AnimVerify
     private static StretcherHelperBot Bot { get { return UnityEngine.Object.FindAnyObjectByType<StretcherHelperBot>(); } }
     private static CrewAnimation BotAnim { get { return Bot.crewAnimation; } }
     private static StretcherController Stretcher(int i) { return GameObject.Find(Bolum1AmbulanceBuilder.StretcherNames[i]).GetComponent<StretcherController>(); }
-    private static TrafficCone Cone(int i) { var go = GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(Bolum1TowTruck.ConeNames[i])); return go != null ? go.GetComponent<TrafficCone>() : null; }
+    private static TrafficCone Cone(int i) { var go = GameObject.Find(Bolum1TrafficBuilder.ConeControllerName(Bolum1ServiceVan.ConeNames[i])); return go != null ? go.GetComponent<TrafficCone>() : null; }
     private static Patient PatientNamed(string type) { return Mission.patients.First(p => p.name == "Patient_" + type); }
 
     // =====================================================================================

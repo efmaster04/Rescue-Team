@@ -409,9 +409,9 @@ public static class Bolum1TrafficBuilder
         //    Yukarı ekseni ve taban ölçüsü sahnedeki dik duruşlarından.
         var road = GameObject.Find("SM_B1_Road").transform;
         float killY = GameObject.Find("FallRespawnPlane").transform.position.y;
-        foreach (string name in Bolum1TowTruck.ConeNames)
+        foreach (string name in Bolum1ServiceVan.ConeNames)
         {
-            var cone = Bolum1TowTruck.Part(truck, name);
+            var cone = GameObject.Find(name).transform;
             var ctrl = new GameObject(ConeControllerName(name));
             ctrl.transform.SetParent(root, false);
             ctrl.transform.position = cone.position;
