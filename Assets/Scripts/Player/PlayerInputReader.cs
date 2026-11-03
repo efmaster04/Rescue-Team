@@ -71,7 +71,7 @@ public class PlayerInputReader : MonoBehaviour
         run.Disable(); move.Disable();
         if (player != null) player.SetRunInput(false); look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
         attack.Disable(); throwHold.Disable(); whistle.Disable(); viewToggle.Disable();
-        if (combat != null) combat.SetThrowHeld(false);
+        if (combat != null) combat.CancelAim();   // bileşen kapanırken nişan fırlatmadan iptal edilir
     }
 
     private void OnDestroy()
