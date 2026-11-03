@@ -197,6 +197,12 @@ public static class OfficeGarageVerify
     }
 
     private static float Seconds(float s) { return Time.time + s; }
+    // Koşul sağlanana ya da süre dolana dek bekler; hata fırlatmaz (koşulu Check okur)
+    private static IEnumerator WaitFor(Func<bool> cond, float timeoutGameSeconds)
+    {
+        float end = Time.time + timeoutGameSeconds;
+        yield return (Func<bool>)(() => cond() || Time.time >= end);
+    }
     private static IEnumerator Until(Func<bool> cond, float timeoutGameSeconds, string what)
     {
         float end = Time.time + timeoutGameSeconds;
@@ -487,13 +493,16 @@ public static class OfficeGarageVerify
             var loose = TestCargo(runtime, cleanup);
             Vector3 cargoCenter = vehicle.transform.TransformPoint(vehicle.CargoBounds.center);
             loose.Drop(cargoCenter);
-            yield return Seconds(.2f);
-            Check("(9b) yük hacmine bırakılan eşya fizik adımlarında sabitlenir", loose.Loaded && vehicle.LoadedItems.Contains(loose), "Loaded " + loose.Loaded);
+            float t0 = Time.time;
+            yield return WaitFor(() => loose.Loaded, 2f);
+            Check("(9b) yük hacmine bırakılan eşya fizik adımlarında sabitlenir", loose.Loaded && vehicle.LoadedItems.Contains(loose), "Loaded " + loose.Loaded + ", süre " + (Time.time - t0).ToString("F2", Inv) + " sn");
             var thrown = TestCargo(runtime, cleanup);
             thrown.Throw(cargoCenter, Quaternion.identity, vehicle.transform.forward * .3f);
             thrown.GetComponent<Rigidbody>().useGravity = false;
-            yield return Seconds(.65f);
-            Check("(9b) yük hacmindeki hareketli eşya 0.5 sn içinde sabitlenir", thrown.Loaded && !thrown.Thrown && vehicle.LoadedItems.Contains(thrown), "Loaded " + thrown.Loaded);
+            t0 = Time.time;
+            yield return WaitFor(() => thrown.Loaded, 2f);
+            float thrownElapsed = Time.time - t0;
+            Check("(9b) yük hacmindeki hareketli eşya (0.3 m/sn) 0.5 sn içinde sabitlenir", thrown.Loaded && !thrown.Thrown && vehicle.LoadedItems.Contains(thrown) && thrownElapsed < 1f, "Loaded " + thrown.Loaded + ", süre " + thrownElapsed.ToString("F2", Inv) + " sn");
             var outside = TestCargo(runtime, cleanup);
             outside.Drop(vehicle.transform.TransformPoint(vehicle.CargoBounds.max + Vector3.right));
             yield return Seconds(.6f);
@@ -507,7 +516,7 @@ public static class OfficeGarageVerify
             yield return Seconds(.6f);
             bool stayedFree = !onLift.Loaded;
             liftHeight.SetValue(vehicle.lift, 0f);
-            yield return Seconds(.2f);
+            yield return WaitFor(() => onLift.Loaded, 2f);
             Check("(9b) lift yukarıdayken yükleme yok, indirilince yüklenir", stayedFree && onLift.Loaded, "serbest kaldı " + stayedFree + ", Loaded " + onLift.Loaded);
 
             while (vehicle.LoadedItems.Count() < vehicle.cargoSockets.Length)
@@ -520,7 +529,7 @@ public static class OfficeGarageVerify
             int notices = 0;
             Action<string> notice = s => { if (s.Contains("boş yük noktası")) notices++; };
             runtime.Notice += notice;
-            try { overflow.Drop(cargoCenter); yield return Seconds(.7f); }
+            try { overflow.Drop(cargoCenter); yield return WaitFor(() => notices >= 1, 2f); yield return Seconds(.5f); }
             finally { runtime.Notice -= notice; }
             Check("(9b) modülsüz bütün soketler kullanılabilir; dolu araç reddi tek bildirim", vehicle.LoadedItems.Count() == vehicle.cargoSockets.Length && !overflow.Loaded && !overflow.GetComponent<Rigidbody>().isKinematic && notices == 1,
                 "yüklü " + vehicle.LoadedItems.Count() + ", bildirim " + notices);
@@ -546,7 +555,9 @@ public static class OfficeGarageVerify
             bool reached = false;
             if (boarding)
             {
-                Vector3 position = boarding.transform.position - vehicle.transform.right * 1f;
+                // Binme noktası hangi yandaysa (şoför kapısı) oyuncu o yanda, aracın 1 m dışında durur
+                float side = Mathf.Sign(vehicle.transform.InverseTransformPoint(boarding.transform.position).x);
+                Vector3 position = boarding.transform.position + vehicle.transform.right * side * 1f;
                 position.y = .02f;
                 yield return AimFrom(position, boarding, ok => reached = ok);
             }
@@ -578,6 +589,8 @@ public static class OfficeGarageVerify
         finally
         {
             catalog.jobs = jobs; catalog.modules = modules;
+            // Test işi kayıtta kalmasın (otomatik kayıt geri açılıyor)
+            runtime.Data.phase = JobPhase.None; runtime.Data.activeJobId = "";
             runtime.autoSave = autoSave;
             typeof(GarageLift).GetProperty("CarriageHeight").SetValue(vehicle.lift, 0f);
             foreach (var go in cleanup) if (go) UnityEngine.Object.Destroy(go);

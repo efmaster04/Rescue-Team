@@ -225,7 +225,7 @@ namespace CompanySim
         {
             StatStrip(("ARAÇ","Servis vanı"),("DURUM","%"+Mathf.RoundToInt(Runtime.Data.vehicleCondition)),
                 ("YÜK",Runtime.vehicle.LoadedItems.Count()+" ekipman"));
-            Row("Modüller arka kapının dışına elle takılır. Aracı boşaltın, taşıyıcı kapısını kapatın ve bağlantıları kullanın.",20,Soft,58);
+            Row("Modüller arka kapının dışına elle takılır. Taşıyıcı kapısını kapatın ve bağlantıları kullanın; yüklü ekipman araçta kalabilir, göreve çıkış için modül takılı ve sabit olmalıdır.",20,Soft,58);
             var table=Table("Modules",new[]{"Modül","Kapasite","Yuva","Durum","Fiyat","İşlem"},
                 new[]{.30f,.11f,.07f,.20f,.13f,.19f},new[]{1,2,4});
             foreach (var mod in catalog.modules)

@@ -90,7 +90,7 @@ namespace CompanySim
             var fields=Obj("VehicleProperties",row.transform); Rect(fields,new Vector2(.43f,0),Vector2.one,Vector2.zero,Vector2.zero);
             var parent=mainContent; mainContent=fields.GetComponent<RectTransform>(); Layout(mainContent,8); mainContent.GetComponent<VerticalLayoutGroup>().padding=new RectOffset(16,0,18,0);
             Property("Durum","%"+Mathf.RoundToInt(Runtime.Data.vehicleCondition));
-            Property("Modül",catalog.Module(Runtime.Data.installedModuleId)?.displayName??"Takılı değil");
+            Property("Modül",catalog.Module(Runtime.vehicle.InstalledModuleId)?.displayName??"Takılı ve sabit modül yok");
             Property("Yüklü eşya",Runtime.vehicle.LoadedItems.Count()+" ekipman"); mainContent=parent;
             if(Runtime.manualModules && !Runtime.manualModules.IsSecured) Row("Modül bağlantıları tamamlanmadı. Araç hazır değil.",18,Red,42);
             Divider();

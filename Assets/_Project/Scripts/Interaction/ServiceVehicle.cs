@@ -23,6 +23,7 @@ namespace CompanySim
         readonly Dictionary<CarryableItem, float> cargoArrival = new Dictionary<CarryableItem, float>();
         readonly Dictionary<CarryableItem, string> cargoRejections = new Dictionary<CarryableItem, string>();
         readonly HashSet<CarryableItem> cargoCandidates = new HashSet<CarryableItem>();
+        readonly Collider[] cargoOverlap = new Collider[64];
         // Soketlerin çevresindeki yerel kutu: yük zemini ile tavan arasındaki iç hacim.
         public Bounds CargoBounds
         {
@@ -191,10 +192,12 @@ namespace CompanySim
             var scale = transform.lossyScale;
             scale = new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
             cargoCandidates.Clear();
-            foreach (var collider in Physics.OverlapBox(transform.TransformPoint(bounds.center),
-                Vector3.Scale(bounds.extents, scale), transform.rotation, ~0, QueryTriggerInteraction.Ignore))
+            // Her fizik adımında çalışır: tahsissiz sorgu (NonAlloc), tampon dolarsa fazlası sonraki adımda yakalanır.
+            int count = Physics.OverlapBoxNonAlloc(transform.TransformPoint(bounds.center),
+                Vector3.Scale(bounds.extents, scale), cargoOverlap, transform.rotation, ~0, QueryTriggerInteraction.Ignore);
+            for (int c = 0; c < count; c++)
             {
-                var item = collider.GetComponentInParent<CarryableItem>();
+                var item = cargoOverlap[c].GetComponentInParent<CarryableItem>();
                 if (!item || item.Loaded || item.GetComponent<ManualModulePackage>()) continue;
                 var body = item.GetComponent<Rigidbody>();
                 if (!body || body.isKinematic || !bounds.Contains(transform.InverseTransformPoint(item.transform.position + item.CenterOffset))) continue;

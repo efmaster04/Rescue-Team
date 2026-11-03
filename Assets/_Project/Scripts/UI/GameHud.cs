@@ -118,8 +118,9 @@ namespace CompanySim
             if(job)
             {
                 prepTitle.text=job.title; prepPhase.text=PhaseName();
-                bool module=Runtime.Data.installedModuleId==job.requiredModule;
-                rows.Add(new PreparationRow(catalog.Module(job.requiredModule)?.displayName??job.requiredModule,module?"Takılı":"Gerekli",module));
+                // Takılı ve sabit modül araçtan okunur (Data.installedModuleId yalnızca kayıtta güncellenir)
+                bool module=Runtime.vehicle && Runtime.vehicle.InstalledModuleId==job.requiredModule && (!Runtime.manualModules || Runtime.manualModules.IsSecured);
+                rows.Add(new PreparationRow(catalog.Module(job.requiredModule)?.displayName??job.requiredModule,module?"Takılı":"Takılmalı / sabitlenmeli",module));
                 var available=Runtime.vehicle.LoadedItems.OrderByDescending(x=>x.durability).ToList();
                 foreach(var id in job.requiredEquipment)
                 {
