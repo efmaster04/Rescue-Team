@@ -80,7 +80,9 @@ namespace CompanySim
             {
                 foreach(var record in runtime.Data.modulePackages.Where(r=>!r.delivered && r.arrivalUnix<=DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ToArray())
                 {
-                    record.delivered=true; Spawn(record); runtime.WorldChanged(); runtime.Notify(runtime.catalog.Module(record.moduleId).displayName+" garaja teslim edildi."); Changed?.Invoke();
+                    var definition = runtime.catalog.Module(record.moduleId);
+                    if (!definition) continue;
+                    record.delivered=true; Spawn(record); runtime.WorldChanged(); runtime.Notify(definition.displayName+" garaja teslim edildi."); Changed?.Invoke();
                 }
                 yield return new WaitForSeconds(1);
             }
@@ -91,7 +93,6 @@ namespace CompanySim
             if(lift && !lift.IsLowered) reason="Modül işi için lifti tamamen indirin";
             else if(carrierDoor && !carrierDoor.IsClosed) reason="Montaj için modül taşıyan arka kapıyı kapatın";
             else if(runtime.Data.phase==JobPhase.Deployed) reason="Saha görevi bitmeden modül değiştirilemez";
-            else if(vehicle.LoadedItems.Any()) reason="Önce araçtaki ekipmanları indirin";
             return reason.Length==0;
         }
         public string MountPrompt(PlayerInteractor player)

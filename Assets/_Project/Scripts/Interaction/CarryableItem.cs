@@ -163,6 +163,7 @@ namespace CompanySim
         public void LoadInto(Transform socket, int slot)
         {
             SetHandOccluded(false);
+            Thrown = false;
             Loaded = true; CargoSlot = slot;
             body.interpolation=RigidbodyInterpolation.None;
             body.isKinematic = true;

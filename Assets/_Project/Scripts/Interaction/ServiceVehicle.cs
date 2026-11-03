@@ -18,7 +18,31 @@ namespace CompanySim
         public BoxCollider rearStepCollision;
         public bool RearAccessOpen => doors!=null && doors.Any(d=>d.name.StartsWith("Rear") && Mathf.Abs(d.CurrentAngle)>75);
         public string InstalledModuleId { get; private set; } = "cargo";
-        public IEnumerable<CarryableItem> LoadedItems => cargoSockets.SelectMany(s => s.GetComponentsInChildren<CarryableItem>());
+        public IEnumerable<CarryableItem> LoadedItems => (cargoSockets ?? Array.Empty<Transform>())
+            .Where(s => s).SelectMany(s => s.GetComponentsInChildren<CarryableItem>()).Distinct();
+        readonly Dictionary<CarryableItem, float> cargoArrival = new Dictionary<CarryableItem, float>();
+        readonly Dictionary<CarryableItem, string> cargoRejections = new Dictionary<CarryableItem, string>();
+        readonly HashSet<CarryableItem> cargoCandidates = new HashSet<CarryableItem>();
+        // Soketlerin çevresindeki yerel kutu: yük zemini ile tavan arasındaki iç hacim.
+        public Bounds CargoBounds
+        {
+            get
+            {
+                var bounds = new Bounds();
+                bool found = false;
+                foreach (var socket in cargoSockets ?? Array.Empty<Transform>())
+                {
+                    if (!socket) continue;
+                    var position = transform.InverseTransformPoint(socket.position);
+                    if (!found) { bounds = new Bounds(position, Vector3.zero); found = true; }
+                    else bounds.Encapsulate(position);
+                }
+                if (!found) return bounds;
+                bounds.SetMinMax(bounds.min - new Vector3(.38f, .12f, .4f),
+                    bounds.max + new Vector3(.38f, 1.55f, .4f));
+                return bounds;
+            }
+        }
         GameObject moduleVisual;
         static readonly Dictionary<string, Material> AccessoryMaterials = new Dictionary<string, Material>();
 
@@ -94,9 +118,11 @@ namespace CompanySim
         public override string Prompt(PlayerInteractor player)
         {
             if(player.HeldItem && player.HeldItem.GetComponent<ManualModulePackage>()) return "Modülü arka kapının dışındaki taşıyıcıya getirin";
+            if(lift && !lift.IsLowered) return "Yükleme için lifti tamamen indirin";
             if(transform.InverseTransformPoint(player.transform.position).z<2) return "Yükleme noktası arka kapıda";
             if(!RearAccessOpen) return "Yükleme için arka kapıyı açın";
-            if (player.HeldItem) return "E — Ekipmanı araca sabitle";
+            if (player.HeldItem) return "E — Ekipmanı araca sabitle" +
+                (string.IsNullOrEmpty(InstalledModuleId) ? " · Modül görev çıkışında gerekli" : "");
             return LoadedItems.Any() ? "E — Son ekipmanı araçtan al" : "Araç yük bölümü boş";
         }
         public override void Interact(PlayerInteractor player)
@@ -115,30 +141,75 @@ namespace CompanySim
         }
         public bool TryLoad(PlayerInteractor player)
         {
-            if(lift && !lift.IsLowered) { runtime.Notify("Yükleme için lifti tamamen indirin."); return false; }
-            if(manualModules && !manualModules.IsSecured) {runtime.Notify("Önce modülün bütün bağlantılarını tamamlayın."); return false;}
-            var item = player.HeldItem;
-            if (!item) return false;
-            var itemDef = catalog.Item(item.definitionId);
-            var moduleDef = catalog.Module(InstalledModuleId);
-            if (!itemDef || !moduleDef) return false;
-            float weight = LoadedItems.Sum(x => catalog.Item(x.definitionId)?.weightKg ?? 0);
-            if (weight + itemDef.weightKg > moduleDef.payloadKg)
-            { runtime.Notify("Araç yük kapasitesi aşılıyor."); return false; }
-            int usable = Mathf.Min(moduleDef.cargoSlots, cargoSockets.Length);
+            if (!player || !player.HeldItem) return false;
+            return LoadIntoFreeSocket(player.HeldItem, player, out _);
+        }
+        bool CanLoad(CarryableItem item, out int slot, out string reason)
+        {
+            slot = -1; reason = "";
+            if (lift && !lift.IsLowered) { reason = "Yükleme için lifti tamamen indirin."; return false; }
+            var itemDef = item && catalog ? catalog.Item(item.definitionId) : null;
+            if (!itemDef || item.Loaded || item.GetComponent<ManualModulePackage>())
+            { reason = "Bu eşya yük bölümüne sabitlenemez."; return false; }
+            var moduleDef = manualModules && !manualModules.IsSecured ? null : catalog.Module(InstalledModuleId);
+            var loaded = LoadedItems.ToArray();
+            if (moduleDef && loaded.Sum(x => catalog.Item(x.definitionId)?.weightKg ?? 0) + itemDef.weightKg > moduleDef.payloadKg)
+            { reason = "Araç yük kapasitesi aşılıyor."; return false; }
+            int usable = cargoSockets?.Length ?? 0;
+            if (moduleDef) usable = Mathf.Min(moduleDef.cargoSlots, usable);
+            if (loaded.Length >= usable) { reason = "Araçta boş yük noktası yok."; return false; }
             for (int i = 0; i < usable; i++)
             {
-                if (cargoSockets[i].GetComponentInChildren<CarryableItem>()) continue;
-                player.TakeHeld().LoadInto(cargoSockets[i], i);
-                runtime.WorldChanged();
-                runtime.Notify(item.DisplayName + " araca sabitlendi.");
-                return true;
+                if (!cargoSockets[i] || cargoSockets[i].GetComponentInChildren<CarryableItem>()) continue;
+                slot = i; return true;
             }
-            runtime.Notify("Araçta boş yük noktası yok."); return false;
+            reason = "Araçta boş yük noktası yok."; return false;
         }
+        bool LoadIntoFreeSocket(CarryableItem item, PlayerInteractor player, out string reason)
+        {
+            if (!CanLoad(item, out int slot, out reason))
+            {
+                // Serbest eşya için aynı reddi her fizik adımında tekrarlama.
+                if (player || !cargoRejections.TryGetValue(item, out var previous) || previous != reason)
+                    runtime?.Notify(reason);
+                if (!player) cargoRejections[item] = reason;
+                return false;
+            }
+            if (player) player.TakeHeld();
+            item.LoadInto(cargoSockets[slot], slot);
+            cargoRejections.Remove(item);
+            runtime?.WorldChanged();
+            runtime?.Notify(item.DisplayName + " araca sabitlendi.");
+            return true;
+        }
+        void FixedUpdate()
+        {
+            if (!runtime || !catalog || (lift && !lift.IsLowered))
+            { cargoArrival.Clear(); cargoRejections.Clear(); return; }
+            var bounds = CargoBounds;
+            if (bounds.size == Vector3.zero) return;
+            var scale = transform.lossyScale;
+            scale = new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+            cargoCandidates.Clear();
+            foreach (var collider in Physics.OverlapBox(transform.TransformPoint(bounds.center),
+                Vector3.Scale(bounds.extents, scale), transform.rotation, ~0, QueryTriggerInteraction.Ignore))
+            {
+                var item = collider.GetComponentInParent<CarryableItem>();
+                if (!item || item.Loaded || item.GetComponent<ManualModulePackage>()) continue;
+                var body = item.GetComponent<Rigidbody>();
+                if (!body || body.isKinematic || !bounds.Contains(transform.InverseTransformPoint(item.transform.position + item.CenterOffset))) continue;
+                if (!cargoCandidates.Add(item)) continue;
+                if (!cargoArrival.TryGetValue(item, out float arrival)) cargoArrival[item] = arrival = Time.fixedTime;
+                if (body.linearVelocity.sqrMagnitude < .04f || Time.fixedTime - arrival >= .5f)
+                    LoadIntoFreeSocket(item, null, out _);
+            }
+            foreach (var item in cargoArrival.Keys.Where(x => !x || x.Loaded || !cargoCandidates.Contains(x)).ToArray())
+            { cargoArrival.Remove(item); cargoRejections.Remove(item); }
+        }
+        void OnDisable() { cargoArrival.Clear(); cargoRejections.Clear(); cargoCandidates.Clear(); }
         public void RestoreCargo(CarryableItem item, int slot)
         {
-            if (slot >= 0 && slot < cargoSockets.Length) item.LoadInto(cargoSockets[slot], slot);
+            if (item && cargoSockets != null && slot >= 0 && slot < cargoSockets.Length && cargoSockets[slot]) item.LoadInto(cargoSockets[slot], slot);
         }
         public bool TryChangeModule(string id, ModuleStation station)
         {
@@ -146,8 +217,8 @@ namespace CompanySim
             if(lift && !lift.IsLowered) { runtime.Notify("Modül değişimi için lifti tamamen indirin."); return false; }
             if (!runtime || !station || station.Busy || !catalog.Module(id) ||
                 !runtime.Data.ownedModules.Contains(id)) return false;
-            if (runtime.Data.phase == JobPhase.Deployed || LoadedItems.Any())
-            { runtime.Notify("Modül değişimi için aracı boşaltıp ofiste bırakın."); return false; }
+            if (runtime.Data.phase == JobPhase.Deployed)
+            { runtime.Notify("Modül değişimi için saha görevini tamamlayın."); return false; }
             if (id == InstalledModuleId) return false;
             station.Busy = true;
             if (station.ui.audioFeedback) station.ui.audioFeedback.Motor();

@@ -170,15 +170,29 @@ namespace CompanySim
 
         public List<string> MissingPreparation()
         {
-            var loaded = vehicle ? vehicle.LoadedItems.Select(x => x.definitionId) : Enumerable.Empty<string>();
-            var missing = PreparationRules.Missing(catalog.Job(Data.activeJobId), Data.installedModuleId, loaded);
+            var loaded = vehicle ? vehicle.LoadedItems.ToArray() : Array.Empty<CarryableItem>();
+            var job = catalog.Job(Data.activeJobId);
+            var installedId = vehicle ? vehicle.InstalledModuleId : "";
+            var module = catalog.Module(installedId);
+            var modules = manualModules ? manualModules : vehicle ? vehicle.manualModules : null;
+            var missing = PreparationRules.Missing(job, installedId, loaded.Select(x => x.definitionId));
+            if (!job) missing.Add("Önce bilgisayardan bir iş kabul edin");
+            if (!module || (modules && (!modules.IsSecured || modules.Current.record.moduleId != installedId)))
+                missing.Add("Gerekli modül takılı ve sabit değil");
+            if (module)
+            {
+                if (loaded.Length > module.cargoSlots)
+                    missing.Add("Fazla ekipman: " + loaded.Length + ", modül " + module.cargoSlots + " yuva alır");
+                float weight = loaded.Sum(x => catalog.Item(x.definitionId)?.weightKg ?? 0);
+                if (weight > module.payloadKg)
+                    missing.Add("Fazla ağırlık: " + weight.ToString("0.#") + " kg, modül " + module.payloadKg.ToString("0.#") + " kg taşır");
+            }
             if (Data.vehicleCondition < catalog.economy.minimumVehicleCondition)
                 missing.Add("Araç bakımı gerekli");
-            foreach (var item in vehicle.LoadedItems)
+            foreach (var item in loaded)
                 if (item.durability < 20) missing.Add("Ekipman bakım: " + item.DisplayName);
-            if(manualModules && !manualModules.IsSecured) missing.Add("Modül bağlantıları tamamlanmadı");
-            if(vehicle.lift && !vehicle.lift.IsLowered) missing.Add("Lift tamamen indirilmedi");
-            if(vehicle.doors!=null && vehicle.doors.Any(x=>!x.IsClosed)) missing.Add("Aracın kapıları açık");
+            if(vehicle && vehicle.lift && !vehicle.lift.IsLowered) missing.Add("Lift tamamen indirilmedi");
+            if(vehicle && vehicle.doors!=null && vehicle.doors.Any(x=>x && !x.IsClosed)) missing.Add("Aracın kapıları açık");
             return missing;
         }
 

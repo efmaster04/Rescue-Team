@@ -358,8 +358,8 @@ namespace CompanySim
             {
                 var moduleTable=Table("RequiredModule",new[]{"Gerekli modül","Takılı modül","Kontrol"},new[]{.40f,.40f,.20f});
                 moduleTable.Add("ModuleCheck",new[]{catalog.Module(job.requiredModule)?.displayName??job.requiredModule,
-                    catalog.Module(Runtime.Data.installedModuleId)?.displayName??Runtime.Data.installedModuleId,
-                    Runtime.Data.installedModuleId==job.requiredModule?"Tamam":"Değiştirilmeli"});
+                    catalog.Module(Runtime.vehicle.InstalledModuleId)?.displayName??"Takılı ve sabit modül yok",
+                    Runtime.vehicle.InstalledModuleId==job.requiredModule && (!Runtime.manualModules || Runtime.manualModules.IsSecured)?"Tamam":"Takılmalı / sabitlenmeli"});
                 var equipment=Table("RequiredEquipment",new[]{"Ekipman","Gerekli","Yüklü","Kontrol"},
                     new[]{.45f,.15f,.15f,.25f},new[]{1,2});
                 foreach(var group in job.requiredEquipment.GroupBy(x=>x))
@@ -370,9 +370,8 @@ namespace CompanySim
                         loaded.Any(x=>x.durability<20)?"Bakım gerekli":"Tamam"});
                 }
                 Property("Araç durumu","%"+Mathf.RoundToInt(Runtime.Data.vehicleCondition));
-                Row(missing.Count==0?"Çıkış için hazırlık tamam.":"Eksik: "+string.Join(", ",missing),14,
+                Row(missing.Count==0?"Hazırlık tamam — garajda şoför kapısından minibüse binin.":"Eksik: "+string.Join(", ",missing),14,
                     missing.Count==0?Soft:Red,42);
-                ToolbarButton("DepartJob","Göreve çık",()=>Runtime.Depart(),missing.Count==0);
             }
             else if (Runtime.Data.phase==JobPhase.Deployed)
             {

@@ -233,6 +233,8 @@ public class InteractionHighlight : MonoBehaviour
     public static Mesh Smoothed(Mesh source)
     {
         if (source == null) return null;
+        // GPU'daki mesh aynı dış hat shader'ıyla çizilebilir; CPU verisine hiç erişme.
+        if (!source.isReadable) return source;
         if (smoothedMeshes.TryGetValue(source, out Mesh cached) && cached != null) return cached;
         Mesh copy = source;
         try

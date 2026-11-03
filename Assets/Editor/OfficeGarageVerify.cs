@@ -58,6 +58,9 @@ public static class OfficeGarageVerify
         Line("OFFICEGARAGE VERIFY " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", Inv));
         try
         {
+            Bolum1AmbulanceAudioMute.Apply();
+            EditorUtility.audioMasterMute = true;
+            AudioListener.volume = 0f;
             EditorSceneManager.OpenScene(OfficeGaragePlayerSetup.ScenePath, OpenSceneMode.Single);
             var players = UnityEngine.Object.FindObjectsByType<ThirdPersonPlayer>(FindObjectsSortMode.None);
             var interactors = UnityEngine.Object.FindObjectsByType<PlayerInteractor>(FindObjectsSortMode.None);
@@ -415,6 +418,7 @@ public static class OfficeGarageVerify
 
             // (8) Ölçek gözlemleri (rapor; başarı ölçütü değil)
             ScaleNotes(computer);
+            yield return GarageRegression(runtime);
         }
         finally
         {
@@ -426,6 +430,158 @@ public static class OfficeGarageVerify
             if (mouse != null) InputSystem.RemoveDevice(mouse);
             settings.editorInputBehaviorInPlayMode = savedBehavior;
             settings.backgroundBehavior = savedBackground;
+        }
+    }
+
+    private static CarryableItem TestCargo(CompanyRuntime runtime, List<GameObject> cleanup)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cleanup.Add(go);
+        go.name = "GarageVerify_Cargo";
+        go.transform.position = new Vector3(15, 1, 15);
+        go.transform.localScale = Vector3.one * .12f;
+        var item = go.AddComponent<CarryableItem>();
+        item.definitionId = "toolbox";
+        item.uid = Guid.NewGuid().ToString("N");
+        return item;
+    }
+
+    private static IEnumerator GarageRegression(CompanyRuntime runtime)
+    {
+        var vehicle = runtime.vehicle;
+        var system = runtime.manualModules;
+        var catalog = runtime.catalog;
+        var jobs = catalog.jobs;
+        var modules = catalog.modules;
+        bool autoSave = runtime.autoSave;
+        var cleanup = new List<GameObject>();
+        var testJob = UnityEngine.Object.Instantiate(catalog.Job("recovery"));
+        var testModule = UnityEngine.Object.Instantiate(catalog.Module("towing"));
+        // Saha köprüsünü tetiklemeden kapının gerçek Depart çağrısını sınar; kaynak asset değişmez.
+        testJob.fieldScene = "";
+        testJob.requiredEquipment = new string[0];
+        catalog.jobs = jobs.Select(j => j.id == testJob.id ? testJob : j).ToArray();
+        catalog.modules = modules.Select(m => m.id == testModule.id ? testModule : m).ToArray();
+        runtime.autoSave = false;
+        try
+        {
+            if (bridge.HeldItem) bridge.TakeHeld().Drop(new Vector3(12, .3f, 12));
+            yield return Teleport(new Vector3(6.3f, .02f, -3.2f), vehicle.transform.position);
+            foreach (var door in vehicle.doors) if (door.IsOpen) door.Interact(bridge);
+            yield return Until(() => vehicle.doors.All(d => d.IsClosed), 5f, "regresyon: araç kapıları kapalı");
+            foreach (var item in vehicle.LoadedItems.ToArray()) item.Drop(new Vector3(12, .3f, 12));
+            runtime.Data.installedModuleId = "";
+            runtime.Data.modulePackages.Clear();
+            system.Initialize(runtime);
+            runtime.Data.activeJobId = testJob.id;
+            runtime.Data.phase = JobPhase.Accepted;
+            yield return null;
+            var first = TestCargo(runtime, cleanup);
+            bridge.Hold(first);
+            bool loaded = vehicle.TryLoad(bridge);
+            Check("(9a) modülsüz TryLoad", !system.IsSecured && vehicle.InstalledModuleId == "" && loaded && vehicle.LoadedItems.Contains(first) && bridge.HeldItem == null,
+                "yüklendi " + loaded + ", yüklü " + vehicle.LoadedItems.Count());
+            var missing = runtime.MissingPreparation();
+            Check("(9c) modülsüz Depart reddedilir", !runtime.Depart() && runtime.Data.phase == JobPhase.Accepted && missing.Any(s => s.Contains("modül") || s.Contains("Modül")), string.Join(" | ", missing));
+
+            var loose = TestCargo(runtime, cleanup);
+            Vector3 cargoCenter = vehicle.transform.TransformPoint(vehicle.CargoBounds.center);
+            loose.Drop(cargoCenter);
+            yield return Seconds(.2f);
+            Check("(9b) yük hacmine bırakılan eşya fizik adımlarında sabitlenir", loose.Loaded && vehicle.LoadedItems.Contains(loose), "Loaded " + loose.Loaded);
+            var thrown = TestCargo(runtime, cleanup);
+            thrown.Throw(cargoCenter, Quaternion.identity, vehicle.transform.forward * .3f);
+            thrown.GetComponent<Rigidbody>().useGravity = false;
+            yield return Seconds(.65f);
+            Check("(9b) yük hacmindeki hareketli eşya 0.5 sn içinde sabitlenir", thrown.Loaded && !thrown.Thrown && vehicle.LoadedItems.Contains(thrown), "Loaded " + thrown.Loaded);
+            var outside = TestCargo(runtime, cleanup);
+            outside.Drop(vehicle.transform.TransformPoint(vehicle.CargoBounds.max + Vector3.right));
+            yield return Seconds(.6f);
+            Check("(9b) hacim dışındaki eşya serbest kalır", !outside.Loaded, "Loaded " + outside.Loaded);
+
+            var liftHeight = typeof(GarageLift).GetProperty("CarriageHeight");
+            liftHeight.SetValue(vehicle.lift, .4f);
+            var onLift = TestCargo(runtime, cleanup);
+            onLift.Drop(cargoCenter);
+            onLift.GetComponent<Rigidbody>().useGravity = false;
+            yield return Seconds(.6f);
+            bool stayedFree = !onLift.Loaded;
+            liftHeight.SetValue(vehicle.lift, 0f);
+            yield return Seconds(.2f);
+            Check("(9b) lift yukarıdayken yükleme yok, indirilince yüklenir", stayedFree && onLift.Loaded, "serbest kaldı " + stayedFree + ", Loaded " + onLift.Loaded);
+
+            while (vehicle.LoadedItems.Count() < vehicle.cargoSockets.Length)
+            {
+                var item = TestCargo(runtime, cleanup);
+                bridge.Hold(item);
+                if (!vehicle.TryLoad(bridge)) break;
+            }
+            var overflow = TestCargo(runtime, cleanup);
+            int notices = 0;
+            Action<string> notice = s => { if (s.Contains("boş yük noktası")) notices++; };
+            runtime.Notice += notice;
+            try { overflow.Drop(cargoCenter); yield return Seconds(.7f); }
+            finally { runtime.Notice -= notice; }
+            Check("(9b) modülsüz bütün soketler kullanılabilir; dolu araç reddi tek bildirim", vehicle.LoadedItems.Count() == vehicle.cargoSockets.Length && !overflow.Loaded && !overflow.GetComponent<Rigidbody>().isKinematic && notices == 1,
+                "yüklü " + vehicle.LoadedItems.Count() + ", bildirim " + notices);
+            overflow.Drop(new Vector3(12, .3f, 12));
+
+            var package = system.Packages.First(p => p.record.moduleId == "towing");
+            bridge.Hold(package.Item);
+            bool staged = system.Stage(package, bridge);
+            var wrench = runtime.EquipmentItems.First(i => i.definitionId == "toolbox" && !cleanup.Contains(i.gameObject));
+            bridge.Hold(wrench);
+            bool bolts = true;
+            for (int i = 0; i < 4; i++) bolts &= system.ToggleBolt(i, bridge);
+            bool connected = system.ToggleConnection(bridge);
+            bridge.TakeHeld().Drop(new Vector3(12, .3f, 12));
+            missing = runtime.MissingPreparation();
+            Check("(9c) yüklü araçta modül takılır, yük korunur ve fazla yuva çıkışı engeller", staged && bolts && connected && system.IsSecured && vehicle.LoadedItems.Count() == vehicle.cargoSockets.Length && missing.Any(s => s.StartsWith("Fazla ekipman:")) && !runtime.Depart(), string.Join(" | ", missing));
+            testModule.payloadKg = 1;
+            Check("(9c) fazla ağırlık çıkışı engeller", runtime.MissingPreparation().Any(s => s.StartsWith("Fazla ağırlık:")) && !runtime.Depart(), string.Join(" | ", runtime.MissingPreparation()));
+            testModule.payloadKg = modules.First(m => m.id == "towing").payloadKg;
+            foreach (var item in vehicle.LoadedItems.Skip(1).ToArray()) item.Drop(new Vector3(12, .3f, 12));
+
+            var boarding = UnityEngine.Object.FindAnyObjectByType<GarageBoardingDoor>();
+            bool reached = false;
+            if (boarding)
+            {
+                Vector3 position = boarding.transform.position - vehicle.transform.right * 1f;
+                position.y = .02f;
+                yield return AimFrom(position, boarding, ok => reached = ok);
+            }
+            bool ready = runtime.MissingPreparation().Count == 0;
+            string prompt = boarding ? boarding.Prompt(bridge) : "yok";
+            if (reached) yield return Press(Key.E);
+            Check("(9d) şoför kapısı E menzilinde; hazırlık tamken E → Deployed", boarding && reached && ready && prompt == "E — Minibüse bin (göreve çık)" && runtime.Data.phase == JobPhase.Deployed,
+                prompt + ", hedef " + reached + ", faz " + runtime.Data.phase + ", eksik " + string.Join(" | ", runtime.MissingPreparation()));
+
+            var meshObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cleanup.Add(meshObject);
+            meshObject.transform.position = new Vector3(15, 2, 15);
+            var mesh = UnityEngine.Object.Instantiate(meshObject.GetComponent<MeshFilter>().sharedMesh);
+            mesh.UploadMeshData(true);
+            meshObject.GetComponent<MeshFilter>().sharedMesh = mesh;
+            var highlight = meshObject.AddComponent<InteractionHighlight>();
+            int errors = 0;
+            Application.LogCallback log = (message, trace, type) => { if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert || type == LogType.Warning) errors++; };
+            Application.logMessageReceived += log;
+            try
+            {
+                typeof(InteractionHighlight).GetMethod("Build", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(highlight, new object[] { meshObject.transform });
+                yield return null;
+                Check("(9e) okunamayan mesh vurgusunda hata/uyarı yok, kaynak mesh çizilir", !mesh.isReadable && errors == 0 && highlight.CopyCount == 1 && highlight.Copies.First().GetComponent<MeshFilter>().sharedMesh == mesh,
+                    "hata/uyarı " + errors + ", kopya " + highlight.CopyCount);
+            }
+            finally { Application.logMessageReceived -= log; UnityEngine.Object.Destroy(mesh); }
+        }
+        finally
+        {
+            catalog.jobs = jobs; catalog.modules = modules;
+            runtime.autoSave = autoSave;
+            typeof(GarageLift).GetProperty("CarriageHeight").SetValue(vehicle.lift, 0f);
+            foreach (var go in cleanup) if (go) UnityEngine.Object.Destroy(go);
+            UnityEngine.Object.Destroy(testJob); UnityEngine.Object.Destroy(testModule);
         }
     }
 
