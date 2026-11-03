@@ -86,7 +86,7 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
     // Lider sedyenin bir ucunu tuttu: bot öbür uca ışınlanır ve o ucu tutar.
     public bool Assist(ICarrier leaderCarrier, StretcherController stretcher, bool leaderFront)
     {
-        if (!CanAssist || !stretcher.CanGrab(!leaderFront)) return false;
+        if (!CanAssist || stretcher.Passenger == null || !stretcher.CanGrab(!leaderFront)) return false;
         leader = leaderCarrier;
         Transform otherHandle = leaderFront ? stretcher.handleRear : stretcher.handleFront;
         Transform leaderHandle = leaderFront ? stretcher.handleFront : stretcher.handleRear;
@@ -181,7 +181,7 @@ public class StretcherHelperBot : MonoBehaviour, ICarrier
         if (!reviving && HeldStretcher != null)
         {
             // Lider bıraktıysa ya da yardım kapatıldıysa bot da bırakır.
-            if (!assistEnabled || leader == null || leader.HeldStretcher != HeldStretcher)
+            if (!assistEnabled || leader == null || leader.HeldStretcher != HeldStretcher || HeldStretcher.Passenger == null)
                 ReleaseHeld();
             else
                 Follow();

@@ -4,7 +4,7 @@ using UnityEngine;
 // Sedye (kullanıcı kararları 8, 10, 11). Kinematik: konumu fizikle değil, taşıyıcıların el noktalarıyla belirlenir.
 //
 // Durumlar:
-//  Resting  — yerde (ya da servis minibüsünün yük zemininde) duruyor. Tek taşıyıcı tutsa bile kalkmaz.
+//  Resting  — yerde (ya da servis minibüsünün yük zemininde) duruyor.
 //  Raised   — yeterli taşıyıcı var; iki sap, o uçtaki taşıyıcıların el noktalarında.
 //  Tilted   — kalkıkken bir uç bırakıldı, öbürü hâlâ tutuluyor: bırakılan uç yerde, tutulan uç elde.
 //
@@ -35,6 +35,7 @@ public class StretcherController : MonoBehaviour
     public bool IsRaised { get { return CurrentMode == Mode.Raised; } }
     public Patient Passenger { get; private set; }
     public int CarrierCount { get { return grips.Count; } }
+    public int RequiredCarriers { get { return Passenger != null ? rules.requiredCarriers : rules.emptyRequiredCarriers; } }
     public Vector3 Velocity { get; private set; }
     public float HandleSpan { get { return Vector3.Distance(handleFront.position, handleRear.position); } }
     public bool DropPending { get { return pendingSince >= 0f; } }
@@ -95,7 +96,7 @@ public class StretcherController : MonoBehaviour
     }
 
     // Bir uçta en fazla kaç kişi: gereken sayının yarısı (yukarı yuvarlanır), en az 1.
-    public int MaxPerEnd { get { return Mathf.Max(1, Mathf.CeilToInt(rules.requiredCarriers / 2f)); } }
+    public int MaxPerEnd { get { return Mathf.Max(1, Mathf.CeilToInt(RequiredCarriers / 2f)); } }
 
     public bool CanGrab(bool front)
     {
@@ -108,7 +109,7 @@ public class StretcherController : MonoBehaviour
         if (carrier.HeldStretcher != null || IsHeldBy(carrier) || !CanGrab(front)) return false;
         grips.Add(new Grip { carrier = carrier, front = front });
         carrier.HeldStretcher = this;
-        if (grips.Count >= rules.requiredCarriers)
+        if (grips.Count >= RequiredCarriers)
             Raise();
         else if (notify)
             NotifyIfUnderstaffed();
@@ -117,8 +118,8 @@ public class StretcherController : MonoBehaviour
 
     public void NotifyIfUnderstaffed()
     {
-        if (grips.Count > 0 && grips.Count < rules.requiredCarriers && CurrentMode == Mode.Resting)
-            GameNotice.Show(rules.NotEnoughCarriersMessage);
+        if (grips.Count > 0 && grips.Count < RequiredCarriers && CurrentMode == Mode.Resting)
+            GameNotice.Show(rules.NotEnoughCarriersMessageFor(RequiredCarriers));
     }
 
     public void Release(ICarrier carrier)
@@ -136,7 +137,7 @@ public class StretcherController : MonoBehaviour
             if (CurrentMode != Mode.Resting) LowerToGround();
             return;
         }
-        if (CurrentMode == Mode.Raised && grips.Count < rules.requiredCarriers && pendingSince < 0f)
+        if (CurrentMode == Mode.Raised && grips.Count < RequiredCarriers && pendingSince < 0f)
         {
             pendingSince = Time.time;
             pendingFront = CountAtEnd(front) == 0 ? front : !front;
@@ -286,8 +287,10 @@ public class StretcherController : MonoBehaviour
         else
         {
             // Bir uçta kimse yoksa (ör. 3 kişi aynı uçta) o uç öbür ucun hizasında, sap aralığı kadar uzakta durur.
-            if (!hasFront && hasRear) front = rear + Flat(handleFront.position - handleRear.position) * span;
-            if (!hasRear && hasFront) rear = front + Flat(handleRear.position - handleFront.position) * span;
+            // Tek taşıyıcıda serbest uç, önceki sedye yönü yerine taşıyıcının yeni yönünü izler.
+            Vector3 soloForward = grips.Count == 1 ? Flat(grips[0].carrier.Root.forward) : Flat(handleFront.position - handleRear.position);
+            if (!hasFront && hasRear) front = rear + soloForward * span;
+            if (!hasRear && hasFront) rear = front - soloForward * span;
             if (!hasFront && !hasRear) return;
         }
 

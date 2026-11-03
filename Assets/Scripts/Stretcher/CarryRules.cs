@@ -8,6 +8,9 @@ public class CarryRules : ScriptableObject
     [Tooltip("Sedyenin kalkması için gereken taşıyıcı sayısı.")]
     [Min(1)] public int requiredCarriers = 2;
 
+    [Tooltip("Boş sedyenin kalkması için gereken taşıyıcı sayısı.")]
+    [Min(1)] public int emptyRequiredCarriers = 1;
+
     [Tooltip("Bütün taşıyıcılar bu süre (sn) içinde birlikte bırakırsa sedye güvenle yere konur, hasta düşmez.")]
     [Min(0f)] public float safeReleaseWindow = 0.5f;
 
@@ -20,15 +23,17 @@ public class CarryRules : ScriptableObject
     // Taşıyıcı sayısı yetersizken gösterilen uyarı (sayıya göre metin).
     public string NotEnoughCarriersMessage
     {
-        get
+        get { return NotEnoughCarriersMessageFor(requiredCarriers); }
+    }
+
+    public string NotEnoughCarriersMessageFor(int count)
+    {
+        switch (count)
         {
-            switch (requiredCarriers)
-            {
-                case 2: return "İki kişi gerekli";
-                case 3: return "Üç kişi gerekli";
-                case 4: return "Dört kişi gerekli";
-                default: return requiredCarriers + " kişi gerekli";
-            }
+            case 2: return "İki kişi gerekli";
+            case 3: return "Üç kişi gerekli";
+            case 4: return "Dört kişi gerekli";
+            default: return count + " kişi gerekli";
         }
     }
 }
