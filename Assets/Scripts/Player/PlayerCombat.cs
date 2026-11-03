@@ -238,6 +238,14 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
+    // Nişanı fırlatmadan iptal eder (UI açılması gibi durumlarda tuş bırakılmış sayılmasın).
+    public void CancelAim()
+    {
+        if (!Aiming) return;
+        Aiming = false;
+        if (crew != null) crew.ReleaseAction();
+    }
+
     private IEnumerator ThrowRoutine()
     {
         Busy = true;

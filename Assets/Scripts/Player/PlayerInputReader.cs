@@ -89,7 +89,7 @@ public class PlayerInputReader : MonoBehaviour
             if (interaction != null) interaction.SetInteractHeld(false);
             InteractHeld = false;
             if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
-            if (combat != null) combat.SetThrowHeld(false);
+            if (combat != null) combat.CancelAim();   // UI açılırken nişan fırlatmadan iptal edilir
             return;
         }
         if (player != null)

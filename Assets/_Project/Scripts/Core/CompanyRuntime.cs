@@ -187,8 +187,10 @@ namespace CompanySim
             if (Data.phase != JobPhase.Accepted) return false;
             var missing = MissingPreparation();
             if (missing.Count > 0) { Notify("Hazırlık eksik: " + string.Join(", ", missing)); return false; }
-            Data.phase = JobPhase.Deployed;
             var job = catalog.Job(Data.activeJobId);
+            // Saha sahnesi yüklenemiyorsa faz değişmez (oyuncu "sahada" kaydıyla ofiste kilitli kalmasın)
+            if (job && job.HasFieldScene && !FieldSceneLoadable(job)) return false;
+            Data.phase = JobPhase.Deployed;
             Mutated("Ekip göreve çıktı.");
             if (job && job.HasFieldScene) FieldDeparture?.Invoke(this, job);
             return true;
@@ -200,8 +202,18 @@ namespace CompanySim
             if (Data.phase != JobPhase.Deployed) return false;
             var job = catalog.Job(Data.activeJobId);
             if (!job || !job.HasFieldScene) return false;
+            if (!FieldSceneLoadable(job)) return false;
             FieldDeparture?.Invoke(this, job);
             return true;
+        }
+
+        // Saha sahnesi Build Settings'te var mı; yoksa kullanıcıya bildirir.
+        private bool FieldSceneLoadable(JobDefinition job)
+        {
+            if (Application.CanStreamedLevelBeLoaded(job.fieldScene)) return true;
+            Notify("Saha sahnesi bulunamadı: " + job.fieldScene);
+            Debug.LogError("CompanyRuntime: '" + job.fieldScene + "' Build Settings'te yok.");
+            return false;
         }
 
         // Called by a field scene or a mission adapter exactly once per result.

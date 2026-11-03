@@ -185,20 +185,40 @@ public static class MissionBridge
             if (runtime != null && runtime.IsReady) break;
             yield return null;
         }
-        if (runtime != null && runtime.IsReady && !s.delivered)
+        if (runtime != null && runtime.IsReady && !s.delivered) TryDeliver(s, runtime);
+        else if (!s.delivered)
         {
-            s.delivered = true;
-            ReturnCalls++;
-            LastReturnAccepted = runtime.ReturnFromField(s.result);
-            if (!LastReturnAccepted) Debug.LogWarning("MissionBridge: ReturnFromField sonucu reddetti (iş " + s.jobId + ", faz " + runtime.Data.phase + ").");
+            // Oturum açık kalır; sonuç ofis hazır olunca yeniden denenir (ödeme kaybolmasın)
+            Debug.LogError("MissionBridge: ofiste CompanyRuntime hazır olmadı; saha sonucu işlenemedi, yeniden denenecek.");
+            MissionBridgeRunner.Run(RetryDelivery(s));
         }
-        else Debug.LogError("MissionBridge: ofiste CompanyRuntime hazır olmadı; saha sonucu işlenemedi.");
-        LastSession = s;
-        if (Active == s) Active = null;
         while (Time.realtimeSinceStartup - start < MinLoadingSeconds) yield return null;
         ui.HideLoading();
         yield return ui.Fade(0f, FadeSeconds);
         IsTransitioning = false;
+    }
+
+    // Teslimi dener; kabul de ret de kalıcı sayılır (oturum kapanır), ret bir kez loglanır.
+    private static void TryDeliver(Session s, CompanyRuntime runtime)
+    {
+        s.delivered = true;
+        ReturnCalls++;
+        LastReturnAccepted = runtime.ReturnFromField(s.result);
+        if (!LastReturnAccepted) Debug.LogError("MissionBridge: ReturnFromField sonucu reddetti (iş " + s.jobId + ", faz " + runtime.Data.phase + "); sonuç LastSession'da bırakıldı.");
+        LastSession = s;
+        if (Active == s) Active = null;
+    }
+
+    // Ofis hazır olana kadar saniyede bir teslimi yeniden dener (yeni bir oturum başlarsa vazgeçer).
+    private static IEnumerator RetryDelivery(Session s)
+    {
+        while (Active == s && !s.delivered)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            if (Active != s || s.delivered) yield break;
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CompanyRuntime>();
+            if (runtime != null && runtime.IsReady && runtime.gameObject.scene.name == s.officeScene) TryDeliver(s, runtime);
+        }
     }
 
     // Dönüş tuşuna basıldı mı (FieldMissionTracker okur).
