@@ -5,7 +5,9 @@ using UnityEngine;
 //
 // Durumlar:
 //  Resting  — yerde (ya da servis minibüsünün yük zemininde) duruyor.
-//  Raised   — yeterli taşıyıcı var; iki sap, o uçtaki taşıyıcıların el noktalarında.
+//  Raised   — yeterli taşıyıcı var; iki sap, o uçtaki taşıyıcıların el noktalarında. Gereken sayı yüke bağlıdır:
+//             hastalı sedye rules.requiredCarriers (2), boş sedye rules.emptyRequiredCarriers (1) ister. Tek taşıyıcıda
+//             tutulan uç elde, serbest uç taşıyıcının baktığı yönde havada taşınır (FreeEndPoint).
 //  Tilted   — kalkıkken bir uç bırakıldı, öbürü hâlâ tutuluyor: bırakılan uç yerde, tutulan uç elde.
 //
 // Düşme kuralı: Kalkık sedyede biri bırakınca safeReleaseWindow (0.5 sn) beklenir. Bu sürede herkes bırakırsa
@@ -35,6 +37,7 @@ public class StretcherController : MonoBehaviour
     public bool IsRaised { get { return CurrentMode == Mode.Raised; } }
     public Patient Passenger { get; private set; }
     public int CarrierCount { get { return grips.Count; } }
+    // Şu an gereken taşıyıcı sayısı: hastalıysa requiredCarriers, boşsa emptyRequiredCarriers (varsayılan 1).
     public int RequiredCarriers { get { return Passenger != null ? rules.requiredCarriers : rules.emptyRequiredCarriers; } }
     public Vector3 Velocity { get; private set; }
     public float HandleSpan { get { return Vector3.Distance(handleFront.position, handleRear.position); } }
@@ -109,7 +112,8 @@ public class StretcherController : MonoBehaviour
         if (carrier.HeldStretcher != null || IsHeldBy(carrier) || !CanGrab(front)) return false;
         grips.Add(new Grip { carrier = carrier, front = front });
         carrier.HeldStretcher = this;
-        if (grips.Count >= RequiredCarriers)
+        // Zaten kalkıksa (boş sedyeyi taşıyana ikinci kişi katıldı) yeniden kaldırma geçişi başlatılmaz.
+        if (grips.Count >= RequiredCarriers && CurrentMode != Mode.Raised)
             Raise();
         else if (notify)
             NotifyIfUnderstaffed();
@@ -286,11 +290,11 @@ public class StretcherController : MonoBehaviour
         }
         else
         {
-            // Bir uçta kimse yoksa (ör. 3 kişi aynı uçta) o uç öbür ucun hizasında, sap aralığı kadar uzakta durur.
-            // Tek taşıyıcıda serbest uç, önceki sedye yönü yerine taşıyıcının yeni yönünü izler.
+            // Bir uçta kimse yoksa (tek taşıyıcı ya da herkes aynı uçta) o uç sap aralığı kadar uzakta havada durur.
+            // Tek taşıyıcıda serbest uç, önceki sedye yönü yerine taşıyıcının baktığı yönü izler (sedye önünde / arkasında).
             Vector3 soloForward = grips.Count == 1 ? Flat(grips[0].carrier.Root.forward) : Flat(handleFront.position - handleRear.position);
-            if (!hasFront && hasRear) front = rear + soloForward * span;
-            if (!hasRear && hasFront) rear = front - soloForward * span;
+            if (!hasFront && hasRear) front = FreeEndPoint(rear, soloForward, span);
+            if (!hasRear && hasFront) rear = FreeEndPoint(front, -soloForward, span);
             if (!hasFront && !hasRear) return;
         }
 
@@ -302,6 +306,35 @@ public class StretcherController : MonoBehaviour
             rear = Vector3.Lerp(blendFromRear, rear, u);
         }
         SetHandles(front, rear);
+    }
+
+    // Serbest ucun (kimsenin tutmadığı sap) yeri: tutulan uçtan dir yönünde, sap aralığı kadar uzakta, aynı yükseklikte.
+    // Altındaki zemin (yokuş, minibüs yük zemini) daha yüksekse uç o zeminin üstüne kaldırılır ki sedye zemine gömülmesin;
+    // sap aralığı korunur (yatay mesafe yükseklik farkından çözülür). Botun SolveRoot eğim çözümünün tek kişilik karşılığı.
+    // Işın tutulan elin FreeEndProbeUp üstünden başlar: tavan ve duvar tepesi değil, elin altındaki zemin bulunur.
+    // Yükselme FreeEndMaxRise'ı aşıyorsa (duvar, yüksek bank) uç düz kalır; duvar kilidi E4 gibi taşıyıcı tarafında değildir.
+    private const float FreeEndProbeUp = 0.5f;
+    private const float FreeEndMaxRise = 0.6f;
+    private const float FreeEndClearance = 0.02f;
+
+    private Vector3 FreeEndPoint(Vector3 held, Vector3 dir, float span)
+    {
+        float handleHeight = HandleHeightAboveRoot();
+        float horizontal = span;
+        float y = held.y;
+        for (int i = 0; i < 3; i++)
+        {
+            Vector3 p = held + dir * horizontal;
+            y = held.y;
+            if (GroundProbe.Find(new Vector3(p.x, held.y + FreeEndProbeUp, p.z), FreeEndProbeUp + 3f, out RaycastHit hit))
+            {
+                float rise = hit.point.y + handleHeight + FreeEndClearance - held.y;
+                if (rise > 0f && rise <= FreeEndMaxRise) y = held.y + rise;
+            }
+            float dy = y - held.y;
+            horizontal = Mathf.Sqrt(Mathf.Max(0.01f, span * span - dy * dy));
+        }
+        return held + dir * horizontal + Vector3.up * (y - held.y);
     }
 
     private static Vector3 Flat(Vector3 v)

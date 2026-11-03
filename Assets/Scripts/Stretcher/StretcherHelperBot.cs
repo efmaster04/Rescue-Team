@@ -3,7 +3,8 @@ using UnityEngine;
 // Test botu (kullanıcı kararı 9): multiplayer gelene kadar sedyenin öbür ucunu tutar.
 // Araç çarpınca (şef kararı 6) bot da ragdoll olup düşer ve getUpDelay sn sonra kendi kendine GetUp_FromBack ile kalkar
 // (bot test yardımcısıdır; oyuncunun "yalnız arkadaş kaldırır" kuralı değişmez).
-// Oyuncu bir ucu tutunca bot diğer uca ışınlanır. Sonra "römork" modeliyle izler: sedye ekseni iki taşıyıcı
+// Oyuncu HASTALI sedyenin bir ucunu tutunca bot diğer uca ışınlanır (boş sedyeyi oyuncu tek başına taşır; hasta sedyeden
+// inince bot bırakır ve sedye oyuncuda kalır). Sonra "römork" modeliyle izler: sedye ekseni iki taşıyıcı
 // arasındaki çizgidir, bot lidere olan uzaklığı sap aralığında tutar. Y'sini zemine raycast'le bulur; yalnız
 // yürünebilir zemine (eğim ≤ walkableSlopeLimit) oturur, dik bank/yamaçta yükselmez (E3 kararı 2).
 // Ayakta NpcBody teması engeller ve yürüyen oyuncudan sınırlı itme alır.
