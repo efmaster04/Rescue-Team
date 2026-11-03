@@ -5,9 +5,13 @@ using UnityEngine;
 // Trafik aracı davranışı (kullanıcı kararları 3, 4, 5, 7). Sürüşün kendisi LaneFollower'da (ambulansla aynı).
 //
 // Her fizik adımında:
-//  1) Şerit doluluk servisinden öndeki en yakın engel alınır: araç (ambulans dahil) ya da şeridi kapatan dik koni.
-//     Araç: en az minGap boşlukla durulacak nokta + 2 sn kuralı hız sınırı. Koni: koninin coneStopMargin gerisinde dur.
+//  1) Şerit doluluk servisinden öndeki en yakın engel alınır: araç (ambulans dahil), şeridi kapatan dik koni ya da dış engel
+//     (oyuncunun servis minibüsü). Araç / minibüs: en az minGap (vanStopMargin) boşlukla durulacak nokta + 2 sn kuralı hız
+//     sınırı. Koni: koninin coneStopMargin gerisinde dur.
 //  2) Koninin önünde durduktan coneWaitSeconds (20 sn) sonra o koni yok sayılır: araç koniye çarpıp devam eder.
+//  2b) Minibüsün gerisinde durunca korna (vanHornInterval); vanWaitSeconds (5 sn) sonra araç minibüse çarpar: engeli yok sayıp
+//     vanRamSpeed ile ilerler, her adımda ILaneObstacle.Ram çağrılır (minibüs temasa göre itilir ve hasar alır), minibüsü
+//     geçince ya da vanRamMaxSeconds dolunca çarpma biter (kullanıcı kararı 2026-11-04).
 //  3) Önde (şeritte) taşıyıcı varsa korna ve hız en fazla %40 (durmaz; ambulanstaki yield mantığı).
 //  4) Gövdeye değen oyuncu ragdoll olup düşer, bot sedyeyi bırakıp kenara itilir, yerdeki/sedyedeki hasta savrulur.
 // Şeridin sonunda (TrafficDespawn_*) kaybolur.
@@ -35,9 +39,16 @@ public class TrafficVehicle : MonoBehaviour
     // Koni bekleme (test ve hata ayıklama)
     public TrafficCone WaitingCone { get; private set; }
     public float ConeWaitTime { get; private set; }
+    // Minibüs (dış engel) bekleme ve çarpma (test ve hata ayıklama)
+    public ILaneObstacle WaitingObstacle { get; private set; }
+    public float ObstacleWaitTime { get; private set; }
+    public ILaneObstacle RammingObstacle { get; private set; }
+    public int ObstacleRams { get; private set; }
+    public int ObstacleHorns { get; private set; }
 
     public event Action<TrafficVehicle> Despawned;
     public event Action<TrafficVehicle, TrafficCone, float> ConeRammed;   // koni, bekleme süresi
+    public event Action<TrafficVehicle, ILaneObstacle, float> ObstacleRammed; // minibüs, bekleme süresi
     public event Action<TrafficVehicle, ThirdPersonPlayer> HitPlayer;
     public event Action<TrafficVehicle, Patient> HitPatient;
     public event Action<TrafficVehicle, Thief> HitThief;
@@ -48,6 +59,9 @@ public class TrafficVehicle : MonoBehaviour
 
     private readonly HashSet<TrafficCone> ignoredCones = new HashSet<TrafficCone>();
     private MaterialPropertyBlock block;
+    private float lastObstacleHorn = -100f;
+    private float ramFarS;
+    private float ramStartTime;
 
     private void Awake()
     {
@@ -83,8 +97,15 @@ public class TrafficVehicle : MonoBehaviour
             return;
         }
 
+        // 2b) Süren çarpma: minibüsü geçince ya da süre dolunca biter
+        if (RammingObstacle != null)
+        {
+            if (RammingObstacle.BlocksLane(Follower.lane, out _, out float farNow, out _)) ramFarS = Mathf.Max(ramFarS, farNow);
+            if (Follower.RearS > ramFarS + 1f || Time.time - ramStartTime > settings.vanRamMaxSeconds) RammingObstacle = null;
+        }
+
         // 1) Öndeki engel
-        var b = LaneOccupancy.NearestBlocker(Follower, ignoredCones, settings.coneUprightMaxAngle);
+        var b = LaneOccupancy.NearestBlocker(Follower, ignoredCones, settings.coneUprightMaxAngle, RammingObstacle);
         BlockerKind = b.kind;
         float limit = float.PositiveInfinity;
         float stop = float.PositiveInfinity;
@@ -98,6 +119,13 @@ public class TrafficVehicle : MonoBehaviour
         }
         else if (b.kind == LaneOccupancy.BlockerKind.Cone)
             stop = b.edgeS - settings.coneStopMargin - Follower.frontOverhang;
+        else if (b.kind == LaneOccupancy.BlockerKind.Obstacle)
+        {
+            float gap = b.edgeS - Follower.FrontS;
+            GapToLeader = gap;
+            stop = b.edgeS - settings.vanStopMargin - Follower.frontOverhang;
+            limit = Mathf.Max(0f, gap) / settings.timeHeadway;
+        }
         stop = Mathf.Min(stop, externalStopS); // U4: dış durak
 
         if (!float.IsPositiveInfinity(stop)) Follower.StopAt(Mathf.Max(stop, Follower.Distance));
@@ -121,6 +149,42 @@ public class TrafficVehicle : MonoBehaviour
         {
             WaitingCone = null;
             ConeWaitTime = 0f;
+        }
+
+        // 2b) Minibüsün gerisinde bekleme: korna, süre dolunca çarpma (minibüs kıpırdıyorsa sayaç ilerlemez)
+        bool waitingAtObstacle = b.kind == LaneOccupancy.BlockerKind.Obstacle && Follower.Speed <= 0.01f && Follower.Distance >= stop - 0.1f
+            && Mathf.Abs(b.speed) < 0.3f;
+        if (waitingAtObstacle)
+        {
+            if (WaitingObstacle != b.obstacle) { WaitingObstacle = b.obstacle; ObstacleWaitTime = 0f; lastObstacleHorn = -100f; }
+            ObstacleWaitTime += dt;
+            if (Time.time - lastObstacleHorn >= settings.vanHornInterval)
+            {
+                lastObstacleHorn = Time.time;
+                ObstacleHorns++;
+                if (sound != null) sound.PlayHorn();
+            }
+            if (ObstacleWaitTime >= settings.vanWaitSeconds)
+            {
+                RammingObstacle = b.obstacle;
+                ramFarS = b.farS;
+                ramStartTime = Time.time;
+                ObstacleRams++;
+                ObstacleRammed?.Invoke(this, b.obstacle, ObstacleWaitTime);
+                WaitingObstacle = null;
+                ObstacleWaitTime = 0f;
+                Follower.ClearStop();
+            }
+        }
+        else if (b.kind != LaneOccupancy.BlockerKind.Obstacle || b.obstacle != WaitingObstacle)
+        {
+            WaitingObstacle = null;
+            ObstacleWaitTime = 0f;
+        }
+        if (RammingObstacle != null)
+        {
+            limit = Mathf.Min(limit, settings.vanRamSpeed);
+            RammingObstacle.Ram(this);
         }
 
         // 3) Önde taşıyıcı: korna + en fazla %40

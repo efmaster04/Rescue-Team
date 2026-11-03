@@ -33,12 +33,18 @@ public static partial class Bolum1Verify
             var door = van.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "RearDoor_" + side);
             doorsOpen &= door != null && Mathf.Abs(Mathf.Abs(Mathf.DeltaAngle(0f, door.localEulerAngles.y)) - Bolum1ServiceVan.DoorOpenAngle) < 0.5f && door.GetComponent<BoxCollider>() != null;
         }
-        bool noScripts = van.GetComponentsInChildren<MonoBehaviour>(true).Length == 0 && van.GetComponentsInChildren<Rigidbody>(true).Length == 0;
-        bool physicsOk = van.GetComponent<Rigidbody>() == null && van.GetComponents<BoxCollider>().Length >= 5;
+        // Sürüş girişi (2026-11-04): minibüs artık sürülen araç; kökte yalnız sürüş bileşenleri (ServiceVanDriver, VehicleAudio) ve tek,
+        // kinematik Rigidbody olur. CompanySim betiği ve başka Rigidbody yine yok.
+        var scripts = van.GetComponentsInChildren<MonoBehaviour>(true);
+        bool noScripts = scripts.All(s => s is ServiceVanDriver || s is VehicleAudio) && scripts.OfType<ServiceVanDriver>().Count() == 1
+            && van.GetComponentsInChildren<Rigidbody>(true).Length == 1;
+        var rootBody = van.GetComponent<Rigidbody>();
+        bool physicsOk = rootBody != null && rootBody.isKinematic && !rootBody.useGravity && van.GetComponents<BoxCollider>().Length >= 6
+            && van.GetComponent<UnityEngine.AI.NavMeshObstacle>() != null && van.GetComponent<UnityEngine.AI.NavMeshObstacle>().carving;
         bool noPlaceholder = !UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Any(t => t.name.StartsWith("PH_"));
-        Check("minibüs hiyerarşi / collider (görsel kopya, CassetteSocket'te modül, tavan lambası, 108° açık arka kapılar, betik yok)",
+        Check("minibüs hiyerarşi / collider (görsel kopya, CassetteSocket'te modül, tavan lambası, 108° açık arka kapılar, yalnız sürüş betiği + kinematik Rigidbody + NavMeshObstacle)",
             visual && module && signal && doorsOpen && noScripts && physicsOk && noPlaceholder,
-            "görsel " + visual + ", modül " + module + ", lamba " + signal + ", kapılar " + doorsOpen + ", betiksiz " + noScripts + ", kök kutu " + van.GetComponents<BoxCollider>().Length + ", PH yok=" + noPlaceholder);
+            "görsel " + visual + ", modül " + module + ", lamba " + signal + ", kapılar " + doorsOpen + ", yalnız sürüş betikleri " + noScripts + ", kök kutu " + van.GetComponents<BoxCollider>().Length + " (fizik " + physicsOk + "), PH yok=" + noPlaceholder);
 
         // Gövde tabanı dört tekerlek noktasında bankette (±8 cm, M_Gravel).
         var art = van.transform.Find(Bolum1ServiceVan.VisualName);

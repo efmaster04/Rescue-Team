@@ -68,6 +68,22 @@ public class TrafficSettings : ScriptableObject
     public float hitUpSpeed = 1.5f;
     public float hitSideSpeed = 1.5f;
 
+    [Header("Servis minibüsü şeridi kapatınca (kullanıcı kararı, 2026-11-04)")]
+    [Tooltip("Minibüsün gerisinde durduktan bu kadar sonra (sn) araç minibüse çarpıp ilerler.")]
+    [Min(0f)] public float vanWaitSeconds = 5f;
+    [Tooltip("Ön tamponun minibüsten durma payı (m).")]
+    [Min(0.5f)] public float vanStopMargin = 2.5f;
+    [Tooltip("Minibüsün gerisinde beklerken iki korna arası (sn).")]
+    [Min(0.5f)] public float vanHornInterval = 2f;
+    [Tooltip("Çarparken en yüksek hız (m/sn).")]
+    [Min(1f)] public float vanRamSpeed = 4f;
+    [Tooltip("Çarpmanın minibüse verdiği hasar (%).")]
+    [Min(0f)] public float vanRamDamage = 12f;
+    [Tooltip("Çarpmanın minibüse verdiği itme hızı (m/sn): aracın gidiş yönünde + şeridin dışına doğru.")]
+    [Min(0f)] public float vanRamPushSpeed = 3f;
+    [Tooltip("Çarpma en fazla bu kadar sürer (sn); sonra araç yeniden değerlendirir (hâlâ kapalıysa yine bekler).")]
+    [Min(1f)] public float vanRamMaxSeconds = 12f;
+
     [Header("Ambulans (kullanıcı kararı 8)")]
     [Tooltip("Ambulansın doğmasından bu kadar sn önce EastBound'a araç çıkmaz.")]
     public float ambulanceClearSeconds = 20f;

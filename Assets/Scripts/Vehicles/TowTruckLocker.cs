@@ -38,9 +38,33 @@ public class TowTruckLocker : MonoBehaviour
     private Vector3 restCenter;
     private bool restKnown;
 
+    // Sürüş girişi: minibüs Play'de yer değiştirir (yola ışınlanır, sürülür, park edilir); kapalı kapak merkezi ve dış yön
+    // aracın (kapağın ebeveyninin) yerel uzayında tutulur, her karede dünya uzayına çevrilir.
+    private Transform vanSpace;
+    private Vector3 restCenterLocal, outwardLocal;
+
     private void Awake()
     {
-        if (door != null) { closedRotation = door.localRotation; restCenter = DoorBounds.center; restKnown = true; }
+        if (door != null)
+        {
+            closedRotation = door.localRotation;
+            restCenter = DoorBounds.center;
+            restKnown = true;
+            vanSpace = door.parent;
+            if (vanSpace != null)
+            {
+                restCenterLocal = vanSpace.InverseTransformPoint(restCenter);
+                outwardLocal = vanSpace.InverseTransformDirection(outward);
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (vanSpace == null) return;
+        restCenter = vanSpace.TransformPoint(restCenterLocal);
+        Vector3 o = vanSpace.TransformDirection(outwardLocal); o.y = 0f;
+        if (o.sqrMagnitude > 1e-6f) outward = o.normalized;
     }
 
     private void OnEnable() { if (!All.Contains(this)) All.Add(this); }

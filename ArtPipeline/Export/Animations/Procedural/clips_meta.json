@@ -4445,8 +4445,120 @@
       "description": "Göğüste tuttuğu ganimeti iki elle ileri-yukarı kamyonet kasasına atar.",
       "action_sha256": "90c18c7fb0875929f5f5ec02070f80c479ec998e692224c66eeee726e01082b3",
       "release_frame": 14
+    },
+    "Drive_Seated": {
+      "file": "Drive_Seated.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Şoför koltuğunda oturuş: ayaklar önde pedallarda, gövde hafif öne eğik, iki el saat 10 ve 2 konumunda direksiyon simidinde (±15° sağ-sol düzeltme); baş yola bakar, hafif yol sarsıntısı.",
+      "action_sha256": "afae3e4eb972348a564d9792d90bebae752f2c1e54d6988f71148ff38dc322b7",
+      "seat_surface_root_local_z": 0.262,
+      "wheel": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "center_root_local_m": [
+          0.0,
+          -0.38,
+          0.67
+        ],
+        "center_hips_offset_m": [
+          0.0,
+          -0.38,
+          0.303
+        ],
+        "radius_m": 0.17,
+        "tilt_deg": 25.0,
+        "normal_root_local": [
+          0.0,
+          0.906,
+          0.423
+        ],
+        "right_axis_root_local": [
+          -1.0,
+          -0.0,
+          -0.0
+        ],
+        "up_axis_root_local": [
+          0.0,
+          -0.423,
+          0.906
+        ],
+        "clock_angles_deg": {
+          "Left": 60.0,
+          "Right": -60.0
+        },
+        "steer_amplitude_deg": 15.0,
+        "grip_neutral_root_local_m": {
+          "Left": [
+            0.147,
+            -0.416,
+            0.747
+          ],
+          "Right": [
+            -0.147,
+            -0.416,
+            0.747
+          ]
+        },
+        "grip_mean_root_local_m": {
+          "Left": [
+            0.145,
+            -0.415,
+            0.746
+          ],
+          "Right": [
+            -0.145,
+            -0.415,
+            0.746
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            -0.252,
+            -0.958,
+            -0.136
+          ],
+          "Right": [
+            0.252,
+            -0.958,
+            -0.136
+          ]
+        },
+        "max_rim_distance_m": 0.0,
+        "note": "Avuç noktası = el kemiği başı + kemik yönünde 0.05 m. Simit merkezi kök yerel (0.00, -0.38, 0.67) m (oturan kalçanın 0.38 m önünde, 0.303 m yukarısında; chibi kol erişimi 0.317 m için ayarlı), yarıçapı 0.17 m, düzlemi dikeyden 25° geriye yatık (+X pitch). Eller saat 10 (+60°) ve saat 2 (-60°) konumunda simit çemberi üzerinde ±15° birlikte döner."
+      }
+    },
+    "Passenger_Seated": {
+      "file": "Passenger_Seated.fbx",
+      "duration_s": 2.4,
+      "frames": 73,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "RescueCrew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Yolcu koltuğunda oturuş: sol el dizde, sağ el kapı tutamağında; yol sarsıntısıyla gövde ve baş hafif yaylanır, ara sıra yan camdan dışarı bakar.",
+      "action_sha256": "2f5753a69f85a3452cd3bc6e0ac6854ce76293e971e3e8f306708a58a2b57ead",
+      "seat_surface_root_local_z": 0.262,
+      "door_grip_root_local_m": [
+        -0.275,
+        -0.298,
+        0.642
+      ]
     }
   },
-  "actions_sha256": "9b27956e687026b8c7938b348ec8d1185883e1bb46dec389bfdc2e66e4e0c72e",
-  "source_sha256": "a33cf9b5dea6996d66a7baa66c1b34800ceab3d4069583459007a8e6b65410e3"
+  "actions_sha256": "e048f04a04ddf592737ade06a7cc3292c7bf26cfdec9c7889fd4529c853c33d4",
+  "source_sha256": "53dca12345127efd9e318dd5f10c9c33aba89d97d637a4fc4048e2d4142d8c1c"
 }

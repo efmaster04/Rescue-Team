@@ -87,6 +87,7 @@ public static class Bolum1ServiceVan
         van.transform.localScale = Vector3.one;
         AlignToGround(van, body);
         BuildEquipment(van);
+        SetupDriving(van, body);
         Debug.Log("Servis minibüsü: konum " + van.transform.position.ToString("F2") + ", ileri (dünya) " + Forward(van).ToString("F2")
             + ", Euler " + van.transform.eulerAngles.ToString("F1") + ", arka uç " + RearEnd(van).ToString("F2"));
         return van;
@@ -261,7 +262,8 @@ public static class Bolum1ServiceVan
         AddBox(van, new Vector3(0f, CargoFloor - .08f, .95f), new Vector3(1.94f, .16f, 3.5f));
         AddBox(van, new Vector3(0f, 2.58f, .95f), new Vector3(1.94f, .16f, 3.5f));
         AddBox(van, new Vector3(0f, 1.60f, -.73f), new Vector3(1.94f, 2.2f, .12f));
-        AddBox(van, new Vector3(0f, 1.2f, -1.80f), new Vector3(1.90f, 2.1f, 2.35f));
+        // Kabin tabanı 0.30 (sürüşte banket kenarı / gravel dudağı kabine takılmasın; eskiden 0.15).
+        AddBox(van, new Vector3(0f, 1.275f, -1.80f), new Vector3(1.90f, 1.95f, 2.35f));
         // Modül taşıyıcısı (kapının dış yüzü): montaj plakası, raylar ve modül bölgesi.
         AddBox(Part(van, CarrierName).gameObject, new Vector3(0f, 1.96f, .28f), new Vector3(.88f, .70f, .56f));
     }
@@ -308,6 +310,111 @@ public static class Bolum1ServiceVan
         door.SetParent(van.transform, false);
         door.localPosition = LockerCenter + new Vector3(s.x * .5f, 0f, s.z * .5f + w * .5f); // menteşe: dış kenar, kapak düzlemi
         Cube(door, "Lid", new Vector3(-s.x * .5f, 0f, 0f), new Vector3(s.x, s.y, w), metal);
+    }
+
+    // =====================================================================================
+    // Sürüş girişi (kullanıcı kararı 2026-11-04): Rigidbody, şasi kutusu, NavMeshObstacle, koltuklar, direksiyon, sürücü, motor sesi.
+    // Sahne dosyasında minibüs park hâlindedir (kinematik); DriveIntro Play'de yola ışınlar. Oyuncu / bot / kamera / park alanı
+    // bağlantılarını Bolum1DriveBuilder.SetupScene yapar (o nesneler bu aşamada henüz yok).
+    // =====================================================================================
+    public const string DriverSeatName = "DriverSeat", PassengerSeatName = "PassengerSeat", SteeringWheelName = "ServiceVan_SteeringWheel";
+    public const float VanMass = 2800f;
+    // Koltuk minderi temas noktası (kök-yerel): kabin z −2.98…−0.63, şoför solda (+X). Klip kökü minderin seat_surface_root_local_z altında.
+    public static readonly Vector3 DriverCushion = new Vector3(.55f, 1.05f, -1.45f), PassengerCushion = new Vector3(-.55f, 1.05f, -1.45f);
+    // Şasi yerden açıklığı 0.22 m: yoldan bankete geçişte gravel dudağı (ölçüldü: 5 cm'de minibüs yol kenarında karnına oturup kalıyordu).
+    public const float ChassisWidth = 1.9f, ChassisHeight = .3f, ChassisClearance = .22f;
+
+    private static void SetupDriving(GameObject van, Bounds body)
+    {
+        var rb = van.AddComponent<Rigidbody>();
+        rb.mass = VanMass;
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        // Şasi: tekerlek tabanının ChassisClearance üstünde düz alt yüz; dinamikken korkuluk / kaya gibi statik engellere gerçek temas.
+        AddBox(van, new Vector3(0f, body.min.y + ChassisClearance + ChassisHeight * .5f, body.center.z), new Vector3(ChassisWidth, ChassisHeight, body.size.z - .8f));
+        // NavMesh engeli: park hâlinde oyar (hırsız ve bot yolu minibüsün gerçek yerine göre; fırında minibüs yok).
+        var obstacle = van.AddComponent<UnityEngine.AI.NavMeshObstacle>();
+        obstacle.shape = UnityEngine.AI.NavMeshObstacleShape.Box;
+        obstacle.center = body.center;
+        obstacle.size = body.size;
+        obstacle.carving = true;
+        obstacle.carveOnlyStationary = true;
+        obstacle.carvingMoveThreshold = .1f;
+        obstacle.carvingTimeToStationary = .5f;
+
+        // Koltuklar: karakter kökü minderin seat_surface_root_local_z (0.262) altında, yüz aracın önüne (−Z).
+        float seatZ = Bolum1AnimBuilder.MetaFloat(Bolum1AnimBuilder.DriveSeatedClip, "seat_surface_root_local_z", .262f);
+        var driverSeat = new GameObject(DriverSeatName).transform;
+        driverSeat.SetParent(van.transform, false);
+        driverSeat.localPosition = DriverCushion - Vector3.up * seatZ;
+        driverSeat.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        var passengerSeat = new GameObject(PassengerSeatName).transform;
+        passengerSeat.SetParent(van.transform, false);
+        passengerSeat.localPosition = PassengerCushion - Vector3.up * seatZ;
+        passengerSeat.localRotation = Quaternion.Euler(0f, 180f, 0f);
+
+        // Direksiyon simidi: clips_meta "Drive_Seated".wheel (Blender karakter kök-yerel, Z yukarı, −Y ön → Unity (−x, z, −y)).
+        Vector3 wheelCenter = CharacterLocal(WheelMeta("center_root_local_m", new Vector3(0f, -.38f, .67f)));
+        Vector3 wheelNormal = CharacterLocal(WheelMeta("normal_root_local", new Vector3(0f, .906f, .423f))).normalized;
+        float wheelRadius = WheelRadiusMeta(.17f);
+        var wheel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        wheel.name = SteeringWheelName;
+        UnityEngine.Object.DestroyImmediate(wheel.GetComponent<Collider>());
+        wheel.transform.SetParent(driverSeat, false);
+        wheel.transform.localPosition = wheelCenter;
+        wheel.transform.localRotation = Quaternion.FromToRotation(Vector3.up, wheelNormal);
+        wheel.transform.localScale = new Vector3(wheelRadius * 2f, .012f, wheelRadius * 2f);
+        wheel.GetComponent<Renderer>().sharedMaterial = Material("SteeringWheel", new Color(.09f, .09f, .1f));
+
+        var driver = van.AddComponent<ServiceVanDriver>();
+        driver.bodyMin = body.min;
+        driver.bodyMax = body.max;
+        driver.wheelPointsLocal = WheelPointsLocal(body);
+        driver.cargoMin = new Vector3(-1f, CargoFloor - .1f, -.75f);
+        driver.cargoMax = new Vector3(1f, 2.55f, 2.9f);
+        driver.driverSeat = driverSeat;
+        driver.passengerSeat = passengerSeat;
+        driver.steeringWheel = wheel.transform;
+        driver.navObstacle = obstacle;
+
+        var audio = van.AddComponent<VehicleAudio>();
+        audio.engine = van.AddComponent<AudioSource>();
+        audio.horn = van.AddComponent<AudioSource>();
+        foreach (var s in new[] { audio.engine, audio.horn }) { s.playOnAwake = false; s.spatialBlend = 1f; s.dopplerLevel = 1f; }
+        audio.engineBaseHz = 46f;
+        audio.hornLowHz = 360f;
+        audio.hornHighHz = 450f;
+        audio.referenceSpeed = driver.maxSpeed;
+        driver.sound = audio;
+        Debug.Log("Servis minibüsü sürüş: kütle " + VanMass + " kg, şasi " + ChassisWidth + " × " + ChassisHeight + " × " + (body.size.z - .8f).ToString("F2") + " m, NavMeshObstacle " + body.size.ToString("F2")
+            + ", koltuklar şoför " + driverSeat.localPosition.ToString("F2") + " yolcu " + passengerSeat.localPosition.ToString("F2") + ", direksiyon " + wheelCenter.ToString("F2") + " r " + wheelRadius.ToString("F2") + " normal " + wheelNormal.ToString("F2"));
+    }
+
+    // Blender karakter kök-yerel (X sol, Y arka, Z yukarı) → Unity karakter yerel (X sağ, Y yukarı, Z ön).
+    private static Vector3 CharacterLocal(Vector3 b) => new Vector3(-b.x, b.z, -b.y);
+
+    private static Dictionary<string, object> WheelRecord()
+    {
+        try
+        {
+            var meta = Bolum1Coordinates.LoadJson(Bolum1AnimBuilder.ClipsMetaPath);
+            return Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(Bolum1Coordinates.Obj(meta, "clips"), Bolum1AnimBuilder.DriveSeatedClip), "wheel");
+        }
+        catch { return null; }
+    }
+
+    private static Vector3 WheelMeta(string key, Vector3 fallback)
+    {
+        var w = WheelRecord();
+        try { return w != null && w.ContainsKey(key) ? Bolum1Coordinates.Vec3(w[key]) : fallback; } catch { return fallback; }
+    }
+
+    private static float WheelRadiusMeta(float fallback)
+    {
+        var w = WheelRecord();
+        try { return w != null && w.ContainsKey("radius_m") ? Convert.ToSingle(w["radius_m"], System.Globalization.CultureInfo.InvariantCulture) : fallback; } catch { return fallback; }
     }
 
     private static void BuildRoofSignal(Transform van)

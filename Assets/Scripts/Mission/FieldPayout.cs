@@ -14,6 +14,7 @@ using UnityEngine;
 //   ekipman aşınması (%) = BaseEquipmentWear + koniye araç çarpması × WearPerConeHit
 //              + fırlatılan ekipman × WearPerEquipmentThrow + hırsızdan geri alınan ekipman × WearPerEquipmentRecovered
 //   araç aşınması (%)    = gidiş-dönüş km × VehicleWearPerKm + sahada geçen dakika × VehicleWearPerFieldMinute
+//              + sürüş hasarı (ServiceVanDriver.Damage: trafik çarpması vanRamDamage, korkuluk / kaya teması hıza göre)
 //   kayıp (consumedItemUids) = çalınan / hırsız kamyonetinde kalan / uçuruma düşüp yok olan ekipman
 // Çalınan EKİPMAN gidere ayrıca yazılmaz: kaybolduğu için depodan düşer (yeniden almak zaten masraf).
 // CompanyRuntime.ReturnFromField: başarıda iş bedeli + bonus + sözleşme − gider; başarısızlıkta yalnız −gider; sonuç < 0 ise 0.
@@ -46,6 +47,7 @@ public static class FieldPayout
         public int equipmentRecovered;
         public List<string> lostEquipmentUids = new List<string>();
         public List<string> lostEquipmentNames = new List<string>();
+        public float vanDamage;         // sürüş girişi: minibüsün aldığı hasar (%; trafik çarpması, korkuluk / kaya teması)
     }
 
     public sealed class Breakdown
@@ -53,6 +55,7 @@ public static class FieldPayout
         public bool succeeded;
         public int bonus, expenses, stolenGoodsCharge, missedAmbulanceCharge;
         public float equipmentWear, vehicleWear;
+        public float vanDamage;         // araç aşınmasının sürüş hasarından gelen payı (rapor satırı)
         public List<string> consumedItemUids = new List<string>();
         public List<string> lostNames = new List<string>();
         // Ofiste rapor onaylanınca kasaya girecek tutar (sözleşme bonusu hariç; CompanyRuntime ekler).
@@ -70,7 +73,8 @@ public static class FieldPayout
         b.equipmentWear = Mathf.Clamp(Round1(BaseEquipmentWear + i.coneHits * WearPerConeHit +
             i.equipmentThrows * WearPerEquipmentThrow + i.equipmentRecovered * WearPerEquipmentRecovered), 0f, 100f);
         b.vehicleWear = Mathf.Clamp(Round1(i.distanceKm * 2f * VehicleWearPerKm +
-            i.fieldSeconds / 60f * VehicleWearPerFieldMinute), 0f, 100f);
+            i.fieldSeconds / 60f * VehicleWearPerFieldMinute + Mathf.Max(0f, i.vanDamage)), 0f, 100f);
+        b.vanDamage = Round1(Mathf.Max(0f, i.vanDamage));
         b.consumedItemUids.AddRange(i.lostEquipmentUids);
         b.lostNames.AddRange(i.lostEquipmentNames);
         b.expectedPayout = Mathf.Max(0, (i.succeeded ? cap + b.bonus : 0) - b.expenses);
@@ -89,7 +93,8 @@ public static class FieldPayout
         lines.Add("Kurtarılan eşya bonusu: +" + Money(b.bonus));
         lines.Add("Giderler: −" + Money(b.expenses) + "  (çalınan eşya " + Money(b.stolenGoodsCharge) +
                   ", kaçırılan ambulans " + Money(b.missedAmbulanceCharge) + ")");
-        lines.Add("Ekipman aşınması %" + b.equipmentWear.ToString("0.#", Tr) + " · araç aşınması %" + b.vehicleWear.ToString("0.#", Tr));
+        lines.Add("Ekipman aşınması %" + b.equipmentWear.ToString("0.#", Tr) + " · araç aşınması %" + b.vehicleWear.ToString("0.#", Tr)
+                  + (b.vanDamage > 0f ? " (sürüş hasarı %" + b.vanDamage.ToString("0.#", Tr) + ")" : ""));
         lines.Add(b.lostNames.Count > 0 ? "Kaybolan ekipman: " + string.Join(", ", b.lostNames) : "Kaybolan ekipman yok");
         lines.Add("Kasaya (rapor onayında): " + Money(b.expectedPayout));
         return lines;

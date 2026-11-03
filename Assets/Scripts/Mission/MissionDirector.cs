@@ -97,9 +97,12 @@ public class MissionDirector : MonoBehaviour
         TravelTime = follower.TravelTime(0f, StopDistance, follower.cruiseSpeed, Time.fixedDeltaTime);
     }
 
+    // Sürüş girişi (DriveIntro): ekip minibüsten inene kadar görev saati durur (ambulans takvimi ve saha süresi işlemez).
+    public bool ClockHeld { get; set; }
+
     private void FixedUpdate()
     {
-        if (active == null) return;
+        if (active == null || ClockHeld) return;
         Elapsed += Time.fixedDeltaTime;
         if (IsFinished) return; // görev bitince yeni ambulans gelmez
 

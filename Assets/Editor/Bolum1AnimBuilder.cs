@@ -172,10 +172,60 @@ public static class Bolum1AnimBuilder
             t.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
         }
         AddRescueStates(sm, loops);
+        AddSeatedStates(ac, sm, loops);
         EditorUtility.SetDirty(ac);
         Line("Ekip Animator'ı: " + AssetDatabase.GetAssetPath(ac) + " → " + string.Join(", ", sm.states.Select(s => s.state.name))
             + "; taşıma döngüleri sedye " + carryStretcherSpeed.ToString(Inv) + " m/sn, koni " + walkSpeed.ToString(Inv) + " m/sn'de ×" + CarryWalkScale.ToString(Inv)
             + ", beklemede ×" + CarryIdleScale.ToString(Inv));
+    }
+
+    // =====================================================================================
+    // Sürüş girişi: minibüste oturma döngüleri (Drive_Seated şoför, Passenger_Seated yolcu; ServiceVanDriver "Seated" 1 / 2)
+    // =====================================================================================
+
+    // KLİP BAĞLAMA NOKTASI (tek yer): oturma klipleri buradan bağlanır. Assets/Animations/Procedural/<ad>.fbx yoksa yer tutucu
+    // Patient_SitDazed kullanılır; gerçek klip gelince FBX import (ProceduralAnimImportSettings: ClipNames + LoopClips) ve
+    // kurucuyu yeniden çalıştırmak yeter. Direksiyon ölçüleri clips_meta.json "Drive_Seated".wheel kaydından (Bolum1ServiceVan).
+    public const string DriveSeatedClip = "Drive_Seated", PassengerSeatedClip = "Passenger_Seated", SeatedPlaceholderClip = "Patient_SitDazed";
+
+    public static AnimationClip SeatedClip(string name, out bool placeholder)
+    {
+        var clip = ProceduralAnimImportSettings.LoadClip(name);
+        placeholder = clip == null;
+        return clip != null ? clip : Clip(SeatedPlaceholderClip);
+    }
+
+    private static void AddSeatedStates(AnimatorController ac, AnimatorStateMachine sm, AnimatorState[] loops)
+    {
+        ac.AddParameter(ServiceVanDriver.ParamSeated, AnimatorControllerParameterType.Int);
+        var drive = sm.AddState(ServiceVanDriver.StateDriveSeated, new Vector3(820f, 0f));
+        drive.motion = SeatedClip(DriveSeatedClip, out bool drivePlaceholder);
+        var passenger = sm.AddState(ServiceVanDriver.StatePassengerSeated, new Vector3(820f, 60f));
+        passenger.motion = SeatedClip(PassengerSeatedClip, out bool passengerPlaceholder);
+        foreach (var pair in new[] { (drive, 1), (passenger, 2) })
+        {
+            var enter = sm.AddAnyStateTransition(pair.Item1);
+            enter.canTransitionToSelf = false;
+            enter.hasExitTime = false;
+            enter.duration = 0.2f;
+            enter.hasFixedDuration = true;
+            enter.AddCondition(AnimatorConditionMode.Equals, pair.Item2, ServiceVanDriver.ParamSeated);
+            for (int c = 0; c < loops.Length; c++)
+            {
+                var back = pair.Item1.AddTransition(loops[c]);
+                back.hasExitTime = false;
+                back.duration = 0.2f;
+                back.hasFixedDuration = true;
+                back.AddCondition(AnimatorConditionMode.Equals, 0, ServiceVanDriver.ParamSeated);
+                back.AddCondition(AnimatorConditionMode.Equals, c, CrewAnimation.ParamCarry);
+            }
+        }
+        bool driveLoops = AnimationUtility.GetAnimationClipSettings((AnimationClip)drive.motion).loopTime;
+        bool passengerLoops = AnimationUtility.GetAnimationClipSettings((AnimationClip)passenger.motion).loopTime;
+        Line("Oturma döngüleri: " + ServiceVanDriver.StateDriveSeated + " ← " + drive.motion.name + (drivePlaceholder ? " (YER TUTUCU)" : "") + " döngü " + driveLoops
+            + "; " + ServiceVanDriver.StatePassengerSeated + " ← " + passenger.motion.name + (passengerPlaceholder ? " (YER TUTUCU)" : "") + " döngü " + passengerLoops
+            + "; parametre " + ServiceVanDriver.ParamSeated + " (0 yok, 1 şoför, 2 yolcu)");
+        if (!driveLoops || !passengerLoops) Debug.LogWarning("Oturma klipleri döngü değil: ProceduralAnimImportSettings.LoopClips'e bakın.");
     }
 
     // Sırtta taşıma yürüyüş hızı (Piggyback_Walk target_speed_mps).

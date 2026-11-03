@@ -32,6 +32,9 @@ public class OrbitCamera : MonoBehaviour
     [Tooltip("Birinci şahısta yakın kırpma düzlemi (m); eller ve sedye kameraya yakın olduğundan küçük tutulur. Üçüncü şahısta kameranın kendi değeri geri gelir.")]
     public float firstPersonNearClip = 0.03f;
 
+    [Tooltip("Sürüş girişi: bu kökün altındaki collider'lar kamerayı yaklaştırmaz (oyuncu minibüsün içindeyken minibüsün kendisi engel sayılmaz). ServiceVanDriver yazar.")]
+    public Transform obstructionIgnoreRoot;
+
     public float Yaw { get; set; }
     public float Pitch { get; set; } = 18f;
 
@@ -165,6 +168,7 @@ public class OrbitCamera : MonoBehaviour
             for (int i = 0; i < n; i++)
             {
                 if (hits[i].distance <= 0f || GroundProbe.IsMovingGameObject(hits[i].collider)) continue;
+                if (obstructionIgnoreRoot != null && hits[i].collider.transform.IsChildOf(obstructionIgnoreRoot)) continue;
                 length = Mathf.Min(length, Mathf.Max(0.6f, hits[i].distance - 0.1f));
             }
             tpPosition = pivot + dir * length;

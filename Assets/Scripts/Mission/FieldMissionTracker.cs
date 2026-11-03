@@ -88,6 +88,8 @@ public sealed class FieldMissionTracker : MonoBehaviour
             else if (g.IsStolen || g.IsInVan) i.stolenGoodsValue += g.TotalValue;
         }
         if (mission != null) foreach (var p in mission.patients) if (p != null) i.missedAmbulances += p.MissedAmbulances;
+        // Sürüş girişi: minibüsün aldığı hasar araç aşınmasına eklenir (trafik çarpması, korkuluk / kaya teması)
+        if (ServiceVanDriver.Instance != null) i.vanDamage = ServiceVanDriver.Instance.Damage;
         foreach (var m in MappedGear)
         {
             i.coneHits += m.coneHits;

@@ -1,4 +1,4 @@
-# Prosedürel animasyon klipleri (r4b, 44 klip)
+# Prosedürel animasyon klipleri (r5, 46 klip)
 
 Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen klipler. Hepsi RescueCrew / Patient ortak
 31 kemikli `mixamorig:` iskeleti için, 30 fps, her karede anahtar (bake). Ton: Dear Passengers gibi abartılı ve komik.
@@ -246,3 +246,23 @@ Her şerit karesinin en parlak köşesi ≥150/255 olmalı. Verify hiçbir dosya
 
 `kabul/art_anims.sh` iki animasyon üretimini ve verify'ı içerir; ayrıca `git status` ve halat prop üreticilerini
 çalıştırır. Sadece r4b sahiplik izniyle çalışan işçi bu iki ek adımı çalıştıramaz; şef tam kabulü çalıştırmalıdır.
+
+## r5: servis minibüsünde oturma — şoför ve yolcu (2 klip)
+
+Bölüm 1 ekip servis minibüsünün içinde, yolda başlar: oyuncu şoför koltuğunda (`Drive_Seated`), yardımcı bot yolcu koltuğunda (`Passenger_Seated`). İkisi de RescueCrew (`SK_RescueCrew_Blue`), 30 fps, yerinde döngüdür.
+
+| Klip | Süre / kare | Döngü | Not |
+|---|---|---|---|
+| Drive_Seated | 2.0 sn / 61 | evet | Kalça koltuk yüksekliğinde (`z≈0.367`, koltuk yüzeyi `z=0.262`), ayaklar önde pedallarda; gövde hafif öne eğik, iki el saat 10 ve 2 konumunda direksiyon simidinde (±15° sağ-sol düzeltme), baş yola bakar ve hafif sarsılır (`wheel` meta) |
+| Passenger_Seated | 2.4 sn / 73 | evet | Aynı oturma yüksekliği (`z≈0.367`); sol el diz üstünde, sağ el kapı tutamağında (`(-0.275, -0.298, 0.642)` m); yol sarsıntısıyla gövde/baş yaylanır, ara sıra yan camdan dışarı bakar |
+
+### Direksiyon simidi hizalama (`clips_meta.json → wheel`) ve Unity import
+- **Rig / Bake Into Pose:** Humanoid, Copy From Other Avatar → `SK_RescueCrew_Blue`; Root Transform Rotation, Position Y ve Position XZ **Bake Into Pose açık, Based Upon Original**; **Loop Time + Loop Pose açık**.
+- **Simit (`Drive_Seated` → `wheel`):**
+  - `bones`: `["mixamorig:LeftHand", "mixamorig:RightHand"]`, `grip_point_hand_local_m`: `[0.0, 0.05, 0.0]` (avuç noktası = el kemiği başı + kemik yönünde 5 cm).
+  - `center_root_local_m`: `[0.0, -0.38, 0.67]` m — oturan kalçanın (`z≈0.367`) **0.38 m önünde, 0.303 m yukarısında** (`center_hips_offset_m: [0.0, -0.38, 0.303]`; chibi kol uzunluğu `0.317 m` erişimine göre ayarlı).
+  - `radius_m`: `0.17` m, `tilt_deg`: `25.0`° (simit düzlemi dikeyden 25° geriye yatık, normal `[0.0, 0.906, 0.423]`), `clock_angles_deg`: `{"Left": 60.0, "Right": -60.0}` (saat 10 ve 2), `steer_amplitude_deg`: `15.0`°.
+  - Nötr (t=0) avuç konumları `grip_neutral_root_local_m`: Sol `[0.147, -0.416, 0.747]`, Sağ `[-0.147, -0.416, 0.747]` m (Blender kök-yerel; Unity yerel karşılığı `(-x, z, -y)`).
+
+### r5 doğrulaması (verify)
+46 dosya. `Drive_Seated` ve `Passenger_Seated` için 30 fps, 31 kemik/bağ pozu, tam kare sayısı (61 ve 73), döngü ilk/son kare farkı < 0.5° (ve tam matris eşitliği), kalça yatay kayması < 2 cm, kol–gövde ve bacak–bacak içe girmeleri ≤ 3 cm; ayrıca `Drive_Seated` klibinde her karede iki elin (avuç noktası) `wheel` meta'sındaki simit çemberine 3B uzaklığı ≤ 3 cm (`check_wheel`).

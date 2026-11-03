@@ -75,6 +75,9 @@ CLIPS = [
     ('Thief_Punch', .8, False, True, False, 'thief'),
     ('Thief_Stunned', 1.2, True, True, False, 'thief'),
     ('Thief_ThrowInVan', .8, False, True, False, 'thief'),
+    # r5: servis minibüsünde oturma (şoför ve yolcu)
+    ('Drive_Seated', 2.0, True, True, False, 'RescueCrew'),
+    ('Passenger_Seated', 2.4, True, True, False, 'RescueCrew'),
 ]
 # Taşıma döngüleri: oyundaki hedef hız (m/sn) ve yere basma oranı. Ayak yerdeyken yerel olarak tam bu hızla
 # geriye kayar (stride = hız × basma oranı × süre); oynatma hızı 1.0 iken dünyada ayak kaymaz.
@@ -134,6 +137,10 @@ DESCRIPTIONS = {
     'Rope_Pull': 'Kazığın yanında, ayaklar açık, dizler kırık: halatı elden ele çeker; her çekişte gövde geriye kaykılır, dizler titrer.',
     'Carry_Stretcher_Front_Walk': 'Sedyenin ön ucu: kollar arkada, iki el kalçanın arkasında aşağıda sedye saplarında; gövde öne eğik, '
                                   'yük çeker gibi; Carry_Stretcher_Walk ile aynı ritimde sendeleyen paytak yürüyüş (1.4 m/sn).',
+    'Drive_Seated': 'Şoför koltuğunda oturuş: ayaklar önde pedallarda, gövde hafif öne eğik, iki el saat 10 ve 2 konumunda '
+                    'direksiyon simidinde (±15° sağ-sol düzeltme); baş yola bakar, hafif yol sarsıntısı.',
+    'Passenger_Seated': 'Yolcu koltuğunda oturuş: sol el dizde, sağ el kapı tutamağında; yol sarsıntısıyla gövde ve baş '
+                        'hafif yaylanır, ara sıra yan camdan dışarı bakar.',
 }
 PREVIEW = {'Patient_SitDazed_ArmSling': 'SK_Patient_Civilian'}
 
@@ -1583,6 +1590,115 @@ def combat_meta(name):
     return m
 
 
+# ---------------------------------------------------------------- r5: minibüste oturma (şoför ve yolcu)
+WHEEL_CENTER = (0.0, -0.38, 0.67)      # simit merkezi (kök yerel, m): kalçanın (z≈0.367) 0.38 m önünde, 0.303 m üstünde
+WHEEL_RADIUS = 0.17                    # simit yarıçapı (m)
+WHEEL_TILT = 25.0                      # simit düzlemi geriye yatıklığı (derece, +X pitch)
+WHEEL_STEER = 15.0                     # döngüde sağ-sol direksiyon düzeltme genliği (±derece)
+WHEEL_CLOCK = {'Left': 60.0, 'Right': -60.0}  # saat 10 (+60°) ve saat 2 (-60°) tutuş açıları
+WHEEL_CLIPS = {'Drive_Seated'}
+
+
+def wheel_point(angle_deg):
+    """Simit çemberi üzerinde tepe noktasından (saat 12) verilen açıda (derece, +sol/saat 10) kök yerel nokta."""
+    W = euler(pitch=WHEEL_TILT)
+    ang = math.radians(angle_deg)
+    return Vector(WHEEL_CENTER) + W @ Vector((WHEEL_RADIUS * math.sin(ang), 0.0, WHEEL_RADIUS * math.cos(ang)))
+
+
+def clip_drive_seated(P, t, T):
+    """Şoför koltuğunda sürüş döngüsü: eller saat 10 ve 2'de simitle ±15° döner, ayaklar pedallarda, yol sarsıntısı."""
+    ph = t / T
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    s2, c2 = math.sin(2 * TAU * ph), math.cos(2 * TAU * ph)
+    bob = 0.006 * s2
+    steer = WHEEL_STEER * s1
+    P.hips((0, 0, SIT_HZ + bob), pitch=4 + 1.5 * c2, roll=2.5 * s1, yaw=1.5 * s1)
+    P.spine(pitch=12 + 2.0 * s2, roll=-3.5 * s1, yaw=2.0 * s1)
+    P.neck_head(pitch=-14 - 4.0 * s2 + 2.0 * c1, roll=3.0 * c1, yaw=6.0 * s1)
+    W = euler(pitch=WHEEL_TILT)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=2 + 1.5 * c2, fwd=16 - 2 * s * s1)
+        grip = wheel_point(s * 60.0 + steer)
+        d = (W @ Vector((-s * 0.25, -0.92, 0.28))).normalized()
+        P.arm_ik(side, grip - d * GRIP_POINT, pole=(s * 0.9, 0.3, -0.4), hand_dir=d)
+        P.fist(side, 0.85)
+    for s, side, off in ((1, 'Left', 0.0), (-1, 'Right', PI)):
+        pedal = math.sin(TAU * ph + off)
+        P.aim(side + 'UpLeg', (s * 0.13, -1, 0.04))
+        P.aim(side + 'Leg', (s * 0.04, -0.52 - 0.06 * pedal, -1))
+        P.orient(side + 'Foot', euler(-10 + 8 * pedal, 0, s * 10))
+
+
+def clip_passenger_seated(P, t, T):
+    """Yolcu koltuğunda oturuş: sol el dizde, sağ el kapı tutamağında; yol sarsıntısı ve camdan dışarı bakış."""
+    ph = t / T
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    s2, c2 = math.sin(2 * TAU * ph), math.cos(2 * TAU * ph)
+    s3 = math.sin(3 * TAU * ph)
+    bob = 0.008 * s2 + 0.004 * s3
+    P.hips((0, 0, SIT_HZ + bob), pitch=-4 + 2.5 * s2, roll=3.0 * s1, yaw=-2.0 * s1)
+    P.spine(pitch=8 + 3.0 * c2, roll=-4.0 * s1, yaw=3.0 * s1)
+    look_out = -18.0 * (1.0 - c1) + 10.0 * s1
+    P.neck_head(pitch=4 + 6.0 * s2 + 3.0 * c1, roll=5.0 * s1, yaw=look_out)
+    P.shrug('Left', up=-2 + 2.0 * c2, fwd=12)
+    P.arm_ik('Left', (0.21, -0.26, 0.60 + 0.01 * s2), pole=(1.0, 0.15, -0.2), hand_dir=(-0.15, -0.90, -0.40))
+    P.fist('Left', 0.4)
+    P.shrug('Right', up=3 + 2.0 * s2, fwd=10)
+    P.arm_ik('Right', (-0.27, -0.25, 0.63 + 0.008 * s2), pole=(-1.0, 0.2, -0.25), hand_dir=(-0.10, -0.95, 0.25))
+    P.fist('Right', 0.8)
+    sit_legs(P, ph)
+
+
+def wheel_meta(name):
+    rec = _GRIP_SAMPLES[name]
+    W = euler(pitch=WHEEL_TILT)
+    normal = W @ Vector((0, 1, 0))
+    wx = W @ Vector((1, 0, 0))
+    wz = W @ Vector((0, 0, 1))
+    center = Vector(WHEEL_CENTER)
+    hands, dirs, rim_err = {}, {}, {}
+    for side in ('Left', 'Right'):
+        pts = [p for p, _ in rec[side][:-1]]
+        hands[side] = sum(pts, Vector()) / len(pts)
+        dirs[side] = (sum((d for _, d in rec[side][:-1]), Vector()) / len(pts)).normalized()
+        errs = []
+        for p, _ in rec[side]:
+            v = p - center
+            axial = v.dot(normal)
+            radial = (v - normal * axial).length - WHEEL_RADIUS
+            errs.append(math.hypot(axial, radial))
+        rim_err[side] = max(errs)
+        print('WHEEL', name, side, tuple(round(x, 3) for x in rec[side][0][0]), 'max_rim_err=%.4f' % rim_err[side], flush=True)
+    r = lambda v: [round(x, 3) for x in v]
+    return {
+        'seat_surface_root_local_z': SEAT_Z,
+        'wheel': {
+            'bones': [PREFIX + 'LeftHand', PREFIX + 'RightHand'],
+            'grip_point_hand_local_m': [0.0, GRIP_POINT, 0.0],
+            'center_root_local_m': r(center),
+            'center_hips_offset_m': [round(center.x, 3), round(center.y, 3), round(center.z - (HIP_Z + SIT_HZ), 3)],
+            'radius_m': WHEEL_RADIUS,
+            'tilt_deg': WHEEL_TILT,
+            'normal_root_local': r(normal),
+            'right_axis_root_local': r(-wx),
+            'up_axis_root_local': r(wz),
+            'clock_angles_deg': dict(WHEEL_CLOCK),
+            'steer_amplitude_deg': WHEEL_STEER,
+            'grip_neutral_root_local_m': {'Left': r(rec['Left'][0][0]), 'Right': r(rec['Right'][0][0])},
+            'grip_mean_root_local_m': {'Left': r(hands['Left']), 'Right': r(hands['Right'])},
+            'hand_forward_root_local': {'Left': r(dirs['Left']), 'Right': r(dirs['Right'])},
+            'max_rim_distance_m': round(max(rim_err.values()), 4),
+            'note': ('Avuç noktası = el kemiği başı + kemik yönünde %.2f m. Simit merkezi kök yerel (%.2f, %.2f, %.2f) m '
+                     '(oturan kalçanın %.2f m önünde, %.3f m yukarısında; chibi kol erişimi 0.317 m için ayarlı), '
+                     'yarıçapı %.2f m, düzlemi dikeyden %.0f° geriye yatık (+X pitch). Eller saat 10 (+60°) ve saat 2 '
+                     '(-60°) konumunda simit çemberi üzerinde ±%.0f° birlikte döner.'
+                     % (GRIP_POINT, center.x, center.y, center.z, -center.y,
+                        center.z - (HIP_Z + SIT_HZ), WHEEL_RADIUS, WHEEL_TILT, WHEEL_STEER))
+        }
+    }
+
+
 CLIP_FUNCS = {
     'Push_Shove': clip_shove,
     'Tackle_Dive': clip_tackle,
@@ -1628,6 +1744,8 @@ CLIP_FUNCS = {
     'Piggyback_PutDown': clip_piggy_putdown,
     'Rope_Pull': clip_rope_pull,
     'Carry_Stretcher_Front_Walk': clip_carry_stretcher_front,
+    'Drive_Seated': clip_drive_seated,
+    'Passenger_Seated': clip_passenger_seated,
 }
 
 # ---------------------------------------------------------------- aksiyon / export
@@ -1668,7 +1786,7 @@ def make_action(P, name, duration):
         fn(P, t, duration)
         if name in COIL_CLIPS:
             sample_coil(P, name, f)
-        if name in GRIP_CLIPS:
+        if name in GRIP_CLIPS or name in WHEEL_CLIPS:
             sample_grip(P, name)
         for pb in rig.pose.bones:
             q = pb.rotation_quaternion.copy()
@@ -1850,7 +1968,7 @@ def on_wall(name):
 
 def strip_props(name, props):
     """Yalnız önizleme için sahne parçaları (FBX'e girmez): koltuk, kaya duvarı, halat, kazık."""
-    if name.startswith('Patient_Sit') or name == 'Patient_DraggedOut':
+    if name.startswith('Patient_Sit') or name == 'Patient_DraggedOut' or name in ('Drive_Seated', 'Passenger_Seated'):
         prop_box('Seat', (-0.27, -0.17, SEAT_Z - 0.08), (0.27, 0.16, SEAT_Z), SEAT, props)
         if name != 'Patient_DraggedOut':
             prop_box('SeatBack', (-0.27, 0.17, SEAT_Z - 0.08), (0.27, 0.25, 0.86), SEAT, props)
@@ -1891,7 +2009,7 @@ def strip_view(name, cam):
         return (480, 340)
     elif name == 'Extract_Pull':
         look(cam, (3.4, -1.2, 1.3), (0, -0.12, 0.72), 2.0)
-    elif name.startswith('Patient_Sit'):
+    elif name.startswith('Patient_Sit') or name in ('Drive_Seated', 'Passenger_Seated'):
         look(cam, (2.6, -3.6, 1.3), (0, 0, 0.6), 1.7)
     elif name == 'Piggyback_Rope_Climb':
         look(cam, (3.3, 1.4, 1.3), (0, -0.05, 0.75), 2.1)
@@ -2066,6 +2184,8 @@ def rope_meta(name):
 EXTRA_META = {
     'Patient_SitDazed': lambda: {'seat_surface_root_local_z': SEAT_Z},
     'Patient_SitDazed_ArmSling': lambda: {'seat_surface_root_local_z': SEAT_Z},
+    'Passenger_Seated': lambda: {'seat_surface_root_local_z': SEAT_Z,
+                                 'door_grip_root_local_m': [-0.275, -0.298, 0.642]},
     'Patient_DraggedOut': lambda: {
         'hips_displacement_m': [0.0, 0.86, round(0.14 - HIP_Z - SIT_HZ, 3)],
         'start_pose': 'Patient_SitDazed t=0 (oturuş)',
@@ -2170,6 +2290,8 @@ def main():
             meta['clips'][name].update(coil_meta(name))
         if name in COMBAT_CLIPS:
             meta['clips'][name].update(combat_meta(name))
+        if name in WHEEL_CLIPS:
+            meta['clips'][name].update(wheel_meta(name))
         print('CLIP', name, n, digest, flush=True)
         P.reset()
     if only:

@@ -40,6 +40,10 @@ COMBAT_EXPECTED = {
     'Thief_Run':(.4,True), 'Thief_Grab':(.8,False), 'Thief_Punch':(.8,False),
     'Thief_Stunned':(1.2,True), 'Thief_ThrowInVan':(.8,False)}
 EXPECTED.update(COMBAT_EXPECTED)
+SEATED_EXPECTED = {'Drive_Seated': (2.0, True), 'Passenger_Seated': (2.4, True)}
+EXPECTED.update(SEATED_EXPECTED)
+WHEEL_CLIPS = {'Drive_Seated'}
+WHEEL_LIMIT = 0.03
 TRANSITIONS = [('Tackle_Dive','Tackle_GetUp',2), ('Throw_Aim','Throw_Release',2),
                ('Thief_Grab','Thief_Run_Carry',5)]
 # Sedye tutuşu: her karede avuç noktası (el kemiği başı + kemik yönünde GRIP_POINT) meta'daki sap noktasına
@@ -168,6 +172,39 @@ def check_grip(rig, f0, f1, name, hg):
     if worst > GRIP_LIMIT and name in GRIP_STRICT:
         errs.append('%s: el-sap uzakligi %.3f m (f%d)' % (name, worst, wf))
     return errs, (worst, ' grip=%.4fm(f%d) span=%.3f/%.3f' % (worst, wf, L.x - R.x, spacing))
+
+
+def check_wheel(rig, f0, f1, name, wh):
+    """Şoför ellerinin (avuç noktası) her karede simit çemberine uzaklığı ≤ WHEEL_LIMIT (0.03 m) olmalı."""
+    if not wh:
+        return ['%s: wheel meta yok' % name], (0.0, '')
+    errs = []
+    for key in ('center_root_local_m', 'radius_m', 'tilt_deg', 'bones', 'grip_point_hand_local_m'):
+        if key not in wh:
+            errs.append('%s: wheel meta %s eksik' % (name, key))
+    if errs:
+        return errs, (0.0, '')
+    center = Vector(wh['center_root_local_m'])
+    radius = float(wh['radius_m'])
+    tilt = float(wh['tilt_deg'])
+    normal = (Matrix.Rotation(math.radians(tilt), 3, 'X') @ Vector((0, 1, 0))).normalized()
+    scene = bpy.context.scene
+    mw = rig.matrix_world
+    worst, wf = 0.0, f0
+    for f in range(f0, f1 + 1):
+        scene.frame_set(f)
+        for side in ('Left', 'Right'):
+            pb = rig.pose.bones[PREFIX + side + 'Hand']
+            p = mw @ pb.head + (mw.to_3x3() @ pb.matrix.col[1].xyz).normalized() * GRIP_POINT
+            v = p - center
+            axial = v.dot(normal)
+            radial = (v - normal * axial).length - radius
+            d = math.hypot(axial, radial)
+            if d > worst:
+                worst, wf = d, f
+    if worst > WHEEL_LIMIT:
+        errs.append('%s: el-simit cemberi uzakligi %.3f m (f%d)' % (name, worst, wf))
+    return errs, (worst, ' wheel=%.4fm(f%d) r=%.2f' % (worst, wf, radius))
 
 
 def short(name):
@@ -652,7 +689,7 @@ def main():
             want = int(round(duration * FPS)) + 1
             if abs(n - want) > 2:
                 errors.append('%s: kare sayisi %d (beklenen %d)' % (name, n, want))
-            if name in COIL_CLIPS | COMBAT_EXPECTED.keys() and n != want:
+            if name in COIL_CLIPS | COMBAT_EXPECTED.keys() | SEATED_EXPECTED.keys() and n != want:
                 errors.append(name+': yeni klip kare sayisi tam eslesmiyor')
             if n < 2:
                 errors.append('%s: tek kare' % name)
@@ -689,7 +726,7 @@ def main():
             if name in COIL_CLIPS:
                 check_coil_meta(rig,name,m,n,errors)
                 check_strip(name,errors)
-            if name in COIL_CLIPS | COMBAT_EXPECTED.keys():
+            if name in COIL_CLIPS | COMBAT_EXPECTED.keys() | SEATED_EXPECTED.keys():
                 if loop:
                     scene.frame_set(f0)
                     first = {b.name:b.matrix.copy() for b in rig.pose.bones}
@@ -726,6 +763,12 @@ def main():
                 if gtxt[0] > worst_all['grip'][0]:
                     worst_all['grip'] = (gtxt[0], name)
                 fslide += gtxt[1]
+            if name in WHEEL_CLIPS:
+                werr, wtxt = check_wheel(rig, f0, f1, name, m.get('wheel'))
+                errors.extend(werr)
+                if wtxt[0] > worst_all['grip'][0]:
+                    worst_all['grip'] = (wtxt[0], name)
+                fslide += wtxt[1]
             if name == 'Patient_SitDazed_ArmSling':
                 if civilian is None:
                     civilian = Character(CIVILIAN)
@@ -761,7 +804,7 @@ def main():
                     if name=='Rope_Throw' and bf==m['release_frame']:
                         for side,p in hands.items():
                             wm=max(wm,(p-Vector(m['release_hand_root_local_m'][side])).length)
-                a, l = ch.penetration(cp, name in COIL_CLIPS | COMBAT_EXPECTED.keys(),name=='Cabinet_TakeCoil',name=='Rope_TieStake')
+                a, l = ch.penetration(cp, name in COIL_CLIPS | COMBAT_EXPECTED.keys() | SEATED_EXPECTED.keys(),name=='Cabinet_TakeCoil',name=='Rope_TieStake')
                 ground_min = min(ground_min,ch.ground_min)
                 wc = max(wc,ch.coil_depth)
                 if name=='Cabinet_TakeCoil':

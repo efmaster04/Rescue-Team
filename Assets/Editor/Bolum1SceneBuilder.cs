@@ -148,6 +148,10 @@ public static class Bolum1SceneBuilder
         // 10) U4: hırsız dalgaları (kamyonet durağı, yönetmen, rampa ara noktaları), oyuncu savunması, tavan valizleri.
         Bolum1ThiefBuilder.SetupScene(markers, minivan, truck, GameObject.Find(CharacterName));
 
+        // 11) Sürüş girişi: park alanı (banket, sarı çerçeve), minibüs sürücüsünün bağlantıları, Play'de yola ışınlayan DriveIntro.
+        //     Sahne dosyasında minibüs park pozunda kalır; sürüş yalnız Play'de başlar.
+        Bolum1DriveBuilder.SetupScene(markers, truck, GameObject.Find(CharacterName));
+
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath))
             throw new Exception("Sahne kaydedilemedi: " + ScenePath);
