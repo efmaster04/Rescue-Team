@@ -22,6 +22,37 @@ public static partial class Bolum1AnimVerify
     private const float E2GripTolerance = 0.03f;
     private static readonly List<Vector3> e2Banket = new List<Vector3>();
 
+    // Banket (sedye yeri) örnek noktaları. Sedyeler eski çekicide yerde (arkasında) dururdu, servis minibüsünde yük
+    // zeminindedir; "banket" örnekleri bu yüzden sedye konumu değil, aracın arka açıklığı önündeki zemindir (sedyelerin
+    // indirildiği yer). Sabit koordinat yok: aracın gerçek arka ucundan türetilir, arka uç + geri yön × {0.6, 1.6, 2.6} m
+    // (eski çekicide sedyelerin yerde kapladığı aralık), yanlara ±0.52 m. Açık kapılar ve çekici modülü dâhil aracın
+    // collider'larına oyuncu kapsülüyle çakışan ya da altında zemin olmayan noktalar atılır.
+    private static void CollectBanketPoints()
+    {
+        e2Banket.Clear();
+        var van = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
+        Vector3 rear = Bolum1ServiceVan.RearEnd(van);
+        Vector3 back = -Flat(Bolum1ServiceVan.Forward(van)).normalized;
+        Vector3 side = Vector3.Cross(Vector3.up, back);
+        var vanColliders = new HashSet<Collider>(van.GetComponentsInChildren<Collider>());
+        var equipment = GameObject.Find(Bolum1ServiceVan.EquipmentName);
+        if (equipment != null) foreach (var c in equipment.GetComponentsInChildren<Collider>()) vanColliders.Add(c);
+        var dropped = new List<string>();
+        foreach (float d in new[] { 0.6f, 1.6f, 2.6f })
+            foreach (float lat in new[] { -0.52f, 0.52f })
+            {
+                Vector3 p = rear + back * d + side * lat;
+                if (!GroundProbe.Find(p + Vector3.up * 1.5f, 5f, out RaycastHit g)) { dropped.Add(V(p) + " zemin yok"); continue; }
+                // Oyuncu kapsülü (yarıçap 0.25, boy 1.5) + pay: burada araca değiyorsa nokta yürünebilir sayılmaz
+                var touching = Physics.OverlapCapsule(g.point + Vector3.up * 0.35f, g.point + Vector3.up * 1.4f, 0.3f, ~0, QueryTriggerInteraction.Ignore)
+                    .FirstOrDefault(c => vanColliders.Contains(c));
+                if (touching != null) { dropped.Add(V(g.point) + " araca değiyor: " + touching.name); continue; }
+                e2Banket.Add(g.point);
+            }
+        Line("    banket (sedye yeri): minibüs arka ucu " + V(rear) + ", geri yön " + V(back) + "; " + e2Banket.Count + " nokta"
+            + (dropped.Count > 0 ? ", atılan: " + string.Join("; ", dropped) : ""));
+    }
+
     private static StretcherHandIK HandIK(Component c) { return c.GetComponent<StretcherHandIK>(); }
 
     // El–sap uzaklığı (iki el, en kötüsü): avuç noktası (el kemiği + 5 cm) ↔ sedyenin sap borusundaki tutma noktası.
@@ -134,8 +165,7 @@ public static partial class Bolum1AnimVerify
     {
         // Batchmode'da şeffaf URP Lit varyantı eşzamansız derlenirken hiç çizilmiyordu (ölçüldü: cam görüntüde yoktu); eşzamanlı derle.
         ShaderUtil.allowAsyncCompilation = false;
-        e2Banket.Clear();
-        for (int i = 0; i < 2; i++) e2Banket.Add(Stretcher(i).transform.position);
+        CollectBanketPoints(); // banket (sedye yeri) örnekleri: U1-3a ve E2-2e
         yield return Seconds(0.3f);
         var van = GameObject.Find(Bolum1SceneBuilder.MinivanName);
         var seated = Mission.patients.Where(p => p.State == PatientState.InVehicle).ToList();
@@ -516,9 +546,7 @@ public static partial class Bolum1AnimVerify
             }
         groups.Add(new KeyValuePair<string, List<Vector3>>("yol kenarı", road));
         groups.Add(new KeyValuePair<string, List<Vector3>>("yol dışı şerit (+0.5 m)", shoulder));
-        var banket = new List<Vector3>();
-        foreach (var b in e2Banket) { banket.Add(b); banket.Add(b + Vector3.right * 1f); banket.Add(b + Vector3.left * 1f); }
-        groups.Add(new KeyValuePair<string, List<Vector3>>("banket (sedye yeri)", banket));
+        groups.Add(new KeyValuePair<string, List<Vector3>>("banket (sedye yeri)", new List<Vector3>(e2Banket))); // CollectBanketPoints: minibüs arka ucundan
         var vanBack = new List<Vector3>();
         var tail = MinivanTailgate.All.FirstOrDefault();
         if (tail != null)

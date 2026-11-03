@@ -852,8 +852,10 @@ public static class Bolum1AmbulanceBuilder
     public static StretcherController[] PlaceStretchers(GameObject truck, Transform parent)
     {
         var result = new List<StretcherController>();
-        Vector3 forward = Vector3.ProjectOnPlane(Bolum1ServiceVan.Forward(truck), Vector3.up).normalized;
-        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        // Sedye yük zeminine paralel durur: minibüs bankette birkaç derece eğik (pitch ~2.4°); dünya-dik koyulunca 2.1 m'lik
+        // kutunun alçak ucu zemin collider'ına giriyordu (1.05 m × tan 2.4° ≈ 4.4 cm > 2.5 cm boşluk).
+        Vector3 forward = Bolum1ServiceVan.Forward(truck);
+        Vector3 up = truck.transform.up;
         for (int i = 0; i < 2; i++)
         {
             var existing = GameObject.Find(StretcherNames[i]);
@@ -861,7 +863,7 @@ public static class Bolum1AmbulanceBuilder
             go.name = StretcherNames[i];
             go.transform.SetParent(parent, true);
             Vector3 at = truck.transform.TransformPoint(Bolum1ServiceVan.StretcherLocalPosition(i));
-            go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(forward, Vector3.up));
+            go.transform.SetPositionAndRotation(at, Quaternion.LookRotation(forward, up));
             PrefabUtility.RecordPrefabInstancePropertyModifications(go.transform);
             result.Add(go.GetComponent<StretcherController>());
             Line("Sedye " + go.name + ": minibüs yük zemininde " + V(at) + " (kök-yerel " + V(Bolum1ServiceVan.StretcherLocalPosition(i)) + ")");

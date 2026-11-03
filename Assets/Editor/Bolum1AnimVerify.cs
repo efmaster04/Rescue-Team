@@ -51,6 +51,12 @@ public static partial class Bolum1AnimVerify
     public static void RunU4Menu() { Begin(false, "u4"); }
     public static void RunU4() { Begin(true, "u4"); }
 
+    // Servis minibüsü çevresi: yalnız düzeltme 8 (sedye yerleşimi), U1-3 (sırttan bırakma) ve E2-2 (eğim/banket) fazları
+    // (hızlı iterasyon; kabul tam Run ile). Batchmode: -executeMethod Bolum1AnimVerify.RunBanket
+    [MenuItem("Rescue Team/Bölüm 1/Minibüs çevresi (düzeltme 8, U1-3, E2-2): Doğrula")]
+    public static void RunBanketMenu() { Begin(false, "banket"); }
+    public static void RunBanket() { Begin(true, "banket"); }
+
     private const string ModeKey = "Bolum1AnimVerify.Mode";
 
     private static void Begin(bool batch, string mode = "")
@@ -218,7 +224,8 @@ public static partial class Bolum1AnimVerify
             report = new StringBuilder(SessionState.GetString(ReportKey, ""));
             allOk = SessionState.GetBool(OkKey, false);
             batchMode = SessionState.GetBool(BatchKey, true);
-            scenario = SessionState.GetString(ModeKey, "") == "u4" ? ScenarioU4Only() : Scenario();
+            string mode = SessionState.GetString(ModeKey, "");
+            scenario = mode == "u4" ? ScenarioU4Only() : mode == "banket" ? ScenarioBanketOnly() : Scenario();
             stack.Clear();
             stack.Push(scenario);
         }
@@ -507,6 +514,34 @@ public static partial class Bolum1AnimVerify
     {
         yield return null;
         Line("MOD: yalnız U4 (hızlı kurulum: halat ForceReady, hastalar patikaya)");
+        yield return QuickSetup();
+        yield return PhaseU4();
+    }
+
+    // Minibüs çevresi hızlı kurulum: düzeltme 8 (sedyeler ilk yerleşimde), U1-3 sırttan bırakma, E2-2 eğim/banket.
+    private static IEnumerator ScenarioBanketOnly()
+    {
+        yield return null;
+        Line("MOD: yalnız minibüs çevresi (hızlı kurulum: halat ForceReady, hastalar patikaya; düzeltme 8 + U1-3 + E2-2)");
+        yield return QuickSetup();
+        CollectBanketPoints();
+        yield return PhaseCorrections();
+        ParkCarriersOffLane();
+        var bot = Bot;
+        bool savedAssist = bot.assistEnabled;
+        bot.assistEnabled = false;
+        Transform savedCamera = Player.cameraTransform;
+        Player.cameraTransform = null;
+        yield return PhaseU1PutDown(Rope);
+        bot.assistEnabled = savedAssist;
+        Player.cameraTransform = savedCamera;
+        ParkCarriersOffLane();
+        yield return PhaseE2Slope();
+    }
+
+    // Önceki fazların bıraktığı durum kısa yoldan: halat hazır, bagaj kapısı açık, hastalar patikada, taşıyıcılar şerit dışında.
+    private static IEnumerator QuickSetup()
+    {
         player = GameObject.Find(Bolum1SceneBuilder.CharacterName).GetComponent<ThirdPersonPlayer>();
         Player.GetComponent<PlayerInputReader>().enabled = false;
         var mission = Mission;
@@ -525,7 +560,6 @@ public static partial class Bolum1AnimVerify
         parkPosition = tourist.Position + new Vector3(-2.5f, 0f, -1.8f);
         ParkCarriersOffLane();
         yield return Seconds(1f);
-        yield return PhaseU4();
     }
 
     private static TrafficSettings TestSettings(bool natural)
@@ -613,8 +647,15 @@ public static partial class Bolum1AnimVerify
         var tourist = PatientNamed("Tourist");
         var s1 = Stretcher(0);
         yield return PutPatientOnStretcher(tourist, s1);
+        // Groan'a geçiş 0.5 sn; el sallama anahtarı (rastgele 5–10 sn) alınmadan hemen önce düşmüşse süren Groan→HelpWave geçişi
+        // kesilmez (interruption none) ve Groan en fazla ~1 sn sonra görünür. Sabit 0.7 sn yerine geçişlerin bitmesi beklenir (≤ 2 sn).
+        float groanStart = Time.time;
+        Func<bool> groanNow = () => tourist.State == PatientState.OnStretcher && !tourist.Waving
+            && !tourist.animator.IsInTransition(0) && tourist.animator.GetCurrentAnimatorStateInfo(0).IsName("Groan");
         yield return Seconds(0.7f);
-        bool groanOnStretcher = tourist.State == PatientState.OnStretcher && !tourist.Waving && tourist.animator.GetCurrentAnimatorStateInfo(0).IsName("Groan");
+        yield return (Func<bool>)(() => groanNow() || Time.time - groanStart > 2f);
+        bool groanOnStretcher = groanNow();
+        float groanAfter = Time.time - groanStart;
         // Sedyeyi açık patikaya döndür, oyuncu arka sapa
         TeleportPlayerToHandle(s1, false);
         yield return null; yield return null;
@@ -667,7 +708,8 @@ public static partial class Bolum1AnimVerify
         Check("(b1) sedye al → PickUp sonra Carry_Stretcher_Walk (oyuncu ve bot; hız 0'da yavaşlatılmış), bırak → PutDown → hareket; sedyedeki hasta Lying_Groan",
             pickUp && botPickUp && carryIdle && raised && walkState && carryAfter && putDown && botPutDown && backToLoco && groanOnStretcher && capturedCarry,
             "PickUp oyuncu/bot " + pickUp + "/" + botPickUp + "; taşıma beklemesi " + carryIdle + " (sedye kalktı " + raised + "); yürürken CarryStretcher " + walkState
-            + "; durunca " + carryAfter + "; PutDown oyuncu/bot " + putDown + "/" + botPutDown + "; sonra Locomotion " + backToLoco + "; sedyedeki hasta Groan " + groanOnStretcher);
+            + "; durunca " + carryAfter + "; PutDown oyuncu/bot " + putDown + "/" + botPutDown + "; sonra Locomotion " + backToLoco + "; sedyedeki hasta Groan " + groanOnStretcher
+            + " (" + groanAfter.ToString("F2", Inv) + " sn sonra)");
         CheckFootSlide("(b1s) sedye taşırken hız " + Player.carryStretcherSpeed.ToString("F1", Inv) + " m/sn ve ayak kayması", meter,
             Mathf.Abs(maxSpeed - Player.carryStretcherSpeed) < 0.15f, "en yüksek yatay hız " + maxSpeed.ToString("F2", Inv) + " m/sn; E4 yön kilidi engelleme "
             + (Player.CarryTurnBlocks + Player.CarryMoveBlocks - guardBlocks0) + " kare" + (guardReason != "" ? " (ilk: " + guardReason + ")" : ""));

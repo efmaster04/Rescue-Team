@@ -201,7 +201,7 @@ public static partial class Bolum1AnimVerify
         var p = Mission.patients.FirstOrDefault(x => x.State == PatientState.LyingGround) ?? Mission.patients[0];
         p.onLedge = false;
 
-        // Yürünebilir noktalar: patika (markers), yol kenarı (şeritler), banket (sedye yerleri ±1 m)
+        // Yürünebilir noktalar: patika (markers), yol kenarı (şeritler), banket (minibüsün arkasında sedye yeri, CollectBanketPoints)
         var markers = Bolum1Coordinates.LoadJson(Bolum1Coordinates.MarkersPath);
         var probes = Bolum1Coordinates.Obj(markers, "geometry_probes");
         var pool = new List<KeyValuePair<string, Vector3>>();
@@ -213,7 +213,7 @@ public static partial class Bolum1AnimVerify
                 pool.Add(new KeyValuePair<string, Vector3>("yol", lane.PointAt(sl) + lane.RightAt(sl) * (lane.width * 0.5f - 0.3f)));
                 pool.Add(new KeyValuePair<string, Vector3>("yol", lane.PointAt(sl)));
             }
-        foreach (var b in e2Banket) { pool.Add(new KeyValuePair<string, Vector3>("banket", b)); pool.Add(new KeyValuePair<string, Vector3>("banket", b + Vector3.right)); pool.Add(new KeyValuePair<string, Vector3>("banket", b + Vector3.left)); }
+        foreach (var b in e2Banket) pool.Add(new KeyValuePair<string, Vector3>("banket", b));
         var walkable = new List<KeyValuePair<string, Vector3>>();
         foreach (var kv in pool)
         {
