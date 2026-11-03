@@ -580,8 +580,9 @@ public static partial class Bolum1AnimVerify
         RestoreLoot(hidden);
         yield return null;
         var s0 = Stretcher(0);
-        TeleportPlayerToHandle(s0, false);
+        TeleportPlayerToHandle(s0, false); // sedye minibüsün yük zemininde: arka sapın 0.55 m gerisinden (dolap kapağı da menzilde)
         yield return null; yield return null;
+        string stretcherHint = Interaction.CurrentHint;
         Interaction.Interact();
         yield return Seconds(0.3f);
         bool holdingStretcher = Player.HeldStretcher == s0;
@@ -591,7 +592,7 @@ public static partial class Bolum1AnimVerify
         combat.SetThrowHeld(false);
         Interaction.Interact(); // bırak
         yield return Seconds(0.3f);
-        Note("sedye taşırken saldırı yok", holdingStretcher && noAttack && noAim, "sedye elde " + holdingStretcher + ", sol tık reddedildi " + noAttack + ", nişan yok " + noAim);
+        Note("sedye taşırken saldırı yok", holdingStretcher && noAttack && noAim, "sapta ipucu \"" + stretcherHint + "\", sedye elde " + holdingStretcher + ", sol tık reddedildi " + noAttack + ", nişan yok " + noAim);
         Check("(U4-5) savunma: yumruk " + combat.settings.punchDamage.ToString(Inv) + " hasar (Thief_Punch, HitReact); sol tık Push_Shove → " + combat.settings.pushRange.ToString(Inv) + " m/" + combat.settings.pushAngle.ToString(Inv) + "° içindeki hırsız " + combat.settings.pushKnockback.ToString(Inv) + " m savrulur, " + combat.settings.pushStunSeconds.ToString(Inv) + " sn sersem, bekleme " + combat.settings.pushCooldown.ToString(Inv) + " sn; elden kapma; koşarken sol tık Tackle_Dive → " + combat.settings.tackleDistance.ToString(Inv) + " m kayma, hırsız " + combat.settings.tackleStunSeconds.ToString(Inv) + " sn sersem + eşyayı düşürür, Tackle_GetUp; sağ tık Throw_Aim/Release → " + combat.settings.throwSpeed.ToString(Inv) + " m/sn, isabet " + combat.settings.throwHitStunSeconds.ToString(Inv) + " sn, boşluğa düşen geri döner; Q Whistle_Blow → " + combat.settings.whistleRadius.ToString(Inv) + " m'de " + combat.settings.fearSeconds.ToString(Inv) + " sn korku (eşya bırakılmaz), bekleme " + combat.settings.whistleCooldown.ToString(Inv) + " sn + HUD; sedye taşırken yok",
             ok, string.Join("; ", parts));
         RestoreLoot(hidden);
@@ -628,7 +629,8 @@ public static partial class Bolum1AnimVerify
         tourist.LieOnGround(U3Ground(touristSpot + Vector3.forward * 1.5f, touristSpot.y), Vector3.right, Vector3.up);
         yield return null;
         bool empty = thief.IsStealable(s0Item);
-        Note("hastalı sedye çalınmaz / boş sedye çalınır", withPatient && empty, "hastalı " + !withPatient + ", boş " + empty);
+        bool s0Path = thief.PathTo(s0Item.Center, out float s0PathLen);
+        Note("hastalı sedye çalınmaz / boş sedye çalınır", withPatient && empty, "hastalı " + !withPatient + ", boş " + empty + " (hırsızdan NavMesh yolu " + s0Path + " " + M(s0PathLen) + ")");
         // Bağlı / atılmış halat çalınmaz
         var rope = Rope;
         var coilItem = rope.coil != null ? rope.coil.GetComponent<LootItem>() : null;

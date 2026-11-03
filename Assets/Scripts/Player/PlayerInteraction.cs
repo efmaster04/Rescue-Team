@@ -350,20 +350,22 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // ---- U2: çekici dolabı ve halat kangalı (yüz dönük, ≤ 1 m; koniden önce: dolabın önünde deckteki koni de menzilde olabilir) ----
+        // ---- U2: araç dolabı ve halat kangalı (yüz dönük, ≤ 1 m; koniden önce: dolabın önünde deckteki koni de menzilde olabilir) ----
+        // Servis minibüsünde dolap, Stretcher_01'in arka sapının hemen üstündedir (ikisi de arka açıklıktan erişilir): ikisi de
+        // menzildeyken yüzün daha doğrudan döndüğü hedef kazanır; yoksa o sedye yakından hiç tutulamaz (hep "Dolabı aç" çıkar).
         Vector3 fwd = player.transform.forward;
         foreach (var l in TowTruckLocker.All)
         {
             if (l == null) continue;
             // Kapak açık ve kangal içindeyse önce kangal hedeflenir
-            if (l.IsOpen && l.coil != null && l.coil.InLocker && l.coil.CanPickUp && l.PlayerOutside(me) && l.coil.CanInteract(me, fwd))
+            if (l.IsOpen && l.coil != null && l.coil.InLocker && l.coil.CanPickUp && l.PlayerOutside(me) && l.coil.CanInteract(me, fwd) && !HandleMoreInFront(me, fwd, l.coil.GripMid))
             {
                 targetCoil = l.coil;
                 action = Action.TakeCoil;
                 CurrentHint = HintTakeCoil;
                 return;
             }
-            if (l.CanInteract(me, fwd))
+            if (l.CanInteract(me, fwd) && !HandleMoreInFront(me, fwd, l.DoorCenter))
             {
                 targetLocker = l;
                 action = l.IsOpen ? Action.CloseLocker : Action.OpenLocker;
@@ -616,6 +618,32 @@ public class PlayerInteraction : MonoBehaviour
     {
         var item = s != null ? s.GetComponent<LootItem>() : null;
         return item != null && item.IsInVan;
+    }
+
+    // Tutulabilir bir sedye sapı (sap kuralıyla menzilde: ≤ grabRange, yükseklik, yüz dönük) verilen hedeften daha önde mi
+    // (yatay ileri yönle arasındaki açı daha küçük)? Dolap / kangal ile sedye sapı aynı yerden erişildiğinde öncelik için.
+    private bool HandleMoreInFront(Vector3 me, Vector3 fwd, Vector3 target)
+    {
+        Vector3 f = fwd; f.y = 0f;
+        if (f.sqrMagnitude < 1e-6f) return false;
+        Vector3 toTarget = target - me; toTarget.y = 0f;
+        float targetAngle = Vector3.Angle(f, toTarget);
+        foreach (var s in StretcherController.All)
+        {
+            if (s == null || InVan(s)) continue;
+            for (int i = 0; i < 2; i++)
+            {
+                bool front = i == 0;
+                if (!s.CanGrab(front)) continue;
+                Vector3 h = (front ? s.handleFront : s.handleRear).position;
+                Vector3 flat = h - me;
+                float dy = flat.y;
+                flat.y = 0f;
+                if (flat.magnitude > grabRange || dy > grabMaxHeight || dy < -1f || !Facing(h)) continue;
+                if (Vector3.Angle(f, flat) < targetAngle) return true;
+            }
+        }
+        return false;
     }
 
     // U4b: oyuncunun yakınında bagajı açık ve içinde eşya olan kamyonet; yüz arka tampona dönük.

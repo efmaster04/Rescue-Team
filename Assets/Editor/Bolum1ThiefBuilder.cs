@@ -709,6 +709,10 @@ public static class Bolum1ThiefBuilder
         if (props != null) Ignore(props.transform);
         var coil = UnityEngine.Object.FindAnyObjectByType<RopeCoil>();
         if (coil != null) Ignore(coil.transform);
+        // Servis minibüsü: gövde yolu kapatmaya devam eder ama yük zemini (yoldan 0.66 m yukarıda, basamak 0.5'ten yüksek)
+        // yürünmez alan olur. Yoksa yük bölümünde kopuk bir NavMesh adası oluşur: hırsız, içerideki sedyeye en yakın NavMesh
+        // noktası diye adayı örnekler, yol "kısmi" çıkar ve sedyeyi (yere indirildikten sonra bile 10 sn) ulaşılmaz sayar.
+        if (truck != null) markups.Add(new NavMeshBuildMarkup { root = truck.transform, overrideArea = true, area = NavMesh.GetAreaFromName("Not Walkable") });
         // Sınırlar: zemin + yol renderer sınırları (+ pay)
         Bounds bounds = new Bounds(Vector3.zero, Vector3.one);
         bool any = false;
