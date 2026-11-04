@@ -38,7 +38,10 @@ COMBAT_EXPECTED = {
     'Throw_Aim':(1.,True), 'Throw_Release':(.5,False), 'Whistle_Blow':(1.2,False),
     'HitReact':(.5,False), 'Thief_Sneak_Walk':(.6,True), 'Thief_Run_Carry':(.4,True),
     'Thief_Run':(.4,True), 'Thief_Grab':(.8,False), 'Thief_Punch':(.8,False),
-    'Thief_Stunned':(1.2,True), 'Thief_ThrowInVan':(.8,False)}
+    'Thief_Stunned':(1.2,True), 'Thief_ThrowInVan':(.8,False),
+    'Punch_Jab':(.5,False), 'Crouch_Idle':(2.,True), 'Crouch_Walk':(.8,True)}
+CROUCH_PUNCH_CLIPS = {'Punch_Jab', 'Crouch_Idle', 'Crouch_Walk'}
+JOINT_DEG_LIMIT = 150.0
 EXPECTED.update(COMBAT_EXPECTED)
 SEATED_EXPECTED = {'Drive_Seated': (2.0, True), 'Passenger_Seated': (2.4, True)}
 EXPECTED.update(SEATED_EXPECTED)
@@ -72,7 +75,8 @@ LIMIT = 0.03
 # Taşıma döngülerinin oyundaki hedef hızı (m/sn): oynatma 1.0'da ayak, yerdeyken adım başına bundan az kaymalı.
 TARGET_SPEED = {'Carry_Stretcher_Walk': 1.4, 'Carry_OneHand_Walk': 2.4, 'Piggyback_Walk': 1.2,
                 'Carry_Stretcher_Front_Walk': 1.4, 'Carry_Coil_Walk': 2.4,
-                'Thief_Sneak_Walk':1.6, 'Thief_Run_Carry':3.6, 'Thief_Run':3.6}
+                'Thief_Sneak_Walk':1.6, 'Thief_Run_Carry':3.6, 'Thief_Run':3.6,
+                'Crouch_Walk':1.2}
 FOOT_SLIDE_LIMIT = 0.03
 CONTACT_EPS = 0.015     # ayak bileği en alçak yüksekliğine bu kadar yakınsa yerde sayılır (kareler arası
                         # doğrusal dönüş karışımı basışta bileği ~7 mm oynatır; salınım bu bantta çok kısa kalır)
@@ -563,6 +567,8 @@ def check_coil_meta(rig, name, m, n, errors):
 def check_strip(name, errors):
     path = OUT/'renders'/(name+'_strip.png')
     if not path.exists():
+        if name in CROUCH_PUNCH_CLIPS:
+            return
         errors.append(name+': serit eksik')
         return
     img = bpy.data.images.load(str(path))
@@ -595,7 +601,7 @@ def check_combat_meta(name, m, n, errors):
     events = {'Push_Shove':{'hit_frame':9}, 'Tackle_Dive':{'hit_frame':12,'ground_frame':22},
         'Throw_Release':{'release_frame':8}, 'Whistle_Blow':{'blow_frames':[15,27]},
         'Thief_Grab':{'grab_frame':11}, 'Thief_Punch':{'hit_frame':14},
-        'Thief_ThrowInVan':{'release_frame':14}}
+        'Thief_ThrowInVan':{'release_frame':14}, 'Punch_Jab':{'hit_frame':7}}
     for key, value in events.get(name,{}).items():
         if m.get(key) != value or any(not 1 <= f <= n for f in (value if isinstance(value,list) else [value])):
             errors.append(name+': '+key+' hatali')
@@ -608,6 +614,50 @@ def check_combat_meta(name, m, n, errors):
         if (grip.get('bones') != {s:PREFIX+s+'Hand' for s in ('Left','Right')}
                 or grip.get('palm_offset_hand_local_m') != [0,.05,0]):
             errors.append(name+': loot_grip hatali')
+
+
+def check_crouch_punch(rig, f0, f1, name, m, hips, errors):
+    """Punch_Jab, Crouch_Idle ve Crouch_Walk için eklem açı sınırları, çömelme yüksekliği, sabit ayak ve vuruş karesi kontrolü."""
+    scene = bpy.context.scene
+    mw = rig.matrix_world
+    rest_rel = {pb.name: (pb.parent.bone.matrix_local.inverted() @ pb.bone.matrix_local).to_quaternion()
+                for pb in rig.pose.bones if pb.parent}
+    max_deg = 0.0
+    foot0 = {}
+    max_foot_drift = 0.0
+    hand_y = {}
+    for f in range(f0, f1 + 1):
+        scene.frame_set(f)
+        for pb in rig.pose.bones:
+            if not pb.parent:
+                continue
+            pose_rel = (pb.parent.matrix.inverted() @ pb.matrix).to_quaternion()
+            deg = math.degrees(rest_rel[pb.name].rotation_difference(pose_rel).angle)
+            max_deg = max(max_deg, deg)
+            if name in ('Crouch_Idle', 'Crouch_Walk') and pb.name in (PREFIX + 'LeftLeg', PREFIX + 'RightLeg'):
+                if not 25.0 <= deg <= 140.0:
+                    errors.append('%s: diz acisi sinir disi %.1f derece (f%d)' % (name, deg, f))
+        for side in ('Left', 'Right'):
+            fp = mw @ rig.pose.bones[PREFIX + side + 'Foot'].head
+            if f == f0:
+                foot0[side] = fp
+            else:
+                max_foot_drift = max(max_foot_drift, (fp - foot0[side]).length)
+        hand_y[f] = (mw @ rig.pose.bones[PREFIX + 'RightHand'].head).y
+    if max_deg > JOINT_DEG_LIMIT:
+        errors.append('%s: eklem donusu sinir disi %.1f derece' % (name, max_deg))
+    if name in ('Punch_Jab', 'Crouch_Idle') and max_foot_drift > 0.01:
+        errors.append('%s: yerinde klipte ayak kaymasi %.4f m' % (name, max_foot_drift))
+    if name in ('Crouch_Idle', 'Crouch_Walk'):
+        zmin, zmax = min(p.z for p in hips), max(p.z for p in hips)
+        if zmin < 0.26 or zmax > 0.35:
+            errors.append('%s: comelme kalca yuksekligi sinir disi %.3f..%.3f m' % (name, zmin, zmax))
+    if name == 'Punch_Jab':
+        hf = f0 + int(m.get('hit_frame', 1)) - 1
+        best_y = min(hand_y.values())
+        if hand_y.get(hf, 0.0) > -0.35 or abs(hand_y.get(hf, 0.0) - best_y) > 0.002:
+            errors.append('%s: hit_frame (%d) en ileri uzanma karesi degil (y=%.4f vs min=%.4f)' % (
+                name, m.get('hit_frame', -1), hand_y.get(hf, 0.0), best_y))
 
 
 def check_transitions(errors, only):
@@ -713,6 +763,8 @@ def main():
             if name in COMBAT_EXPECTED:
                 check_combat_meta(name,m,n,errors)
                 check_strip(name,errors)
+                if name in CROUCH_PUNCH_CLIPS:
+                    check_crouch_punch(rig, f0, f1, name, m, hips, errors)
                 if slide > .0001:
                     errors.append(name+': yeni klip yatay kalca hareketi sifir degil')
                 if name == 'Tackle_Dive':
@@ -726,6 +778,8 @@ def main():
             if name in COIL_CLIPS:
                 check_coil_meta(rig,name,m,n,errors)
                 check_strip(name,errors)
+                if name in CROUCH_PUNCH_CLIPS:
+                    check_crouch_punch(rig, f0, f1, name, m, hips, errors)
             if name in COIL_CLIPS | COMBAT_EXPECTED.keys() | SEATED_EXPECTED.keys():
                 if loop:
                     scene.frame_set(f0)
