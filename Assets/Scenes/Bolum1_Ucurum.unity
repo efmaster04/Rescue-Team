@@ -2207,7 +2207,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e8e2f292cfd95a34cb2099aaf4c0c4d2, type: 2}
+  - {fileID: 2100000, guid: 5c4d1c03980f1a84b8984c0c9cc39d57, type: 2}
   - {fileID: 2100000, guid: e6f67fc9277caf047967ac0d486106fe, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -6377,7 +6377,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e8e2f292cfd95a34cb2099aaf4c0c4d2, type: 2}
+  - {fileID: 2100000, guid: 5c4d1c03980f1a84b8984c0c9cc39d57, type: 2}
   - {fileID: 2100000, guid: e6f67fc9277caf047967ac0d486106fe, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -8200,7 +8200,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e8e2f292cfd95a34cb2099aaf4c0c4d2, type: 2}
+  - {fileID: 2100000, guid: 5c4d1c03980f1a84b8984c0c9cc39d57, type: 2}
   - {fileID: 2100000, guid: e6f67fc9277caf047967ac0d486106fe, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -12324,7 +12324,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e8e2f292cfd95a34cb2099aaf4c0c4d2, type: 2}
+  - {fileID: 2100000, guid: 5c4d1c03980f1a84b8984c0c9cc39d57, type: 2}
   - {fileID: 2100000, guid: e6f67fc9277caf047967ac0d486106fe, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -13499,7 +13499,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e8e2f292cfd95a34cb2099aaf4c0c4d2, type: 2}
+  - {fileID: 2100000, guid: 5c4d1c03980f1a84b8984c0c9cc39d57, type: 2}
   - {fileID: 2100000, guid: e6f67fc9277caf047967ac0d486106fe, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -14430,17 +14430,37 @@ MonoBehaviour:
   acceleration: 4.5
   brakeDecel: 9
   coastDecel: 1.5
-  maxSteerDegPerSec: 55
-  steerSpeedRef: 6
-  lateralGripDecel: 8
   shovedLateralDecel: 2.5
   shovedForwardDecel: 3
-  groundGain: 10
-  maxGroundVelocity: 3
-  maxTurnRate: 240
+  maxSteerAngle: 40
+  highSpeedSteerAngle: 12
+  steerRateDegPerSec: 150
+  suspensionTravel: 0.3
+  suspensionSag: 0.08
+  suspensionDampingRatio: 0.5
+  forwardStiffness: 1.6
+  sidewaysStiffness: 2.2
+  shovedTireStiffness: 0.5
+  centerOfMassHeight: 0.5
+  centerOfMassZ: 0.2
+  uprightDeadbandDeg: 5
+  uprightSpring: 25
+  uprightDamping: 4
+  wheelRadiusFallback: 0.4
+  physicalShoveEnabled: 1
+  physicalShoveMinSpeed: 0.3
+  shovedHandbrake: 0.5
   maxShoveDistance: 6
   shoveProbeMargin: 0.4
   riderKnockSpeed: 2.5
+  fallBelowY: -60
+  boardRange: 2
+  botBoardRange: 12
+  exitLockoutSeconds: 0.5
+  doorSeconds: 0.6
+  driveFirstPersonPitch: 0
+  driveEyeUp: 0.08
+  driveEyeForward: 0.02
   impactSpeedThreshold: 2.5
   damagePerImpactSpeed: 2
   maxDamage: 100
@@ -16336,7 +16356,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e8e2f292cfd95a34cb2099aaf4c0c4d2, type: 2}
+  - {fileID: 2100000, guid: 5c4d1c03980f1a84b8984c0c9cc39d57, type: 2}
   - {fileID: 2100000, guid: e6f67fc9277caf047967ac0d486106fe, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
