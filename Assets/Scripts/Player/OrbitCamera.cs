@@ -20,6 +20,8 @@ using UnityEngine.InputSystem;
 //  - Engele yaklaşınca hızlı ama yumuşak içeri çekilme (iki küre: geniş "önsezi" küresi erken ve yumuşak çeker, dar küre duvarın
 //    içine girmeyi kesin engeller), engel kalkınca gecikmeli ve yavaş geri açılma. Gecikme engel kenarındaki ileri-geri titremeyi
 //    keser: açılma ancak hedef releaseDelay boyunca kesintisiz uzaktaysa başlar, başlayınca hedefe yumuşakça gider.
+//  - Eğilme (Ctrl): üçüncü şahıs pivotu crouchPivotDrop × CrouchAmount kadar yumuşakça alçalır (CurrentPivotHeight); birinci
+//    şahısta göz baş kemiğinde olduğundan eğilme animasyonuyla birlikte alçalır.
 [DefaultExecutionOrder(-50)]
 public class OrbitCamera : MonoBehaviour
 {
@@ -33,6 +35,8 @@ public class OrbitCamera : MonoBehaviour
     public float distance = 4.5f;
     [Tooltip("Bakılan nokta, hedefin ayak hizasından bu kadar yukarıda (m).")]
     public float pivotHeight = 1.3f;
+    [Tooltip("Hedef eğilince (ThirdPersonPlayer.CrouchAmount, yumuşak) pivot bu kadar alçalır (m). Birinci şahısta göz baş kemiğinden geldiği için kendiliğinden alçalır.")]
+    public float crouchPivotDrop = 0.25f;
     [Tooltip("Fare hassasiyeti (derece / piksel).")]
     public float sensitivity = 0.12f;
     public float minPitch = -20f, maxPitch = 70f;
@@ -89,6 +93,8 @@ public class OrbitCamera : MonoBehaviour
     public static bool IgnoreSavedMode;
 
     public ViewMode Mode { get; private set; } = ViewMode.ThirdPerson;
+    // Şu anki pivot yüksekliği (eğilme alçalması dahil; garaj köprüsünün etkileşim ışını da okur)
+    public float CurrentPivotHeight { get { return pivotHeight - (targetPlayer != null ? crouchPivotDrop * targetPlayer.CrouchAmount : 0f); } }
     // 0 = tamamen üçüncü şahıs, 1 = tamamen birinci şahıs (geçiş sırasında arada)
     public float Blend { get; private set; }
     public bool Transitioning { get { return Mode == ViewMode.FirstPerson ? Blend < 1f : Blend > 0f; } }
@@ -124,6 +130,7 @@ public class OrbitCamera : MonoBehaviour
     private float defaultNearClip = -1f;
     private float transitionStart = -1f;
     private Transform resolvedFor;
+    private ThirdPersonPlayer targetPlayer;
     private InputAction zoomAction;
     private float zoomVelocity;
     private float lengthVelocity;
@@ -265,7 +272,9 @@ public class OrbitCamera : MonoBehaviour
         if (target == resolvedFor) return;
         resolvedFor = target;
         Head = null;
+        targetPlayer = null;
         if (target == null) return;
+        targetPlayer = target.GetComponent<ThirdPersonPlayer>();
         var animator = target.GetComponentInChildren<Animator>();
         if (animator != null && animator.isHuman) Head = animator.GetBoneTransform(HumanBodyBones.Head);
         if (animator != null && target.GetComponent<FirstPersonBody>() == null) target.gameObject.AddComponent<FirstPersonBody>();
@@ -311,7 +320,7 @@ public class OrbitCamera : MonoBehaviour
     public Vector3 EyePoint()
     {
         Vector3 flatForward = Quaternion.Euler(0f, Yaw, 0f) * Vector3.forward;
-        Vector3 head = Head != null ? Head.position : target.position + Vector3.up * (pivotHeight + 0.3f);
+        Vector3 head = Head != null ? Head.position : target.position + Vector3.up * (CurrentPivotHeight + 0.3f);
         return head + Vector3.up * eyeUp + flatForward * eyeForward;
     }
 
@@ -419,7 +428,7 @@ public class OrbitCamera : MonoBehaviour
         {
             // Kamera ile hedef arasına giren büyük statik engel varsa yaklaş (IsObstruction: taşınan sedye, karakterler ve küçük
             // fizik nesneleri engel sayılmaz).
-            Vector3 pivot = target.position + Vector3.up * pivotHeight;
+            Vector3 pivot = target.position + Vector3.up * CurrentPivotHeight; // eğilince yumuşakça alçalır
             Vector3 dir = rot * Vector3.back;
             CurrentDistance = ThirdPersonLength(pivot, dir, dt);
             tpPosition = pivot + dir * CurrentDistance;

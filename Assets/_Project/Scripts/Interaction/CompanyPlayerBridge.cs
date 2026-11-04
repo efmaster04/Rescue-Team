@@ -131,7 +131,7 @@ namespace CompanySim
         {
             forward = viewCamera.transform.forward;
             Vector3 camPos = viewCamera.transform.position;
-            float pivotHeight = orbitCamera != null ? orbitCamera.pivotHeight : 1.3f;
+            float pivotHeight = orbitCamera != null ? orbitCamera.CurrentPivotHeight : 1.3f; // eğilince alçalan pivot
             Vector3 pivot = transform.position + Vector3.up * pivotHeight;
             float along = Mathf.Max(0f, Vector3.Dot(pivot - camPos, forward));
             return camPos + forward * along;
@@ -152,7 +152,9 @@ namespace CompanySim
             }
             else
             {
-                Vector3 tp = transform.TransformPoint(holdLocalThirdPerson + new Vector3(half.x * 0.3f, 0f, half.z));
+                // Eğikken (Ctrl) eşya gövdeyle birlikte alçalır
+                float crouchDrop = player != null ? player.CrouchBodyDrop : 0f;
+                Vector3 tp = transform.TransformPoint(holdLocalThirdPerson + new Vector3(half.x * 0.3f, -crouchDrop, half.z));
                 float blend = orbitCamera != null ? orbitCamera.Blend : 0f;
                 if (blend > 0f && viewCamera != null)
                 {

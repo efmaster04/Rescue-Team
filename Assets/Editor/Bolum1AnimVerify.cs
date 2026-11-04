@@ -130,9 +130,21 @@ public static partial class Bolum1AnimVerify
             CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate,
             CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow, // U2
             CrewAnimation.StateHitReact, // U3
-            CrewAnimation.StatePushShove, CrewAnimation.StateTackleDive, CrewAnimation.StateTackleGetUp, CrewAnimation.StateThrowAim, CrewAnimation.StateThrowRelease, CrewAnimation.StateWhistle }; // U4
+            CrewAnimation.StatePushShove, CrewAnimation.StateTackleDive, CrewAnimation.StateTackleGetUp, CrewAnimation.StateThrowAim, CrewAnimation.StateThrowRelease, CrewAnimation.StateWhistle, // U4
+            PlayerCombat.StatePunchJab }; // 2026-11-05: sol tık yumruk
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
+        // 2026-11-05: eğilme katmanı (Override, gövde + baş + bacak maskesi, Crouch_Idle ↔ Crouch_Walk; varsayılan ağırlık 0)
+        var crouchLayer = ac != null ? ac.layers.FirstOrDefault(l => l.name == ThirdPersonPlayer.CrouchLayerName) : null;
+        var crouchTree = crouchLayer != null && crouchLayer.stateMachine.defaultState != null ? crouchLayer.stateMachine.defaultState.motion as BlendTree : null;
+        var crouchMask = crouchLayer != null ? crouchLayer.avatarMask : null;
+        bool crouchOk = crouchLayer != null && crouchLayer.blendingMode == AnimatorLayerBlendingMode.Override && crouchLayer.defaultWeight == 0f && crouchMask != null
+            && crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Body) && crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg) && crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.RightLeg)
+            && !crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm) && !crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm)
+            && crouchTree != null && crouchTree.children.Length == 2 && crouchTree.children[0].motion != null && crouchTree.children[0].motion.name == "Crouch_Idle"
+            && crouchTree.children[1].motion != null && crouchTree.children[1].motion.name == "Crouch_Walk" && Mathf.Abs(crouchTree.children[1].threshold - 1.2f) < 0.01f;
+        if (!crouchOk) missing.Add("eğilme katmanı (" + (crouchLayer != null ? crouchLayer.name + " maske " + (crouchMask != null) + " ağaç " + (crouchTree != null) : "yok") + ")");
+        else have.Add("katman " + crouchLayer.name + " (Crouch_Idle ↔ Crouch_Walk 1.2)");
         var patients = Bolum1AmbulanceBuilder.PatientTypes.Select(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath(t))).ToList();
         var pinfo = patients.Select(p =>
         {

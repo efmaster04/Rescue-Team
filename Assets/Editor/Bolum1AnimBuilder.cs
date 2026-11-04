@@ -148,6 +148,8 @@ public static class Bolum1AnimBuilder
         }
         var release = OneShot(sm, CrewAnimation.StateThrowRelease, "Throw_Release", 1f, new Vector3(560f, 780f));
         ReturnByCarry(release, loops, 0.9f, 0.12f);
+        // 2026-11-05 (kullanıcı isteği): sol tık yumruk (Punch_Jab), Ctrl eğilme (Crouch katmanı; AddSeatedStates'ten sonra eklenir)
+        AddPunchState(sm, loops);
 
         // Kalkış: yalnız kodla (CrewAnimation.BeginGetUp → Animator.Play); geçiş ragdoll pozundan kodda yapılır.
         var getUp = OneShot(sm, CrewAnimation.StateGetUp, "GetUp_FromBack", 1f, new Vector3(560f, 300f));
@@ -173,10 +175,123 @@ public static class Bolum1AnimBuilder
         }
         AddRescueStates(sm, loops);
         AddSeatedStates(ac, sm, loops);
+        AddCrouchLayer(ac);
         EditorUtility.SetDirty(ac);
         Line("Ekip Animator'ı: " + AssetDatabase.GetAssetPath(ac) + " → " + string.Join(", ", sm.states.Select(s => s.state.name))
             + "; taşıma döngüleri sedye " + carryStretcherSpeed.ToString(Inv) + " m/sn, koni " + walkSpeed.ToString(Inv) + " m/sn'de ×" + CarryWalkScale.ToString(Inv)
             + ", beklemede ×" + CarryIdleScale.ToString(Inv));
+    }
+
+    // =====================================================================================
+    // Yumruk ve eğilme (kullanıcı isteği 2026-11-05: sol tık yumruk, sağ tık itme, Ctrl eğilme)
+    // =====================================================================================
+
+    public const string CrouchMaskPath = AnimationFolder + "/AM_Crew_Crouch.mask";
+    public const string CrouchStateName = "Crouch";
+    // Taşıma döngüleri Carry parametresi sırasıyla (AddCrewStates'teki loops dizisi)
+    private static readonly string[] LoopStateNames = { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryCone,
+        CrewAnimation.StateCarryPiggyback, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCoil };
+
+    // Punch_Jab: yalnız kodla (PlayerCombat → PlayAction); bitince taşımaya göre döngüye.
+    private static void AddPunchState(AnimatorStateMachine sm, AnimatorState[] loops)
+    {
+        var punch = OneShot(sm, PlayerCombat.StatePunchJab, "Punch_Jab", 1f, new Vector3(560f, 840f));
+        ReturnByCarry(punch, loops, 0.9f, 0.12f);
+    }
+
+    // Eğilme katmanı: Override, maske = gövde (kalça dahil) + baş + bacaklar (kollar ve parmaklar hariç). Tek durum: Speed ile
+    // Crouch_Idle (0) ↔ Crouch_Walk (target_speed_mps, 1.2 m/sn'de ×1: ayak kaymaz). Ağırlığı ThirdPersonPlayer her kare
+    // CrouchAmount ile yazar (varsayılan 0). Kollar taban katmandan gelir: eğikken yumruk / itme / nişan / taşıma pozu oynar.
+    private static void AddCrouchLayer(AnimatorController ac)
+    {
+        ac.AddLayer(ThirdPersonPlayer.CrouchLayerName);
+        var layers = ac.layers;
+        int i = layers.Length - 1;
+        layers[i].defaultWeight = 0f;
+        layers[i].blendingMode = AnimatorLayerBlendingMode.Override;
+        layers[i].avatarMask = CrouchMask();
+        layers[i].iKPass = false;
+        ac.layers = layers;
+        var csm = ac.layers[i].stateMachine;
+        float walk = MetaFloat("Crouch_Walk", "target_speed_mps", 1.2f);
+        var tree = new BlendTree { name = CrouchStateName + "_Blend", blendType = BlendTreeType.Simple1D, blendParameter = "Speed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
+        AssetDatabase.AddObjectToAsset(tree, ac);
+        tree.children = new[]
+        {
+            new ChildMotion { motion = Clip("Crouch_Idle"), threshold = 0f, timeScale = 1f },
+            new ChildMotion { motion = Clip("Crouch_Walk"), threshold = walk, timeScale = 1f },
+        };
+        var st = csm.AddState(CrouchStateName, new Vector3(300f, 120f));
+        st.motion = tree;
+        csm.defaultState = st;
+        Line("Eğilme katmanı: " + ThirdPersonPlayer.CrouchLayerName + " (Override, maske " + CrouchMaskPath + ": gövde + baş + bacaklar), Crouch_Idle 0 ↔ Crouch_Walk "
+            + walk.ToString(Inv) + " m/sn ×1; yumruk durumu " + PlayerCombat.StatePunchJab + " (Punch_Jab)");
+    }
+
+    private static AvatarMask CrouchMask()
+    {
+        var m = AssetDatabase.LoadAssetAtPath<AvatarMask>(CrouchMaskPath);
+        if (m == null)
+        {
+            m = new AvatarMask();
+            AssetDatabase.CreateAsset(m, CrouchMaskPath);
+        }
+        for (int i = 0; i < (int)AvatarMaskBodyPart.LastBodyPart; i++)
+        {
+            var part = (AvatarMaskBodyPart)i;
+            bool on = part == AvatarMaskBodyPart.Root || part == AvatarMaskBodyPart.Body || part == AvatarMaskBodyPart.Head
+                || part == AvatarMaskBodyPart.LeftLeg || part == AvatarMaskBodyPart.RightLeg
+                || part == AvatarMaskBodyPart.LeftFootIK || part == AvatarMaskBodyPart.RightFootIK;
+            m.SetHumanoidBodyPartActive(part, on);
+        }
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    // Var olan AC_Crew_Locomotion'a yalnız yumruk durumunu ve eğilme katmanını (yeniden) ekler; sahne ve öbür asset'ler yeniden
+    // kurulmaz (tam kurulum AddCrewStates ile aynı sonucu verir). Batchmode: -executeMethod Bolum1AnimBuilder.UpgradeCrewControllerBatch
+    public static void UpgradeCrewControllerBatch()
+    {
+        try
+        {
+            UpgradeCrewController();
+            Debug.Log(report.ToString());
+            Debug.Log("CREW CONTROLLER UPGRADE OK");
+            EditorApplication.Exit(0);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("CREW CONTROLLER UPGRADE FAILED: " + e);
+            EditorApplication.Exit(1);
+        }
+    }
+
+    public static void UpgradeCrewController()
+    {
+        report.Length = 0;
+        EnsureClipImports();
+        var ac = AssetDatabase.LoadAssetAtPath<AnimatorController>(Bolum1AmbulanceBuilder.LocomotionControllerPath);
+        if (ac == null) throw new Exception("Ekip Animator'ı yok: " + Bolum1AmbulanceBuilder.LocomotionControllerPath);
+        var sm = ac.layers[0].stateMachine;
+        var old = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == PlayerCombat.StatePunchJab);
+        if (old != null) sm.RemoveState(old);
+        for (int i = ac.layers.Length - 1; i >= 1; i--)
+        {
+            if (ac.layers[i].name != ThirdPersonPlayer.CrouchLayerName) continue;
+            foreach (var cs in ac.layers[i].stateMachine.states)
+                if (cs.state.motion is BlendTree bt && AssetDatabase.IsSubAsset(bt)) UnityEngine.Object.DestroyImmediate(bt, true);
+            ac.RemoveLayer(i);
+        }
+        var loops = LoopStateNames.Select(n =>
+        {
+            var st = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == n);
+            if (st == null) throw new Exception("Döngü durumu yok: " + n);
+            return st;
+        }).ToArray();
+        AddPunchState(sm, loops);
+        AddCrouchLayer(ac);
+        EditorUtility.SetDirty(ac);
+        AssetDatabase.SaveAssets();
     }
 
     // =====================================================================================

@@ -3,6 +3,10 @@ using UnityEngine;
 // Oyuncu hareketi (kullanıcı kararı 15): CharacterController tabanlı 3. şahıs.
 // Girdi bu sınıfa dışarıdan verilir (PlayerInputReader); böylece oyun durumu ile girdi ayrı kalır (ileride ağ senkronu).
 // Shift koşar; sedye taşırken hız sabittir. Düşme ve kaldırılma PlayerKnockdown'da.
+// Eğilme (kullanıcı isteği 2026-11-05, sol Ctrl basılı): crouchSpeed ile yürür, koşu ve zıplama yok, CharacterController boyu
+// crouchHeight'a iner (alçak engelin altından geçilir); tuş bırakılınca üstte engel yoksa kalkar, varsa eğik kalır (CanStandUp).
+// Sedye / sırtta hasta / kangal / halat / yerdeyken eğilinmez (eğikken biri başlarsa kalkar). Animasyon: Animator'ın "Crouch"
+// katmanı (bacak + gövde + baş maskeli Crouch_Idle/Walk) CrouchAmount ağırlığıyla; kollar taban katmandan (yumruk, itme, taşıma pozu).
 [RequireComponent(typeof(CharacterController))]
 public class ThirdPersonPlayer : MonoBehaviour, ICarrier
 {
@@ -34,6 +38,16 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     [Header("E4: taşıma yön kilidi")]
     [Tooltip("Açıkken sedye taşırken yardımcı botun hedefi dik yüzeye (bank, yamaç, duvar) ya da collider içine düşecekse o yöne dönüş ve yürüyüş durur (yerinde kalır, başka yöne dönebilir). Yalnız taşıma sırasında; görünmez duvar değildir.")]
     public bool stretcherWallGuard = true;
+    [Header("Eğilme (sol Ctrl)")]
+    [Tooltip("Eğik yürüme hızı (m/sn; Crouch_Walk target_speed_mps). Koşulamaz, zıplanamaz.")]
+    public float crouchSpeed = 1.2f;
+    [Tooltip("Eğikken CharacterController boyu (m); taban yerinde kalır. Ayakta boy Awake'te okunur (1.5).")]
+    public float crouchHeight = 1.0f;
+    [Tooltip("Ayakta ↔ eğik görsel geçiş süresi (sn): Animator katman ağırlığı ve kamera pivotu bununla yumuşar.")]
+    public float crouchBlendSeconds = 0.2f;
+    [Tooltip("Eğilince gövdenin (kalça / el hizası) yaklaşık alçalması (m); elde eşya noktası bunu okur (CrouchBodyDrop).")]
+    public float crouchBodyDrop = 0.15f;
+    public const string CrouchLayerName = "Crouch";
     // E4 ölçüm: engellenen dönüş / yürüyüş kare sayısı ve son kare engelli miydi
     public int CarryTurnBlocks { get; private set; }
     public int CarryMoveBlocks { get; private set; }
@@ -59,6 +73,17 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     // FP (kullanıcı kararı 2, 2026-10-28): açıkken gövde yürüme yönüne değil kameranın yatay bakışına (yaw) döner; A/D yana adım
     // olur. OrbitCamera birinci şahısta açar, üçüncü şahısta kapatır (TP davranışı aynen kalır).
     public bool FaceCameraYaw { get; set; }
+    // Eğilme: sol Ctrl basılı mı (girdi), şu an eğik mi (kapsül alçak), görsel geçiş 0..1 (SmoothStep'li; kamera ve Animator okur)
+    public bool CrouchHeld { get { return crouchHeld; } }
+    public bool IsCrouching { get; private set; }
+    public float CrouchAmount { get { return Mathf.SmoothStep(0f, 1f, crouchBlend); } }
+    public float CrouchBodyDrop { get { return crouchBodyDrop * CrouchAmount; } }
+    // Ölçüm: eğilme / kalkma sayısı, tuş bırakıldığı hâlde üstteki engel yüzünden kalkılamayan kare sayısı ve son engel
+    public int Crouches { get; private set; }
+    public int StandUps { get; private set; }
+    public int StandBlockedFrames { get; private set; }
+    public string LastStandBlocker { get; private set; } = "";
+    public float StandingHeight { get { return standHeight; } }
 
     // Ambulans çarpınca kontrol kaybı (kullanıcı kararı 13); araç çarpıp düşünce kaldırılana kadar kontrol yok.
     public bool HasControl { get { return Time.time >= controlLostUntil && !IsDown; } }
@@ -77,18 +102,26 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public float LastLandingDrop { get; private set; }
     public bool IsSliding { get; private set; }
     public int SlideStarts { get; private set; }
-    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : HeldCoil != null ? moveSpeed : runHeld ? runSpeed : moveSpeed;
+    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : IsCrouching ? crouchSpeed : HeldCoil != null ? moveSpeed : runHeld ? runSpeed : moveSpeed;
     private float verticalSpeed;
     private Vector3 moveWish; // bu karenin yatay hareket isteği (OnControllerColliderHit okur)
     private bool walkableUnderNow; // bu karede ayağın altı yürünebilir zemin (OnControllerColliderHit okur)
     private float controlLostUntil = -1f;
     private Vector3 knockRemaining;     // itilme yer değiştirmesi (kısa sürede uygulanır)
     private float knockTimeLeft;
+    private bool crouchHeld;
+    private float crouchBlend;          // 0 ayakta … 1 eğik (doğrusal; CrouchAmount SmoothStep'li)
+    private float standHeight = 1.5f;
+    private Vector3 standCenter = new Vector3(0f, 0.77f, 0f);
+    private int crouchLayer = -2;        // Animator "Crouch" katmanı (-2: aranmadı, -1: yok)
+    private static readonly Collider[] standHits = new Collider[16];
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         lastGroundHeight = transform.position.y;
+        standHeight = controller.height;
+        standCenter = controller.center;
     }
 
     private void OnEnable() { CarrierRegistry.Add(this); }
@@ -97,12 +130,83 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     {
         if (HeldStretcher != null) HeldStretcher.Release(this);
         CarrierRegistry.Remove(this);
+        // Devre dışı kalınca (minibüse binme) ayağa kalkar; tuş bırakılmış sayılır
+        crouchHeld = false;
+        if (IsCrouching) SetCrouchCapsule(false);
+        crouchBlend = 0f;
+        ApplyCrouchLayer();
     }
 
     // ---- Girdi (PlayerInputReader ya da test çağırır) ----
     public void SetMoveInput(Vector2 move) { moveInput = Vector2.ClampMagnitude(move, 1f); }
     public void RequestJump() { jumpRequested = true; }
     public void SetRunInput(bool held) { runHeld = held; }
+    public void SetCrouchInput(bool held) { crouchHeld = held; }
+
+    // Eğilmeye izin var mı: yerde değil, halatta değil, sedye / sırtta hasta / kangal yok. Elde tek elle eşya (koni, valiz, garaj
+    // eşyası) serbest.
+    public bool CanCrouch { get { return !IsDown && Rope == null && HeldStretcher == null && Piggyback == null && HeldCoil == null; } }
+
+    // Ayakta boyun üst kısmı (eğik kapsülün tepesinden ayakta tepeye) boş mu? Kendi gövdesi, tetikleyiciler, karakterler ve küçük
+    // fizik nesneleri (elde / yerde eşya, koni, kutu) engel sayılmaz; tavan, alçak kiriş, araç gövdesi sayılır.
+    public bool CanStandUp()
+    {
+        if (controller == null) return true;
+        float r = controller.radius * 0.95f;
+        float crouchTop = CrouchCenterY + crouchHeight * 0.5f - controller.radius;
+        float standTop = standCenter.y + standHeight * 0.5f - controller.radius;
+        Vector3 a = transform.position + Vector3.up * crouchTop, b = transform.position + Vector3.up * standTop;
+        int n = Physics.OverlapCapsuleNonAlloc(a, b, r, standHits, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+        {
+            var c = standHits[i];
+            if (c == null || c == controller || c.transform.IsChildOf(transform)) continue;
+            if (c.attachedRigidbody != null)
+            {
+                Vector3 size = c.bounds.size;
+                if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) <= 1.5f) continue; // koni, valiz, kutu
+            }
+            var anim = c.GetComponentInParent<Animator>();
+            if (anim != null && anim.isHuman) continue; // hırsız, bot, hasta
+            LastStandBlocker = c.name;
+            return false;
+        }
+        return true;
+    }
+
+    private float CrouchCenterY { get { return standCenter.y - (standHeight - crouchHeight) * 0.5f; } }
+
+    // Kapsül: taban yerinde kalır, boy ve merkez değişir.
+    private void SetCrouchCapsule(bool crouch)
+    {
+        IsCrouching = crouch;
+        if (controller == null) return;
+        controller.height = crouch ? crouchHeight : standHeight;
+        controller.center = crouch ? new Vector3(standCenter.x, CrouchCenterY, standCenter.z) : standCenter;
+        if (crouch) Crouches++; else StandUps++;
+    }
+
+    // Her kare: girdi + izin → eğil / kalk; görsel geçiş ve Animator katmanı.
+    private void UpdateCrouch(float dt)
+    {
+        bool allowed = CanCrouch;
+        if (!IsCrouching && crouchHeld && allowed) SetCrouchCapsule(true);
+        else if (IsCrouching && !allowed) SetCrouchCapsule(false); // sedye / sırt / halat / düşme: zorunlu kalkış (kapsül çakışmayı kendisi çözer)
+        else if (IsCrouching && !crouchHeld)
+        {
+            if (CanStandUp()) SetCrouchCapsule(false);
+            else StandBlockedFrames++;
+        }
+        crouchBlend = IsDown ? 0f : Mathf.MoveTowards(crouchBlend, IsCrouching ? 1f : 0f, dt / Mathf.Max(0.01f, crouchBlendSeconds));
+        ApplyCrouchLayer();
+    }
+
+    private void ApplyCrouchLayer()
+    {
+        if (animator == null || animator.runtimeAnimatorController == null || !animator.isActiveAndEnabled) return;
+        if (crouchLayer == -2) crouchLayer = animator.GetLayerIndex(CrouchLayerName);
+        if (crouchLayer >= 0) animator.SetLayerWeight(crouchLayer, CrouchAmount);
+    }
 
     public Vector3 GetHandPoint(Vector3 towards)
     {
@@ -188,6 +292,10 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         knockRemaining = Vector3.zero;
         knockTimeLeft = 0f;
         controlLostUntil = -1f;
+        if (IsCrouching) SetCrouchCapsule(false);
+        crouchHeld = false;
+        crouchBlend = 0f;
+        ApplyCrouchLayer();
         Teleport(position, rotation);
     }
 
@@ -303,6 +411,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     {
         float dt = Time.deltaTime;
         if (dt <= 0f) return;
+        UpdateCrouch(dt);
         if (IsDown)
         {
             HorizontalVelocity = Vector3.zero;
@@ -389,7 +498,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             verticalSpeed = -2f;
         }
         else airborne = true;
-        if (jumpRequested && supported && HasControl && Piggyback == null && HeldCoil == null) // sırtta hastayla / kangalla zıplanmaz (D2, U2)
+        if (jumpRequested && supported && HasControl && Piggyback == null && HeldCoil == null && !IsCrouching) // sırtta hastayla / kangalla / eğikken zıplanmaz (D2, U2)
         {
             verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
             airborne = true;
