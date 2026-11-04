@@ -29,6 +29,8 @@ public class LaneFollower : MonoBehaviour
     public float steerSmoothTime = 0.2f;
     [Tooltip("Gövde yönünün üstel yumuşatma süresi (sn). <= 0 ise şerit yönüne anında döner.")]
     public float headingSmoothTime = 0.15f;
+    [Tooltip("Gövde yönünün hedef yönden en büyük sapması (derece). 6 m'den uzun araçlarda uzunlukla ters orantılı azalır.")]
+    public float maxHeadingLagDeg = 1.0f;
 
     [Tooltip("Kökten ön tampona / arka tampona uzaklık (m). Şerit doluluk servisi (araç takibi) kullanır.")]
     public float frontOverhang = 2.5f;
@@ -211,7 +213,15 @@ public class LaneFollower : MonoBehaviour
 
         Pose(s, out Vector3 p, out Quaternion r);
         if (headingSmoothTime > 0f)
-            r = Quaternion.Slerp(body.rotation, r, 1f - Mathf.Exp(-dt / headingSmoothTime));
+        {
+            Quaternion smoothed = Quaternion.Slerp(body.rotation, r, 1f - Mathf.Exp(-dt / headingSmoothTime));
+            float length = frontOverhang + rearOverhang;
+            float lagLimit = Mathf.Max(0f, maxHeadingLagDeg);
+            // Uzun gövdenin uçları virajda daha geniş alan süpürür; 6 m üstünde sapmayı
+            // uzunlukla ters orantılı azaltarak karşı şeride taşma riskini sınırlarız.
+            if (length > 6f) lagLimit *= 6f / length;
+            r = Quaternion.RotateTowards(r, smoothed, lagLimit);
+        }
         body.MovePosition(p);
         body.MoveRotation(r);
 

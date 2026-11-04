@@ -393,6 +393,9 @@ public static class Bolum1TrafficVerify
         instant.Place(lane, 0f, instant.cruiseSpeed);
         float dt = Time.fixedDeltaTime;
         float maxYaw = 0f, maxRawYaw = 0f, maxSteer = 0f, maxStraight = 0f;
+        float maxHeadingLag = 0f;
+        float vehicleLength = smooth.frontOverhang + smooth.rearOverhang;
+        float headingLagLimit = Mathf.Max(0f, smooth.maxHeadingLagDeg) * (vehicleLength > 6f ? 6f / vehicleLength : 1f);
         float maxRear = 0f, maxFrontError = 0f, maxSpinError = 0f, maxPoseError = 0f, maxHeadingError = 0f;
         float turnTime = 0f, expectedSpin = 0f, curveS = 0f;
         int turnSign = 0;
@@ -408,12 +411,14 @@ public static class Bolum1TrafficVerify
             instant.Tick(dt, float.PositiveInfinity);
             smooth.Pose(smooth.Distance, out Vector3 expectedPosition, out Quaternion target);
             Quaternion expectedHeading = Quaternion.Slerp(before, target, 1f - Mathf.Exp(-dt / smooth.headingSmoothTime));
+            expectedHeading = Quaternion.RotateTowards(target, expectedHeading, headingLagLimit);
             physics.Simulate(dt);
             float yaw = Mathf.Abs(Vector3.SignedAngle(Flat(before * Vector3.forward), Flat(rb.rotation * Vector3.forward), Vector3.up));
             float rawYaw = Mathf.Abs(Vector3.SignedAngle(Flat(rawBefore * Vector3.forward), Flat(rawBody.rotation * Vector3.forward), Vector3.up));
             float snapYaw = Mathf.Abs(Vector3.SignedAngle(Flat(before * Vector3.forward), Flat(target * Vector3.forward), Vector3.up));
             maxYaw = Mathf.Max(maxYaw, yaw);
             maxRawYaw = Mathf.Max(maxRawYaw, rawYaw);
+            maxHeadingLag = Mathf.Max(maxHeadingLag, Quaternion.Angle(rb.rotation, target));
             maxHeadingError = Mathf.Max(maxHeadingError, Quaternion.Angle(rb.rotation, expectedHeading), Quaternion.Angle(rawBody.rotation, target));
             if (snapYaw > 0.05f && yaw < snapYaw - 0.001f) reducedSteps++;
             maxPoseError = Mathf.Max(maxPoseError, Vector3.Distance(rb.position, expectedPosition), Vector3.Distance(rb.position, rawBody.position));
@@ -461,9 +466,11 @@ public static class Bolum1TrafficVerify
         // Sabit eğrilikte iki sürüşün yaw adımı eşitlenebilir; karşılaştırma aynı gövdeden hedefe
         // anında dönme ile yapılır. Güzergâhın tepe yaw değeri de yumuşatmasız koşudan küçük olmalı.
         Check(label + " sabit adım yaw ≤ 4°, üstel yumuşatma ve kapatma seçeneği",
-            reducedSteps > 0 && maxHeadingError < 0.1f && maxYaw <= 4f && maxYaw < maxRawYaw,
+            reducedSteps > 0 && maxHeadingError < 0.1f && maxYaw <= 4f && maxYaw < maxRawYaw
+            && maxHeadingLag <= headingLagLimit + 0.05f,
             "en büyük yaw " + maxYaw.ToString("F3", Inv) + "°, yumuşatmasız " + maxRawYaw.ToString("F3", Inv) + "°, azaltılan adım " + reducedSteps
-            + ", yön hatası " + maxHeadingError.ToString("F3", Inv));
+            + ", yön hatası " + maxHeadingError.ToString("F3", Inv)
+            + "°, en büyük hedef sapması " + maxHeadingLag.ToString("F3", Inv) + "° (etkin sınır " + headingLagLimit.ToString("F3", Inv) + "° + 0.05°)");
         Check(label + " Pose konumu, hız/mesafe ve kinematik sürüş korunuyor",
             smooth.AtEnd && instant.AtEnd && travelOk && maxPoseError < 0.001f,
             "konum farkı " + M(maxPoseError) + ", s/hız eşit " + travelOk + ", şerit sonu " + smooth.AtEnd);
