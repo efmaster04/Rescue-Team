@@ -42,7 +42,7 @@ public class ParkingZone : MonoBehaviour
             {
                 lane.Project(p, out float lateral, out Vector3 on);
                 if (Mathf.Abs(p.y - on.y) > 3f) continue;
-                if (Mathf.Abs(lateral) < half) { reason = lane.name + " şeridinde (yanal " + lateral.ToString("F2") + " m)"; return false; }
+                if (Mathf.Abs(lateral) <= half) { reason = lane.name + " şeridinde (yanal " + lateral.ToString("F2") + " m)"; return false; }
             }
         }
         return true;
@@ -51,9 +51,15 @@ public class ParkingZone : MonoBehaviour
     // Minibüsün ayak izi için değerlendirme; sonuç özellikleri test ve HUD için saklanır.
     public bool Evaluate(IEnumerable<Vector3> footprint)
     {
+        return Evaluate(footprint, footprint);
+    }
+
+    // Köşeler alan sınırını, gövde boyunca örnekler ise trafik şeridini sınar.
+    public bool Evaluate(IEnumerable<Vector3> footprint, IEnumerable<Vector3> laneSamples)
+    {
         var list = new List<Vector3>(footprint);
         LastInside = FullyInside(list);
-        LastOutOfLanes = OutOfLanes(list, out string why);
+        LastOutOfLanes = OutOfLanes(laneSamples, out string why);
         LastReason = !LastInside ? "minibüs park alanının dışında" : !LastOutOfLanes ? why : "iyi park";
         return LastInside && LastOutOfLanes;
     }

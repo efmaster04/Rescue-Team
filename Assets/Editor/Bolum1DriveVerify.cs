@@ -250,6 +250,7 @@ public static class Bolum1DriveVerify
 
         yield return PhaseStart();
         yield return PhaseDriveAndPark();
+        yield return PhaseParkingConsistency();
         yield return PhaseBadParkRam();
         yield return PhaseOncomingLane();
         yield return PhaseAmbulanceBlocked();
@@ -323,13 +324,13 @@ public static class Bolum1DriveVerify
             yield return Until(() => Mathf.Abs(Van.Speed) < .05f, 5f, "fren");
             Van.SetTestInput(0f, 0f);
             yield return Seconds(.3f);
-            if (zone.Evaluate(Van.Footprint())) break; // iyi park: hamleyi tekrarlamaya gerek yok
+            if (zone.Evaluate(Van.Footprint(), Van.LaneSamples())) break; // iyi park: hamleyi tekrarlamaya gerek yok
         }
         Van.SetTestInput(-1f, 0f);
         yield return Until(() => Mathf.Abs(Van.Speed) < .05f, 5f, "fren");
         Van.SetTestInput(0f, 0f);
         yield return Seconds(.5f);
-        bool good = zone.Evaluate(Van.Footprint());
+        bool good = zone.Evaluate(Van.Footprint(), Van.LaneSamples());
         float yawErr = Vector3.Angle(Flat(Van.Forward), zoneFwd);
         float offCenter = Vector3.Distance(Flat(Van.transform.position), Flat(zone.transform.position));
         Check("(b1) betikli gaz / direksiyon minibüsü " + (s1 - s0).ToString("F0", Inv) + " m sürdü ve park alanına park etti (tamamen içeride, şerit dışında)",
@@ -337,6 +338,41 @@ public static class Bolum1DriveVerify
             "şerit s " + s0.ToString("F1", Inv) + " → " + s1.ToString("F1", Inv) + " (" + laneTime.ToString("F1", Inv) + " sn, en yüksek hız " + maxSpeed.ToString("F1", Inv) + " m/sn), park: " + zone.LastReason
             + ", merkezden " + offCenter.ToString("F2", Inv) + " m, yaw sapması " + yawErr.ToString("F1", Inv) + "°, hasar %" + Van.Damage.ToString("F1", Inv) + " (darbe " + Van.Impacts + "), trafik " + traffic0 + "→" + Traffic.Vehicles.Count);
 
+        // Korkuluk/kaya duvarı kapıları ve arka inişi kapatırsa iki ekip üyesi de içeride kalır.
+        var exitBlocks = new List<GameObject>();
+        float seatZ = Van.driverSeat.localPosition.z;
+        float side = Van.bodyMax.x + .9f;
+        void AddBlock(Vector3 local)
+        {
+            var block = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            block.name = "DriveVerify_RockWall";
+            block.transform.position = Van.transform.TransformPoint(local + Vector3.up * 1f);
+            block.transform.localScale = new Vector3(.8f, 2f, .8f);
+            exitBlocks.Add(block);
+        }
+        // Sol kapı şoföre açıkken botun üç ayrı adayı kapalı; dördüncü aday şoföre ayrılmıştır.
+        AddBlock(new Vector3(-side, 0f, seatZ));
+        AddBlock(new Vector3(-side, 0f, Van.bodyMax.z + .5f));
+        AddBlock(new Vector3(.9f, 0f, Van.bodyMax.z + 2.2f));
+        Physics.SyncTransforms();
+        float heldTime = Mission.Elapsed;
+        bool botRejected = !Van.TryExit();
+        Check("(b1a) şoföre yer varken botun inişi engelliyse iki kişi de içeride kalır",
+            botRejected && Van.CrewInside && !Van.HasExited && Mission.ClockHeld && GameNotice.LastMessage == ServiceVanDriver.NoSafeExitText,
+            "bot reddi " + botRejected + ", içeride " + Van.CrewInside + ", uyarı '" + GameNotice.LastMessage + "'");
+        AddBlock(new Vector3(side, 0f, seatZ));
+        AddBlock(new Vector3(side, 0f, Van.bodyMax.z + .5f));
+        AddBlock(new Vector3(0f, 0f, Van.bodyMax.z + 2.2f));
+        Physics.SyncTransforms();
+        bool rejected = !Van.TryExit();
+        Check("(b1a) korkuluk/kaya duvarı yanında güvenli iniş yok: ekip içeride, görev saati başlamaz, uyarı görünür",
+            rejected && Van.CrewInside && !Van.HasExited && Van.State == ServiceVanDriver.VanState.Driving && Mission.ClockHeld
+                && Mathf.Approximately(Mission.Elapsed, heldTime) && GameNotice.LastMessage == ServiceVanDriver.NoSafeExitText,
+            "red " + rejected + ", içeride " + Van.CrewInside + ", saat tutuldu " + Mission.ClockHeld + ", uyarı '" + GameNotice.LastMessage + "'");
+        foreach (var block in exitBlocks) UnityEngine.Object.Destroy(block);
+        yield return null;
+        Physics.SyncTransforms();
+        // Engel açılınca aynı park pozundan güvenli iniş gerçekleşir.
         // İniş
         var stretcherParents = Bolum1AmbulanceBuilder.StretcherNames.Select(n => GameObject.Find(n)).ToList();
         bool exited = Van.TryExit();
@@ -375,6 +411,45 @@ public static class Bolum1DriveVerify
         Vector3 beside = east.PointAt(east.Project(Van.transform.position));
         bool roadOn = NavMesh.SamplePosition(beside, out _, .6f, NavMesh.AllAreas);
         Check("(b4) NavMesh: park hâlindeki minibüsün altı oyulmuş (gerçek konum), yanındaki yol yürünür", carved && roadOn, "oyuk " + carved + ", yol " + roadOn + " (" + V(beside) + ")");
+    }
+
+    // Virajdaki şerit gövdenin uzun kenar ortasına yaklaşabilir; dört köşe tek başına yeterli değildir.
+    private static IEnumerator PhaseParkingConsistency()
+    {
+        var originalLanes = zone.lanes;
+        var bendGo = new GameObject("DriveVerify_BentLane");
+        var bend = bendGo.AddComponent<LanePath>();
+        bend.width = .5f;
+        // Alanın izin verdiği küçük açıyla park et; sentetik viraj köşelerden uzak, kenar ortasına yakındır.
+        float yaw = 3f;
+        Van.TeleportTo(zone.transform.position, zone.transform.rotation * Quaternion.Euler(0f, yaw, 0f), true);
+        if (!zone.FullyInside(Van.Footprint()))
+        {
+            yaw = 1f;
+            Van.TeleportTo(zone.transform.position, zone.transform.rotation * Quaternion.Euler(0f, yaw, 0f), true);
+        }
+        float midZ = (Van.bodyMin.z + Van.bodyMax.z) * .5f;
+        Vector3 At(float x, float z) => Van.transform.TransformPoint(new Vector3(x, Van.bodyMin.y + .5f, z));
+        bend.points = new[] { At(Van.bodyMax.x + 3f, Van.bodyMin.z - 1f), At(Van.bodyMax.x + .05f, midZ), At(Van.bodyMax.x + 3f, Van.bodyMax.z + 1f) };
+        bend.Rebuild();
+        zone.lanes = originalLanes.Concat(new[] { bend }).ToArray();
+        bool cornersClear = zone.FullyInside(Van.Footprint()) && zone.OutOfLanes(Van.Footprint(), out _);
+        bool middleBlocks = Van.BlocksLane(bend, out _, out _, out _);
+        Van.SeatCrew();
+        bool angledExited = Van.TryExit();
+        Check("(b5) açılı parkta dört köşe temizken kenar ortası şeritte: kötü park ve trafik engeli",
+            yaw > 0f && cornersClear && middleBlocks && angledExited && !Van.GoodParking,
+            "açı " + yaw.ToString("F1", Inv) + "°, köşeler temiz " + cornersClear + ", şerit kapalı " + middleBlocks + ", iniş " + angledExited + ", iyi park " + Van.GoodParking);
+        zone.lanes = originalLanes;
+        UnityEngine.Object.Destroy(bendGo);
+        Van.TeleportTo(zone.transform.position, zone.transform.rotation, true);
+        Van.SeatCrew();
+        bool insideExited = Van.TryExit();
+        bool anyBlocked = originalLanes.Any(l => Van.BlocksLane(l, out _, out _, out _));
+        Check("(b6) tam içeride park: iyi park ve kayıtlı iki trafik şeridi açık",
+            insideExited && Van.GoodParking && !anyBlocked,
+            "iniş " + insideExited + ", iyi park " + Van.GoodParking + ", şerit kapalı " + anyBlocked);
+        yield return null;
     }
 
     // (c) Kötü park: minibüs EastBound'da şeridin ortasında; araç durur, korna, ~5 sn, çarpıp iter; hasar sonuca ulaşır.

@@ -30,6 +30,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public const string StateDriveSeated = "Drive_Seated";
     public const string StatePassengerSeated = "Passenger_Seated";
     public const string NoExitWhileMovingText = "Durmadan inilmez";
+    public const string NoSafeExitText = "Burada inilemez — minibüsü biraz açın";
 
     public static ServiceVanDriver Instance { get; private set; }
 
@@ -455,7 +456,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             if (settleSince >= 0f && Time.time - settleSince > 0.5f)
             {
                 SetParked();
-                if (parkingZone != null) GoodParking = parkingZone.Evaluate(Footprint());
+                GoodParking = EvaluateParking();
                 Settled?.Invoke(this);
             }
         }
@@ -576,6 +577,16 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         Vector3 v = rb != null && !rb.isKinematic ? rb.linearVelocity : Vector3.zero;
         speedAlong = Vector3.Dot(v, lane.TangentAt(edgeS));
         return true;
+    }
+
+    private bool EvaluateParking()
+    {
+        if (parkingZone == null) return false;
+        bool good = parkingZone.Evaluate(Footprint(), LaneSamples());
+        if (parkingZone.lanes != null)
+            foreach (var lane in parkingZone.lanes)
+                if (BlocksLane(lane, out _, out _, out _)) good = false;
+        return good;
     }
 
     // Trafik aracı bekleme süresi dolunca ilerliyor: gövdesi ayak izine değince hasar + itme (araç başına 1.5 sn'de bir).
@@ -879,37 +890,49 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             GameNotice.Show(NoExitWhileMovingText);
             return false;
         }
-        Exit();
-        return true;
+        return Exit();
     }
 
-    public void Exit()
+    public bool Exit()
     {
-        if (!CrewInside) return;
+        if (!CrewInside) return false;
+        // Her iki ekip üyesinin yeri önceden bulunur; biri sıkışırsa oturma ve görev durumu değişmez.
+        var exitPoints = new List<Vector3>();
+        foreach (var crew in seated)
+        {
+            if (crew.root == null) { exitPoints.Add(default); continue; }
+            bool isPlayer = player != null && crew.root == player.transform;
+            if (!ExitPoint(isPlayer, exitPoints, out Vector3 point))
+            {
+                GameNotice.Show(NoSafeExitText);
+                return false;
+            }
+            exitPoints.Add(point);
+        }
         Throttle = 0f; Steer = 0f;
         ClearTestInput();
         DisableInput();
         AlignToGroundNow();
         SetParked();
-        UnseatCrew();
+        UnseatCrew(exitPoints);
         CrewInside = false;
         HasExited = true;
-        GoodParking = parkingZone != null && parkingZone.Evaluate(Footprint());
+        GoodParking = EvaluateParking();
         if (sound != null && sound.engine != null) sound.engine.Stop();
         Exited?.Invoke(this);
+        return true;
     }
 
-    private void UnseatCrew()
+    private void UnseatCrew(List<Vector3> exitPoints)
     {
-        var used = new List<Vector3>();
-        foreach (var crew in seated)
+        for (int i = 0; i < seated.Count; i++)
         {
+            var crew = seated[i];
             if (crew.root == null) continue;
             crew.root.SetParent(crew.parent, true);
             SetSeated(crew.animator, 0);
             bool isPlayer = player != null && crew.root == player.transform;
-            Vector3 point = ExitPoint(isPlayer, used);
-            used.Add(point);
+            Vector3 point = exitPoints[i];
             Quaternion facing = Quaternion.LookRotation(Flat(transform.forward), Vector3.up); // yüz minibüsün arkasına (yük bölümüne)
             foreach (var c in crew.disabledColliders) if (c != null) c.enabled = true;
             foreach (var b in crew.disabled) if (b != null) b.enabled = true;
@@ -938,33 +961,30 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private static Vector3 Flat(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-6f ? v.normalized : Vector3.forward; }
     private static Vector3 Horizontal(Vector3 v) { v.y = 0f; return v; }
 
-    // İniş noktası: şoför sol kapıdan (+X), yolcu sağ kapıdan (−X); yer yoksa arka sol / arka / arka sağ; zemin raycast, kapsül boş.
-    private Vector3 ExitPoint(bool driver, List<Vector3> used)
+    // İniş noktası: iki yan kapı ve arka seçenekler; her adayda yakın zemin ve boş kapsül zorunlu.
+    private bool ExitPoint(bool driver, List<Vector3> used, out Vector3 point)
     {
         float seatZ = driverSeat != null ? driverSeat.localPosition.z : bodyMin.z + 1.6f;
         float side = bodyMax.x + 0.9f;
         var candidates = driver
             ? new[] { new Vector3(side, 0f, seatZ), new Vector3(side, 0f, bodyMax.z + 0.5f), new Vector3(0f, 0f, bodyMax.z + 2.2f), new Vector3(-side, 0f, seatZ) }
             : new[] { new Vector3(-side, 0f, seatZ), new Vector3(-side, 0f, bodyMax.z + 0.5f), new Vector3(0.9f, 0f, bodyMax.z + 2.2f), new Vector3(side, 0f, seatZ) };
-        Vector3 fallback = transform.TransformPoint(candidates[0]);
+        float baseY = transform.TransformPoint(new Vector3(0f, bodyMin.y, 0f)).y;
         foreach (var local in candidates)
         {
             Vector3 world = transform.TransformPoint(local);
             if (!GroundBelow(world + Vector3.up * 0.5f, out RaycastHit hit)) continue;
             Vector3 p = hit.point;
+            if (p.y < baseY - 1.5f) continue;
             bool tooClose = false;
             foreach (var u in used) if (Vector3.Distance(u, p) < 1f) tooClose = true;
             if (tooClose) continue;
             if (Physics.CheckCapsule(p + Vector3.up * 0.45f, p + Vector3.up * 1.3f, 0.28f, ~0, QueryTriggerInteraction.Ignore)) continue;
-            return p;
+            point = p;
+            return true;
         }
-        // Hiçbir aday uymadı: ilk aday, zemin 8 m aşağıya kadar aranır (banket kenarı derinse havada doğmasın; review P3-6);
-        // zemin yine yoksa arka kapı adayı (yol kotu).
-        if (GroundBelow(fallback + Vector3.up * 0.5f, out RaycastHit g)) return g.point;
-        if (GroundProbe.Find(fallback + Vector3.up * 1f, 9f, out RaycastHit deep)) return deep.point;
-        Vector3 rear = transform.TransformPoint(candidates[2]);
-        if (GroundProbe.Find(rear + Vector3.up * 1f, 9f, out RaycastHit rg)) return rg.point;
-        return fallback;
+        point = default;
+        return false;
     }
 
     // Test: hasarı sıfırlar (senaryolar arası).
