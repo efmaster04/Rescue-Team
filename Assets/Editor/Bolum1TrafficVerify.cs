@@ -8,6 +8,7 @@ using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Bölüm 1 trafik kabul testi. Batchmode (ekran görüntüsü için -nographics OLMADAN, -quit OLMADAN):
 // Unity.exe -batchmode -projectPath ... -executeMethod Bolum1TrafficVerify.Run -logFile <dosya>
@@ -307,6 +308,7 @@ public static class Bolum1TrafficVerify
         mission.missLimit = 999; // test: görev kaçırma yüzünden bitmesin (geçici)
 
         yield return PhaseSpeedSettings();
+        yield return PhaseWheelMotion();
         yield return PhaseSimulation();
         yield return PhaseDeterminism();
         yield return PhaseAmbulanceQueue();
@@ -334,6 +336,189 @@ public static class Bolum1TrafficVerify
             Traffic.ClearVehicles();
             yield return null;
         }
+    }
+
+    // Render karesi birden çok FixedUpdate içerebilir. Bu kontrol gerçek prefab'ları ayrı fizik
+    // sahnesinde Tick(fixedDeltaTime) + Simulate ile sürer; hiçbir fizik adımı örneklemeden kaçmaz.
+    // Trafik davranışları kapalıdır; ana sahnenin fiziği, şeritleri ve asset'leri değiştirilmez.
+    private static IEnumerator PhaseWheelMotion()
+    {
+        var scene = SceneManager.CreateScene("TrafficVerify_Wheels", new CreateSceneParameters(LocalPhysicsMode.Physics3D));
+        try
+        {
+            foreach (var type in Bolum1TrafficBuilder.Types)
+                foreach (var lane in new[] { Traffic.eastBound, Traffic.westBound })
+                {
+                    var holder = new GameObject("WheelProbe_" + type);
+                    holder.SetActive(false);
+                    SceneManager.MoveGameObjectToScene(holder, scene);
+                    try { CheckWheelRoute(holder, scene.GetPhysicsScene(), type, lane); }
+                    finally { UnityEngine.Object.DestroyImmediate(holder); }
+                    yield return null;
+                }
+        }
+        finally { SceneManager.UnloadSceneAsync(scene); }
+    }
+
+    private static LaneFollower CreateWheelProbe(GameObject holder, TrafficVehicleType type)
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1TrafficBuilder.PrefabPath(type));
+        var go = UnityEngine.Object.Instantiate(prefab, holder.transform, false);
+        var f = go.GetComponent<LaneFollower>();
+        foreach (var behaviour in go.GetComponentsInChildren<Behaviour>(true))
+            behaviour.enabled = behaviour == f;
+        // Awake dünya yönünden bağımsız eksen önbelleği kurmalı: düz durmayan araçla başlat.
+        go.transform.rotation = Quaternion.Euler(18f, 67f, -9f);
+        var rb = go.GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.detectCollisions = false;
+        return f;
+    }
+
+    private static void CheckWheelRoute(GameObject holder, PhysicsScene physics, TrafficVehicleType type, LanePath lane)
+    {
+        var smooth = CreateWheelProbe(holder, type);
+        var instant = CreateWheelProbe(holder, type);
+        instant.headingSmoothTime = 0f;
+        var rb = smooth.GetComponent<Rigidbody>();
+        var rawBody = instant.GetComponent<Rigidbody>();
+        var wheels = smooth.wheels;
+        var baseRoot = wheels.Select(w => w != null ? Quaternion.Inverse(smooth.transform.rotation) * w.rotation : Quaternion.identity).ToArray();
+        var zs = wheels.Where(w => w != null).Select(w => smooth.transform.InverseTransformPoint(w.position).z).ToArray();
+        float meanZ = zs.Length > 0 ? zs.Average() : 0f;
+        var front = wheels.Select(w => w != null && smooth.transform.InverseTransformPoint(w.position).z > meanZ).ToArray();
+        int expectedFront = front.Count(x => x);
+        holder.SetActive(true); // Awake: atamalar ve başlangıç dönüşleri artık hazır
+        smooth.Place(lane, 0f, smooth.cruiseSpeed);
+        instant.Place(lane, 0f, instant.cruiseSpeed);
+        float dt = Time.fixedDeltaTime;
+        float maxYaw = 0f, maxRawYaw = 0f, maxSteer = 0f, maxStraight = 0f;
+        float maxRear = 0f, maxFrontError = 0f, maxSpinError = 0f, maxPoseError = 0f, maxHeadingError = 0f;
+        float turnTime = 0f, expectedSpin = 0f, curveS = 0f;
+        int turnSign = 0;
+        int curveSamples = 0, straightSamples = 0, reducedSteps = 0, spinSamples = 0;
+        bool signsOk = true, travelOk = true;
+        float[] previousSpin = new float[wheels.Length];
+        int maxSteps = Mathf.CeilToInt(lane.Length / (smooth.cruiseSpeed * dt)) + 2;
+        for (int step = 0; step < maxSteps && !smooth.AtEnd; step++)
+        {
+            float oldS = smooth.Distance;
+            Quaternion before = rb.rotation, rawBefore = rawBody.rotation;
+            smooth.Tick(dt, float.PositiveInfinity);
+            instant.Tick(dt, float.PositiveInfinity);
+            smooth.Pose(smooth.Distance, out Vector3 expectedPosition, out Quaternion target);
+            Quaternion expectedHeading = Quaternion.Slerp(before, target, 1f - Mathf.Exp(-dt / smooth.headingSmoothTime));
+            physics.Simulate(dt);
+            float yaw = Mathf.Abs(Vector3.SignedAngle(Flat(before * Vector3.forward), Flat(rb.rotation * Vector3.forward), Vector3.up));
+            float rawYaw = Mathf.Abs(Vector3.SignedAngle(Flat(rawBefore * Vector3.forward), Flat(rawBody.rotation * Vector3.forward), Vector3.up));
+            float snapYaw = Mathf.Abs(Vector3.SignedAngle(Flat(before * Vector3.forward), Flat(target * Vector3.forward), Vector3.up));
+            maxYaw = Mathf.Max(maxYaw, yaw);
+            maxRawYaw = Mathf.Max(maxRawYaw, rawYaw);
+            maxHeadingError = Mathf.Max(maxHeadingError, Quaternion.Angle(rb.rotation, expectedHeading), Quaternion.Angle(rawBody.rotation, target));
+            if (snapYaw > 0.05f && yaw < snapYaw - 0.001f) reducedSteps++;
+            maxPoseError = Mathf.Max(maxPoseError, Vector3.Distance(rb.position, expectedPosition), Vector3.Distance(rb.position, rawBody.position));
+            travelOk &= Mathf.Abs(smooth.Distance - instant.Distance) < 0.0001f && Mathf.Abs(smooth.Speed - instant.Speed) < 0.0001f && rb.isKinematic;
+
+            float steer = smooth.CurrentSteerAngle;
+            if (Mathf.Abs(steer) > maxSteer) { maxSteer = Mathf.Abs(steer); curveS = smooth.Distance; }
+            float span = Mathf.Max(2f, smooth.axleHalfSpan);
+            float bend = Vector3.SignedAngle(Flat(lane.TangentAt(smooth.Distance - span)), Flat(lane.TangentAt(smooth.Distance + span)), Vector3.up);
+            // S virajının yön değiştirdiği anda eski direksiyon üstel olarak söner.
+            // İşareti, en az 1 sn aynı yönde devam eden virajda ölç.
+            int sign = Mathf.Abs(bend) > 3f ? (int)Mathf.Sign(bend) : 0;
+            turnTime = sign != 0 && sign == turnSign ? turnTime + dt : 0f;
+            turnSign = sign;
+            if (turnTime >= 1f && Mathf.Abs(steer) > 3f)
+            {
+                curveSamples++;
+                signsOk &= Mathf.Sign(steer) == Mathf.Sign(bend);
+            }
+            expectedSpin = Mathf.Repeat(expectedSpin + (smooth.Distance - oldS) / Mathf.Max(0.05f, smooth.wheelRadius) * Mathf.Rad2Deg, 360f);
+            for (int i = 0; i < wheels.Length; i++)
+            {
+                if (wheels[i] == null) continue;
+                // Başlangıç FBX dönüşünü çıkar: kalan dönüş kök uzayında direksiyon * spin'dir.
+                Quaternion delta = Quaternion.Inverse(rb.rotation) * wheels[i].rotation * Quaternion.Inverse(baseRoot[i]);
+                float measuredSteer = Vector3.SignedAngle(Vector3.right, delta * Vector3.right, Vector3.up);
+                if (front[i]) maxFrontError = Mathf.Max(maxFrontError, Mathf.Abs(Mathf.DeltaAngle(steer, measuredSteer)));
+                else maxRear = Mathf.Max(maxRear, Mathf.Abs(measuredSteer));
+                Quaternion spin = Quaternion.AngleAxis(-measuredSteer, Vector3.up) * delta;
+                float measuredSpin = Vector3.SignedAngle(Vector3.up, spin * Vector3.up, Vector3.right);
+                maxSpinError = Mathf.Max(maxSpinError, Mathf.Abs(Mathf.DeltaAngle(expectedSpin, measuredSpin)));
+                if (Mathf.Abs(Mathf.DeltaAngle(previousSpin[i], measuredSpin)) > 0.1f) spinSamples++;
+                previousSpin[i] = measuredSpin;
+            }
+        }
+        string label = "(tekerlek) " + type + " / " + lane.name;
+        Check(label + " ön aks ve viraj işareti",
+            expectedFront > 0 && expectedFront < zs.Length && smooth.FrontWheelCount == expectedFront && curveSamples > 0 && signsOk
+            && maxSteer > 3f && maxSteer <= smooth.maxSteerAngle + 0.01f && maxFrontError < 0.1f,
+            "ön " + smooth.FrontWheelCount + "/" + zs.Length + ", viraj örneği " + curveSamples + ", işaret " + signsOk + ", en büyük açı " + maxSteer.ToString("F2", Inv)
+            + "°, ön açı hatası " + maxFrontError.ToString("F3", Inv));
+        Check(label + " arka direksiyon 0°, tekerlekler yol / yarıçap kadar dönüyor",
+            maxRear < 0.1f && spinSamples > 0 && maxSpinError < 0.1f,
+            "arka " + maxRear.ToString("F3", Inv) + "°, spin hatası " + maxSpinError.ToString("F3", Inv) + "°, dönen örnek " + spinSamples);
+        // Sabit eğrilikte iki sürüşün yaw adımı eşitlenebilir; karşılaştırma aynı gövdeden hedefe
+        // anında dönme ile yapılır. Güzergâhın tepe yaw değeri de yumuşatmasız koşudan küçük olmalı.
+        Check(label + " sabit adım yaw ≤ 4°, üstel yumuşatma ve kapatma seçeneği",
+            reducedSteps > 0 && maxHeadingError < 0.1f && maxYaw <= 4f && maxYaw < maxRawYaw,
+            "en büyük yaw " + maxYaw.ToString("F3", Inv) + "°, yumuşatmasız " + maxRawYaw.ToString("F3", Inv) + "°, azaltılan adım " + reducedSteps
+            + ", yön hatası " + maxHeadingError.ToString("F3", Inv));
+        Check(label + " Pose konumu, hız/mesafe ve kinematik sürüş korunuyor",
+            smooth.AtEnd && instant.AtEnd && travelOk && maxPoseError < 0.001f,
+            "konum farkı " + M(maxPoseError) + ", s/hız eşit " + travelOk + ", şerit sonu " + smooth.AtEnd);
+
+        // Hareketli virajdan duruşa: spin ve direksiyon dururken değişmemeli; Place anında sıfırlamalı.
+        smooth.Place(lane, Mathf.Max(0f, curveS - smooth.cruiseSpeed), smooth.cruiseSpeed);
+        for (int i = 0; i < Mathf.CeilToInt(1f / dt); i++) { smooth.Tick(dt, float.PositiveInfinity); physics.Simulate(dt); }
+        float heldSteer = smooth.CurrentSteerAngle;
+        var heldRotations = wheels.Select(w => w != null ? w.localRotation : Quaternion.identity).ToArray();
+        smooth.StopAt(smooth.Distance);
+        for (int i = 0; i < 30; i++) { smooth.Tick(dt, 0f); physics.Simulate(dt); }
+        bool held = smooth.AtStop && Mathf.Abs(heldSteer) > 3f && Mathf.Abs(smooth.CurrentSteerAngle - heldSteer) < 0.001f;
+        for (int i = 0; i < wheels.Length; i++)
+            if (wheels[i] != null) held &= Quaternion.Angle(heldRotations[i], wheels[i].localRotation) < 0.1f;
+        smooth.ClearStop();
+
+        // Bölümün şeritleri sürekli kıvrılır: düzleşmeyi geçici, tam düz şeritte ölç.
+        // Place çağırmadan geçilir; virajda tutulan gerçek direksiyon açısı hareketle sıfıra dönmeli.
+        var straightGo = new GameObject("WheelProbe_StraightLane");
+        straightGo.transform.SetParent(holder.transform, false);
+        var straightLane = straightGo.AddComponent<LanePath>();
+        Vector3 straightDirection = Flat(rb.rotation * Vector3.forward).normalized;
+        Vector3 straightOrigin = rb.position - straightDirection * smooth.Distance;
+        straightLane.points = new[] { straightOrigin, straightOrigin + straightDirection * (lane.Length + 100f) };
+        straightLane.Rebuild();
+        smooth.lane = straightLane;
+        for (int i = 0; i < Mathf.CeilToInt(3f / dt); i++)
+        {
+            smooth.Tick(dt, float.PositiveInfinity);
+            physics.Simulate(dt);
+            if (i * dt < 1.5f) continue;
+            straightSamples++;
+            maxStraight = Mathf.Max(maxStraight, Mathf.Abs(smooth.CurrentSteerAngle));
+            for (int j = 0; j < wheels.Length; j++)
+                if (wheels[j] != null && front[j])
+                {
+                    Quaternion delta = Quaternion.Inverse(rb.rotation) * wheels[j].rotation * Quaternion.Inverse(baseRoot[j]);
+                    maxStraight = Mathf.Max(maxStraight, Mathf.Abs(Vector3.SignedAngle(Vector3.right, delta * Vector3.right, Vector3.up)));
+                }
+        }
+        Check(label + " düz kesimde gerçek ön tekerlekler ve CurrentSteerAngle < 2°",
+            straightSamples > 0 && maxStraight < 2f,
+            "virajdan düz şeride, 1.5 sn sonrası en büyük açı " + maxStraight.ToString("F3", Inv) + "° (n=" + straightSamples + ")");
+
+        smooth.Place(lane, curveS, 0f);
+        smooth.Pose(curveS, out Vector3 placedPosition, out Quaternion placedRotation);
+        bool reset = smooth.CurrentSteerAngle == 0f && Vector3.Distance(rb.position, placedPosition) < 0.001f && Quaternion.Angle(rb.rotation, placedRotation) < 0.1f;
+        for (int i = 0; i < wheels.Length; i++)
+            if (wheels[i] != null)
+            {
+                Quaternion delta = Quaternion.Inverse(rb.rotation) * wheels[i].rotation * Quaternion.Inverse(baseRoot[i]);
+                reset &= Vector3.Angle(Vector3.right, delta * Vector3.right) < 0.1f;
+            }
+        Check(label + " duruşta direksiyon/spin korunur, Place anında yönü kurar ve direksiyonu sıfırlar", held && reset,
+            "duruş açısı " + heldSteer.ToString("F2", Inv) + "°, korunuyor " + held + ", Place " + reset);
     }
 
     private static TrafficSettings TestSettings(bool natural)
