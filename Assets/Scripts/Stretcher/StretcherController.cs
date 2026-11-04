@@ -337,6 +337,27 @@ public class StretcherController : MonoBehaviour
         return held + dir * horizontal + Vector3.up * (y - held.y);
     }
 
+    // Tek taşıyıcı duvar koruması (E4'ün tek kişilik karşılığı): taşıyıcı verilen aday poza (kök konumu + dönüş) geçerse serbest uç
+    // (2.1 m ötede, havada) ya da sedye gövdesi statik bir collider'a (duvar, minibüs gövdesi, kaya) girer mi? Elden serbest uca
+    // üç hat (eksen ve iki kenar) raycast'lenir; hareketli nesneler (ragdoll, koni, öbür sedye) sayılmaz. ThirdPersonPlayer
+    // dönüş ve adım adayını bununla sınar; reddedilirse o yöne dönmez / yürümez (görünmez duvar yok, yalnız taşırken).
+    private const float SoloGuardHalfWidth = 0.3f;
+
+    public bool SoloCarryClear(ICarrier carrier, Vector3 rootPos, Quaternion rootRot, out string reason)
+    {
+        reason = "";
+        if (carrier == null || grips.Count != 1 || CurrentMode != Mode.Raised || !IsHeldBy(carrier)) return true;
+        bool front = HoldsFront(carrier);
+        Vector3 forward = Flat(rootRot * Vector3.forward);
+        Vector3 hand = rootPos + Vector3.up * StretcherHandIK.HandleHeight + forward * StretcherHandIK.MarkerAhead(front);
+        Vector3 dir = front ? -forward : forward;
+        Vector3 free = FreeEndPoint(hand, dir, HandleSpanLocal());
+        Vector3 side = Vector3.Cross(Vector3.up, dir).normalized * SoloGuardHalfWidth;
+        if (GroundProbe.LineBlocked(hand, free)) { reason = "sedye ekseni collider kesiyor"; return false; }
+        if (GroundProbe.LineBlocked(hand + side, free + side) || GroundProbe.LineBlocked(hand - side, free - side)) { reason = "sedye kenarı collider kesiyor"; return false; }
+        return true;
+    }
+
     private static Vector3 Flat(Vector3 v)
     {
         v.y = 0f;

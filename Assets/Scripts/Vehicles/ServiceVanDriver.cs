@@ -12,7 +12,9 @@ using UnityEngine.InputSystem;
 //    aracı gerçekten durdurur, ani hız düşüşü hasar sayılır. W/S gaz / fren-geri, A/D direksiyon, E (dururken) iniş, V kamera.
 //  - Parked: Rigidbody kinematik, NavMeshObstacle oyar (hırsız ve bot yolu minibüsün GERÇEK yerine göre); yük bölümündeki
 //    ekipman serbest fizikte (bölümün geri kalanı park hâlindeki minibüsü bekler).
-//  - Shoved: trafik aracı çarptı (ILaneObstacle.Ram): dinamik, girdi yok, itme hızı söner; durunca yeniden Parked.
+//  - Shoved: trafik aracı çarptı (ILaneObstacle.Ram): dinamik, girdi yok, itme hızı söner; durunca yeniden Parked. İtilme yönü
+//    döngü başında deterministik seçilir (boş tarafa yoklama), toplam yol maxShoveDistance ile sınırlı, tekerlek altı zemin
+//    bitince durur (uçuruma gitmez). Yük bölümünde ayakta duran ekip minibüsle taşınır, durunca yere düşer (HoldRiders).
 // Yük: sürerken ve itilirken yük bölümündeki Rigidbody'ler (sedye, koni) ve dolaptaki kangal minibüse bağlanır, kinematik olur;
 // durunca eski ebeveyn ve fizik durumu geri gelir (düşmez, titremez).
 // Ekip: oturunca oyuncu ve bot koltuk objelerine bağlanır, hareket / etkileşim bileşenleri kapanır, Animator "Seated" parametresi
@@ -56,6 +58,14 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public float maxGroundVelocity = 3f;
     public float maxTurnRate = 240f;
 
+    [Header("İtilme (trafik çarpması)")]
+    [Tooltip("Bir çarpma döngüsünde minibüs en fazla bu kadar (m, yatay) itilir; sonra hız eklenmez ve durur.")]
+    public float maxShoveDistance = 6f;
+    [Tooltip("İtilme yönü seçiminde statik engele / zemin kenarına bırakılan pay (m).")]
+    public float shoveProbeMargin = .4f;
+    [Tooltip("İtilme bitince yük bölümünde ayakta duran ekip bu hızla (m/sn) yere düşer (ragdoll).")]
+    public float riderKnockSpeed = 2.5f;
+
     [Header("Hasar")]
     [Tooltip("Kontrol hızından bu kadar (m/sn) ani sapma çarpma sayılır.")]
     public float impactSpeedThreshold = 2.5f;
@@ -96,6 +106,12 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public Rigidbody Body { get { return rb; } }
     public Vector3 LastExitPoint { get; private set; }
     public Vector3 LastBotExitPoint { get; private set; }
+    // İtilme (test ve hata ayıklama): döngü başından bu yana yatay yer değiştirme, seçilen yön ve nedeni, taşınan ekip sayısı
+    public float ShoveDistance { get { return shoveOriginSet ? Horizontal(transform.position - shoveOrigin).magnitude : 0f; } }
+    public Vector3 ShoveDirection { get { return shoveAway; } }
+    public string LastShoveReason { get; private set; } = "";
+    public int RiderCount { get { return riders.Count; } }
+    public int RidersKnocked { get; private set; }
 
     public event Action<ServiceVanDriver> Exited;
     public event Action<ServiceVanDriver, TrafficVehicle> Rammed;
@@ -122,6 +138,13 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private Rigidbody rb;
     private readonly List<HeldItem> held = new List<HeldItem>();
     private readonly List<SeatedCrew> seated = new List<SeatedCrew>();
+    // İtilirken yük bölümünde ayakta duran ekip (oyuncu / bot): minibüse bağlı taşınır, durunca yere düşer
+    private readonly List<SeatedCrew> riders = new List<SeatedCrew>();
+    private Vector3 shoveOrigin, shoveAway, lastShoveVelocity;
+    private bool shoveOriginSet;
+    private float shoveLateralBudget;
+    private readonly HashSet<TrafficVehicle> damagedBy = new HashSet<TrafficVehicle>(); // hasar yazan araçlar (araç başına bir kez)
+    private bool cameraYawPending; // oturma Awake'te; OrbitCamera.Start yaw'ı ezer → ilk Update'te yeniden yazılır (review P3-5)
     private Vector3 lateral;
     private Vector3 groundUp = Vector3.up;
     private float lastRamContact = -100f, lastRamDamage = -100f;
@@ -204,7 +227,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         Vector3 half = new Vector3((bodyMax.x - bodyMin.x) * .5f, (bodyMax.y - bodyMin.y - .15f) * .5f, (bodyMax.z - bodyMin.z) * .5f);
         foreach (var c in Physics.OverlapBox(center, half, transform.rotation, ~0, QueryTriggerInteraction.Ignore))
         {
-            if (c == null || c.transform.IsChildOf(transform)) continue;
+            if (c == null || c.transform.IsChildOf(transform) || IsCrewOrCharacter(c)) continue; // ekip / karakter (ragdoll dahil) statik engel değil
             bool ground = false;
             foreach (var r in groundRoots) if (r != null && c.transform.IsChildOf(r)) ground = true;
             if (ground) continue;
@@ -246,6 +269,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         rb.isKinematic = true;
         State = VanState.Parked;
         ReleaseCargo();
+        ReleaseRiders();
+        shoveOriginSet = false;
         if (navObstacle != null) navObstacle.enabled = true;
         if (sound != null) { sound.SetSpeed(0f); if (!CrewInside && sound.engine != null) sound.engine.Stop(); }
         Physics.SyncTransforms();
@@ -254,10 +279,12 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private void BeginShove()
     {
         HoldCargo();
+        HoldRiders();
         if (navObstacle != null) navObstacle.enabled = false;
         rb.isKinematic = false;
         State = VanState.Shoved;
         settleSince = -1f;
+        lastShoveVelocity = Vector3.zero;
     }
 
     // Işınlama (sürüş girişi başlangıcı ve testler): yük bağlı taşınır, zemine oturtulur, verilen durumda bırakılır.
@@ -327,6 +354,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         if (orbitCamera != null)
         {
             float yaw = HeadingYaw;
+            if (cameraYawPending) { cameraYawPending = false; orbitCamera.Yaw = yaw; lastHeadingYaw = yaw; }
             orbitCamera.Yaw += Mathf.DeltaAngle(lastHeadingYaw, yaw);
             lastHeadingYaw = yaw;
         }
@@ -396,6 +424,13 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             groundUp = up;
             liftVel = Mathf.Clamp(lift * groundGain, -maxGroundVelocity, maxGroundVelocity);
         }
+        else if (State == VanState.Shoved)
+        {
+            // Bir tekerleğin altında zemin yok (yol / banket kenarı): itilme burada biter, minibüs uçuruma gitmez.
+            Speed = 0f;
+            lateral = Vector3.zero;
+            if (!LastShoveReason.EndsWith("zemin yok, durdu")) LastShoveReason += " | kenar: zemin yok, durdu";
+        }
         Vector3 heading = Quaternion.AngleAxis(yawRate * dt, Vector3.up) * fwdFlat;
         Vector3 headingOnGround = Vector3.ProjectOnPlane(heading, groundUp).normalized;
         Vector3 rear = -headingOnGround;
@@ -413,6 +448,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         // İtilme bitti mi: yavaşladı ve 1 sn'dir temas yok → park (kinematik, ekipman serbest)
         if (State == VanState.Shoved)
         {
+            if (hv.magnitude > 0.5f) lastShoveVelocity = hv; // durunca ekibin düşme yönü
             bool slow = hv.magnitude < 0.15f && Time.time - lastRamContact > 1f;
             if (slow) { if (settleSince < 0f) settleSince = Time.time; }
             else settleSince = -1f;
@@ -423,9 +459,13 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
                 Settled?.Invoke(this);
             }
         }
-        // Sürerken (ekip içerideyken) oyuncunun kendisi değil ama dışarıdaki oyuncu itilen minibüse çarpılabilir
-        if (State == VanState.Shoved && player != null && player.isActiveAndEnabled && hv.magnitude > 1f && InsideFootprint(player.transform.position, 0.4f))
-            player.KnockDown(hv + Vector3.up * 1.5f);
+        // Sürerken (ekip içerideyken) oyuncunun kendisi değil ama dışarıdaki oyuncu / bot itilen minibüse çarpılabilir
+        // (bot da devrilir: NpcBody gövdesi statik collider olduğundan devrilmezse minibüse duvar olurdu; review P1-2d)
+        if (State == VanState.Shoved && hv.magnitude > 1f)
+        {
+            if (player != null && player.isActiveAndEnabled && InsideFootprint(player.transform.position, 0.4f)) player.KnockDown(hv + Vector3.up * 1.5f);
+            if (bot != null && bot.isActiveAndEnabled && !bot.IsDown && InsideFootprint(bot.transform.position, 0.4f)) bot.HitByVehicle(null, hv + Vector3.up * 1.5f);
+        }
     }
 
     private void AddDamage(float amount)
@@ -542,42 +582,50 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public void Ram(TrafficVehicle by)
     {
         if (by == null || by.settings == null) return;
-        if (State == VanState.Parked) BeginShove();
         bool touch = false;
         foreach (var p in LaneSamples()) if (by.Touches(p, 0.45f)) { touch = true; break; }
-        if (!touch) return;
+        if (!touch) return; // temas yokken Parked'ta kal (review P2-2: temas öncesi Shoved↔Parked titremesi yük / NavMesh'i boşa açıp kapatıyordu)
+        if (State == VanState.Parked) BeginShove();
         lastRamContact = Time.time;
         settleSince = -1f;
         Vector3 carFwd = by.transform.forward; carFwd.y = 0f; carFwd.Normalize();
         Vector3 fwdFlat = Forward; fwdFlat.y = 0f; fwdFlat.Normalize();
-        Vector3 away = Vector3.zero;
-        float clearSpeed = 0f;
-        if (by.Follower != null && by.Follower.lane != null)
+        var lane = by.Follower != null ? by.Follower.lane : null;
+        // Yeni çarpma döngüsü: itilme yönü ve bütçesi döngü başında seçilir (ölçüldü: şerit ortasındaki minibüste yanal işaret ±0
+        // gürültüsüne bağlıydı → bir koşuda 5.8 m, öbüründe 18.8 m). Hasar ve ilk itki ARAÇ BAŞINA BİR KEZ (review P1-2: şeridi
+        // boşaltamayan minibüse aynı araç her 12 sn'lik döngüde yeniden %12 yazıyordu); araç yok olunca kayıt düşer.
+        bool newCycle = lastRammer != by || Time.time - lastRamDamage >= by.settings.vanRamMaxSeconds;
+        if (newCycle || !shoveOriginSet)
         {
-            var lane = by.Follower.lane;
-            float s = lane.Project(transform.position, out float lat, out _);
-            away = lane.RightAt(s) * (lat >= 0f ? 1f : -1f);
-            // Şeridi boşaltacak yanal yol: şerit yarı genişliği + gövde yarı genişliği − mevcut yanal + pay; sönümle kat edilecek hız
-            float halfBody = (bodyMax.x - bodyMin.x) * 0.5f;
-            float needed = Mathf.Clamp(lane.width * 0.5f + halfBody - Mathf.Abs(lat) + 0.3f, 1f, 4f);
-            clearSpeed = Mathf.Max(1.5f, Mathf.Sqrt(2f * shovedLateralDecel * needed));
+            shoveOrigin = transform.position;
+            shoveOriginSet = true;
+            shoveAway = ChooseShoveDirection(lane, out shoveLateralBudget);
         }
-        // Temas sürdükçe şeridin dışına doğru yanal hız korunur (yoksa araç minibüsü şerit boyunca önüne katıp götürüyordu: ölçüldü 49 m)
-        if (away != Vector3.zero)
+        damagedBy.RemoveWhere(v => v == null);
+        bool firstHit = !damagedBy.Contains(by);
+        // Temas sürdükçe şeridin dışına doğru yanal hız korunur (yoksa araç minibüsü şerit boyunca önüne katıp götürüyordu: ölçüldü 49 m);
+        // yanal yol bütçeyle sınırlı: şeridi boşaltmaya yetecek kadar, boş alandan ve maxShoveDistance'tan fazla değil.
+        if (lane != null && shoveAway != Vector3.zero)
         {
-            Vector3 awayFlat = away - fwdFlat * Vector3.Dot(away, fwdFlat);
-            if (awayFlat.sqrMagnitude > 1e-4f)
+            float toClear = LateralToClear(lane, shoveAway);
+            float travelled = Vector3.Dot(Horizontal(transform.position - shoveOrigin), shoveAway);
+            float needed = Mathf.Min(toClear, shoveLateralBudget - travelled, maxShoveDistance - ShoveDistance);
+            if (needed > 0.05f)
             {
-                awayFlat.Normalize();
-                float have = Vector3.Dot(lateral, awayFlat);
-                if (have < clearSpeed) lateral += awayFlat * (clearSpeed - have);
+                float clearSpeed = Mathf.Max(1.5f, Mathf.Sqrt(2f * shovedLateralDecel * Mathf.Clamp(needed, 0.5f, 4f)));
+                Vector3 awayFlat = shoveAway - fwdFlat * Vector3.Dot(shoveAway, fwdFlat);
+                if (awayFlat.sqrMagnitude > 1e-4f)
+                {
+                    awayFlat.Normalize();
+                    float have = Vector3.Dot(lateral, awayFlat);
+                    if (have < clearSpeed) lateral += awayFlat * (clearSpeed - have);
+                }
             }
         }
-        // Hasar ve ilk itki: aynı aracın bir çarpma döngüsünde bir kez (temas sürerken tekrar yazılmaz)
-        if (lastRammer != by || Time.time - lastRamDamage >= by.settings.vanRamMaxSeconds)
+        if (newCycle) { lastRamDamage = Time.time; lastRammer = by; }
+        if (firstHit)
         {
-            lastRamDamage = Time.time;
-            lastRammer = by;
+            damagedBy.Add(by);
             Rams++;
             AddDamage(by.settings.vanRamDamage);
             Vector3 push = carFwd * by.settings.vanRamPushSpeed;
@@ -586,7 +634,75 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             lateral += push - fwdFlat * along;
             Rammed?.Invoke(this, by);
         }
+        // Bütçe doldu: hız eklenmez, kalan hız sönümle biter (araç temasta kalırsa bekleme döngüsüne döner)
+        if (ShoveDistance >= maxShoveDistance) { Speed = 0f; lateral = Vector3.zero; }
         if (!rb.isKinematic) rb.linearVelocity = fwdFlat * Speed + lateral + Vector3.up * rb.linearVelocity.y;
+    }
+
+    // İtilme yönü: şeridin sağı ya da solu; iki yan da gövde kutusuyla (statik collider) ve tekerlek altı zeminle yoklanır.
+    // Seçim: ikisi de şeridi boşaltmaya yetiyorsa zaten kaydığı taraf (|yanal| ≥ 0.4 m), ortadaysa sağ (banket); biri yetiyorsa o;
+    // hiçbiri yetmiyorsa daha boş olan (bütçe boş mesafeyle sınırlı). Deterministik: gürültülü yanal işarete bağlı değil.
+    private Vector3 ChooseShoveDirection(LanePath lane, out float budget)
+    {
+        budget = 0f;
+        if (lane == null) { LastShoveReason = "şerit yok"; return Vector3.zero; }
+        float s = lane.Project(transform.position, out float lat, out _);
+        Vector3 right = Flat(lane.RightAt(s));
+        float probe = maxShoveDistance + 1f;
+        float freeR = FreeLateral(right, probe) - shoveProbeMargin, freeL = FreeLateral(-right, probe) - shoveProbeMargin;
+        float needR = LateralToClear(lane, right), needL = LateralToClear(lane, -right);
+        bool okR = freeR >= needR, okL = freeL >= needL;
+        Vector3 pick;
+        string why;
+        if (okR && okL) { pick = lat <= -0.4f ? -right : right; why = "iki yan boş, " + (lat <= -0.4f ? "sol (zaten solda)" : "sağ"); }
+        else if (okR) { pick = right; why = "sağ boş"; }
+        else if (okL) { pick = -right; why = "sol boş"; }
+        else { pick = freeR >= freeL ? right : -right; why = "iki yan dar, " + (freeR >= freeL ? "sağ" : "sol") + " daha boş"; }
+        budget = Mathf.Max(0f, Mathf.Min(maxShoveDistance, pick == right ? freeR : freeL));
+        LastShoveReason = why + " (boş sağ " + freeR.ToString("F1") + " / sol " + freeL.ToString("F1") + " m, gerek sağ " + needR.ToString("F1") + " / sol " + needL.ToString("F1") + " m, bütçe " + budget.ToString("F1") + " m)";
+        return pick;
+    }
+
+    // Şeridi boşaltmak için away yönünde gereken yanal yol: 9 şerit örneğinin (köşeler dahil) en kötüsünden; kavisli yolda köşe
+    // örneği merkezden daha içeride kalabilir (ölçüldü: merkez 3.66 m dışarıdayken ön köşe hâlâ şeritteydi, araç bekle-çarp
+    // döngüsüne giriyordu). Şeride yakın olmayan (başka kot) örnekler sayılmaz.
+    private float LateralToClear(LanePath lane, Vector3 away)
+    {
+        float half = lane.width * 0.5f;
+        float need = 0f;
+        foreach (var p in LaneSamples())
+        {
+            lane.Project(p, out _, out Vector3 on);
+            if (Mathf.Abs(p.y - on.y) > 3f) continue;
+            float along = Vector3.Dot(Horizontal(p - on), away);
+            need = Mathf.Max(need, half - along + 0.3f);
+        }
+        return need;
+    }
+
+    // Gövde kutusu dir yönünde kaç metre gidebilir: statik collider (kendi parçaları, zemin, hareketli nesneler hariç) ve
+    // dört tekerleğin altındaki zemin (0.5 m adımlarla) kesilince biter.
+    private float FreeLateral(Vector3 dir, float max)
+    {
+        float free = max;
+        Vector3 center = transform.TransformPoint(new Vector3((bodyMin.x + bodyMax.x) * .5f, (bodyMin.y + .25f + bodyMax.y) * .5f, (bodyMin.z + bodyMax.z) * .5f));
+        Vector3 half = new Vector3((bodyMax.x - bodyMin.x) * .5f, (bodyMax.y - bodyMin.y - .25f) * .5f, (bodyMax.z - bodyMin.z) * .5f);
+        foreach (var h in Physics.BoxCastAll(center, half, dir, transform.rotation, max, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (h.collider == null || h.collider.transform.IsChildOf(transform) || GroundProbe.IsMovingGameObject(h.collider)) continue;
+            bool ground = false;
+            foreach (var r in groundRoots) if (r != null && h.collider.transform.IsChildOf(r)) ground = true;
+            if (ground) continue;
+            free = Mathf.Min(free, h.distance);
+        }
+        for (float d = 0.5f; d <= free; d += 0.5f)
+        {
+            bool all = true;
+            for (int i = 0; i < wheelPointsLocal.Length && all; i++)
+                if (!GroundBelow(transform.TransformPoint(wheelPointsLocal[i]) + dir * d, out _)) all = false;
+            if (!all) { free = Mathf.Min(free, d - 0.5f); break; }
+        }
+        return Mathf.Max(0f, free);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -613,7 +729,9 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             if (body == null || body == rb || body.transform.IsChildOf(transform) || IsCrewOrCharacter(body)) continue;
             if (!InCargo(body.position)) continue;
             var stretcher = body.GetComponent<StretcherController>();
-            if (stretcher != null && stretcher.CarrierCount > 0) continue;
+            if (stretcher != null && (stretcher.CarrierCount > 0 || stretcher.Passenger != null)) continue; // taşınan ya da hastalı sedye bağlanmaz (review P3-2)
+            var cone = body.GetComponent<TrafficCone>();
+            if (cone != null && cone.IsHeld) continue; // elde taşınan koni bağlanmaz (review P3-2)
             held.Add(new HeldItem { t = body.transform, parent = body.transform.parent, rb = body, kinematic = body.isKinematic, interpolation = body.interpolation });
         }
         // Kangal (Rigidbody yok): Awake sırasında RopeCoil.All henüz dolmamış olabilir, sahneden aranır
@@ -654,14 +772,66 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     }
 
     // ---------------------------------------------------------------------------------------------
+    // Yük bölümünde ayakta duran ekip (itilme sırasında)
+    // ---------------------------------------------------------------------------------------------
+
+    // İtilme başlarken yük bölümünde ayakta duran oyuncu / bot minibüse bağlanıp onunla taşınır (hareket, etkileşim ve collider'lar
+    // kapalı: hareketli duvar / zemin collider'larıyla itişmez, havada kalmaz, duvardan geçmez). Minibüs durunca serbest bırakılır
+    // ve itilme yönünde yere düşer (ragdoll). Zaten yerde (ragdoll) olan ekip fizikte kalır; oturan ekip zaten bağlıdır.
+    private void HoldRiders()
+    {
+        if (riders.Count > 0) return;
+        if (player != null && player.isActiveAndEnabled && !player.IsDown && !CrewInside && InCargo(player.transform.position))
+        {
+            if (player.HeldStretcher != null) player.HeldStretcher.Release(player);
+            riders.Add(Attach(player.transform));
+        }
+        if (bot != null && bot.isActiveAndEnabled && !bot.IsDown && !CrewInside && InCargo(bot.transform.position))
+        {
+            bot.ReleaseHeld();
+            riders.Add(Attach(bot.transform));
+        }
+    }
+
+    private SeatedCrew Attach(Transform root)
+    {
+        var crew = new SeatedCrew { root = root, parent = root.parent, animator = root.GetComponent<Animator>() };
+        DisableForSeat(crew);
+        root.SetParent(transform, true);
+        return crew;
+    }
+
+    private void ReleaseRiders()
+    {
+        if (riders.Count == 0) return;
+        Vector3 dir = Horizontal(lastShoveVelocity);
+        dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Flat(transform.forward);
+        Vector3 knock = dir * riderKnockSpeed + Vector3.up * 1f;
+        foreach (var crew in riders)
+        {
+            if (crew.root == null) continue;
+            crew.root.SetParent(crew.parent, true);
+            foreach (var c in crew.disabledColliders) if (c != null) c.enabled = true;
+            foreach (var b in crew.disabled) if (b != null) b.enabled = true;
+            if (player != null && crew.root == player.transform) { player.Teleport(player.transform.position, player.transform.rotation); player.KnockDown(knock); }
+            else if (bot != null && crew.root == bot.transform) bot.HitByVehicle(null, knock);
+            RidersKnocked++;
+        }
+        riders.Clear();
+        Physics.SyncTransforms();
+    }
+
+    // ---------------------------------------------------------------------------------------------
     // Ekip: oturma ve inme
     // ---------------------------------------------------------------------------------------------
 
     public void SeatCrew()
     {
         if (CrewInside) return;
+        if (State == VanState.Parked) SetDriving(); // park hâlinde oturtulursa (test / API) ekip inebilsin: TryExit yalnız Driving'de (review P3-1)
         CrewInside = true;
         HasExited = false;
+        cameraYawPending = true;
         if (player != null) Seat(player.transform, driverSeat, 1);
         if (bot != null) Seat(bot.transform, passengerSeat, 2);
         if (orbitCamera != null)
@@ -766,6 +936,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     }
 
     private static Vector3 Flat(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-6f ? v.normalized : Vector3.forward; }
+    private static Vector3 Horizontal(Vector3 v) { v.y = 0f; return v; }
 
     // İniş noktası: şoför sol kapıdan (+X), yolcu sağ kapıdan (−X); yer yoksa arka sol / arka / arka sağ; zemin raycast, kapsül boş.
     private Vector3 ExitPoint(bool driver, List<Vector3> used)
@@ -787,10 +958,15 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             if (Physics.CheckCapsule(p + Vector3.up * 0.45f, p + Vector3.up * 1.3f, 0.28f, ~0, QueryTriggerInteraction.Ignore)) continue;
             return p;
         }
-        if (GroundBelow(fallback + Vector3.up * 0.5f, out RaycastHit g)) fallback = g.point;
+        // Hiçbir aday uymadı: ilk aday, zemin 8 m aşağıya kadar aranır (banket kenarı derinse havada doğmasın; review P3-6);
+        // zemin yine yoksa arka kapı adayı (yol kotu).
+        if (GroundBelow(fallback + Vector3.up * 0.5f, out RaycastHit g)) return g.point;
+        if (GroundProbe.Find(fallback + Vector3.up * 1f, 9f, out RaycastHit deep)) return deep.point;
+        Vector3 rear = transform.TransformPoint(candidates[2]);
+        if (GroundProbe.Find(rear + Vector3.up * 1f, 9f, out RaycastHit rg)) return rg.point;
         return fallback;
     }
 
     // Test: hasarı sıfırlar (senaryolar arası).
-    public void ResetDamageForTest() { Damage = 0f; Rams = 0; Impacts = 0; }
+    public void ResetDamageForTest() { Damage = 0f; Rams = 0; Impacts = 0; damagedBy.Clear(); }
 }

@@ -9,7 +9,8 @@ using UnityEngine;
 // Bölüm 1: boş sedye tek kişi, hastalı sedye iki kişi kabul testi.
 // (a) boş sedyeyi yalnız oyuncu kaldırır, bot bağlanmaz; (b) oyuncu yürüyünce sedye birlikte gider, serbest uç yere sürtmez,
 // tutulan uç elde; (c) yere bırakılıp hasta konunca iki kişi gerekir, bot yardım eder; hasta inince bot bırakır;
-// (e) minibüs yük zeminindeki boş sedyeyi dışarıdaki oyuncu tek başına alır ve geri yürüyerek çıkarır; (d) exception yok.
+// (e) minibüs yük zeminindeki boş sedyeyi dışarıdaki oyuncu tek başına alır ve geri yürüyerek çıkarır; (f) tek taşıyıcı duvar
+// koruması: minibüs gövdesine doğru dönüş / adım reddedilir (serbest uç duvara girmez); (d) exception yok.
 [InitializeOnLoad]
 public static class Bolum1StretcherSoloVerify
 {
@@ -202,6 +203,45 @@ public static class Bolum1StretcherSoloVerify
         Check("(e2) oyuncu arkaya yürüyünce sedye minibüsten >2 m çıkar", vanMoved > 2f && stretcher.IsRaised, vanMoved.ToString("F2") + " m");
         interaction.Interact();
         yield return Seconds(0.6f);
+
+        // (f) tek taşıyıcı duvar koruması: sedye minibüsün şerit tarafındaki (+X, şoför) dış duvarına paralel (1.1 m açıkta), oyuncu
+        // arka sapta. Minibüse doğru dönüş / adım serbest ucu (2.1 m) gövdeye sokacağından reddedilir; saplar gövdeye girmez; ters
+        // yöne (yola) dönüş serbesttir. (−X tarafı denendi: korkuluk 1.2 m ötede, ters yön de haklı olarak engelleniyordu.)
+        var van = ServiceVanDriver.Instance;
+        if (van != null)
+        {
+            Vector3 vanFwd = Flat(van.Forward);
+            Vector3 toVan = -Flat(van.transform.right); // sedye +X tarafında: minibüse doğru = −X
+            Vector3 beside = van.transform.TransformPoint(new Vector3(van.bodyMax.x + 1.1f, 0f, (van.bodyMin.z + van.bodyMax.z) * .5f));
+            if (GroundProbe.Find(beside + Vector3.up * 1.5f, 5f, out ground)) beside.y = ground.point.y + 0.02f;
+            stretcher.Teleport(beside, Quaternion.LookRotation(vanFwd));
+            yield return null;
+            TeleportToHandle(player, stretcher, false);
+            yield return null; yield return null;
+            interaction.Interact();
+            yield return Seconds(Mathf.Max(0.4f, stretcher.liftTime + 0.1f));
+            bool raisedBeside = stretcher.IsRaised && stretcher.CarrierCount == 1;
+            int turn0 = player.CarryTurnBlocks, move0 = player.CarryMoveBlocks;
+            yield return Walk(player, toVan, 1.2f);
+            int turnBlocks = player.CarryTurnBlocks - turn0, moveBlocks = player.CarryMoveBlocks - move0;
+            float yawToVan = Vector3.Angle(Flat(player.transform.forward), toVan);
+            // Saplar yük bölümü iç duvarının (|x| = 0.92–1.02) dışında kalmalı; gövde görseli 1.3'e kadar uzanır ama collider iç duvardır
+            float frontX = Mathf.Abs(van.transform.InverseTransformPoint(stretcher.handleFront.position).x);
+            float rearX = Mathf.Abs(van.transform.InverseTransformPoint(stretcher.handleRear.position).x);
+            // Oyuncu da collider sınırının dışında (CharacterController şasi kutusunda durur: |x| ≈ 1.29; görsel gövde 1.3)
+            float playerX = Mathf.Abs(van.transform.InverseTransformPoint(player.transform.position).x);
+            bool handlesOutside = frontX > 1.0f && rearX > 1.0f && playerX > 1.0f;
+            string reason = player.LastCarryBlockReason;
+            yield return Walk(player, -toVan, 0.8f);
+            float yawAway = Vector3.Angle(Flat(player.transform.forward), -toVan);
+            Check("(f) tek taşıyıcı duvar koruması: minibüse dönüş reddedilir (serbest uç gövdeye girmez), saplar iç duvarın dışında kalır, ters yön serbest",
+                raisedBeside && turnBlocks > 0 && yawToVan > 45f && handlesOutside && yawAway < 30f && stretcher.IsRaised,
+                "kalkık " + raisedBeside + ", dönüş engeli " + turnBlocks + ", adım engeli " + moveBlocks + " (" + reason + "), minibüse yaw " + yawToVan.ToString("F0") + "°, saplar dışarıda " + handlesOutside + " (|x| ön " + frontX.ToString("F2") + " arka " + rearX.ToString("F2") + ")"
+                + ", ters yön yaw " + yawAway.ToString("F0") + "°");
+            interaction.Interact();
+            yield return Seconds(0.6f);
+        }
+        else Check("(f) tek taşıyıcı duvar koruması", false, "ServiceVanDriver yok");
         Check("(d) konsolda exception yok", exceptions == 0, "sayı " + exceptions);
     }
 

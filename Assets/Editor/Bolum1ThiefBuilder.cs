@@ -533,7 +533,7 @@ public static class Bolum1ThiefBuilder
                 && NavMesh.CalculatePath(a.position, b.position, NavMesh.AllAreas, navPath) && navPath.status == NavMeshPathStatus.PathComplete;
             float len = 0f; for (int i = 1; i < navPath.corners.Length; i++) len += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
             Line("NavMesh: " + NavMeshPath + " (" + navInfo + "); patika " + pathOn + "/" + path.Count + ", rampa " + rampOn + "/" + ramp.Count + ", durak " + stopOn + ", yol " + roadOn + ", kaya çıkıntısı " + ledgeOn
-                + " (beklenen: hayır); yol → patika yolu " + roadToPath + " (" + len.ToString("F1", Inv) + " m); yol seviyesi y " + roadY.ToString("F2", Inv) + ", patika y " + pathY.ToString("F2", Inv));
+                + " (bilgi: çıkıntı NavMesh'te olsa da hırsız seviye kuralıyla oraya gitmez, bkz. U4-6; main'de de True); yol → patika yolu " + roadToPath + " (" + len.ToString("F1", Inv) + " m); yol seviyesi y " + roadY.ToString("F2", Inv) + ", patika y " + pathY.ToString("F2", Inv));
             if (pathOn < path.Count / 2 || rampOn < ramp.Count / 2 || !stopOn || !roadToPath) throw new Exception("NavMesh eksik: patika " + pathOn + "/" + path.Count + ", rampa " + rampOn + "/" + ramp.Count + ", durak " + stopOn + ", yol→patika " + roadToPath);
         }
         finally { instance.Remove(); }

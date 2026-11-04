@@ -122,6 +122,21 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         return null;
     }
 
+    // Taşıma kilidi: aday poz (kök konumu + dönüş) izinli mi? İki taşıyıcıda bot izleyebilmeli (CanFollowFrom), tek taşıyıcıda
+    // serbest uç collider'a girmemeli (SoloCarryClear). Reddin nedeni LastCarryBlockReason'a yazılır.
+    private bool CarryPoseAllowed(Vector3 pos, Quaternion rot, StretcherHelperBot follower)
+    {
+        if (follower != null)
+        {
+            if (follower.CanFollowFrom(pos, rot)) return true;
+            LastCarryBlockReason = follower.LastBlockReason;
+            return false;
+        }
+        if (HeldStretcher == null || HeldStretcher.SoloCarryClear(this, pos, rot, out string why)) return true;
+        LastCarryBlockReason = why;
+        return false;
+    }
+
     // Işınlama (test ve yeniden doğma).
     public void Teleport(Vector3 position, Quaternion rotation)
     {
@@ -322,15 +337,19 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         // "Mevcut poz zaten engelliyse kilidi kaldır" kuralı denendi ve kaldırıldı: sınırda cırcır etkisi yapıp oyuncuyu
         // yarım hızla duvara sokuyordu (ölçüldü: duvarda bot gövdesi 38.6 cm içeride).
         StretcherHelperBot follower = stretcherWallGuard ? FollowerBot() : null;
+        // Tek taşıyıcı (boş sedye): bot yok, serbest uç 2.1 m ötede havada; aynı kilit StretcherController.SoloCarryClear ile
+        // (serbest uç ve sedye gövdesi duvara / minibüs gövdesine girmez).
+        bool soloGuard = stretcherWallGuard && follower == null && HeldStretcher != null && HeldStretcher.IsRaised && HeldStretcher.CarrierCount == 1;
+        bool guarded = follower != null || soloGuard;
         CarryBlockedNow = false;
         if (FaceCameraYaw && cameraTransform != null && HasControl)
         {
             // Birinci şahıs: gövde kamera yönüne (yaw) bakar; E4 kilidi burada da geçerli (bot izleyemeyecekse dönmez). Kontrol
             // yokken (itme / tackle / fırlatma penceresi, itilme) TP'deki gibi dönmez: FaceForAttack'in hırsıza çevirdiği yüz korunur.
             Quaternion target = Quaternion.LookRotation(forward, Vector3.up);
-            if (follower == null || follower.CanFollowFrom(transform.position, target))
+            if (!guarded || CarryPoseAllowed(transform.position, target, follower))
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * dt);
-            else { CarryTurnBlocks++; CarryBlockedNow = true; LastCarryBlockReason = follower.LastBlockReason; }
+            else { CarryTurnBlocks++; CarryBlockedNow = true; }
         }
         else if (wish.sqrMagnitude > 0.01f)
         {
@@ -338,9 +357,9 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             // Dönüş İSTENEN SON yöne göre sınanır: o yönde sedye dik yüzeye bakacaksa dönüş hiç başlamaz. Ara adımlar
             // sınanmaz; yoksa dar rampada 180° dönüşte 2.1 m'lik süpürme yayı her iki yanda da bankı kestiğinden dönüş
             // imkânsızlaşıyordu (ölçüldü: 86.849 engelli kare, çıkış 30 sn 0 m/sn). Süpürme sırasında botu E3 kuralı düz tutar.
-            if (follower == null || follower.CanFollowFrom(transform.position, target))
+            if (!guarded || CarryPoseAllowed(transform.position, target, follower))
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * dt);
-            else { CarryTurnBlocks++; CarryBlockedNow = true; LastCarryBlockReason = follower.LastBlockReason; }
+            else { CarryTurnBlocks++; CarryBlockedNow = true; }
         }
 
         // Yerçekimi ve zıplama
@@ -398,13 +417,12 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         }
 
         Vector3 before = transform.position;
-        // E4: bu yöndeki adım botu dik yüzeye/collider içine sokacaksa yatay istek sıfırlanır (itilme kalır).
-        if (follower != null && !sliding && wish.sqrMagnitude > 0.01f && !follower.CanFollowFrom(before + wish * dt, transform.rotation))
+        // E4: bu yöndeki adım botu dik yüzeye/collider içine sokacaksa (tek taşıyıcıda: serbest ucu) yatay istek sıfırlanır (itilme kalır).
+        if (guarded && !sliding && wish.sqrMagnitude > 0.01f && !CarryPoseAllowed(before + wish * dt, transform.rotation, follower))
         {
             wish = Vector3.zero;
             CarryMoveBlocks++;
             CarryBlockedNow = true;
-            LastCarryBlockReason = follower.LastBlockReason;
         }
         moveWish = wish;
         Vector3 horizontal = NpcBody.RestrictMotion(this, wish * dt + knock, controller.radius);

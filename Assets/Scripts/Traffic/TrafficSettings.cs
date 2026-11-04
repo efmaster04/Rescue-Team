@@ -83,6 +83,8 @@ public class TrafficSettings : ScriptableObject
     [Min(0f)] public float vanRamPushSpeed = 3f;
     [Tooltip("Çarpma en fazla bu kadar sürer (sn); sonra araç yeniden değerlendirir (hâlâ kapalıysa yine bekler).")]
     [Min(1f)] public float vanRamMaxSeconds = 12f;
+    [Tooltip("Çarparken ön tampon minibüs kenarından bu kadar geride tutulur (m): kinematik araç minibüsü fizikle önüne katmaz, itme ILaneObstacle.Ram'dan gelir.")]
+    [Min(0.05f)] public float vanRamContactMargin = 0.3f;
 
     [Header("Ambulans (kullanıcı kararı 8)")]
     [Tooltip("Ambulansın doğmasından bu kadar sn önce EastBound'a araç çıkmaz.")]

@@ -29,10 +29,11 @@ public static class Bolum1DriveVerify
     private const string ReportKey = "Bolum1DriveVerify.Report";
     private const string OkKey = "Bolum1DriveVerify.Ok";
     private const string BatchKey = "Bolum1DriveVerify.Batch";
+    // Editör menüsünden koşan öbür doğrulamalar (batchmode dışı). Batchmode'da liste gerekmez: sürüş girişi varsayılan atlanır.
     private static readonly string[] OtherStageKeys =
     {
         "Bolum1AmbulanceVerify.Stage", "Bolum1AnimVerify.Stage", "Bolum1TrafficVerify.Stage", "Bolum1Verify.Stage",
-        "Bolum1FirstPersonVerify.Stage", "MissionBridgeVerify.Stage", "OfficeGarageVerify.Stage",
+        "Bolum1FirstPersonVerify.Stage", "MissionBridgeVerify.Stage", "OfficeGarageVerify.Stage", "Bolum1StretcherSoloVerify.Stage",
     };
 
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
@@ -44,15 +45,25 @@ public static class Bolum1DriveVerify
     {
         if (SessionState.GetString(StageKey, "") == "play")
             EditorApplication.update += PlayTick;
+        // Edit modunda derleme sonrası bayat doğrulama anahtarları temizlenir: elle durdurulan / yarım kalan bir test bir sonraki
+        // Play'de sürüş girişini sessizce atlamasın (review P2-5). Play'e girerken (test başlarken) dokunulmaz.
+        if (!EditorApplication.isPlayingOrWillChangePlaymode && !Application.isBatchMode)
+        {
+            foreach (var k in OtherStageKeys)
+                if (!string.IsNullOrEmpty(SessionState.GetString(k, ""))) { Debug.Log("Bolum1DriveVerify: bayat doğrulama anahtarı temizlendi: " + k); SessionState.EraseString(k); }
+            if (!string.IsNullOrEmpty(SessionState.GetString(StageKey, ""))) SessionState.EraseString(StageKey);
+        }
     }
 
-    // Öbür doğrulamalar Play'deyken sürüş girişi atlanır (eski başlangıç); yalnız bu doğrulama ve normal oyun girişi yaşar.
+    // Sürüş girişi yalnız bu doğrulamada ve normal oyun girişinde yaşar. Batchmode'daki HER test (yeni yazılanlar dahil, anahtar
+    // listesine girmeseler de) ve editörde koşan bilinen doğrulamalar girişi atlar (eski başlangıç: minibüs parkta, ekip PlayerSpawn'da).
+    // Ölçüldü: Bolum1StretcherSoloVerify listede yokken ekip minibüste oturdu, oyuncu yürümedi, sedye kalkmadı (4 FAIL).
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void SkipIntroInOtherTests()
     {
         bool mine = SessionState.GetString(StageKey, "") == "play";
         bool other = OtherStageKeys.Any(k => !string.IsNullOrEmpty(SessionState.GetString(k, "")));
-        DriveIntro.SkipForTests = !mine && other;
+        DriveIntro.SkipForTests = !mine && (Application.isBatchMode || other);
     }
 
     [MenuItem("Rescue Team/Bölüm 1/Sürüş Girişi: Doğrula")]
@@ -241,6 +252,7 @@ public static class Bolum1DriveVerify
         yield return PhaseDriveAndPark();
         yield return PhaseBadParkRam();
         yield return PhaseOncomingLane();
+        yield return PhaseAmbulanceBlocked();
     }
 
     // (a) Başlangıç: ekip minibüste, minibüs EastBound'da s ≈ startS, görev saati ve hırsızlar durmuş.
@@ -263,6 +275,7 @@ public static class Bolum1DriveVerify
             seated && onLane && held && cargo && Van.State == ServiceVanDriver.VanState.Driving && !Van.Body.isKinematic && seatedAnim,
             "oturma " + seated + " (" + seatDetail + "; anim " + seatedAnim + "), şerit s " + s.ToString("F1", Inv) + " yanal " + lateral.ToString("F2", Inv) + " m → " + onLane + ", saat durdu " + held + " (Elapsed " + Mission.Elapsed.ToString("F2", Inv)
             + "), yük " + Van.HeldCargoCount + " parça, durum " + Van.State + ", kamera hedef " + (Van.orbitCamera != null ? Van.orbitCamera.target.name : "YOK") + " uzaklık " + (Van.orbitCamera != null ? Van.orbitCamera.distance.ToString("F1", Inv) : "-"));
+        yield return CaptureSeats();
         Van.SetTestInput(1f, 0f);
         yield return Seconds(1.5f);
         bool movingNoExit = Mathf.Abs(Van.Speed) > 2f && !Van.TryExit() && GameNotice.LastMessage == ServiceVanDriver.NoExitWhileMovingText;
@@ -372,6 +385,13 @@ public static class Bolum1DriveVerify
         Van.TeleportTo(east.PointAt(vanS), Quaternion.LookRotation(-east.TangentAt(vanS), Vector3.up), true);
         yield return Seconds(.5f);
         bool blocks = Van.BlocksLane(east, out float edge, out float far, out _);
+        // (c0) ekip yük bölümünde ayakta: itilirken minibüsle taşınır, durunca yere düşer (havada kalmaz, duvardan geçmez)
+        Vector3 cargoP = Van.transform.TransformPoint(new Vector3(.3f, Bolum1ServiceVan.CargoFloor + .02f, .4f));
+        Vector3 cargoB = Van.transform.TransformPoint(new Vector3(-.3f, Bolum1ServiceVan.CargoFloor + .02f, 1.6f));
+        player.Teleport(cargoP, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
+        bot.transform.SetPositionAndRotation(cargoB, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
+        yield return Seconds(.5f);
+        bool crewInCargo = !player.IsDown && !bot.IsDown && Van.InsideFootprint(player.transform.position, 0f) && Van.InsideFootprint(bot.transform.position, 0f);
         var v = Traffic.ForceSpawn(true, TrafficVehicleType.Sedan);
         if (v == null) throw new Exception("EastBound'a Sedan çıkarılamadı");
         yield return Until(() => v == null || (v.BlockerKind == LaneOccupancy.BlockerKind.Obstacle && v.Follower.Speed <= .01f), 45f, "araç minibüsün gerisinde durur");
@@ -385,14 +405,37 @@ public static class Bolum1DriveVerify
         yield return Until(() => Van.Rams > 0, 15f, "araç minibüse değer");
         yield return Until(() => Vector3.Distance(Flat(before), Flat(Van.transform.position)) > .5f, 15f, "minibüs itilir");
         float pushedAt = Time.time;
-        yield return Until(() => v == null || v.Follower.Distance > far + 8f, 45f, "araç minibüsü geçip devam eder");
+        Line("  itilme: " + Van.LastShoveReason);
+        float passEnd = Time.time + 45f;
+        string lastState = "";
+        while (Time.time < passEnd && !(v == null || v.Follower.Distance > far + 8f)) { lastState = RamState(v); yield return null; }
+        if (!(v == null || v.Follower.Distance > far + 8f)) throw new Exception("beklenen olmadı: araç minibüsü geçip devam eder — " + lastState);
         yield return Until(() => Van.State == ServiceVanDriver.VanState.Parked, 15f, "minibüs yeniden durur");
         float pushed = Vector3.Distance(Flat(before), Flat(Van.transform.position));
         bool upright = Vector3.Angle(Van.transform.up, Vector3.up) < 12f;
-        Check("(c1) şeritte bırakılan minibüs: araç " + (Bolum1TrafficBuilder.Settings.vanStopMargin).ToString(Inv) + " m geride durur, korna çalar, ~5 sn bekler, sonra çarpıp iter ve devam eder",
-            blocks && Mathf.Abs(gap - Bolum1TrafficBuilder.Settings.vanStopMargin) < .8f && horns >= 2 && waited > 4.5f && waited < 6.5f && Van.Rams >= 1 && pushed > .5f && pushed < 30f && upright && (v == null || v.Follower.Distance > far + 8f),
+        bool clearedLane = !Van.BlocksLane(east, out _, out _, out _);
+        // Statik engelle (korkuluk, kaya) kesişme yok; yük bölümündeki serbest ekipman (koni, sedye, kangal) gövde kutusunun içindedir, sayılmaz
+        var foreign = Van.OverlapReport().Where(n => !n.StartsWith("ServiceVan_Cone") && !n.StartsWith("Stretcher") && !n.Contains("RopeCoil")).ToList();
+        bool grounded = foreign.Count == 0;
+        Check("(c1) şeritte bırakılan minibüs: araç " + (Bolum1TrafficBuilder.Settings.vanStopMargin).ToString(Inv) + " m geride durur, korna çalar, ~5 sn bekler, sonra çarpıp iter (sınırlı: 0.5–" + Van.maxShoveDistance.ToString(Inv) + " m, dik, şerit boşalır) ve devam eder",
+            blocks && Mathf.Abs(gap - Bolum1TrafficBuilder.Settings.vanStopMargin) < .8f && horns >= 2 && waited > 4.5f && waited < 6.5f && Van.Rams == 1 && pushed > .5f && pushed <= Van.maxShoveDistance + .5f && upright && clearedLane && grounded && (v == null || v.Follower.Distance > far + 8f),
             "kapatıyor " + blocks + " (s " + edge.ToString("F1", Inv) + "–" + far.ToString("F1", Inv) + "), boşluk " + gap.ToString("F2", Inv) + " m (ön tampon s " + stopDist.ToString("F1", Inv) + "), korna " + horns + ", bekleme " + waited.ToString("F2", Inv)
-            + " sn, çarpma " + Van.Rams + ", itilme " + pushed.ToString("F2", Inv) + " m (" + (pushedAt - stopT).ToString("F1", Inv) + " sn'de), dik " + upright + ", araç " + (v == null ? "kayboldu" : "s " + v.Follower.Distance.ToString("F1", Inv)) + ", durum " + Van.State);
+            + " sn, çarpma " + Van.Rams + " (hasar %" + Van.Damage.ToString("F0", Inv) + "), itilme " + pushed.ToString("F2", Inv) + " m (" + (pushedAt - stopT).ToString("F1", Inv) + " sn'de; yön: " + Van.LastShoveReason + "), dik " + upright + ", şerit boşaldı " + clearedLane + ", statik kesişme yok " + grounded + (grounded ? "" : " [" + string.Join(",", foreign) + "]")
+            + ", araç " + (v == null ? "kayboldu" : "s " + v.Follower.Distance.ToString("F1", Inv)) + ", durum " + Van.State);
+        // (c0) ekip: minibüse bağlı değil, ayak izinin içinde, yerde (ragdoll ya da ayakta), havada değil
+        Vector3 hips = player.knockdown.GroundPosition;
+        bool playerOk = !player.transform.IsChildOf(Van.transform) && player.IsDown && Van.InsideFootprint(hips, .3f) && GroundProbe.Find(hips + Vector3.up * .3f, 1.2f, out _);
+        Vector3 botPos = bot.GroundPosition;
+        bool botOk = !bot.transform.IsChildOf(Van.transform) && Van.InsideFootprint(botPos, .3f) && GroundProbe.Find(botPos + Vector3.up * .3f, 1.2f, out _);
+        Check("(c0) yük bölümünde ayakta duran ekip itilirken minibüsle taşınır, durunca yere düşer (ragdoll), minibüsün içinde kalır (havada değil, duvardan geçmez)",
+            crewInCargo && Van.RidersKnocked == 2 && Van.RiderCount == 0 && playerOk && botOk,
+            "başta içeride " + crewInCargo + ", taşınan " + Van.RidersKnocked + ", hâlâ bağlı " + Van.RiderCount + "; oyuncu " + playerOk + " (yerde " + player.IsDown + ", kalça yerel " + V(Van.transform.InverseTransformPoint(hips)) + "), bot " + botOk + " (yerde " + bot.IsDown + ", yerel " + V(Van.transform.InverseTransformPoint(botPos)) + ")");
+        // Temizlik: ekip yol kenarına
+        yield return Until(() => !bot.IsDown, 8f, "bot kalkar");
+        Vector3 aside = Van.transform.TransformPoint(new Vector3(Van.bodyMax.x + 3f, .5f, 0f));
+        if (GroundProbe.Find(aside + Vector3.up * 1f, 6f, out RaycastHit ag)) aside = ag.point + Vector3.up * .02f;
+        player.RespawnAt(aside, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
+        bot.transform.position = aside + Flat(Van.Forward) * 1.5f;
 
         // Hasar sonuca ulaşır: saha izleyicisi (oturum) → FieldPayout
         var session = new MissionBridge.Session { jobId = "test", jobTitle = "Sürüş testi", fieldScene = "Bolum1_Ucurum", officeScene = "-", jobPayment = 1000, distanceKm = 10f };
@@ -444,6 +487,133 @@ public static class Bolum1DriveVerify
             "batı şeridi " + blocksWest + " (s " + edge.ToString("F1", Inv) + "–" + far.ToString("F1", Inv) + "), doğu şeridi " + blocksEast + ", karşıdan " + headOn + ", ön tampon s " + frontS.ToString("F1", Inv) + ", boşluk " + gap.ToString("F2", Inv)
             + " m, 2.5 sn sonra hâlâ bekliyor " + stillWaiting + ", bekleme " + waited.ToString("F2", Inv) + " sn, itilme " + pushed.ToString("F2", Inv) + " m, hasar %" + Van.Damage.ToString("F1", Inv));
         Traffic.ClearVehicles();
+    }
+
+    // Çarpma / itilme durumu (zaman aşımı teşhisi)
+    private static string RamState(TrafficVehicle v)
+    {
+        float s = east.Project(Van.transform.position, out float lat, out _);
+        bool blocks = Van.BlocksLane(east, out float e, out float f, out _);
+        return "minibüs s " + s.ToString("F1", Inv) + " yanal " + lat.ToString("F2", Inv) + " m, durum " + Van.State + ", itilme " + Van.ShoveDistance.ToString("F2", Inv) + " m, kapatıyor " + blocks
+            + (blocks ? " (" + e.ToString("F1", Inv) + "–" + f.ToString("F1", Inv) + ")" : "") + ", kesişen [" + string.Join(",", Van.OverlapReport()) + "], yön: " + Van.LastShoveReason
+            + " | araç " + (v == null ? "yok" : "s " + v.Follower.Distance.ToString("F1", Inv) + " hız " + v.Follower.Speed.ToString("F1", Inv) + " engel " + v.BlockerKind + " çarpıyor " + (v.RammingObstacle != null) + " bekliyor " + (v.WaitingObstacle != null)
+            + " bekleme " + v.ObstacleWaitTime.ToString("F1", Inv) + " çarpma kararı " + v.ObstacleRams + " durak " + (v.Follower.HasStop ? v.Follower.StopDistance.ToString("F1", Inv) : "-"));
+    }
+
+    // (e) Ambulans: şeridi kapatan minibüsün gerisinde durur, korna çalar, ÇARPMAZ (kurtarma aracı); görev saati işler (kötü park
+    // zaman kaybettirir); minibüs çekilince devam edip durağa varır.
+    private static IEnumerator PhaseAmbulanceBlocked()
+    {
+        float vanS = Mathf.Clamp(Mission.StopDistance - 25f, 20f, 80f);
+        Van.ResetDamageForTest();
+        Van.TeleportTo(east.PointAt(vanS), Quaternion.LookRotation(-east.TangentAt(vanS), Vector3.up), true);
+        yield return Seconds(.5f);
+        bool blocks = Van.BlocksLane(east, out float edge, out _, out _);
+        Vector3 vanPos = Van.transform.position;
+        var schedule = UnityEngine.Object.Instantiate(Mission.schedule);
+        schedule.firstArrival = 0f;
+        schedule.interval = 99999f;
+        Mission.Begin(schedule);
+        yield return Until(() => Mission.Ambulances.Count > 0, 5f, "ambulans doğar");
+        var amb = Mission.Ambulances[0];
+        yield return Until(() => amb == null || (amb.BlockingObstacle == (ILaneObstacle)Van && amb.Follower.Speed <= .01f), 60f, "ambulans minibüsün gerisinde durur");
+        float gap = amb != null ? amb.GapToLeader : -1f;
+        float frontS = amb != null ? amb.Follower.FrontS : -1f;
+        float elapsed0 = Mission.Elapsed;
+        float waitFor = Bolum1TrafficBuilder.Settings.vanWaitSeconds + 3f;
+        yield return Seconds(waitFor);
+        bool stillWaiting = amb != null && amb.Follower.Speed <= .01f && amb.BlockingObstacle == (ILaneObstacle)Van && amb.Phase == AmbulancePhase.Approaching;
+        int horns = amb != null ? amb.ObstacleHorns : 0;
+        float waited = amb != null ? amb.ObstacleWaitTime : 0f;
+        bool noRam = Van.Rams == 0 && Van.Damage == 0f && Van.State == ServiceVanDriver.VanState.Parked && Vector3.Distance(vanPos, Van.transform.position) < .05f;
+        bool clockRan = !Mission.ClockHeld && Mission.Elapsed - elapsed0 > waitFor - 1f;
+        // Minibüs çekilir (park alanına): ambulans devam eder, durağa varır
+        Van.TeleportTo(zone.transform.position, zone.transform.rotation, true);
+        float moveT = Time.time;
+        yield return Until(() => amb == null || amb.Phase == AmbulancePhase.Waiting, 60f, "ambulans durağa varır");
+        bool arrived = amb != null && amb.Phase == AmbulancePhase.Waiting && amb.BlockingObstacle == null;
+        Check("(e) ambulans şeridi kapatan minibüsün " + Bolum1TrafficBuilder.Settings.vanStopMargin.ToString(Inv) + " m gerisinde durur, korna çalar, 5 sn geçse de ÇARPMAZ (hasar / itilme yok), görev saati işler; minibüs çekilince durağa varır",
+            blocks && Mathf.Abs(gap - Bolum1TrafficBuilder.Settings.vanStopMargin) < .8f && stillWaiting && horns >= 2 && noRam && clockRan && arrived,
+            "kapatıyor " + blocks + " (kenar s " + edge.ToString("F1", Inv) + ", ambulans ön tampon s " + frontS.ToString("F1", Inv) + "), boşluk " + gap.ToString("F2", Inv) + " m, " + waitFor.ToString("F0", Inv) + " sn sonra hâlâ bekliyor " + stillWaiting
+            + " (bekleme " + waited.ToString("F1", Inv) + " sn), korna " + horns + ", çarpma yok " + noRam + " (çarpma " + Van.Rams + ", hasar %" + Van.Damage.ToString("F0", Inv) + "), saat işledi " + clockRan + " (+" + (Mission.Elapsed - elapsed0).ToString("F1", Inv)
+            + " sn), varış " + arrived + " (çekildikten " + (Time.time - moveT).ToString("F1", Inv) + " sn sonra)");
+        var quiet = UnityEngine.Object.Instantiate(Mission.schedule);
+        quiet.firstArrival = 99999f;
+        Mission.Begin(quiet); // ambulans kaldırılır
+    }
+
+    // Koltuk / direksiyon / FP kamera görsel denetimi: TP ve FP (sürerken), dışarıdan ön camdan, yandan kesit (gövde gizli).
+    private static IEnumerator CaptureSeats()
+    {
+        var orbit = Van.orbitCamera;
+        yield return CaptureMain("drive_seat_tp");
+        orbit.SetMode(OrbitCamera.ViewMode.FirstPerson, true);
+        yield return null; yield return null;
+        yield return CaptureMain("drive_seat_fp");
+        orbit.SetMode(OrbitCamera.ViewMode.ThirdPerson, true);
+        yield return null;
+        Vector3 look = Van.driverSeat.position + Vector3.up * .75f;
+        Vector3 eye = Van.transform.TransformPoint(new Vector3(.35f, 1.75f, Van.bodyMin.z - 2.4f));
+        yield return CaptureFrom("drive_seat_windshield", eye, look, 45f);
+        // Yandan kesit: gövde görseli geçici gizli (koltuk / direksiyon / karakter pozu ölçülür)
+        var visual = Van.transform.Find(Bolum1ServiceVan.VisualName);
+        var renderers = visual != null ? visual.GetComponentsInChildren<Renderer>().Where(r => r.enabled).ToList() : new List<Renderer>();
+        foreach (var r in renderers) r.enabled = false;
+        eye = Van.transform.TransformPoint(new Vector3(Van.bodyMax.x + 3.2f, 1.6f, Van.driverSeat.localPosition.z));
+        yield return CaptureFrom("drive_seat_side_cutaway", eye, Van.driverSeat.position + Vector3.up * .6f, 40f);
+        foreach (var r in renderers) r.enabled = true;
+        var head = player.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Head);
+        Line("  koltuk ölçüleri: şoför kökü yerel " + V(Van.transform.InverseTransformPoint(player.transform.position)) + ", baş yerel " + (head != null ? V(Van.transform.InverseTransformPoint(head.position)) : "-")
+            + ", göz yerel " + V(Van.transform.InverseTransformPoint(orbit.EyePoint())) + ", direksiyon yerel " + V(Van.transform.InverseTransformPoint(Van.steeringWheel.position)) + ", kabin tavanı yerel y " + (1.275f + 1.95f * .5f).ToString("F2", Inv));
+    }
+
+    private static IEnumerator CaptureMain(string name)
+    {
+        yield return null;
+        var cam = Camera.main;
+        var rt = new RenderTexture(1920, 1080, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
+        var prevTarget = cam.targetTexture;
+        cam.targetTexture = rt;
+        cam.Render();
+        cam.targetTexture = prevTarget;
+        SaveRenderTexture(rt, name);
+        Line("  görüntü: " + OutDir + "/" + name + ".png (ana kamera " + V(cam.transform.position) + ", mod " + Van.orbitCamera.Mode + ")");
+    }
+
+    private static IEnumerator CaptureFrom(string name, Vector3 pos, Vector3 look, float fov)
+    {
+        var go = new GameObject("DriveVerify_CaptureCam");
+        var cam = go.AddComponent<Camera>();
+        var main = Camera.main;
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = main != null ? main.backgroundColor : Color.gray;
+        cam.farClipPlane = 2000f;
+        cam.nearClipPlane = .05f;
+        cam.fieldOfView = fov;
+        go.transform.position = pos;
+        go.transform.LookAt(look);
+        var rt = new RenderTexture(1920, 1080, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
+        cam.targetTexture = rt;
+        yield return null; yield return null; // GPU Resident Drawer yeni kameranın görünürlük verisini sonraki döngüde hazırlar
+        cam.Render();
+        cam.targetTexture = null;
+        SaveRenderTexture(rt, name);
+        UnityEngine.Object.Destroy(go);
+        Line("  görüntü: " + OutDir + "/" + name + ".png (kamera " + V(pos) + ")");
+    }
+
+    private static void SaveRenderTexture(RenderTexture rt, string name)
+    {
+        var prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        var tex = new Texture2D(1920, 1080, TextureFormat.RGB24, false);
+        tex.ReadPixels(new Rect(0, 0, 1920, 1080), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prev;
+        Directory.CreateDirectory(OutDir);
+        File.WriteAllBytes(Path.Combine(OutDir, name + ".png"), tex.EncodeToPNG());
+        UnityEngine.Object.Destroy(rt);
+        UnityEngine.Object.Destroy(tex);
     }
 
     // Pure-pursuit otopilot: hedefe dön, hız sınırı ve durma mesafesine göre gaz / fren. until verilirse o sağlanınca biter.

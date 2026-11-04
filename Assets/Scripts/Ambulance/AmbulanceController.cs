@@ -67,6 +67,9 @@ public class AmbulanceController : MonoBehaviour
     [Tooltip("Trafik ayarı yoksa: öndeki araçla en küçük boşluk (m) ve zaman aralığı (sn). Trafik varsa TrafficSettings'ten okunur.")]
     public float followMinGap = 4f;
     public float followTimeHeadway = 2f;
+    [Tooltip("Trafik ayarı yoksa: şeridi kapatan servis minibüsünün gerisinde durma payı (m) ve korna aralığı (sn). Trafik varsa TrafficSettings.vanStopMargin / vanHornInterval.")]
+    public float obstacleStopMargin = 2.5f;
+    public float obstacleHornInterval = 2f;
 
     public AmbulanceAudio sound;
 
@@ -87,6 +90,12 @@ public class AmbulanceController : MonoBehaviour
     // Bu fizik adımında öndeki aracı takip ediyor muydu (araç durağın önünde ya da yakın)
     public bool FollowingVehicle { get; private set; }
     public float GapToLeader { get; private set; } = float.PositiveInfinity;
+    // Şeridi kapatan dış engel (oyuncunun servis minibüsü): ambulans gerisinde durur, korna çalar, ÇARPMAZ (kurtarma aracı);
+    // şerit açılınca devam eder. Görev saati bu arada işler: kötü park ambulansı geciktirir (kullanıcı kararı 2026-11-04).
+    public ILaneObstacle BlockingObstacle { get; private set; }
+    public float ObstacleWaitTime { get; private set; }
+    public int ObstacleHorns { get; private set; }
+    private float lastObstacleHorn = -100f;
     public float StationDistance { get { return stationS; } }
     // Kökten arka tampona uzaklık (m)
     public float RearOverhang { get { return -(bodyCenter.z - bodySize.z * 0.5f); } }
@@ -192,6 +201,7 @@ public class AmbulanceController : MonoBehaviour
             limit = Mathf.Min(limit, FollowLeader());
             Follower.Tick(dt, limit);
             PushPlayersOnContact();
+            HonkAtObstacle(dt);
 
             if (Phase == AmbulancePhase.Approaching && Follower.AtStop && Follower.StopDistance >= stationS - 0.001f)
             {
@@ -222,8 +232,11 @@ public class AmbulanceController : MonoBehaviour
 
     private float MinGap { get { var t = TrafficDirector.Instance; return t != null && t.Active != null ? t.Active.minGap : followMinGap; } }
     private float Headway { get { var t = TrafficDirector.Instance; return t != null && t.Active != null ? t.Active.timeHeadway : followTimeHeadway; } }
+    private float ObstacleMargin { get { var t = TrafficDirector.Instance; return t != null && t.Active != null ? t.Active.vanStopMargin : obstacleStopMargin; } }
+    private float HornInterval { get { var t = TrafficDirector.Instance; return t != null && t.Active != null ? t.Active.vanHornInterval : obstacleHornInterval; } }
 
     // Öndeki araç: durma noktası = durak ya da aracın minGap gerisi (hangisi yakınsa); hız sınırı = boşluk / 2 sn.
+    // Dış engel (servis minibüsü): aynı kural, pay vanStopMargin; trafikten farkı çarpma yok (bekler, korna çalar; HonkAtObstacle).
     private float FollowLeader()
     {
         float station = Phase == AmbulancePhase.Approaching ? stationS : float.PositiveInfinity;
@@ -232,6 +245,7 @@ public class AmbulanceController : MonoBehaviour
         var leader = LaneOccupancy.Leader(Follower);
         GapToLeader = float.PositiveInfinity;
         FollowingVehicle = false;
+        BlockingObstacle = null;
         if (leader != null)
         {
             float gap = leader.RearS - Follower.FrontS;
@@ -241,9 +255,37 @@ public class AmbulanceController : MonoBehaviour
             if (carStop < stop) stop = Mathf.Max(carStop, Follower.Distance);
             FollowingVehicle = limit < Follower.cruiseSpeed || stop < station;
         }
+        foreach (var o in LaneOccupancy.Obstacles)
+        {
+            if (o == null || !o.BlocksLane(Follower.lane, out float edge, out float far, out _)) continue;
+            if (far < Follower.FrontS - 0.3f) continue; // uzak yüzü ön tamponun gerisinde: geçilmiş
+            float gap = edge - Follower.FrontS;
+            float oStop = edge - ObstacleMargin - Follower.frontOverhang;
+            if (BlockingObstacle == null || gap < GapToLeader)
+            {
+                BlockingObstacle = o;
+                GapToLeader = gap;
+            }
+            limit = Mathf.Min(limit, Mathf.Max(0f, gap) / Headway);
+            if (oStop < stop) stop = Mathf.Max(oStop, Follower.Distance);
+        }
         if (float.IsPositiveInfinity(stop)) Follower.ClearStop();
         else Follower.StopAt(stop);
         return limit;
+    }
+
+    // Minibüsün gerisinde durunca aralıklı korna; bekleme süresi ölçülür (test / HUD). Araç kıpırdasa da çarpma yok.
+    private void HonkAtObstacle(float dt)
+    {
+        bool waiting = BlockingObstacle != null && Follower.Speed <= 0.01f && Follower.HasStop && Follower.Distance >= Follower.StopDistance - 0.1f;
+        if (!waiting) { ObstacleWaitTime = 0f; return; }
+        ObstacleWaitTime += dt;
+        if (Time.time - lastObstacleHorn >= HornInterval)
+        {
+            lastObstacleHorn = Time.time;
+            ObstacleHorns++;
+            if (sound != null) sound.PlayHorn();
+        }
     }
 
     // Durağa tahmini kalan süre (sn): kendi sürüşü (aynı integratör) ve öndeki araç durağı geçene kadar onun seyir hızı.

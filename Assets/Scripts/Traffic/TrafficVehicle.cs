@@ -9,9 +9,10 @@ using UnityEngine;
 //     (oyuncunun servis minibüsü). Araç / minibüs: en az minGap (vanStopMargin) boşlukla durulacak nokta + 2 sn kuralı hız
 //     sınırı. Koni: koninin coneStopMargin gerisinde dur.
 //  2) Koninin önünde durduktan coneWaitSeconds (20 sn) sonra o koni yok sayılır: araç koniye çarpıp devam eder.
-//  2b) Minibüsün gerisinde durunca korna (vanHornInterval); vanWaitSeconds (5 sn) sonra araç minibüse çarpar: engeli yok sayıp
-//     vanRamSpeed ile ilerler, her adımda ILaneObstacle.Ram çağrılır (minibüs temasa göre itilir ve hasar alır), minibüsü
-//     geçince ya da vanRamMaxSeconds dolunca çarpma biter (kullanıcı kararı 2026-11-04).
+//  2b) Minibüsün gerisinde durunca korna (vanHornInterval); vanWaitSeconds (5 sn) sonra araç minibüse çarpar: vanRamSpeed ile
+//     ilerleyip tamponunu minibüs kenarının vanRamContactMargin gerisinde tutar, her adımda ILaneObstacle.Ram çağrılır (minibüs
+//     betikli hızla şeridin dışına itilir ve hasar alır; fizik plow yok), minibüsü geçince ya da vanRamMaxSeconds dolunca
+//     çarpma biter (kullanıcı kararı 2026-11-04).
 //  3) Önde (şeritte) taşıyıcı varsa korna ve hız en fazla %40 (durmaz; ambulanstaki yield mantığı).
 //  4) Gövdeye değen oyuncu ragdoll olup düşer, bot sedyeyi bırakıp kenara itilir, yerdeki/sedyedeki hasta savrulur.
 // Şeridin sonunda (TrafficDespawn_*) kaybolur.
@@ -98,9 +99,12 @@ public class TrafficVehicle : MonoBehaviour
         }
 
         // 2b) Süren çarpma: minibüsü geçince ya da süre dolunca biter
+        bool ramBlocks = false;
+        float ramEdgeS = float.PositiveInfinity;
         if (RammingObstacle != null)
         {
-            if (RammingObstacle.BlocksLane(Follower.lane, out _, out float farNow, out _)) ramFarS = Mathf.Max(ramFarS, farNow);
+            ramBlocks = RammingObstacle.BlocksLane(Follower.lane, out ramEdgeS, out float farNow, out _);
+            if (ramBlocks) ramFarS = Mathf.Max(ramFarS, farNow);
             if (Follower.RearS > ramFarS + 1f || Time.time - ramStartTime > settings.vanRamMaxSeconds) RammingObstacle = null;
         }
 
@@ -127,6 +131,11 @@ public class TrafficVehicle : MonoBehaviour
             limit = Mathf.Max(0f, gap) / settings.timeHeadway;
         }
         stop = Mathf.Min(stop, externalStopS); // U4: dış durak
+        // 2b) Çarparken tampon minibüs kenarının vanRamContactMargin gerisinde tutulur: kinematik araç dinamik minibüsü fizikle önüne
+        // katıp götürmez (ölçüldü: 18.8 m sürüklenip devrildi); itme ILaneObstacle.Ram'ın betikli hızıyla, sınırlı ve deterministik.
+        // Minibüs kenardan uzaklaştıkça araç onu izler; şeridi boşaltınca engel sayılmaz ve araç geçer.
+        if (RammingObstacle != null && ramBlocks)
+            stop = Mathf.Min(stop, ramEdgeS - settings.vanRamContactMargin - Follower.frontOverhang);
 
         if (!float.IsPositiveInfinity(stop)) Follower.StopAt(Mathf.Max(stop, Follower.Distance));
         else Follower.ClearStop();
@@ -157,7 +166,10 @@ public class TrafficVehicle : MonoBehaviour
         if (waitingAtObstacle)
         {
             if (WaitingObstacle != b.obstacle) { WaitingObstacle = b.obstacle; ObstacleWaitTime = 0f; lastObstacleHorn = -100f; }
-            ObstacleWaitTime += dt;
+            // Sürüş girişinde ekip içeride ve minibüs henüz hiç hareket etmediyse sayaç işlemez (korna çalar): ipucunu okuyan oyuncu
+            // gaza basmadan arkadan çıkan araçça çarpılmasın (review P2-4). İlk hareketten sonra kural normal işler.
+            bool gracePeriod = b.obstacle is ServiceVanDriver van && van.CrewInside && van.MaxSpeedReached < 1f;
+            if (!gracePeriod) ObstacleWaitTime += dt;
             if (Time.time - lastObstacleHorn >= settings.vanHornInterval)
             {
                 lastObstacleHorn = Time.time;

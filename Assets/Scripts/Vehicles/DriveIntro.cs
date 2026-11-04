@@ -40,6 +40,8 @@ public class DriveIntro : MonoBehaviour
         Instance = this;
         if (SkipForTests || van == null || lane == null)
         {
+            // Normal Play'de de görünür olsun: bayat bir doğrulama anahtarı girişi sessizce atlamasın (review P2-5)
+            if (SkipForTests && !Application.isBatchMode) Debug.LogWarning("DriveIntro atlandı (SkipForTests): bir doğrulama anahtarı dolu ya da test koşuyor; minibüs parkta, ekip PlayerSpawn'da başlar.");
             enabled = false;
             return;
         }
@@ -80,7 +82,8 @@ public class DriveIntro : MonoBehaviour
         if (Time.time >= nextHint)
         {
             nextHint = Time.time + hintSeconds;
-            GameNotice.Show(Mathf.Abs(van.Speed) < 0.3f ? hintStopped : hintDriving);
+            // Henüz hiç hareket etmediyse "sürün" ipucu (ilk saniyede "Durdunuz: inin" çıkmasın; review P2-4)
+            GameNotice.Show(van.MaxSpeedReached > 0.5f && Mathf.Abs(van.Speed) < 0.3f ? hintStopped : hintDriving);
         }
     }
 
