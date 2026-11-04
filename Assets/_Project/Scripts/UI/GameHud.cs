@@ -15,6 +15,7 @@ namespace CompanySim
         CanvasGroup toastGroup;
         float toastStart;
         int lastCarriedCondition=-1;
+        CenterReticle centerReticle; // ortak orta nokta / nişan artısı (Assets/Scripts/UI/CenterReticle.cs)
         struct PreparationRow
         {
             public string name,state; public bool ready;
@@ -46,6 +47,8 @@ namespace CompanySim
             promptPanel.SetActive(false);
             focusReticle=Icon(hud.transform,"Crosshair",new Color(.95f,.95f,.91f,.66f));
             Rect(focusReticle.gameObject,new Vector2(.5f,.5f),new Vector2(.5f,.5f),new Vector2(-3,-3),new Vector2(3,3));
+            // Nokta görünürlüğü ve nişan artısı Bölüm 1 ile aynı kuralda (kanvas referansı 1600×900: boyut 1920'ye göre ölçeklenir)
+            centerReticle=CenterReticle.Create(hud.transform,focusReticle.gameObject,1600f/1920f);
             var hint=Block("StatusHint",hud.transform,new Color(.10f,.12f,.12f,.90f));
             Rect(hint,Vector2.one,Vector2.one,new Vector2(-190,-64),new Vector2(-26,-26));
             KeyCap(hint.transform,"TAB",6,5,42);
@@ -167,6 +170,14 @@ namespace CompanySim
         void UpdateGameHud()
         {
             UpdateCarriedInfo();
+            if(centerReticle)
+            {
+                // Nişan alırken büyük artı; bilgisayar / menü açıkken ya da oyuncu yerdeyken gizli (kararma ve serbest imleç bileşende)
+                var bridge=player as CompanyPlayerBridge;
+                bool aiming=bridge && bridge.combat && bridge.combat.Aiming;
+                bool down=bridge && bridge.player && bridge.player.IsDown;
+                centerReticle.Refresh(aiming,IsOpen || IsPaused || down);
+            }
             if(!toastPanel.activeSelf) return;
             float age=Time.unscaledTime-toastStart,remaining=toastUntil-Time.unscaledTime;
             if(remaining<=0) { toastPanel.SetActive(false); return; }

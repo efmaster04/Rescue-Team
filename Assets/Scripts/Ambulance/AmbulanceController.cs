@@ -96,6 +96,20 @@ public class AmbulanceController : MonoBehaviour
     public float ObstacleWaitTime { get; private set; }
     public int ObstacleHorns { get; private set; }
     private float lastObstacleHorn = -100f;
+    // Salt-okuma (HUD, 2026-11-04): durağa giderken şeridi kapatan engel durağın önünde mi? Engelin önündeki durma noktası
+    // (FollowLeader'daki oStop ile aynı hesap) durağın gerisindeyse ambulans durağa varamaz, engel kalkana kadar bekler;
+    // EstimatedSecondsToStop engeli bilmez, varış tahmini anlamsızdır. Hareket mantığını değiştirmez (BlocksLane yalnız sorgu).
+    public bool BlockedBeforeStation
+    {
+        get
+        {
+            var o = BlockingObstacle;
+            if (Phase != AmbulancePhase.Approaching || o == null || Follower == null || Follower.lane == null) return false;
+            if (o is UnityEngine.Object uo && uo == null) return false; // yok edilmiş engel
+            if (!o.BlocksLane(Follower.lane, out float edge, out _, out _)) return false;
+            return edge - ObstacleMargin - Follower.frontOverhang < stationS - 0.001f;
+        }
+    }
     public float StationDistance { get { return stationS; } }
     // Kökten arka tampona uzaklık (m)
     public float RearOverhang { get { return -(bodyCenter.z - bodySize.z * 0.5f); } }

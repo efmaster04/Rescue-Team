@@ -3,7 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // HUD (kullanıcı kararı 16), uGUI + legacy Text (TMP Essential Resources projede yok). Tüm metinler Türkçe.
-//  - Sağ üst: "Ambulans: 2:47" (bir sonraki varışa kalan süre) ya da durakta "Ambulans bekliyor: 12"
+//  - Sağ üst: "Ambulans: 2:47" (bir sonraki varışa kalan süre) ya da durakta "Ambulans bekliyor: 12";
+//    servis minibüsü durağın önünde şeridi kapatıyorsa "Ambulans yolda / bekliyor — yol kapalı" (süre gösterilmez)
+//  - Orta: kontrol ederken küçük nokta, nişan alırken büyük artı (CenterReticle)
 //  - Varıştan 30 sn önce 4 sn boyunca: "Telsiz: Ambulans rampa başına yaklaşıyor!"
 //  - Alt orta: etkileşim ipucu ve kısa uyarılar ("İki kişi gerekli", "Ambulans dolu")
 //  - Orta: görev sonu mesajı ve "R: Yeniden başlat"
@@ -63,11 +65,13 @@ public class MissionHud : MonoBehaviour
     // U4
     public Text ThiefWarningText { get; private set; }
     public Text WhistleText { get; private set; }
-    // U4c: nişangah (ekran ortası; yalnız nişan alırken)
-    public GameObject Crosshair { get; private set; }
-    public bool CrosshairVisible { get { return Crosshair != null && Crosshair.activeSelf; } }
-    public const float CrosshairSize = 26f, CrosshairThickness = 3f;
-    public static readonly Color CrosshairColor = new Color(1f, 1f, 1f, 0.95f);
+    // U4c: nişangah (ekran ortası; nişan alırken büyük artı). 2026-11-04: ortak CenterReticle, kontrol ederken orta nokta da var.
+    public CenterReticle Reticle { get; private set; }
+    public GameObject Crosshair { get { return Reticle != null ? Reticle.Crosshair : null; } }
+    public bool CrosshairVisible { get { return Reticle != null && Reticle.CrosshairVisible; } }
+    // Ambulansın yolu kapalı (şeridi kapatan servis minibüsü durağın önünde): süre yerine bu yazılar
+    public const string AmbulanceBlockedWaitingText = "Ambulans bekliyor — yol kapalı";
+    public const string AmbulanceBlockedDrivingText = "Ambulans yolda — yol kapalı";
     public int FloatingCount { get { return floats.Count; } }
     public int FloatingSpawned { get; private set; }
     public readonly List<MissIndicator> Indicators = new List<MissIndicator>();
@@ -180,32 +184,8 @@ public class MissionHud : MonoBehaviour
         ThiefWarningText.color = ThiefWarningColor;
         WhistleText = MakeText("Whistle", new Vector2(0f, 0f), new Vector2(40f, 36f), new Vector2(500f, 40f), 26, TextAnchor.LowerLeft);
         WhistleText.color = new Color(0.85f, 0.9f, 1f, 0.9f);
-        // U4c (kullanıcı kararı 2): nişangah — ekran ortasında küçük artı; yalnız sağ tık basılıyken (PlayerCombat.Aiming)
-        Crosshair = new GameObject("Crosshair", typeof(RectTransform));
-        Crosshair.transform.SetParent(ScreenCanvas.transform, false);
-        var cr = Crosshair.GetComponent<RectTransform>();
-        cr.anchorMin = cr.anchorMax = new Vector2(0.5f, 0.5f);
-        cr.anchoredPosition = Vector2.zero;
-        cr.sizeDelta = new Vector2(CrosshairSize, CrosshairSize);
-        MakeCrosshairBar("H", new Vector2(CrosshairSize, CrosshairThickness));
-        MakeCrosshairBar("V", new Vector2(CrosshairThickness, CrosshairSize));
-        Crosshair.SetActive(false);
-    }
-
-    private void MakeCrosshairBar(string name, Vector2 size)
-    {
-        var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Outline));
-        go.transform.SetParent(Crosshair.transform, false);
-        var r = go.GetComponent<RectTransform>();
-        r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
-        r.anchoredPosition = Vector2.zero;
-        r.sizeDelta = size;
-        var img = go.GetComponent<Image>();
-        img.color = CrosshairColor;
-        img.raycastTarget = false;
-        var outline = go.GetComponent<Outline>();
-        outline.effectColor = new Color(0f, 0f, 0f, 0.8f);
-        outline.effectDistance = new Vector2(1.5f, -1.5f);
+        // U4c (kullanıcı kararı 2) + 2026-11-04: ekran ortası nokta (kontrol ederken) / büyük artı (sağ tık basılıyken, PlayerCombat.Aiming)
+        Reticle = CenterReticle.Create(ScreenCanvas.transform);
     }
 
     private Text MakeText(string name, Vector2 anchor, Vector2 position, Vector2 size, int fontSize, TextAnchor align)
@@ -331,6 +311,14 @@ public class MissionHud : MonoBehaviour
             if (HealthBars[i] == null || HealthBars[i].health == null) { if (HealthBars[i] != null) Destroy(HealthBars[i].gameObject); HealthBars.RemoveAt(i); }
     }
 
+    // Durağa giderken yolu kapalı olan (engel kalkana kadar bekleyecek) ambulans; yoksa null
+    private AmbulanceController BlockedAmbulance()
+    {
+        foreach (var a in mission.Ambulances)
+            if (a != null && a.BlockedBeforeStation) return a;
+        return null;
+    }
+
     // Kaldırma ilerlemesi: kendi oyuncumuz yerdeyse onun, arkadaşı kaldırıyorsak arkadaşın ilerlemesi.
     private string ReviveLine()
     {
@@ -345,18 +333,24 @@ public class MissionHud : MonoBehaviour
 
     private void LateUpdate()
     {
-        // U4c: nişangah yalnız sağ tık basılıyken (Throw_Aim)
-        var aimCombat = interaction != null && interaction.player != null ? interaction.player.GetComponent<PlayerCombat>() : null;
-        bool aiming = aimCombat != null && aimCombat.Aiming && (mission == null || !mission.IsFinished);
-        if (Crosshair != null && Crosshair.activeSelf != aiming) Crosshair.SetActive(aiming);
+        // Nişangah: nişan alırken (Throw_Aim) büyük artı, yoksa orta nokta; görev bitince ya da oyuncu yerdeyken gizli
+        var localPlayer = interaction != null ? interaction.player : null;
+        var aimCombat = localPlayer != null ? localPlayer.GetComponent<PlayerCombat>() : null;
+        bool aiming = aimCombat != null && aimCombat.Aiming;
+        bool suppressed = (mission != null && mission.IsFinished) || (localPlayer != null && localPlayer.IsDown);
+        if (Reticle != null) Reticle.Refresh(aiming, suppressed);
         if (mission == null) return;
 
-        // Ambulans sayacı
+        // Ambulans sayacı. Yol kapalıysa (minibüs durağın önünde şeridi kapatıyor) tahmin anlamsızdır (donar ya da 0'a iner);
+        // ambulans çarpmaz, engel kalkana kadar bekler (AmbulanceController.BlockedBeforeStation). Yol açılınca normal tahmine döner.
         var waiting = mission.WaitingAmbulance;
+        var blocked = waiting == null ? BlockedAmbulance() : null;
         if (mission.IsFinished)
             TimerText.text = "";
         else if (waiting != null)
             TimerText.text = "Ambulans bekliyor: " + Mathf.CeilToInt(waiting.WaitRemaining);
+        else if (blocked != null)
+            TimerText.text = blocked.ObstacleWaitTime > 0f ? AmbulanceBlockedWaitingText : AmbulanceBlockedDrivingText;
         else
         {
             float left = Mathf.Max(0f, mission.EstimatedNextArrival - mission.Elapsed); // gecikmede gerçek tahmin
@@ -366,7 +360,7 @@ public class MissionHud : MonoBehaviour
 
         // Telsiz: varıştan 30 sn önce, 4 sn boyunca
         float toArrival = mission.EstimatedNextArrival - mission.Elapsed;
-        if (!mission.IsFinished && waiting == null && toArrival <= radioLeadSeconds && toArrival > 0f && radioShownFor != mission.ArrivalCount)
+        if (!mission.IsFinished && waiting == null && blocked == null && toArrival <= radioLeadSeconds && toArrival > 0f && radioShownFor != mission.ArrivalCount)
         {
             radioShownFor = mission.ArrivalCount;
             radioUntil = Time.time + radioShowSeconds;

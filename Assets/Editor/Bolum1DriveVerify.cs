@@ -786,16 +786,27 @@ public static class Bolum1DriveVerify
         float waited = amb != null ? amb.ObstacleWaitTime : 0f;
         bool noRam = Van.Rams == 0 && Van.Damage == 0f && Van.State == ServiceVanDriver.VanState.Parked && Vector3.Distance(vanPos, Van.transform.position) < .05f;
         bool clockRan = !Mission.ClockHeld && Mission.Elapsed - elapsed0 > waitFor - 1f;
+        // HUD: yol kapalıyken süre yerine "Ambulans bekliyor — yol kapalı"; yol açılınca normal tahmin ("Ambulans: m:ss")
+        var hud = UnityEngine.Object.FindAnyObjectByType<MissionHud>();
+        bool flagBlocked = amb != null && amb.BlockedBeforeStation;
+        string hudBlocked = hud != null ? hud.TimerText.text : "(HUD yok)";
+        string hudOpen = "";
         // Minibüs çekilir (park alanına): ambulans devam eder, durağa varır
         Van.TeleportTo(zone.transform.position, zone.transform.rotation, true);
         float moveT = Time.time;
-        yield return Until(() => amb == null || amb.Phase == AmbulancePhase.Waiting, 60f, "ambulans durağa varır");
+        yield return Until(() =>
+        {
+            if (amb != null && amb.Phase == AmbulancePhase.Approaching && !amb.BlockedBeforeStation && hud != null) hudOpen = hud.TimerText.text;
+            return amb == null || amb.Phase == AmbulancePhase.Waiting;
+        }, 60f, "ambulans durağa varır");
         bool arrived = amb != null && amb.Phase == AmbulancePhase.Waiting && amb.BlockingObstacle == null;
-        Check("(e) ambulans şeridi kapatan minibüsün " + Bolum1TrafficBuilder.Settings.vanStopMargin.ToString(Inv) + " m gerisinde durur, korna çalar, 5 sn geçse de ÇARPMAZ (hasar / itilme yok), görev saati işler; minibüs çekilince durağa varır",
-            blocks && Mathf.Abs(gap - Bolum1TrafficBuilder.Settings.vanStopMargin) < .8f && stillWaiting && horns >= 2 && noRam && clockRan && arrived,
+        bool hudOk = flagBlocked && hudBlocked == MissionHud.AmbulanceBlockedWaitingText && hudOpen.StartsWith("Ambulans: ");
+        Check("(e) ambulans şeridi kapatan minibüsün " + Bolum1TrafficBuilder.Settings.vanStopMargin.ToString(Inv) + " m gerisinde durur, korna çalar, 5 sn geçse de ÇARPMAZ (hasar / itilme yok), görev saati işler; minibüs çekilince durağa varır; HUD beklerken \"yol kapalı\", açılınca süre",
+            blocks && Mathf.Abs(gap - Bolum1TrafficBuilder.Settings.vanStopMargin) < .8f && stillWaiting && horns >= 2 && noRam && clockRan && arrived && hudOk,
             "kapatıyor " + blocks + " (kenar s " + edge.ToString("F1", Inv) + ", ambulans ön tampon s " + frontS.ToString("F1", Inv) + "), boşluk " + gap.ToString("F2", Inv) + " m, " + waitFor.ToString("F0", Inv) + " sn sonra hâlâ bekliyor " + stillWaiting
             + " (bekleme " + waited.ToString("F1", Inv) + " sn), korna " + horns + ", çarpma yok " + noRam + " (çarpma " + Van.Rams + ", hasar %" + Van.Damage.ToString("F0", Inv) + "), saat işledi " + clockRan + " (+" + (Mission.Elapsed - elapsed0).ToString("F1", Inv)
-            + " sn), varış " + arrived + " (çekildikten " + (Time.time - moveT).ToString("F1", Inv) + " sn sonra)");
+            + " sn), varış " + arrived + " (çekildikten " + (Time.time - moveT).ToString("F1", Inv) + " sn sonra)"
+            + "; HUD kapalıyken \"" + hudBlocked + "\" (bayrak " + flagBlocked + "), açılınca \"" + hudOpen + "\"");
         var quiet = UnityEngine.Object.Instantiate(Mission.schedule);
         quiet.firstArrival = 99999f;
         Mission.Begin(quiet); // ambulans kaldırılır
