@@ -250,6 +250,8 @@ public static class Bolum1DriveVerify
 
         yield return PhaseStart();
         yield return PhaseDriveAndPark();
+        yield return PhaseReboard();
+        yield return PhaseFall();
         yield return PhaseParkingConsistency();
         yield return PhaseBadParkRam();
         yield return PhaseOncomingLane();
@@ -283,6 +285,190 @@ public static class Bolum1DriveVerify
         Van.SetTestInput(0f, 0f);
         Check("(a2) hareket hâlindeyken E ile iniş reddedilir (uyarı)", movingNoExit && Van.CrewInside,
             "1.5 sn gazdan sonra hız " + Van.Speed.ToString("F1", Inv) + " m/sn → red " + movingNoExit + ", uyarı '" + GameNotice.LastMessage + "'");
+        // Serbest imleç (editörde Esc): açık UI yokken sol tık yeniden kilitler ve o kare saldırı sayılmaz; UI açıkken dokunmaz
+        var orbit = Van.orbitCamera;
+        var reader = player.GetComponent<PlayerInputReader>();
+        bool relocked = orbit.TryRelockCursor() && orbit.RelockedThisFrame && orbit.Relocks == 1;
+        yield return null;
+        bool cleared = !orbit.RelockedThisFrame;
+        reader.InputBlocked = true;
+        bool blockedNoRelock = !orbit.TryRelockCursor() && orbit.Relocks == 1;
+        reader.InputBlocked = false;
+        Check("(a3) serbest imleç: UI yokken sol tık imleci yeniden kilitler (o kare saldırı / fırlatma sayılmaz), UI açıkken kilitlemez",
+            relocked && cleared && blockedNoRelock, "kilitlendi " + relocked + ", sonraki kare temiz " + cleared + ", UI açıkken red " + blockedNoRelock);
+    }
+
+    // (r) Yeniden binme (kullanıcı şikâyeti: inince bir daha binilemiyordu): kapı yakınında ipucu + vurgu, eli doluyken binme
+    // önerilmez (önce bırak), E ile biner (bot yakınsa yolcu), sürer, kapılar sürerken kapalı, E ile iner; ikinci iniş görev saatini
+    // yeniden başlatmaz, park sonucu yeni konuma göre; bot uzaktaysa oyuncu yalnız sürer.
+    private static IEnumerator PhaseReboard()
+    {
+        var interaction = player.GetComponent<PlayerInteraction>();
+        var highlight = player.GetComponent<InteractionHighlight>();
+        var respawn = player.GetComponent<PlayerFallRespawn>();
+        float exitTime0 = Intro.ExitTime;
+        int exits0 = Van.Exits;
+        float vanS = 60f;
+        Van.TeleportTo(east.PointAt(vanS), Quaternion.LookRotation(-east.TangentAt(vanS), Vector3.up), true);
+        yield return Seconds(.3f);
+        bool doorsOpenParked = Van.RearDoorsOpen;
+        IEnumerator ToDoor()
+        {
+            Vector3 at = Van.DriverDoorPoint;
+            if (GroundProbe.Find(at + Vector3.up * 1f, 4f, out RaycastHit g)) at = g.point + Vector3.up * .02f;
+            Vector3 face = Flat(Van.transform.position - at).normalized;
+            player.Teleport(at, Quaternion.LookRotation(face, Vector3.up));
+            yield return Seconds(.3f);
+        }
+        // 1) Kapı yakını: ipucu ve şoför kapısı vurgusu; uzakta ipucu yok
+        yield return ToDoor();
+        bool hintOk = interaction.CurrentHint == PlayerInteraction.HintBoardVan && highlight.Current == Van.DriverDoor && highlight.CopyCount > 0;
+        string hintNear = interaction.CurrentHint;
+        player.Teleport(Van.DriverDoorPoint + Flat(Van.Forward) * 6f + Vector3.up * .02f, player.transform.rotation);
+        yield return Seconds(.3f);
+        bool farNoHint = interaction.CurrentHint != PlayerInteraction.HintBoardVan;
+        // 2) Eli dolu (koni): binme önerilmez; koniyi bırakınca önerilir
+        // TrafficCone denetleyicisi görselin (ConeNames) üstünde değil ayrı objededir: görseli hedefleyen denetleyici aranır
+        var coneVisuals = Bolum1ServiceVan.ConeNames.Select(n => GameObject.Find(n)).Where(c => c != null).Select(c => c.transform).ToList();
+        var cone = TrafficCone.All.FirstOrDefault(c => c != null && !c.IsHeld && (coneVisuals.Contains(c.target) || coneVisuals.Contains(c.transform)));
+        bool heldNoBoard = false;
+        string hintHeld = "";
+        if (cone != null)
+        {
+            player.HeldCone = cone;
+            cone.PickUp(player);
+            yield return ToDoor();
+            hintHeld = interaction.CurrentHint;
+            heldNoBoard = interaction.CurrentHint != PlayerInteraction.HintBoardVan && player.HeldCone == cone;
+            player.HeldCone = null;
+            // Koni uzağa (park alanına) konur: kapının önünde kalsaydı "Koniyi al" binmeden önce gelirdi (öncelik sırası)
+            Vector3 coneAt = zone.transform.position;
+            if (GroundProbe.Find(coneAt + Vector3.up * 1f, 6f, out RaycastHit cg)) coneAt = cg.point;
+            cone.PlaceAt(coneAt, 0f);
+            yield return Seconds(.3f);
+            heldNoBoard &= interaction.CurrentHint == PlayerInteraction.HintBoardVan;
+            hintHeld += "' → bırakınca '" + interaction.CurrentHint + "' (binilebilir " + Van.CanBoard() + ", kapıda " + Van.PlayerAtDriverDoor() + ", koni elde " + (player.HeldCone != null) + ", koni tutuluyor " + cone.IsHeld;
+        }
+        Check("(r1) şoför kapısının yanında 'E: Minibüse bin' ipucu + kapı vurgusu; uzakta yok; eli doluyken (koni) binme önerilmez, bırakınca önerilir",
+            doorsOpenParked && hintOk && farNoHint && cone != null && heldNoBoard,
+            "parkta kapılar açık " + doorsOpenParked + ", yakın ipucu '" + hintNear + "' vurgu " + (highlight.Current != null ? highlight.Current.name : "-") + " → " + hintOk + ", uzakta yok " + farNoHint + ", koniyle ipucu '" + hintHeld + "' → " + heldNoBoard);
+
+        // 3) Bot yakın: E ile ikisi de biner; binişten hemen sonra E inişe dönüşmez; kapılar sürerken kapanır
+        bot.transform.position = Van.transform.TransformPoint(new Vector3(0f, 0f, Van.bodyMax.z + 3f));
+        if (GroundProbe.Find(bot.transform.position + Vector3.up * 1f, 4f, out RaycastHit bg)) bot.transform.position = bg.point + Vector3.up * .02f;
+        yield return ToDoor();
+        float elapsedBefore = Mission.Elapsed;
+        interaction.Interact();
+        bool boarded = Van.CrewInside && Van.Boardings == 1 && Van.BotSeated && Van.State == ServiceVanDriver.VanState.Driving && player.transform.IsChildOf(Van.transform)
+            && bot.transform.IsChildOf(Van.transform) && !player.enabled && !respawn.enabled && GameNotice.LastMessage == ServiceVanDriver.BoardedText && !Mission.ClockHeld && Intro.Done;
+        bool lockout = !Van.TryExit() && Van.CrewInside;
+        yield return Until(() => Van.RearDoorsClosed, 2f, "arka kapılar kapanır");
+        float doorAngle = Van.RearDoorOpenFraction;
+        Vector3 driveFrom = Van.transform.position;
+        // Şeridi izleyerek 12 m sür (bu kesimde korkuluk şeridin sağ kenarına bitişik: düz gaz korkuluğa çarpıyordu)
+        float sFrom = east.Project(driveFrom);
+        bool drove = false;
+        yield return DriveTo(() => east.PointAt(Mathf.Min(east.Length, east.Project(Van.transform.position) + 8f)), 8f, 0f,
+            () => { drove |= Van.Speed > 2f && Van.RearDoorsClosed && Van.CrewInside; return east.Project(Van.transform.position) >= sFrom + 12f; }, 15f, "yeniden sürüş");
+        string driveDetail = DriveState(driveFrom);
+        Van.SetTestInput(-1f, 0f);
+        yield return Until(() => Mathf.Abs(Van.Speed) < .05f, 6f, "fren");
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(.5f);
+        bool clockRan = Mission.Elapsed > elapsedBefore + 1f && !Mission.ClockHeld;
+        Check("(r2) E ile yeniden biniş: oyuncu şoför, yakındaki bot yolcu, sürüş başlar, binişten hemen sonra E yok sayılır, arka kapılar sürerken kapalı, görev saati tutulmaz",
+            boarded && lockout && drove && clockRan,
+            "biniş " + boarded + " (içeride " + Van.CrewInside + ", bot " + Van.BotSeated + ", oyuncu yeniden doğma kapalı " + !respawn.enabled + ", bildirim '" + GameNotice.LastMessage + "'), E kilidi " + lockout + ", sürdü " + drove + " (kapı açıklığı " + doorAngle.ToString("F2", Inv) + "; " + driveDetail + "), saat işledi " + clockRan);
+
+        // 4) İkinci iniş: görev yeniden başlamaz (ExitTime aynı), park değerlendirmesi yeni konuma göre (şeritte → kötü park), kapılar açılır
+        bool exited = Van.TryExit();
+        yield return Until(() => Van.RearDoorsOpen, 2f, "arka kapılar açılır");
+        yield return Seconds(.5f);
+        bool outAgain = exited && !Van.CrewInside && Van.Exits == exits0 + 1 && player.enabled && bot.enabled && respawn.enabled && !player.transform.IsChildOf(Van.transform) && !bot.transform.IsChildOf(Van.transform)
+            && Van.State == ServiceVanDriver.VanState.Parked;
+        bool noRestart = Mathf.Approximately(Intro.ExitTime, exitTime0) && Intro.Done && !Mission.ClockHeld && !Intro.Active;
+        bool parkEval = !Van.GoodParking && Van.BlocksLane(east, out _, out _, out _) && GameNotice.LastMessage.StartsWith(Intro.badParkText);
+        Check("(r3) ikinci iniş: ekip dışarıda, görev saati yeniden başlamaz (ilk iniş zamanı korunur), park sonucu yeni konuma göre (şeritte: kötü park), kapılar açık",
+            outAgain && noRestart && parkEval && Van.RearDoorsOpen,
+            "iniş " + outAgain + ", yeniden başlamadı " + noRestart + " (ilk iniş " + exitTime0.ToString("F1", Inv) + " → " + Intro.ExitTime.ToString("F1", Inv) + "), park " + parkEval + " ('" + GameNotice.LastMessage + "'), kapılar açık " + Van.RearDoorsOpen);
+
+        // 5) Bot uzakta: oyuncu yalnız biner ve sürer
+        Vector3 botFar = east.PointAt(Mathf.Max(0f, vanS - 40f)) + Vector3.up * .02f;
+        bot.transform.position = botFar;
+        yield return ToDoor();
+        interaction.Interact();
+        bool soloBoard = Van.CrewInside && !Van.BotSeated && !bot.transform.IsChildOf(Van.transform) && bot.enabled;
+        yield return Seconds(.6f);
+        Vector3 soloFrom = Van.transform.position;
+        float soloS = east.Project(soloFrom);
+        bool soloDrove = false;
+        yield return DriveTo(() => east.PointAt(Mathf.Min(east.Length, east.Project(Van.transform.position) + 8f)), 6f, 0f,
+            () => { soloDrove |= Van.Speed > 1.5f && Van.CrewInside; return east.Project(Van.transform.position) >= soloS + 8f; }, 15f, "yalnız sürüş");
+        string soloDetail = DriveState(soloFrom);
+        Van.SetTestInput(-1f, 0f);
+        yield return Until(() => Mathf.Abs(Van.Speed) < .05f, 6f, "fren");
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(.4f);
+        bool soloExit = Van.TryExit() && !Van.CrewInside && Vector3.Distance(bot.transform.position, botFar) < 1f;
+        Check("(r4) bot uzaktayken oyuncu yalnız biner, sürer ve iner (bot yerinde kalır)", soloBoard && soloDrove && soloExit,
+            "yalnız biniş " + soloBoard + ", sürdü " + soloDrove + " (" + soloDetail + "), iniş " + soloExit);
+        // Temizlik: bot oyuncunun yanına
+        bot.transform.position = player.transform.position + Flat(Van.Forward) * 1.5f;
+        yield return null;
+    }
+
+    // Sürüş tanısı: hız, gaz, durum, fizik, yer değiştirme, kesişenler
+    private static string DriveState(Vector3 from)
+    {
+        return "hız " + Van.Speed.ToString("F2", Inv) + " m/sn, gaz " + Van.Throttle.ToString("F1", Inv) + ", durum " + Van.State + ", kinematik " + Van.Body.isKinematic + ", rb hız " + V(Van.Body.linearVelocity)
+            + ", yol " + Vector3.Distance(from, Van.transform.position).ToString("F2", Inv) + " m, darbe " + Van.Impacts + ", düşüyor " + Van.Falling + ", içeride " + Van.CrewInside + ", kesişen [" + string.Join(",", Van.OverlapReport()) + "]";
+    }
+
+    // (f) Zemin bitince: dört tekerlek de boştayken minibüs yerçekimiyle düşer; plan (fallBelowY) altına inince ekip ve yükle
+    // başlangıç pozuna ışınlanır, sürüş sürer; oturan oyuncunun kendi yeniden doğması devreye girmez.
+    private static IEnumerator PhaseFall()
+    {
+        var respawn = player.GetComponent<PlayerFallRespawn>();
+        int playerRespawns0 = respawn.Respawns;
+        float vanS = 60f;
+        Vector3 start = east.PointAt(vanS);
+        Quaternion rot = Quaternion.LookRotation(-east.TangentAt(vanS), Vector3.up);
+        Van.TeleportTo(start, rot, true);
+        yield return Seconds(.3f);
+        Van.SeatCrew();
+        start = Van.transform.position;
+        rot = Van.transform.rotation;
+        Van.SetFallRespawn(start, rot);
+        int cargo0 = Van.HeldCargoCount; // (r1)'de bir koni park alanına kondu: sayı düşmeden önceki sayıyla karşılaştırılır
+        string fallMessage = "";
+        Action<ServiceVanDriver> onFall = v => fallMessage = GameNotice.LastMessage;
+        Van.FallRespawned += onFall;
+        float savedBelow = Van.fallBelowY;
+        Van.fallBelowY = start.y + 15f; // sanal plan: başlangıcın 15 m üstü (gerçek plana düşürmek için uçurum geometrisi gerekmez)
+        Van.TeleportTo(start + Vector3.up * 40f, rot, false);
+        yield return Seconds(.8f);
+        float vy = Van.Body.linearVelocity.y;
+        bool falling = Van.Falling && vy < -3f && Van.transform.position.y < start.y + 39f && Van.CrewInside;
+        yield return Until(() => Van.FallRespawns >= 1, 6f, "minibüs plan altına düşüp ışınlanır");
+        yield return Seconds(.5f);
+        Van.FallRespawned -= onFall;
+        bool back = Vector3.Distance(Van.transform.position, start) < 1f && Van.State == ServiceVanDriver.VanState.Driving && Van.CrewInside && !Van.Falling
+            && player.transform.IsChildOf(Van.transform) && bot.transform.IsChildOf(Van.transform) && Van.CargoHeld && Van.HeldCargoCount == cargo0 && cargo0 >= 6
+            && respawn.Respawns == playerRespawns0 && !respawn.enabled && fallMessage.Contains("uçurum");
+        Van.fallBelowY = savedBelow;
+        Van.SetTestInput(1f, 0f);
+        yield return Seconds(1f);
+        bool drives = Van.Speed > 1f;
+        Van.SetTestInput(-1f, 0f);
+        yield return Until(() => Mathf.Abs(Van.Speed) < .05f, 6f, "fren");
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(.4f);
+        bool exited = Van.TryExit();
+        Check("(f) zemin bitince minibüs yerçekimiyle düşer; plan altına inince ekip ve yükle başlangıç şeridine ışınlanır, sürüş sürer; oturan oyuncunun kendi yeniden doğması çalışmaz",
+            falling && back && drives && exited,
+            "düşüyor " + falling + " (0.8 sn'de düşey hız " + vy.ToString("F1", Inv) + " m/sn), geri döndü " + back + " (ışınlama " + Van.FallRespawns + ", " + V(Van.transform.position) + ", yük " + Van.HeldCargoCount + "/" + cargo0 + ", oyuncu yeniden doğma " + (respawn.Respawns - playerRespawns0) + ", bildirim '" + fallMessage + "'), sürdü " + drives + ", indi " + exited);
+        Van.TeleportTo(zone.transform.position, zone.transform.rotation, true);
+        yield return null;
     }
 
     // (b) Betikli sürüş: şeridi izle, alana yanaş, park et, in.
@@ -466,13 +652,26 @@ public static class Bolum1DriveVerify
         player.Teleport(cargoP, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
         bot.transform.SetPositionAndRotation(cargoB, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
         yield return Seconds(.5f);
-        bool crewInCargo = !player.IsDown && !bot.IsDown && Van.InsideFootprint(player.transform.position, 0f) && Van.InsideFootprint(bot.transform.position, 0f);
+        bool crewInCargo = !player.IsDown && !bot.IsDown && Van.InsideFootprint(player.transform.position, 0f) && Van.InsideFootprint(bot.transform.position, 0f) && Van.CrewInCargo;
         var v = Traffic.ForceSpawn(true, TrafficVehicleType.Sedan);
         if (v == null) throw new Exception("EastBound'a Sedan çıkarılamadı");
         yield return Until(() => v == null || (v.BlockerKind == LaneOccupancy.BlockerKind.Obstacle && v.Follower.Speed <= .01f), 45f, "araç minibüsün gerisinde durur");
-        float stopT = Time.time;
         float gap = v.GapToLeader;
         float stopDist = v.Follower.FrontS;
+        // (c0) yük bölümünde ekip varken: araç bekleme süresi geçse de çarpmaz, korna çalıp bekler; ekip çıkınca döngü sürer
+        float holdFor = Bolum1TrafficBuilder.Settings.vanWaitSeconds + 3f;
+        yield return Seconds(holdFor);
+        bool heldOff = v != null && v.ObstacleRams == 0 && Van.Rams == 0 && v.Follower.Speed <= .01f && v.ObstacleHorns >= 2 && v.ObstacleWaitTime < 1f && Van.State == ServiceVanDriver.VanState.Parked;
+        Check("(c0) yük bölümünde ekip (oyuncu + bot) varken şeridi kapatan minibüse araç " + holdFor.ToString("F0", Inv) + " sn geçse de çarpmaz: korna çalıp bekler (sayaç donuk)",
+            crewInCargo && heldOff,
+            "ekip yükte " + crewInCargo + ", çarpmadı " + heldOff + " (çarpma kararı " + (v != null ? v.ObstacleRams.ToString() : "-") + ", korna " + (v != null ? v.ObstacleHorns.ToString() : "-") + ", sayaç " + (v != null ? v.ObstacleWaitTime.ToString("F1", Inv) : "-") + " sn, minibüs çarpma " + Van.Rams + ")");
+        // Ekip yükten çıkar (park alanına, itilme yolunun dışına): bekle-korna-çarp döngüsü sürer
+        Vector3 awayP = zone.transform.position + Vector3.up * .02f;
+        if (GroundProbe.Find(awayP + Vector3.up * 1f, 6f, out RaycastHit zg)) awayP = zg.point + Vector3.up * .02f;
+        player.Teleport(awayP, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
+        bot.transform.position = awayP + Flat(Van.Forward) * 1.5f;
+        yield return Seconds(.2f);
+        float stopT = Time.time;
         yield return Until(() => v == null || v.ObstacleRams > 0, 10f, "araç çarpmaya karar verir");
         float waited = Time.time - stopT;
         int horns = v.ObstacleHorns;
@@ -497,21 +696,6 @@ public static class Bolum1DriveVerify
             "kapatıyor " + blocks + " (s " + edge.ToString("F1", Inv) + "–" + far.ToString("F1", Inv) + "), boşluk " + gap.ToString("F2", Inv) + " m (ön tampon s " + stopDist.ToString("F1", Inv) + "), korna " + horns + ", bekleme " + waited.ToString("F2", Inv)
             + " sn, çarpma " + Van.Rams + " (hasar %" + Van.Damage.ToString("F0", Inv) + "), itilme " + pushed.ToString("F2", Inv) + " m (" + (pushedAt - stopT).ToString("F1", Inv) + " sn'de; yön: " + Van.LastShoveReason + "), dik " + upright + ", şerit boşaldı " + clearedLane + ", statik kesişme yok " + grounded + (grounded ? "" : " [" + string.Join(",", foreign) + "]")
             + ", araç " + (v == null ? "kayboldu" : "s " + v.Follower.Distance.ToString("F1", Inv)) + ", durum " + Van.State);
-        // (c0) ekip: minibüse bağlı değil, ayak izinin içinde, yerde (ragdoll ya da ayakta), havada değil
-        Vector3 hips = player.knockdown.GroundPosition;
-        bool playerOk = !player.transform.IsChildOf(Van.transform) && player.IsDown && Van.InsideFootprint(hips, .3f) && GroundProbe.Find(hips + Vector3.up * .3f, 1.2f, out _);
-        Vector3 botPos = bot.GroundPosition;
-        bool botOk = !bot.transform.IsChildOf(Van.transform) && Van.InsideFootprint(botPos, .3f) && GroundProbe.Find(botPos + Vector3.up * .3f, 1.2f, out _);
-        Check("(c0) yük bölümünde ayakta duran ekip itilirken minibüsle taşınır, durunca yere düşer (ragdoll), minibüsün içinde kalır (havada değil, duvardan geçmez)",
-            crewInCargo && Van.RidersKnocked == 2 && Van.RiderCount == 0 && playerOk && botOk,
-            "başta içeride " + crewInCargo + ", taşınan " + Van.RidersKnocked + ", hâlâ bağlı " + Van.RiderCount + "; oyuncu " + playerOk + " (yerde " + player.IsDown + ", kalça yerel " + V(Van.transform.InverseTransformPoint(hips)) + "), bot " + botOk + " (yerde " + bot.IsDown + ", yerel " + V(Van.transform.InverseTransformPoint(botPos)) + ")");
-        // Temizlik: ekip yol kenarına
-        yield return Until(() => !bot.IsDown, 8f, "bot kalkar");
-        Vector3 aside = Van.transform.TransformPoint(new Vector3(Van.bodyMax.x + 3f, .5f, 0f));
-        if (GroundProbe.Find(aside + Vector3.up * 1f, 6f, out RaycastHit ag)) aside = ag.point + Vector3.up * .02f;
-        player.RespawnAt(aside, Quaternion.LookRotation(Flat(Van.Forward), Vector3.up));
-        bot.transform.position = aside + Flat(Van.Forward) * 1.5f;
-
         // Hasar sonuca ulaşır: saha izleyicisi (oturum) → FieldPayout
         var session = new MissionBridge.Session { jobId = "test", jobTitle = "Sürüş testi", fieldScene = "Bolum1_Ucurum", officeScene = "-", jobPayment = 1000, distanceKm = 10f };
         foreach (var id in new[] { "rope", "stretcher", "stretcher", "cone", "cone", "cone", "cone" })
@@ -625,6 +809,10 @@ public static class Bolum1DriveVerify
         orbit.SetMode(OrbitCamera.ViewMode.FirstPerson, true);
         yield return null; yield return null;
         yield return CaptureMain("drive_seat_fp");
+        // FP'de ön panel yolu kapatmasın: ekranın sağ yarısında alttan yukarı ilk renk kırılması (panel üst kenarı) ≤ %40 yükseklikte
+        float dash = MeasureDashCoverage();
+        Check("(a1) birinci şahısta sürerken ön panel ekranın en fazla %40'ını kapatır (eğim " + orbit.Pitch.ToString("F0", Inv) + "°)", dash <= .4f && Mathf.Abs(orbit.Pitch - Van.driveFirstPersonPitch) < .5f,
+            "panel üst kenarı ekran yüksekliğinin %" + (dash * 100f).ToString("F0", Inv) + "'inde, eğim " + orbit.Pitch.ToString("F1", Inv) + "°, göz yukarı " + orbit.eyeUp.ToString("F2", Inv) + " m");
         orbit.SetMode(OrbitCamera.ViewMode.ThirdPerson, true);
         yield return null;
         Vector3 look = Van.driverSeat.position + Vector3.up * .75f;
@@ -675,6 +863,43 @@ public static class Bolum1DriveVerify
         SaveRenderTexture(rt, name);
         UnityEngine.Object.Destroy(go);
         Line("  görüntü: " + OutDir + "/" + name + ".png (kamera " + V(pos) + ")");
+    }
+
+    // Ana kameradan küçük bir kare: x = %80 ve %90 sütunlarında alttan yukarı ilk belirgin renk kırılmasının (ön panel üst kenarı)
+    // ekran yüksekliğine oranı (en kötü sütun). Panel düz renkli; yol / gökyüzü bariz farklı.
+    private static float MeasureDashCoverage()
+    {
+        var cam = Camera.main;
+        const int w = 640, h = 360;
+        var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
+        var prevTarget = cam.targetTexture;
+        cam.targetTexture = rt;
+        cam.Render();
+        cam.targetTexture = prevTarget;
+        var prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        var tex = new Texture2D(w, h, TextureFormat.RGB24, false);
+        tex.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prev;
+        float worst = 0f;
+        foreach (float x in new[] { .8f, .9f })
+        {
+            int col = (int)(x * w);
+            Color baseC = tex.GetPixel(col, 2);
+            int edge = h, run = 0;
+            for (int y = 3; y < h; y++)
+            {
+                Color c = tex.GetPixel(col, y);
+                float d = Mathf.Abs(c.r - baseC.r) + Mathf.Abs(c.g - baseC.g) + Mathf.Abs(c.b - baseC.b);
+                if (d > .45f) { run++; if (run >= 4) { edge = y - 3; break; } }
+                else run = 0;
+            }
+            worst = Mathf.Max(worst, edge / (float)h);
+        }
+        UnityEngine.Object.Destroy(rt);
+        UnityEngine.Object.Destroy(tex);
+        return worst;
     }
 
     private static void SaveRenderTexture(RenderTexture rt, string name)
