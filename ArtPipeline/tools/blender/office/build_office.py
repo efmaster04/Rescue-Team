@@ -21,7 +21,7 @@ from mathutils import Vector, Matrix
 
 # Proje kök dizini ve varsayılan çıktı yolları
 REPO_ROOT = Path(__file__).resolve().parents[4]
-ARTPIPELINE_ROOT = Path(__file__).resolve().parents[2]
+ARTPIPELINE_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = ARTPIPELINE_ROOT / 'Export/Office'
 PALETTE_TSV = REPO_ROOT / 'Assets/_Project/Art/material_palette.tsv'
 CITY_MAP_REL = 'Assets/_Project/Art/Models/Environment/Environment_OfficeGarage.fbm/O26_city_map.png'
@@ -1426,7 +1426,7 @@ def main():
     # 4. İstenmişse (--render-dir veya varsayılan) göz hizası ve çatısız izometrik PNG'leri üret
     render_durations = {}
     if args.render_dir or not args.no_render:
-        target_render_dir = Path(args.render_dir) if args.render_dir else (out_dir / 'renders')
+        target_render_dir = Path(args.render_dir).resolve() if args.render_dir else (out_dir / 'renders')
         render_durations = render_office_views(target_render_dir, ceiling_objects)
 
     bpy.ops.wm.save_as_mainfile(filepath=str(out_dir / 'Office.blend'), check_existing=False)
