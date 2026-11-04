@@ -27,59 +27,87 @@ PALETTE_TSV = REPO_ROOT / 'Assets/_Project/Art/material_palette.tsv'
 CITY_MAP_REL = 'Assets/_Project/Art/Models/Environment/Environment_OfficeGarage.fbm/O26_city_map.png'
 CITY_MAP_PATH = REPO_ROOT / CITY_MAP_REL
 
-# Palet tablosundan alınan doğrusal (linear) renk ve yüzey değerleri (ters gamma düzeltmesi yapılmaz)
+def srgb_to_linear(c):
+    """sRGB (0..1) kanal değerini doğrusal (linear) uzaya dönüştürür."""
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def hex_to_linear_rgb(hex_str):
+    """#RRGGBB sRGB renk kodunu doğrusal (r, g, b) üçlüsüne dönüştürür."""
+    h = hex_str.lstrip('#')
+    sr, sg, sb = (int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+    return (round(srgb_to_linear(sr), 4), round(srgb_to_linear(sg), 4), round(srgb_to_linear(sb), 4))
+
+
+# İkinci tur sRGB hedef renklerinin doğrusal karşılıkları:
+# Duvar sıvası tan #C7A274, alt bant koyu mavi #2C5878, ceviz zemin #94562F,
+# süpürgelik/kasa koyu kahve #5E3A20, dolap petrol yeşili #2F6F6A, ekipman vurgu turuncu #E0602B
+_PLASTER_RGB = hex_to_linear_rgb('#C7A274')
+_PLASTER_LIGHT_RGB = hex_to_linear_rgb('#D4B489')
+_WALL_BLUE_RGB = hex_to_linear_rgb('#2C5878')
+_MUTED_BLUE_RGB = hex_to_linear_rgb('#38698C')
+_WALNUT_RGB = hex_to_linear_rgb('#94562F')
+_WALNUT_LIGHT_RGB = hex_to_linear_rgb('#9E5D34')
+_WALNUT_DARK_RGB = hex_to_linear_rgb('#8A4F2A')
+_DARK_BROWN_RGB = hex_to_linear_rgb('#5E3A20')
+_PETROL_GREEN_RGB = hex_to_linear_rgb('#2F6F6A')
+_PETROL_LIGHT_RGB = hex_to_linear_rgb('#397F79')
+_ACCENT_ORANGE_RGB = hex_to_linear_rgb('#E0602B')
+
+# Palet tablosundan alınan doğrusal (linear) renk ve yüzey değerleri
 # Format: (r, g, b, roughness, metallic, alpha)
 LINEAR_PALETTE = {
-    'M_Plaster': (0.6700, 0.6200, 0.5300, 0.7200, 0.0000, 1.0),          # D01 warm aged plaster
-    'M_PlasterLight': (0.7600, 0.7100, 0.6200, 0.7200, 0.0000, 1.0),     # D01 plaster highlight
-    'M_WallBlue': (0.0850, 0.2450, 0.3450, 0.6900, 0.0800, 1.0),         # 05 Desaturated blue stripe
-    'M_MutedBlue': (0.1600, 0.3100, 0.4100, 0.7200, 0.0000, 1.0),        # D02 muted painted blue
-    'M_ServiceBlue': (0.1000, 0.2700, 0.3500, 0.6100, 0.1800, 1.0),      # F Service blue
-    'M_CobaltBlue': (0.0650, 0.2500, 0.4600, 0.7200, 0.0200, 1.0),       # 12 Cobalt rubber grip
-    'M_RingBlue': (0.1200, 0.3700, 0.6100, 0.6700, 0.0200, 1.0),         # 13 Grip blue edge
-    'M_Oak': (0.5500, 0.3000, 0.1150, 0.7200, 0.0000, 1.0),              # 01 Honeyed workshop oak
-    'M_OakLight': (0.7200, 0.4400, 0.2000, 0.6900, 0.0000, 1.0),         # 02 Fresh oak edge
-    'M_OakDark': (0.3500, 0.1800, 0.0650, 0.7800, 0.0000, 1.0),          # 03 Oak end grain
-    'M_Timber': (0.4300, 0.2800, 0.1700, 0.7200, 0.0000, 1.0),           # D18 warm workshop timber
-    'M_TimberEdge': (0.3200, 0.1900, 0.1050, 0.7200, 0.0000, 1.0),       # D18 timber edge
-    'M_Fibreboard': (0.5500, 0.3800, 0.2150, 0.8500, 0.0000, 1.0),       # 04 Warm perforated fibreboard
-    'M_PegHole': (0.1150, 0.0740, 0.0400, 0.9600, 0.0000, 1.0),          # 05 Pegboard hole shadow
-    'M_FilingGreen': (0.2300, 0.3300, 0.2500, 0.6100, 0.2200, 1.0),      # Filing green enamel
-    'M_TealMetal': (0.2200, 0.3900, 0.4000, 0.6500, 0.2000, 1.0),        # Dusty teal plastic / metal
-    'M_GalvanizedSteel': (0.3900, 0.4200, 0.4100, 0.5500, 0.5800, 1.0),  # D19 satin galvanized steel
-    'M_WarmGrayMetal': (0.3600, 0.3500, 0.3100, 0.4800, 0.4700, 1.0),    # 11 Warm gray metal
-    'M_SilverSteel': (0.4300, 0.4200, 0.3800, 0.5800, 0.3200, 1.0),      # 12 Painted silver steel
-    'M_ToolSteel': (0.5400, 0.6100, 0.6300, 0.3200, 0.7600, 1.0),        # 06 Satin tool steel
-    'M_Anthracite': (0.0780, 0.1050, 0.1200, 0.4900, 0.4100, 1.0),       # 09 Powder-coated anthracite frame
-    'M_CharcoalTrim': (0.1100, 0.1080, 0.1010, 0.6100, 0.0200, 1.0),     # 09 Satin charcoal trim
-    'M_CharcoalABS': (0.0340, 0.0390, 0.0420, 0.7000, 0.0000, 1.0),      # Charcoal ABS
-    'M_DarkRubber': (0.0470, 0.0460, 0.0430, 0.9300, 0.0000, 1.0),       # 07 Dark charcoal rubber
-    'M_ToolboxRed': (0.6500, 0.0750, 0.0520, 0.3700, 0.2900, 1.0),       # 10 Vintage toolbox red
-    'M_ToolboxLipRed': (0.8700, 0.1600, 0.1050, 0.4000, 0.2500, 1.0),    # 11 Toolbox lip red
-    'M_SafetyOrange': (0.9500, 0.3300, 0.0500, 0.7200, 0.0000, 1.0),     # Safety orange
-    'M_SafetyOchre': (0.8300, 0.5100, 0.1000, 0.5600, 0.2000, 1.0),      # F Safety ochre
-    'M_BeigeFabric': (0.6600, 0.6200, 0.5300, 0.8200, 0.0000, 1.0),      # 01 Warm ivory / beige sofa
-    'M_BeigeCushion': (0.7600, 0.7100, 0.6200, 0.8500, 0.0000, 1.0),     # 02 Sunlit ivory cushion
-    'M_SoftBeige': (0.4000, 0.3600, 0.3000, 0.7200, 0.0000, 1.0),        # Soft beige drawer faces
-    'M_FridgeWhite': (0.9300, 0.9100, 0.8500, 0.4500, 0.0500, 1.0),      # Control white
-    'M_CreamCeramic': (0.8600, 0.8400, 0.7800, 0.2400, 0.0000, 1.0),     # Cream glazed ceramic
-    'M_CreamPaper': (0.8500, 0.7900, 0.6500, 0.7200, 0.0000, 1.0),       # D12 cream paper
-    'M_InkGray': (0.2500, 0.3200, 0.3300, 0.7200, 0.0000, 1.0),          # D12 ink gray
-    'M_Coffee': (0.1300, 0.0650, 0.0280, 0.3000, 0.0000, 1.0),           # Coffee surface
-    'M_Terracotta': (0.5700, 0.3200, 0.1800, 0.8200, 0.0000, 1.0),       # Terracotta rim
-    'M_PottingSoil': (0.1050, 0.0750, 0.0450, 0.9800, 0.0000, 1.0),      # Dark potting soil
-    'M_FoliageDeep': (0.1700, 0.2700, 0.1500, 0.7200, 0.0000, 1.0),      # Deep green foliage
-    'M_FoliageOlive': (0.2600, 0.3600, 0.1500, 0.7200, 0.0000, 1.0),     # Olive foliage
-    'M_FoliageSunlit': (0.4200, 0.5000, 0.2000, 0.7200, 0.0000, 1.0),    # Sunlit foliage
-    'M_NavyCanvas': (0.1200, 0.2200, 0.2800, 0.8800, 0.0000, 1.0),       # F Worker navy canvas
-    'M_ReflectiveTrim': (0.7100, 0.7500, 0.7000, 0.4500, 0.2300, 1.0),   # F Worker reflective trim
-    'M_ScreenDark': (0.0290, 0.0460, 0.0530, 0.1200, 0.1800, 1.0),       # Black glass inset
-    'M_LedGreen': (0.0300, 0.7300, 0.1800, 0.3500, 0.0000, 1.0),         # Power indicator green
-    'M_LightDiffuser': (0.9500, 0.7700, 0.4300, 0.2500, 0.0000, 1.0),    # 19 Task light diffuser
-    'M_Concrete': (0.4800, 0.4500, 0.4000, 0.7200, 0.0000, 1.0),         # D05 warm gray concrete
-    'M_SmokyGlass': (0.1900, 0.3000, 0.3100, 0.2000, 0.1000, 1.0),       # Cool smoky glazing
-    'M_MauveHill': (0.5300, 0.4900, 0.5300, 0.7200, 0.0000, 1.0),        # Distant mauve mountain
-    'M_CityMap': (0.8500, 0.7900, 0.6500, 0.9400, 0.0000, 1.0),          # D13 detailed office city map
+    'M_Plaster': (*_PLASTER_RGB, 0.7600, 0.0000, 1.0),                     # Tan duvar sıvası (#C7A274)
+    'M_PlasterLight': (*_PLASTER_LIGHT_RGB, 0.7600, 0.0000, 1.0),          # Açık tan tavan/lento sıvası
+    'M_WallBlue': (*_WALL_BLUE_RGB, 0.6800, 0.0600, 1.0),                  # Alt bant koyu mavi (#2C5878)
+    'M_MutedBlue': (*_MUTED_BLUE_RGB, 0.7000, 0.0000, 1.0),                # Bant üst çıtası / ikincil mavi
+    'M_ServiceBlue': (0.0750, 0.2400, 0.3600, 0.5800, 0.1800, 1.0),        # Doygun servis mavisi
+    'M_CobaltBlue': (0.0550, 0.2300, 0.4800, 0.6800, 0.0200, 1.0),         # Kobalt mavi
+    'M_RingBlue': (0.0900, 0.3200, 0.6200, 0.6400, 0.0200, 1.0),           # Ring mavi köşe ve halat
+    'M_Oak': (*_WALNUT_RGB, 0.6800, 0.0000, 1.0),                          # Ceviz ahşap zemin (#94562F)
+    'M_OakLight': (*_WALNUT_LIGHT_RGB, 0.6600, 0.0000, 1.0),               # Ceviz açık ton (az fark)
+    'M_OakDark': (0.2100, 0.0950, 0.0400, 0.7400, 0.0000, 1.0),            # Koyu ceviz detay
+    'M_Timber': (*_WALNUT_DARK_RGB, 0.7000, 0.0000, 1.0),                  # Ceviz koyu ton (az fark)
+    'M_TimberEdge': (*_DARK_BROWN_RGB, 0.6800, 0.0000, 1.0),               # Süpürgelik ve kapı/pencere kasası (#5E3A20)
+    'M_Fibreboard': (0.4800, 0.3100, 0.1600, 0.8200, 0.0000, 1.0),         # Sıcak delikli pano / karton
+    'M_PegHole': (0.0900, 0.0550, 0.0300, 0.9500, 0.0000, 1.0),            # Pano delik gölgesi
+    'M_FilingGreen': (*_PETROL_GREEN_RGB, 0.5600, 0.2400, 1.0),            # Dolaplar petrol yeşili (#2F6F6A)
+    'M_TealMetal': (*_PETROL_LIGHT_RGB, 0.5800, 0.2200, 1.0),              # Dolap kapak petrol yeşili
+    'M_GalvanizedSteel': (0.3600, 0.3900, 0.3800, 0.5200, 0.5800, 1.0),    # Galvaniz çelik raf
+    'M_WarmGrayMetal': (0.3200, 0.3100, 0.2700, 0.4800, 0.4700, 1.0),      # Sıcak gri metal
+    'M_SilverSteel': (0.4100, 0.4000, 0.3600, 0.5500, 0.3500, 1.0),        # Boyalı çelik
+    'M_ToolSteel': (0.5200, 0.5800, 0.6000, 0.3200, 0.7600, 1.0),          # Parlak takım çeliği
+    'M_Anthracite': (0.0680, 0.0880, 0.1020, 0.4800, 0.4200, 1.0),         # Antrasit metal iskelet
+    'M_CharcoalTrim': (0.0950, 0.0920, 0.0860, 0.6000, 0.0400, 1.0),       # Koyu gri baza
+    'M_CharcoalABS': (0.0320, 0.0360, 0.0400, 0.6800, 0.0000, 1.0),        # Koyu plastik
+    'M_DarkRubber': (0.0420, 0.0410, 0.0380, 0.9200, 0.0000, 1.0),         # Siyah kauçuk / kablo
+    'M_ToolboxRed': (0.6200, 0.0600, 0.0420, 0.3800, 0.2800, 1.0),         # Doygun takım çantası kırmızısı
+    'M_ToolboxLipRed': (0.8200, 0.1100, 0.0750, 0.4200, 0.2200, 1.0),      # Ring kırmızı köşe ve vurgu kırmızısı
+    'M_SafetyOrange': (*_ACCENT_ORANGE_RGB, 0.6200, 0.0400, 1.0),          # Ekipman vurguları turuncu (#E0602B)
+    'M_SafetyOchre': (0.7800, 0.4400, 0.0750, 0.5600, 0.1800, 1.0),        # Sıcak sarı-okre vurgu
+    'M_BeigeFabric': (0.5600, 0.4800, 0.3700, 0.8200, 0.0000, 1.0),        # Sıcak kum/karamel kanepe kumaşı
+    'M_BeigeCushion': (0.6500, 0.5600, 0.4400, 0.8400, 0.0000, 1.0),       # Sıcak minder kumaşı
+    'M_SoftBeige': (0.3600, 0.3000, 0.2300, 0.7200, 0.0000, 1.0),          # Çekmece önü sıcak bej
+    'M_FridgeWhite': (0.8200, 0.7900, 0.7200, 0.4600, 0.0500, 1.0),        # Kırık sıcak beyaz
+    'M_CreamCeramic': (0.7800, 0.7400, 0.6600, 0.2600, 0.0000, 1.0),       # Krem seramik
+    'M_CreamPaper': (0.7900, 0.7200, 0.5800, 0.7400, 0.0000, 1.0),         # Sıcak kağıt
+    'M_InkGray': (0.2000, 0.2600, 0.2800, 0.7200, 0.0000, 1.0),            # Mürekkep grisi
+    'M_Coffee': (0.1100, 0.0520, 0.0220, 0.2800, 0.0000, 1.0),             # Kahve
+    'M_Terracotta': (0.5400, 0.2600, 0.1300, 0.8000, 0.0000, 1.0),         # Terrakota saksı
+    'M_PottingSoil': (0.0950, 0.0650, 0.0380, 0.9600, 0.0000, 1.0),        # Saksı toprağı
+    'M_FoliageDeep': (0.1300, 0.2600, 0.1200, 0.7000, 0.0000, 1.0),        # Koyu yaprak yeşili
+    'M_FoliageOlive': (0.2200, 0.3500, 0.1200, 0.7000, 0.0000, 1.0),       # Zeytin yaprak yeşili
+    'M_FoliageSunlit': (0.3600, 0.4800, 0.1600, 0.7000, 0.0000, 1.0),      # Canlı yaprak yeşili
+    'M_NavyCanvas': (0.0900, 0.1900, 0.2600, 0.8600, 0.0000, 1.0),         # Lacivert kanvas kumaş
+    'M_ReflectiveTrim': (0.6800, 0.7200, 0.6600, 0.4200, 0.2500, 1.0),     # Reflektör şerit
+    'M_ScreenDark': (0.0250, 0.0400, 0.0480, 0.1400, 0.1800, 1.0),         # Koyu ekran camı
+    'M_LedGreen': (0.0300, 0.7000, 0.1600, 0.3500, 0.0000, 1.0),           # Durum LED yeşili
+    'M_LightDiffuser': (0.9500, 0.7300, 0.3800, 0.2800, 0.0000, 1.0),      # Sıcak tavan armatür difüzörü
+    'M_Concrete': (0.4200, 0.3900, 0.3400, 0.7600, 0.0000, 1.0),           # Alt beton plak
+    'M_SmokyGlass': (0.1800, 0.3200, 0.3500, 0.1800, 0.0800, 1.0),         # Karaf/sebil yarı saydam mavi
+    'M_MauveHill': (0.4800, 0.4100, 0.4600, 0.7200, 0.0000, 1.0),          # Poster/tablo mor tepe
+    'M_CityMap': (0.8000, 0.7300, 0.5900, 0.9200, 0.0000, 1.0),            # Şehir haritası tabanı
+    'Glass': (0.5800, 0.7400, 0.8000, 0.0800, 0.0500, 0.32),               # Pencere camı materyali ("Glass")
 }
 
 MATERIALS = {}
@@ -114,7 +142,14 @@ def make_materials():
             bsdf.inputs['Specular IOR Level'].default_value = 0.25
         if name == 'M_LightDiffuser' and 'Emission Color' in bsdf.inputs:
             bsdf.inputs['Emission Color'].default_value = (r, g, b, 1.0)
-            bsdf.inputs['Emission Strength'].default_value = 2.5
+            bsdf.inputs['Emission Strength'].default_value = 1.6
+        if name == 'Glass':
+            if 'Alpha' in bsdf.inputs:
+                bsdf.inputs['Alpha'].default_value = alpha
+            if 'Transmission Weight' in bsdf.inputs:
+                bsdf.inputs['Transmission Weight'].default_value = 0.78
+            if hasattr(mat, 'blend_method'):
+                mat.blend_method = 'BLEND'
         mat.diffuse_color = (r, g, b, alpha)
         MATERIALS[name] = mat
 
@@ -319,20 +354,19 @@ ROOMS_SPEC = [
 
 
 def add_layered_wall_x(geo, z0, z1, x_min, x_max, y_top=3.24, openings=None, trim_side=0):
-    """Z ekseni boyunca uzanan duvar parçasını alt 0.96 m mavi bant ve üst sıva ile üretir."""
+    """Z ekseni boyunca uzanan duvar parçasını alt 0.96 m mavi bant, üst sıva ve kapı/pencere boşluklarıyla üretir."""
     openings = sorted(openings or [], key=lambda o: o[0])
-    # Kapı boşluklarına göre Z aralıklarını böl
     points = [z0]
-    for oz0, oz1, _ in openings:
-        points.extend([max(z0, oz0), min(z1, oz1)])
+    for o in openings:
+        points.extend([max(z0, o[0]), min(z1, o[1])])
     points.append(z1)
     points = sorted(set(round(p, 4) for p in points if z0 <= p <= z1))
 
     for a, b in zip(points, points[1:]):
         if b - a < 1e-3:
             continue
-        door = next((o for o in openings if a >= o[0] - 1e-3 and b <= o[1] + 1e-3), None)
-        if door is None:
+        op = next((o for o in openings if a >= o[0] - 1e-3 and b <= o[1] + 1e-3), None)
+        if op is None:
             # Tam duvar: 0..0.96 mavi bant, 0.96..3.16 sıva, 3.16..y_top üst lento
             geo.span_u(x_min, 0.00, a, x_max, 0.96, b, 'M_WallBlue', bevel=0.004)
             geo.span_u(x_min, 0.96, a, x_max, 3.16, b, 'M_Plaster', bevel=0.004)
@@ -343,28 +377,42 @@ def add_layered_wall_x(geo, z0, z1, x_min, x_max, y_top=3.24, openings=None, tri
                 tx1 = x_max + 0.012 if trim_side > 0 else x_min
                 geo.span_u(tx0, 0.00, a, tx1, 0.08, b, 'M_TimberEdge', bevel=0.002)
                 geo.span_u(tx0, 0.95, a, tx1, 0.98, b, 'M_MutedBlue', bevel=0.002)
-        else:
+        elif len(op) == 3:
             # Kapı üstü lento (door_h .. y_top)
-            door_h = door[2]
+            door_h = op[2]
             geo.span_u(x_min, door_h, a, x_max, 3.16 if y_top <= 3.3 else y_top, b, 'M_Plaster', bevel=0.004)
             if y_top > 3.16 and y_top <= 3.3:
+                geo.span_u(x_min, 3.16, a, x_max, y_top, b, 'M_PlasterLight', bevel=0.003)
+        else:
+            # Pencere boşluğu: (oz0, oz1, wy0, wy1) -> alt duvar (0..wy0) ve üst duvar (wy1..y_top)
+            _, _, wy0, wy1 = op
+            if wy0 > 0.0:
+                geo.span_u(x_min, 0.00, a, x_max, min(wy0, 0.96), b, 'M_WallBlue', bevel=0.004)
+                if wy0 > 0.96:
+                    geo.span_u(x_min, 0.96, a, x_max, wy0, b, 'M_Plaster', bevel=0.004)
+                if trim_side != 0:
+                    tx0 = x_max if trim_side > 0 else x_min - 0.012
+                    tx1 = x_max + 0.012 if trim_side > 0 else x_min
+                    geo.span_u(tx0, 0.00, a, tx1, 0.08, b, 'M_TimberEdge', bevel=0.002)
+            geo.span_u(x_min, wy1, a, x_max, 3.16, b, 'M_Plaster', bevel=0.004)
+            if y_top > 3.16:
                 geo.span_u(x_min, 3.16, a, x_max, y_top, b, 'M_PlasterLight', bevel=0.003)
 
 
 def add_layered_wall_z(geo, x0, x1, z_min, z_max, y_top=3.24, openings=None, trim_side=0):
-    """X ekseni boyunca uzanan duvar parçasını alt 0.96 m mavi bant ve üst sıva ile üretir."""
+    """X ekseni boyunca uzanan duvar parçasını alt 0.96 m mavi bant, üst sıva ve kapı/pencere boşluklarıyla üretir."""
     openings = sorted(openings or [], key=lambda o: o[0])
     points = [x0]
-    for ox0, ox1, _ in openings:
-        points.extend([max(x0, ox0), min(x1, ox1)])
+    for o in openings:
+        points.extend([max(x0, o[0]), min(x1, o[1])])
     points.append(x1)
     points = sorted(set(round(p, 4) for p in points if x0 <= p <= x1))
 
     for a, b in zip(points, points[1:]):
         if b - a < 1e-3:
             continue
-        door = next((o for o in openings if a >= o[0] - 1e-3 and b <= o[1] + 1e-3), None)
-        if door is None:
+        op = next((o for o in openings if a >= o[0] - 1e-3 and b <= o[1] + 1e-3), None)
+        if op is None:
             geo.span_u(a, 0.00, z_min, b, 0.96, z_max, 'M_WallBlue', bevel=0.004)
             geo.span_u(a, 0.96, z_min, b, 3.16, z_max, 'M_Plaster', bevel=0.004)
             if y_top > 3.16:
@@ -374,9 +422,23 @@ def add_layered_wall_z(geo, x0, x1, z_min, z_max, y_top=3.24, openings=None, tri
                 tz1 = z_max + 0.012 if trim_side > 0 else z_min
                 geo.span_u(a, 0.00, tz0, b, 0.08, tz1, 'M_TimberEdge', bevel=0.002)
                 geo.span_u(a, 0.95, tz0, b, 0.98, tz1, 'M_MutedBlue', bevel=0.002)
-        else:
-            door_h = door[2]
+        elif len(op) == 3:
+            door_h = op[2]
             geo.span_u(a, door_h, z_min, b, 3.16, z_max, 'M_Plaster', bevel=0.004)
+            if y_top > 3.16:
+                geo.span_u(a, 3.16, z_min, b, y_top, z_max, 'M_PlasterLight', bevel=0.003)
+        else:
+            # Pencere boşluğu: (ox0, ox1, wy0, wy1) -> alt duvar (0..wy0) ve üst duvar (wy1..y_top)
+            _, _, wy0, wy1 = op
+            if wy0 > 0.0:
+                geo.span_u(a, 0.00, z_min, b, min(wy0, 0.96), z_max, 'M_WallBlue', bevel=0.004)
+                if wy0 > 0.96:
+                    geo.span_u(a, 0.96, z_min, b, wy0, z_max, 'M_Plaster', bevel=0.004)
+                if trim_side != 0:
+                    tz0 = z_max if trim_side > 0 else z_min - 0.012
+                    tz1 = z_max + 0.012 if trim_side > 0 else z_min
+                    geo.span_u(a, 0.00, tz0, b, 0.08, tz1, 'M_TimberEdge', bevel=0.002)
+            geo.span_u(a, wy1, z_min, b, 3.16, z_max, 'M_Plaster', bevel=0.004)
             if y_top > 3.16:
                 geo.span_u(a, 3.16, z_min, b, y_top, z_max, 'M_PlasterLight', bevel=0.003)
 
@@ -397,21 +459,70 @@ def add_door_frame_z(geo, z_center, half_thick, x0, x1, height, frame_w=0.055, m
     geo.span_u(x0, height, zm, x1, height + frame_w, zp, mat, bevel=0.006)
 
 
+def add_window_frame_x(geo, x_min, x_max, z0, z1, y0=0.90, y1=2.10, inside_dir=1):
+    """X-sabit dış duvardaki pencere boşluğuna koyu kahve kasa, orta kayıt ve iç denizlik ekler."""
+    fw = 0.055
+    xm, xp = x_min - 0.012, x_max + 0.012
+    # Yan dikmeler ve üst başlık
+    geo.span_u(xm, y0, z0, xp, y1, z0 + fw, 'M_TimberEdge', bevel=0.005)
+    geo.span_u(xm, y0, z1 - fw, xp, y1, z1, 'M_TimberEdge', bevel=0.005)
+    geo.span_u(xm, y1 - fw, z0 + fw, xp, y1, z1 - fw, 'M_TimberEdge', bevel=0.005)
+    # Orta dikey kayıt
+    zm = (z0 + z1) * 0.5
+    geo.span_u(xm + 0.02, y0 + 0.04, zm - 0.02, xp - 0.02, y1 - fw, zm + 0.02, 'M_TimberEdge', bevel=0.004)
+    # Denizlik (y≈0.90, odaya doğru hafif çıkıntılı)
+    sill_x0 = x_min - 0.025 if inside_dir < 0 else x_min - 0.018
+    sill_x1 = x_max + 0.065 if inside_dir > 0 else x_max + 0.018
+    if inside_dir < 0:
+        sill_x0 = x_min - 0.065
+    geo.span_u(sill_x0, y0 - 0.02, z0 - 0.04, sill_x1, y0 + 0.035, z1 + 0.04, 'M_TimberEdge', bevel=0.006)
+
+
+def add_window_frame_z(geo, z_min, z_max, x0, x1, y0=0.90, y1=2.10, inside_dir=1):
+    """Z-sabit dış duvardaki pencere boşluğuna koyu kahve kasa, orta kayıt ve iç denizlik ekler."""
+    fw = 0.055
+    zm, zp = z_min - 0.012, z_max + 0.012
+    # Yan dikmeler ve üst başlık
+    geo.span_u(x0, y0, zm, x0 + fw, y1, zp, 'M_TimberEdge', bevel=0.005)
+    geo.span_u(x1 - fw, y0, zm, x1, y1, zp, 'M_TimberEdge', bevel=0.005)
+    geo.span_u(x0 + fw, y1 - fw, zm, x1 - fw, y1, zp, 'M_TimberEdge', bevel=0.005)
+    # Orta dikey kayıt
+    xm = (x0 + x1) * 0.5
+    geo.span_u(xm - 0.02, y0 + 0.04, zm + 0.02, xm + 0.02, y1 - fw, zp - 0.02, 'M_TimberEdge', bevel=0.004)
+    # Denizlik (y≈0.90, odaya doğru hafif çıkıntılı)
+    sill_z0 = z_min - 0.065 if inside_dir < 0 else z_min - 0.018
+    sill_z1 = z_max + 0.065 if inside_dir > 0 else z_max + 0.018
+    geo.span_u(x0 - 0.04, y0 - 0.02, sill_z0, x1 + 0.04, y0 + 0.035, sill_z1, 'M_TimberEdge', bevel=0.006)
+
+
 def build_room_floor(room):
-    """Oda için sıcak ahşap zemin ve tahta derz şeritlerini üretir."""
+    """Oda için 0.18-0.25 m genişliğinde, renk farkı az, ucu ucuna eklenmiş ceviz tahta zemin üretir."""
     geo = Geo(f"Room_{room['id']}_Floor")
     x0, x1, z0, z1 = room['x0'], room['x1'], room['z0'], room['z1']
-    # Ana döşeme plağı (üst yüzey y=0.0)
+    # Ana döşeme plağı (üst yüzey y=-0.008)
     geo.span_u(x0, -0.12, z0, x1, -0.008, z1, 'M_Concrete', bevel=0.0)
-    # Üst ahşap parke şeritleri (stilize low-poly sıcak ahşap görünümü)
-    plank_w = 0.60
-    n_planks = max(1, round((x1 - x0) / plank_w))
-    step = (x1 - x0) / n_planks
-    for i in range(n_planks):
-        px0 = x0 + i * step + 0.003
-        px1 = x0 + (i + 1) * step - 0.003
-        mat = 'M_Oak' if i % 2 == 0 else 'M_Timber'
-        geo.span_u(px0, -0.008, z0 + 0.003, px1, 0.0, z1 - 0.003, mat, bevel=0.002)
+    # 0.21 m hedef genişlikte (0.18–0.25 m aralığında), ucu ucuna şaşırtmalı dizilmiş ceviz parke tahtaları
+    target_w = 0.21
+    n_cols = max(1, round((x1 - x0) / target_w))
+    col_w = (x1 - x0) / n_cols
+    plank_mats = ('M_Oak', 'M_OakLight', 'M_Timber')
+    z_len = z1 - z0
+    for c in range(n_cols):
+        px0 = x0 + c * col_w + 0.0012
+        px1 = x0 + (c + 1) * col_w - 0.0012
+        # Her sırada uç ek yerlerini şaşırtmak için başlangıç ofseti
+        seg_base = 1.35
+        offset = ((c * 37) % 100) / 100.0 * 0.85
+        z_pts = [z0 + 0.002]
+        cur_z = z0 + 0.55 + offset
+        while cur_z < z1 - 0.45:
+            z_pts.append(round(cur_z, 4))
+            step_z = seg_base + (((c * 13 + len(z_pts) * 7) % 5) - 2) * 0.12
+            cur_z += max(0.85, step_z)
+        z_pts.append(z1 - 0.002)
+        for r_idx, (pz0, pz1) in enumerate(zip(z_pts, z_pts[1:])):
+            mat_idx = (c * 5 + r_idx * 3 + len(room['id'])) % len(plank_mats)
+            geo.span_u(px0, -0.008, pz0 + 0.001, px1, 0.0, pz1 - 0.001, plank_mats[mat_idx], bevel=0.0015)
     return geo.finish()
 
 
@@ -434,13 +545,17 @@ def build_room_fixtures(room):
 
 
 def build_room_walls(room_id):
-    """Her odanın duvarlarını, kapı boşluklarını, kasalarını ve özel x=0 geçişlerini üretir."""
+    """Her odanın duvarlarını, kapı/pencere boşluklarını, kasalarını ve özel x=0 geçişlerini üretir."""
     geo = Geo(f'Room_{room_id}_Walls')
 
     if room_id == 'Office':
-        # Güney dış duvar (z=-5.2): ön kapı boşluğu x[-3.72, -2.64], y<=2.25 korunur
-        add_layered_wall_z(geo, -4.8, 0.0, -5.42, -5.18, y_top=3.24,
-                           openings=[(-3.72, -2.64, 2.25)], trim_side=1)
+        # Güney dış duvar (z=-5.2): ön kapı x[-3.72, -2.64] ve pencere x[-2.00, -0.40] (w=1.60, y=0.90..2.10)
+        add_layered_wall_z(
+            geo, -4.8, 0.0, -5.42, -5.18, y_top=3.24,
+            openings=[(-3.72, -2.64, 2.25), (-2.00, -0.40, 0.90, 2.10)],
+            trim_side=1,
+        )
+        add_window_frame_z(geo, -5.42, -5.18, -2.00, -0.40, y0=0.90, y1=2.10, inside_dir=1)
         # Batı iç duvar (x=-4.8, ofis yüzü [-4.80, -4.72]): ofis-mutfak kapısı z[-2.6, -1.4], y<=2.18
         add_layered_wall_x(geo, -5.2, 1.2, -4.80, -4.72, y_top=3.24,
                            openings=[(-2.60, -1.40, 2.18)], trim_side=1)
@@ -456,8 +571,13 @@ def build_room_walls(room_id):
     elif room_id == 'Kitchen':
         # Güney dış duvar (z=-5.2)
         add_layered_wall_z(geo, -9.8, -4.8, -5.44, -5.20, y_top=3.24, trim_side=1)
-        # Batı dış duvar (x=-9.8)
-        add_layered_wall_x(geo, -5.2, 1.2, -10.04, -9.80, y_top=3.24, trim_side=1)
+        # Batı dış duvar (x=-9.8): pencere z[-3.80, -2.20] (w=1.60, y=0.90..2.10)
+        add_layered_wall_x(
+            geo, -5.2, 1.2, -10.04, -9.80, y_top=3.24,
+            openings=[(-3.80, -2.20, 0.90, 2.10)],
+            trim_side=1,
+        )
+        add_window_frame_x(geo, -10.04, -9.80, -3.80, -2.20, y0=0.90, y1=2.10, inside_dir=1)
         # Doğu iç duvar (x=-4.8, mutfak yüzü [-4.88, -4.80]): ofis-mutfak kapısı z[-2.6, -1.4]
         add_layered_wall_x(geo, -5.2, 1.2, -4.88, -4.80, y_top=3.24,
                            openings=[(-2.60, -1.40, 2.18)], trim_side=-1)
@@ -467,6 +587,7 @@ def build_room_walls(room_id):
         add_door_frame_z(geo, 1.20, 0.08, -7.90, -6.70, 2.18)
 
     elif room_id == 'Storage':
+        # Depoda pencere yok
         # Güney iç duvar (z=1.2, depo yüzü [1.20, 1.28]): ofis-depo kapısı x[-3.0, -1.8]
         add_layered_wall_z(geo, -4.8, 0.0, 1.20, 1.28, y_top=3.24,
                            openings=[(-3.00, -1.80, 2.18)], trim_side=1)
@@ -477,24 +598,25 @@ def build_room_walls(room_id):
         # Doğu duvarı (x=0): z[1.2, 1.4] bağlantı + x∈[-0.12, 0.12] z[1.4, 5.2] y<=4.0 iki yüzünde mavi bantlı duvar, z[1.6, 3.6] y<=2.5 geniş geçiş
         add_layered_wall_x(geo, 1.2, 1.4, -0.12, 0.00, y_top=3.24, trim_side=-1)
         for z_a, z_b in [(1.4, 1.6), (3.6, 5.2)]:
-            # Orta çekirdek + iki yüzde (batı x=-0.12 ve doğu x=+0.12) 0.96 m mavi bant ve y=4.0'a kadar sıva
             geo.span_u(-0.12, 0.00, z_a, 0.12, 0.96, z_b, 'M_WallBlue', bevel=0.004)
             geo.span_u(-0.12, 0.96, z_a, 0.12, 4.00, z_b, 'M_Plaster', bevel=0.004)
-            # İki yüzde süpürgelik ve mavi bant üst çıtası
             for sx in (-0.126, 0.120):
                 geo.span_u(sx, 0.00, z_a, sx + 0.006, 0.08, z_b, 'M_TimberEdge', bevel=0.002)
                 geo.span_u(sx, 0.95, z_a, sx + 0.006, 0.98, z_b, 'M_MutedBlue', bevel=0.002)
-        # Geniş geçiş üstü lento (z[1.6, 3.6], y[2.5, 4.0])
         geo.span_u(-0.12, 2.50, 1.6, 0.12, 4.00, 3.6, 'M_Plaster', bevel=0.004)
-        # Depo-garaj geniş geçiş kasası (z[1.6, 3.6], y<=2.5, kanatsız ve kasalı)
-        add_door_frame_x(geo, 0.0, 0.12, 1.60, 3.60, 2.50, frame_w=0.065, mat='M_Anthracite')
+        add_door_frame_x(geo, 0.0, 0.12, 1.60, 3.60, 2.50, frame_w=0.065, mat='M_TimberEdge')
 
     elif room_id == 'LockerRoom':
         # Güney iç duvar (z=1.2, soyunma yüzü [1.20, 1.28]): mutfak-soyunma kapısı x[-7.9, -6.7]
         add_layered_wall_z(geo, -9.8, -4.8, 1.20, 1.28, y_top=3.24,
                            openings=[(-7.90, -6.70, 2.18)], trim_side=1)
-        # Batı dış duvar (x=-9.8)
-        add_layered_wall_x(geo, 1.2, 5.2, -10.04, -9.80, y_top=3.24, trim_side=1)
+        # Batı dış duvar (x=-9.8): pencere z[2.40, 4.00] (w=1.60, y=0.90..2.10)
+        add_layered_wall_x(
+            geo, 1.2, 5.2, -10.04, -9.80, y_top=3.24,
+            openings=[(2.40, 4.00, 0.90, 2.10)],
+            trim_side=1,
+        )
+        add_window_frame_x(geo, -10.04, -9.80, 2.40, 4.00, y0=0.90, y1=2.10, inside_dir=1)
         # Doğu iç duvar (x=-4.8, soyunma yüzü [-4.88, -4.80])
         add_layered_wall_x(geo, 1.2, 5.2, -4.88, -4.80, y_top=3.24, trim_side=-1)
         # Kuzey iç duvar (z=5.2, soyunma yüzü [5.12, 5.20]): soyunma-ring kapısı x[-7.9, -6.7]
@@ -506,13 +628,44 @@ def build_room_walls(room_id):
         # Güney iç duvar (z=5.2, ring yüzü [5.20, 5.28]): soyunma-ring kapısı x[-7.9, -6.7]
         add_layered_wall_z(geo, -9.8, 0.0, 5.20, 5.28, y_top=3.24,
                            openings=[(-7.90, -6.70, 2.18)], trim_side=1)
-        # Batı dış duvar (x=-9.8)
-        add_layered_wall_x(geo, 5.2, 12.0, -10.04, -9.80, y_top=3.24, trim_side=1)
-        # Kuzey dış duvar (z=12.0)
-        add_layered_wall_z(geo, -9.8, 0.0, 12.00, 12.24, y_top=3.24, trim_side=-1)
+        # Batı dış duvar (x=-9.8): pencere z[7.70, 9.50] (w=1.80, y=0.90..2.10)
+        add_layered_wall_x(
+            geo, 5.2, 12.0, -10.04, -9.80, y_top=3.24,
+            openings=[(7.70, 9.50, 0.90, 2.10)],
+            trim_side=1,
+        )
+        add_window_frame_x(geo, -10.04, -9.80, 7.70, 9.50, y0=0.90, y1=2.10, inside_dir=1)
+        # Kuzey dış duvar (z=12.0): pencere x[-5.80, -4.00] (w=1.80, y=0.90..2.10)
+        add_layered_wall_z(
+            geo, -9.8, 0.0, 12.00, 12.24, y_top=3.24,
+            openings=[(-5.80, -4.00, 0.90, 2.10)],
+            trim_side=-1,
+        )
+        add_window_frame_z(geo, 12.00, 12.24, -5.80, -4.00, y0=0.90, y1=2.10, inside_dir=-1)
         # Doğu dış/sınır duvarı (x=0)
         add_layered_wall_x(geo, 5.2, 12.0, -0.12, 0.12, y_top=3.24, trim_side=-1)
 
+    return geo.finish()
+
+
+def build_room_windows(room_id):
+    """Pencereli odalar için ayrı cam nesnesi (Room_<Ad>_Windows) ve 'Glass' materyali üretir."""
+    if room_id == 'Storage':
+        return None
+    geo = Geo(f'Room_{room_id}_Windows')
+    if room_id == 'Office':
+        # Ön duvar pencere camı (z=-5.30, x[-1.94, -0.46], y[0.93, 2.05])
+        geo.span_u(-1.94, 0.93, -5.31, -0.46, 2.05, -5.29, 'Glass', bevel=0.0)
+    elif room_id == 'Kitchen':
+        # Batı duvar pencere camı (x=-9.92, z[-3.74, -2.26], y[0.93, 2.05])
+        geo.span_u(-9.93, 0.93, -3.74, -9.91, 2.05, -2.26, 'Glass', bevel=0.0)
+    elif room_id == 'LockerRoom':
+        # Batı duvar pencere camı (x=-9.92, z[2.46, 3.94], y[0.93, 2.05])
+        geo.span_u(-9.93, 0.93, 2.46, -9.91, 2.05, 3.94, 'Glass', bevel=0.0)
+    elif room_id == 'RingRoom':
+        # Batı duvar (x=-9.92, z[7.76, 9.44]) ve kuzey duvar (z=12.12, x[-5.74, -4.06]) camları
+        geo.span_u(-9.93, 0.93, 7.76, -9.91, 2.05, 9.44, 'Glass', bevel=0.0)
+        geo.span_u(-5.74, 0.93, 12.11, -4.06, 2.05, 12.13, 'Glass', bevel=0.0)
     return geo.finish()
 
 
@@ -910,39 +1063,313 @@ def build_hanging_uniform():
 
 
 def build_boxing_ring():
-    """Ring: BoxingRing (4.6x4.6 m, platform y≈0.35 m, 4 köşe direği, 3 sıra halat, mavi zemin, kırmızı-mavi köşeler)."""
+    """Ring: BoxingRing (4.6x4.6 m, platform y≈0.35 m, köşede tek direk ve direğe tam oturan kırmızı/mavi minderler)."""
     geo = Geo('BoxingRing')
     # Alt çelik etek ve mavi sünger platform (üst y=0.35 m)
     geo.box_u((0.0, 0.145, 0.0), (4.52, 0.29, 4.52), 'M_Anthracite', bevel=0.015)
     geo.box_u((0.0, 0.32, 0.0), (4.60, 0.06, 4.60), 'M_RingBlue', bevel=0.018)
     geo.box_u((0.0, 0.348, 0.0), (4.10, 0.008, 4.10), 'M_CobaltBlue', bevel=0.002)
 
-    # 4 köşe direği ve köşe yastıkları: sol-ön kırmızı, sağ-arka mavi, diğer iki köşe beyaz
+    # 4 köşe: her köşede tek çelik direk ve direğe tam oturan kırmızı/mavi köşe minderi
     corners = [
-        (-2.12, -2.12, 'M_ToolboxLipRed', 45.0),
-        (2.12, 2.12, 'M_RingBlue', 225.0),
-        (-2.12, 2.12, 'M_FridgeWhite', 135.0),
-        (2.12, -2.12, 'M_FridgeWhite', -45.0),
+        (-2.10, -2.10, 'M_ToolboxLipRed', 45.0),
+        (2.10, 2.10, 'M_RingBlue', 225.0),
+        (-2.10, 2.10, 'M_ToolboxLipRed', 135.0),
+        (2.10, -2.10, 'M_RingBlue', -45.0),
     ]
     for cx, cz, cmat, c_ang in corners:
-        geo.cylinder_u((cx, 0.68, cz), 0.065, 1.36, cmat, segments=12)
-        # Köşe koruma minderi (iç merkeze bakan dikey yastık)
-        dx = -0.14 if cx > 0 else 0.14
-        dz = -0.14 if cz > 0 else 0.14
-        geo.box_u((cx + dx, 0.90, cz + dz), (0.14, 0.78, 0.14), cmat, bevel=0.025, rot_y_deg=c_ang)
+        # Köşede tek ana direk
+        geo.cylinder_u((cx, 0.855, cz), 0.060, 1.01, 'M_Anthracite', segments=12)
+        # Direğe tam oturan iç köşe koruma minderi (direk merkezine bitişik)
+        dx = -0.042 if cx > 0 else 0.042
+        dz = -0.042 if cz > 0 else 0.042
+        geo.box_u((cx + dx, 0.90, cz + dz), (0.16, 0.80, 0.16), cmat, bevel=0.030, rot_y_deg=c_ang)
 
-    # 3 sıra halat (y = 0.62, 0.90, 1.18 m)
+    # 3 sıra halat (y = 0.62, 0.90, 1.18 m; kırmızı-beyaz-mavi)
     rope_heights = [0.62, 0.90, 1.18]
     rope_mats = ['M_ToolboxLipRed', 'M_FridgeWhite', 'M_RingBlue']
-    span = 3.96
+    span = 4.12
     for ry, rmat in zip(rope_heights, rope_mats):
-        # Kuzey ve Güney halatları (X boyunca)
-        for sz in (-2.04, 2.04):
+        # Kuzey ve Güney halatları (X boyunca, direklere doğrudan bağlanır)
+        for sz in (-2.06, 2.06):
             geo.cylinder_u((0.0, ry, sz), 0.018, span, rmat, axis_u=(1, 0, 0), segments=8)
         # Batı ve Doğu halatları (Z boyunca)
-        for sx in (-2.04, 2.04):
+        for sx in (-2.06, 2.06):
             geo.cylinder_u((sx, ry, 0.0), 0.018, span, rmat, axis_u=(0, 0, 1), segments=8)
     return geo.finish((0.0, 0.0, 0.0)), (4.60, 1.36, 4.60)
+
+
+# --- İKİNCİ TUR EKLENEN EŞYALAR (Pivot = Taban Ortası (0, 0, 0), Üçgen <= 1500, Yazı/Logo Yok) ---
+
+def build_paper_stack():
+    """Ofis dağınıklığı: PaperStack (hafif dağınık kağıt ve klasör yığını, y≈0.14 m)."""
+    geo = Geo('PaperStack')
+    geo.box_u((0.0, 0.022, 0.0), (0.24, 0.044, 0.31), 'M_CreamPaper', bevel=0.004, rot_y_deg=4.0)
+    geo.box_u((0.01, 0.056, -0.01), (0.25, 0.022, 0.32), 'M_SafetyOrange', bevel=0.004, rot_y_deg=-8.0)
+    geo.box_u((-0.01, 0.088, 0.01), (0.23, 0.040, 0.30), 'M_CreamPaper', bevel=0.004, rot_y_deg=11.0)
+    geo.box_u((0.02, 0.118, 0.0), (0.21, 0.018, 0.28), 'M_ServiceBlue', bevel=0.003, rot_y_deg=-5.0)
+    return geo.finish((0.0, 0.0, 0.0)), (0.28, 0.14, 0.34)
+
+
+def build_cardboard_box():
+    """Ofis/Depo dağınıklığı: CardboardBox (bantlı ve kulplu karton koli, y≈0.34 m)."""
+    geo = Geo('CardboardBox')
+    geo.box_u((0.0, 0.16, 0.0), (0.42, 0.32, 0.36), 'M_Fibreboard', bevel=0.012)
+    geo.box_u((0.0, 0.31, 0.0), (0.435, 0.045, 0.375), 'M_OakLight', bevel=0.008)
+    # Üst koli bandı ve yan taşıma oyukları
+    geo.box_u((0.0, 0.332, 0.0), (0.06, 0.006, 0.376), 'M_SafetyOchre', bevel=0.001)
+    for sx in (-0.212, 0.212):
+        geo.box_u((sx, 0.21, 0.0), (0.008, 0.032, 0.09), 'M_PegHole', bevel=0.0)
+    # Yan turuncu etiket şeridi (yazısız)
+    geo.box_u((0.10, 0.16, 0.181), (0.11, 0.07, 0.006), 'M_SafetyOrange', bevel=0.001)
+    return geo.finish((0.0, 0.0, 0.0)), (0.44, 0.34, 0.38)
+
+
+def build_pen_holder():
+    """Ofis dağınıklığı: PenHolder (masaüstü kalemlik ve renkli kalemler, y≈0.15 m)."""
+    geo = Geo('PenHolder')
+    geo.cylinder_u((0.0, 0.052, 0.0), 0.042, 0.104, 'M_TealMetal', segments=10)
+    geo.cylinder_u((0.0, 0.098, 0.0), 0.035, 0.016, 'M_Anthracite', segments=10)
+    pens = [
+        ((-0.014, 0.095, 0.008), (0.012, 0.11, 0.012), 'M_SafetyOrange', 10, -8),
+        ((0.015, 0.100, -0.006), (0.011, 0.12, 0.011), 'M_ToolboxLipRed', -8, 12),
+        ((0.002, 0.092, -0.015), (0.012, 0.10, 0.012), 'M_RingBlue', -12, -5),
+        ((-0.008, 0.098, -0.004), (0.022, 0.11, 0.006), 'M_SafetyOchre', 6, 6),
+    ]
+    for pos, sz, mat, rx, rz in pens:
+        geo.box_u(pos, sz, mat, bevel=0.002, rot_x_deg=rx, rot_z_deg=rz)
+    return geo.finish((0.0, 0.0, 0.0)), (0.10, 0.16, 0.10)
+
+
+def build_trash_bin():
+    """Ofis dağınıklığı: TrashBin (silindirik çöp kovası ve buruşuk kağıtlar, y≈0.32 m)."""
+    geo = Geo('TrashBin')
+    geo.cylinder_u((0.0, 0.15, 0.0), 0.13, 0.30, 'M_Anthracite', segments=12)
+    geo.cylinder_u((0.0, 0.29, 0.0), 0.142, 0.028, 'M_TealMetal', segments=12)
+    # İçindeki buruşuk kağıt topları
+    geo.box_u((-0.03, 0.27, 0.02), (0.075, 0.065, 0.075), 'M_CreamPaper', bevel=0.020, rot_x_deg=18, rot_y_deg=25)
+    geo.box_u((0.04, 0.28, -0.02), (0.068, 0.060, 0.068), 'M_CreamPaper', bevel=0.018, rot_z_deg=-22)
+    geo.box_u((0.0, 0.26, -0.04), (0.060, 0.055, 0.060), 'M_SafetyOrange', bevel=0.016, rot_x_deg=-15)
+    return geo.finish((0.0, 0.0, 0.0)), (0.29, 0.32, 0.29)
+
+
+def build_floor_cables():
+    """Ofis dağınıklığı: FloorCables (zemin kablo kanalı, kablolar ve priz kutusu, y≈0.035 m)."""
+    geo = Geo('FloorCables')
+    # Ana kauçuk kablo koruyucu ve çoklu priz
+    geo.box_u((0.0, 0.008, 0.0), (0.68, 0.016, 0.09), 'M_DarkRubber', bevel=0.005, rot_y_deg=8.0)
+    geo.box_u((0.0, 0.015, 0.0), (0.66, 0.005, 0.028), 'M_SafetyOrange', bevel=0.001, rot_y_deg=8.0)
+    geo.box_u((-0.18, 0.018, 0.12), (0.24, 0.036, 0.075), 'M_CreamCeramic', bevel=0.006, rot_y_deg=-14.0)
+    geo.box_u((-0.26, 0.036, 0.14), (0.024, 0.008, 0.024), 'M_ToolboxLipRed', bevel=0.002, rot_y_deg=-14.0)
+    # Kıvrımlı kablo uzantıları
+    geo.box_u((0.12, 0.007, 0.11), (0.38, 0.014, 0.022), 'M_CharcoalABS', bevel=0.004, rot_y_deg=22.0)
+    geo.box_u((-0.05, 0.007, -0.10), (0.42, 0.014, 0.020), 'M_DarkRubber', bevel=0.004, rot_y_deg=-18.0)
+    return geo.finish((0.0, 0.0, 0.0)), (0.72, 0.04, 0.32)
+
+
+def build_dining_table():
+    """Mutfak oturma: DiningTable (sıcak ahşap mutfak yemek masası, y≈0.56 m)."""
+    geo = Geo('DiningTable')
+    geo.box_u((0.0, 0.535, 0.0), (1.16, 0.05, 0.72), 'M_Oak', bevel=0.014)
+    geo.box_u((0.0, 0.49, 0.0), (1.02, 0.045, 0.58), 'M_TimberEdge', bevel=0.006)
+    for sx in (-0.48, 0.48):
+        for sz in (-0.26, 0.26):
+            geo.box_u((sx, 0.245, sz), (0.055, 0.49, 0.055), 'M_Anthracite', bevel=0.006)
+    geo.box_u((0.0, 0.12, 0.0), (0.94, 0.032, 0.04), 'M_Anthracite', bevel=0.004)
+    return geo.finish((0.0, 0.0, 0.0)), (1.16, 0.56, 0.72)
+
+
+def build_stool():
+    """Mutfak oturma: Stool (yuvarlak minderli mutfak taburesi, y≈0.36 m)."""
+    geo = Geo('Stool')
+    geo.cylinder_u((0.0, 0.33, 0.0), 0.165, 0.06, 'M_SafetyOrange', segments=12)
+    geo.cylinder_u((0.0, 0.295, 0.0), 0.155, 0.02, 'M_Oak', segments=12)
+    for sx in (-0.10, 0.10):
+        for sz in (-0.10, 0.10):
+            geo.box_u((sx, 0.145, sz), (0.034, 0.29, 0.034), 'M_Anthracite', bevel=0.004)
+    geo.box_u((0.0, 0.11, 0.0), (0.21, 0.024, 0.21), 'M_Anthracite', bevel=0.003)
+    return geo.finish((0.0, 0.0, 0.0)), (0.34, 0.36, 0.34)
+
+
+def build_water_dispenser():
+    """Mutfak oturma: WaterDispenser (üst damacanalı su sebili, y≈1.18 m)."""
+    geo = Geo('WaterDispenser')
+    # Alt gövde
+    geo.box_u((0.0, 0.41, 0.0), (0.34, 0.82, 0.34), 'M_FridgeWhite', bevel=0.016)
+    geo.box_u((0.0, 0.56, 0.165), (0.24, 0.22, 0.02), 'M_Anthracite', bevel=0.004)
+    # Kırmızı (sıcak) ve mavi (soğuk) musluk mandalları ve damlalık
+    geo.box_u((-0.05, 0.62, 0.178), (0.032, 0.045, 0.024), 'M_ToolboxLipRed', bevel=0.003)
+    geo.box_u((0.05, 0.62, 0.178), (0.032, 0.045, 0.024), 'M_RingBlue', bevel=0.003)
+    geo.box_u((0.0, 0.46, 0.178), (0.22, 0.025, 0.05), 'M_TealMetal', bevel=0.004)
+    # Üst mavi su damacanası
+    geo.cylinder_u((0.0, 0.84, 0.0), 0.07, 0.06, 'M_CobaltBlue', segments=10)
+    geo.cylinder_u((0.0, 1.01, 0.0), 0.135, 0.30, 'M_SmokyGlass', segments=12)
+    geo.cylinder_u((0.0, 1.165, 0.0), 0.12, 0.03, 'M_CobaltBlue', segments=12)
+    return geo.finish((0.0, 0.0, 0.0)), (0.34, 1.18, 0.36)
+
+
+def build_wall_cabinet():
+    """Mutfak: WallCabinet (duvara monte çift kapaklı üst mutfak dolabı, y≈0.52 m)."""
+    geo = Geo('WallCabinet')
+    geo.box_u((0.0, 0.26, 0.0), (1.10, 0.52, 0.32), 'M_FilingGreen', bevel=0.010)
+    geo.box_u((0.0, 0.51, 0.005), (1.13, 0.03, 0.34), 'M_Oak', bevel=0.005)
+    for sx, hx in [(-0.265, -0.05), (0.265, 0.05)]:
+        geo.box_u((sx, 0.255, 0.162), (0.50, 0.46, 0.022), 'M_TealMetal', bevel=0.006)
+        geo.box_u((hx, 0.16, 0.180), (0.022, 0.11, 0.022), 'M_ToolSteel', bevel=0.003)
+    return geo.finish((0.0, 0.0, 0.0)), (1.13, 0.53, 0.35)
+
+
+def build_cup_shelf():
+    """Mutfak: CupShelf (duvar tipi ahşap kupa/kahve rafı ve renkli kupalar, y≈0.36 m)."""
+    geo = Geo('CupShelf')
+    geo.box_u((0.0, 0.18, -0.08), (0.76, 0.34, 0.024), 'M_Timber', bevel=0.005)
+    for sy in (0.04, 0.22):
+        geo.box_u((0.0, sy, 0.0), (0.78, 0.03, 0.18), 'M_Oak', bevel=0.005)
+    # Alt ve üst raftaki renkli kupalar ve kavanozlar
+    for cx, mat in [(-0.24, 'M_SafetyOrange'), (-0.06, 'M_CreamCeramic'), (0.14, 'M_RingBlue'), (0.28, 'M_ToolboxLipRed')]:
+        geo.cylinder_u((cx, 0.095, 0.01), 0.036, 0.08, mat, segments=10)
+    for cx, mat in [(-0.20, 'M_TealMetal'), (0.02, 'M_SafetyOchre'), (0.22, 'M_FilingGreen')]:
+        geo.box_u((cx, 0.285, 0.01), (0.09, 0.10, 0.09), mat, bevel=0.012)
+    return geo.finish((0.0, 0.0, 0.0)), (0.78, 0.36, 0.20)
+
+
+def build_punching_bag():
+    """Spor/Ring: PunchingBag (tavandan zincirle asılı ağır kum torbası, toplam boy y=2.28 m)."""
+    geo = Geo('PunchingBag')
+    # Kum torbası gövdesi (alt y=0.0, üst y=1.18)
+    geo.cylinder_u((0.0, 0.59, 0.0), 0.19, 1.12, 'M_ToolboxRed', segments=12)
+    geo.cylinder_u((0.0, 0.04, 0.0), 0.17, 0.08, 'M_Anthracite', segments=12)
+    geo.cylinder_u((0.0, 1.14, 0.0), 0.175, 0.08, 'M_Anthracite', segments=12)
+    # Orta vurgu şeritleri
+    geo.cylinder_u((0.0, 0.78, 0.0), 0.194, 0.09, 'M_SafetyOrange', segments=12)
+    geo.cylinder_u((0.0, 0.38, 0.0), 0.194, 0.07, 'M_FridgeWhite', segments=12)
+    # 4 askı kolonu, orta halka ve tavana kadar (y=2.28) uzanan çelik zincir + tavan flanşı
+    for ang_deg in (0, 90, 180, 270):
+        rad = math.radians(ang_deg)
+        sx, sz = 0.08 * math.cos(rad), 0.08 * math.sin(rad)
+        geo.box_u((sx, 1.28, sz), (0.024, 0.24, 0.024), 'M_ToolSteel', bevel=0.003)
+    geo.cylinder_u((0.0, 1.72, 0.0), 0.022, 0.96, 'M_ToolSteel', segments=8)
+    for cy in (1.48, 1.66, 1.84, 2.02, 2.16):
+        geo.box_u((0.0, cy, 0.0), (0.048, 0.065, 0.048), 'M_GalvanizedSteel', bevel=0.008, rot_y_deg=cy * 90)
+    geo.cylinder_u((0.0, 2.255, 0.0), 0.11, 0.05, 'M_Anthracite', segments=10)
+    return geo.finish((0.0, 0.0, 0.0)), (0.40, 2.28, 0.40)
+
+
+def build_corner_stool():
+    """Spor/Ring: CornerStool (ring köşesi için üç ayaklı boksör taburesi, y≈0.34 m)."""
+    geo = Geo('CornerStool')
+    geo.cylinder_u((0.0, 0.31, 0.0), 0.155, 0.055, 'M_ToolboxLipRed', segments=12)
+    geo.cylinder_u((0.0, 0.275, 0.0), 0.14, 0.02, 'M_Oak', segments=12)
+    for i in range(3):
+        ang = 2 * math.pi * i / 3
+        lx, lz = 0.095 * math.sin(ang), 0.095 * math.cos(ang)
+        geo.box_u((lx, 0.14, lz), (0.032, 0.28, 0.032), 'M_TimberEdge', bevel=0.004)
+    geo.cylinder_u((0.0, 0.11, 0.0), 0.105, 0.022, 'M_Anthracite', segments=10)
+    return geo.finish((0.0, 0.0, 0.0)), (0.32, 0.34, 0.32)
+
+
+def build_towel_stack():
+    """Spor/Soyunma: TowelStack (katlanmış renkli spor havluları yığını, y≈0.18 m)."""
+    geo = Geo('TowelStack')
+    geo.box_u((0.0, 0.03, 0.0), (0.32, 0.058, 0.24), 'M_FridgeWhite', bevel=0.018)
+    geo.box_u((0.01, 0.085, -0.01), (0.30, 0.055, 0.23), 'M_RingBlue', bevel=0.018, rot_y_deg=6.0)
+    geo.box_u((-0.01, 0.14, 0.01), (0.28, 0.052, 0.21), 'M_SafetyOrange', bevel=0.016, rot_y_deg=-5.0)
+    return geo.finish((0.0, 0.0, 0.0)), (0.34, 0.18, 0.26)
+
+
+def build_gym_bag():
+    """Spor/Soyunma: GymBag (fermuarlı ve askılı silindirik spor çantası, y≈0.28 m)."""
+    geo = Geo('GymBag')
+    geo.cylinder_u((0.0, 0.13, 0.0), 0.13, 0.48, 'M_ServiceBlue', axis_u=(1, 0, 0), segments=10)
+    for sx in (-0.23, 0.23):
+        geo.cylinder_u((sx, 0.13, 0.0), 0.125, 0.04, 'M_SafetyOrange', axis_u=(1, 0, 0), segments=10)
+    # Üst fermuar şeridi ve taşıma kulpları
+    geo.box_u((0.0, 0.255, 0.0), (0.42, 0.016, 0.03), 'M_CharcoalABS', bevel=0.003)
+    for sz in (-0.06, 0.06):
+        geo.box_u((0.0, 0.21, sz), (0.22, 0.14, 0.024), 'M_Anthracite', bevel=0.004)
+    # Ön cep
+    geo.box_u((0.0, 0.11, 0.125), (0.20, 0.11, 0.035), 'M_TealMetal', bevel=0.008)
+    return geo.finish((0.0, 0.0, 0.0)), (0.52, 0.28, 0.30)
+
+
+def build_shoe_pair():
+    """Spor/Soyunma: ShoePair (bir çift stilize spor/boks ayakkabısı, y≈0.14 m)."""
+    geo = Geo('ShoePair')
+    for sx, rot_y in [(-0.085, 6.0), (0.085, -10.0)]:
+        # Beyaz kauçuk taban
+        geo.box_u((sx, 0.016, 0.0), (0.105, 0.032, 0.26), 'M_FridgeWhite', bevel=0.008, rot_y_deg=rot_y)
+        # Gövde ve bilek kısmı
+        geo.box_u((sx, 0.055, -0.01), (0.098, 0.055, 0.23), 'M_SafetyOrange', bevel=0.015, rot_y_deg=rot_y)
+        geo.box_u((sx, 0.095, -0.055), (0.090, 0.060, 0.11), 'M_Anthracite', bevel=0.012, rot_y_deg=rot_y)
+        # Ön burun ve bağcık şeridi
+        geo.box_u((sx, 0.048, 0.085), (0.092, 0.038, 0.065), 'M_FridgeWhite', bevel=0.010, rot_y_deg=rot_y)
+    return geo.finish((0.0, 0.0, 0.0)), (0.30, 0.14, 0.28)
+
+
+def build_poster_a():
+    """Duvar: PosterA (yazısız, stilize kurtarma aracı ve şehir silüeti temalı poster, y≈0.68 m)."""
+    geo = Geo('PosterA')
+    w, h = 0.52, 0.68
+    geo.box_u((0.0, h * 0.5, 0.0), (w, h, 0.020), 'M_Anthracite', bevel=0.004)
+    geo.box_u((0.0, h * 0.5, 0.009), (w - 0.05, h - 0.05, 0.008), 'M_CreamPaper', bevel=0.001)
+    # Arka plan gökyüzü ve şehir kuleleri silüeti (yazısız)
+    geo.box_u((0.0, 0.44, 0.014), (w - 0.09, 0.30, 0.005), 'M_MutedBlue', bevel=0.0)
+    for bx, bh, bw in [(-0.14, 0.18, 0.09), (-0.03, 0.24, 0.10), (0.09, 0.16, 0.08), (0.16, 0.21, 0.07)]:
+        geo.box_u((bx, 0.29 + bh * 0.5, 0.016), (bw, bh, 0.006), 'M_WallBlue', bevel=0.0)
+    # Ön planda stilize turuncu kurtarma minibüsü silüeti
+    geo.box_u((0.0, 0.18, 0.018), (0.28, 0.11, 0.008), 'M_SafetyOrange', bevel=0.003)
+    geo.box_u((0.05, 0.20, 0.020), (0.12, 0.05, 0.006), 'M_CreamPaper', bevel=0.001)
+    for wx in (-0.08, 0.08):
+        geo.box_u((wx, 0.12, 0.020), (0.05, 0.05, 0.008), 'M_CharcoalABS', bevel=0.008)
+    return geo.finish((0.0, 0.0, 0.0)), (0.52, 0.68, 0.03)
+
+
+def build_poster_b():
+    """Duvar: PosterB (yazısız, soyut geometrik halkalar ve boks/enerji temalı poster, y≈0.64 m)."""
+    geo = Geo('PosterB')
+    w, h = 0.50, 0.64
+    geo.box_u((0.0, h * 0.5, 0.0), (w, h, 0.020), 'M_TimberEdge', bevel=0.004)
+    geo.box_u((0.0, h * 0.5, 0.009), (w - 0.05, h - 0.05, 0.008), 'M_CreamPaper', bevel=0.001)
+    # Soyut geometrik renk blokları ve enerji diyagonalleri (yazısız)
+    geo.box_u((-0.07, 0.38, 0.015), (0.24, 0.24, 0.006), 'M_SafetyOrange', bevel=0.020)
+    geo.box_u((0.08, 0.24, 0.016), (0.22, 0.22, 0.006), 'M_RingBlue', bevel=0.018)
+    geo.box_u((0.0, 0.32, 0.018), (0.34, 0.05, 0.006), 'M_ToolboxLipRed', bevel=0.002, rot_z_deg=28.0)
+    geo.box_u((0.0, 0.26, 0.018), (0.30, 0.035, 0.006), 'M_SafetyOchre', bevel=0.002, rot_z_deg=28.0)
+    return geo.finish((0.0, 0.0, 0.0)), (0.50, 0.64, 0.03)
+
+
+def build_wall_clock():
+    """Duvar: WallClock (yuvarlak çerçeveli, rakamsız/yazısız duvar saati, y≈0.34 m)."""
+    geo = Geo('WallClock')
+    geo.cylinder_u((0.0, 0.17, 0.0), 0.17, 0.045, 'M_ToolboxRed', axis_u=(0, 0, 1), segments=16)
+    geo.cylinder_u((0.0, 0.17, 0.016), 0.145, 0.020, 'M_CreamPaper', axis_u=(0, 0, 1), segments=16)
+    # 4 ana yön çizgisi ve akrep/yelkovan (yazı/rakam yok)
+    for sx, sy, sw, sh in [(0.0, 0.285, 0.012, 0.03), (0.0, 0.055, 0.012, 0.03), (-0.115, 0.17, 0.03, 0.012), (0.115, 0.17, 0.03, 0.012)]:
+        geo.box_u((sx, sy, 0.026), (sw, sh, 0.006), 'M_Anthracite', bevel=0.0)
+    geo.box_u((0.0, 0.21, 0.028), (0.014, 0.09, 0.006), 'M_Anthracite', bevel=0.001)
+    geo.box_u((0.035, 0.17, 0.029), (0.075, 0.012, 0.006), 'M_SafetyOrange', bevel=0.001)
+    return geo.finish((0.0, 0.0, 0.0)), (0.34, 0.34, 0.05)
+
+
+def build_wall_board():
+    """Duvar: WallBoard (mantar/not panosu ve renkli kağıt kartları, yazı/logo yok, y≈0.68 m)."""
+    geo = Geo('WallBoard')
+    w, h = 0.96, 0.68
+    geo.box_u((0.0, h * 0.5, 0.0), (w, h, 0.028), 'M_TimberEdge', bevel=0.005)
+    geo.box_u((0.0, h * 0.5, 0.012), (w - 0.07, h - 0.07, 0.012), 'M_Fibreboard', bevel=0.002)
+    # İğnelenmiş renkli kağıt ve şema kartları (yazısız)
+    notes = [
+        ((-0.28, 0.44), (0.18, 0.20), 'M_CreamPaper', 5.0),
+        ((-0.05, 0.46), (0.16, 0.16), 'M_SafetyOchre', -6.0),
+        ((0.22, 0.43), (0.22, 0.18), 'M_CreamPaper', 3.0),
+        ((-0.22, 0.21), (0.15, 0.15), 'M_SafetyOrange', -8.0),
+        ((0.04, 0.22), (0.20, 0.16), 'M_RingBlue', 4.0),
+        ((0.28, 0.20), (0.14, 0.16), 'M_CreamPaper', -5.0),
+    ]
+    for (nx, ny), (nw, nh), nmat, tilt in notes:
+        geo.box_u((nx, ny, 0.020), (nw, nh, 0.006), nmat, bevel=0.001, rot_z_deg=tilt)
+        geo.box_u((nx, ny + nh * 0.36, 0.025), (0.018, 0.018, 0.010), 'M_ToolboxLipRed', bevel=0.002)
+    return geo.finish((0.0, 0.0, 0.0)), (0.96, 0.68, 0.04)
 
 
 ASSET_BUILDERS = [
@@ -971,7 +1398,34 @@ ASSET_BUILDERS = [
     ('Bench', build_bench),
     ('HangingUniform', build_hanging_uniform),
     ('BoxingRing', build_boxing_ring),
+    ('PaperStack', build_paper_stack),
+    ('CardboardBox', build_cardboard_box),
+    ('PenHolder', build_pen_holder),
+    ('TrashBin', build_trash_bin),
+    ('FloorCables', build_floor_cables),
+    ('DiningTable', build_dining_table),
+    ('Stool', build_stool),
+    ('WaterDispenser', build_water_dispenser),
+    ('WallCabinet', build_wall_cabinet),
+    ('CupShelf', build_cup_shelf),
+    ('PunchingBag', build_punching_bag),
+    ('CornerStool', build_corner_stool),
+    ('TowelStack', build_towel_stack),
+    ('GymBag', build_gym_bag),
+    ('ShoePair', build_shoe_pair),
+    ('PosterA', build_poster_a),
+    ('PosterB', build_poster_b),
+    ('WallClock', build_wall_clock),
+    ('WallBoard', build_wall_board),
 ]
+
+# Küçük süs/dağınıklık ve yüksek duvar eşyaları için collider null bırakılır
+NULL_COLLIDER_ASSETS = {
+    'Clipboard', 'Mug', 'PaperStack', 'PenHolder', 'FloorCables',
+    'TowelStack', 'ShoePair', 'HangingUniform',
+    'CityMapBoard', 'PictureFrame', 'Pegboard',
+    'WallCabinet', 'CupShelf', 'PosterA', 'PosterB', 'WallClock', 'WallBoard',
+}
 
 
 # ==============================================================================
@@ -979,48 +1433,91 @@ ASSET_BUILDERS = [
 # ==============================================================================
 
 LAYOUT_PLACEMENTS = [
-    # Ana Ofis (x[-4.8, 0], z[-5.2, 1.2]) - kapı önleri ve 1.2 m ana koridorlar açık
+    # Ana Ofis (x[-4.8, 0], z[-5.2, 1.2]) - kapı önleri, pencere (z=-5.2, x[-2.0, -0.4]) ve >=1.2 m koridorlar açık
     {'id': 'Desk_01', 'asset': 'Desk', 'room': 'Office', 'pos': [-1.05, 0.0, -0.10], 'rot_y': 180.0},
     {'id': 'Chair_01', 'asset': 'Chair', 'room': 'Office', 'pos': [-1.05, 0.0, 0.48], 'rot_y': 180.0},
     {'id': 'Monitor_01', 'asset': 'Monitor', 'room': 'Office', 'pos': [-1.05, 0.54, -0.02], 'rot_y': 0.0},
     {'id': 'Clipboard_01', 'asset': 'Clipboard', 'room': 'Office', 'pos': [-0.68, 0.54, -0.18], 'rot_y': 15.0},
     {'id': 'Mug_01', 'asset': 'Mug', 'room': 'Office', 'pos': [-1.42, 0.54, -0.16], 'rot_y': 35.0},
+    {'id': 'PenHolder_01', 'asset': 'PenHolder', 'room': 'Office', 'pos': [-1.48, 0.54, 0.06], 'rot_y': 10.0},
+    {'id': 'PaperStack_01', 'asset': 'PaperStack', 'room': 'Office', 'pos': [-0.62, 0.54, 0.08], 'rot_y': -12.0},
     {'id': 'PC_01', 'asset': 'PC', 'room': 'Office', 'pos': [-0.30, 0.0, -0.10], 'rot_y': 180.0},
+    {'id': 'TrashBin_01', 'asset': 'TrashBin', 'room': 'Office', 'pos': [-1.82, 0.0, -0.12], 'rot_y': 0.0},
+    {'id': 'CardboardBox_01', 'asset': 'CardboardBox', 'room': 'Office', 'pos': [-0.38, 0.0, -0.68], 'rot_y': 165.0},
+    {'id': 'FloorCables_01', 'asset': 'FloorCables', 'room': 'Office', 'pos': [-0.68, 0.0, -0.52], 'rot_y': 12.0},
     {'id': 'CityMapBoard_01', 'asset': 'CityMapBoard', 'room': 'Office', 'pos': [-0.12, 1.02, -0.10], 'rot_y': 270.0},
+    {'id': 'PosterA_01', 'asset': 'PosterA', 'room': 'Office', 'pos': [-0.12, 1.18, -1.45], 'rot_y': 270.0},
+    {'id': 'WallBoard_01', 'asset': 'WallBoard', 'room': 'Office', 'pos': [-0.95, 1.16, 1.09], 'rot_y': 180.0},
+    {'id': 'WallClock_01', 'asset': 'WallClock', 'room': 'Office', 'pos': [-4.77, 1.92, -0.65], 'rot_y': 90.0},
     {'id': 'DocumentShelf_01', 'asset': 'DocumentShelf', 'room': 'Office', 'pos': [-4.50, 0.0, 0.15], 'rot_y': 90.0},
     {'id': 'FilingCabinet_01', 'asset': 'FilingCabinet', 'room': 'Office', 'pos': [-4.42, 0.0, 0.82], 'rot_y': 90.0},
-    {'id': 'FilingCabinet_02', 'asset': 'FilingCabinet', 'room': 'Office', 'pos': [-0.45, 0.0, -4.85], 'rot_y': 0.0},
-    {'id': 'Plant_01', 'asset': 'Plant', 'room': 'Office', 'pos': [-1.10, 0.0, -4.85], 'rot_y': 0.0},
+    {'id': 'FilingCabinet_02', 'asset': 'FilingCabinet', 'room': 'Office', 'pos': [-4.42, 0.0, -3.55], 'rot_y': 90.0},
+    {'id': 'PaperStack_02', 'asset': 'PaperStack', 'room': 'Office', 'pos': [-4.38, 0.0, -0.48], 'rot_y': 75.0},
+    {'id': 'PaperStack_03', 'asset': 'PaperStack', 'room': 'Office', 'pos': [-4.42, 1.48, -3.55], 'rot_y': 82.0},
+    {'id': 'CardboardBox_02', 'asset': 'CardboardBox', 'room': 'Office', 'pos': [-3.85, 0.0, 0.86], 'rot_y': 15.0},
+    {'id': 'TrashBin_02', 'asset': 'TrashBin', 'room': 'Office', 'pos': [-4.42, 0.0, -4.12], 'rot_y': 20.0},
+    {'id': 'FloorCables_02', 'asset': 'FloorCables', 'room': 'Office', 'pos': [-4.12, 0.0, -3.05], 'rot_y': 95.0},
+    {'id': 'Plant_01', 'asset': 'Plant', 'room': 'Office', 'pos': [-2.28, 0.0, -4.85], 'rot_y': 0.0},
     {'id': 'Plant_02', 'asset': 'Plant', 'room': 'Office', 'pos': [-4.35, 0.0, -4.75], 'rot_y': 45.0},
     {'id': 'Rug_01', 'asset': 'Rug', 'room': 'Office', 'pos': [-2.15, 0.0, -1.95], 'rot_y': 0.0},
 
-    # Mutfak (x[-9.8, -4.8], z[-5.2, 1.2])
-    {'id': 'KitchenCounter_01', 'asset': 'KitchenCounter', 'room': 'Kitchen', 'pos': [-9.42, 0.0, -1.20], 'rot_y': 90.0},
-    {'id': 'CoffeeMachine_01', 'asset': 'CoffeeMachine', 'room': 'Kitchen', 'pos': [-9.40, 0.60, -0.75], 'rot_y': 90.0},
-    {'id': 'Fridge_01', 'asset': 'Fridge', 'room': 'Kitchen', 'pos': [-9.40, 0.0, 0.15], 'rot_y': 90.0},
-    {'id': 'Sofa_01', 'asset': 'Sofa', 'room': 'Kitchen', 'pos': [-7.20, 0.0, -4.70], 'rot_y': 0.0},
-    {'id': 'SideTable_01', 'asset': 'SideTable', 'room': 'Kitchen', 'pos': [-6.05, 0.0, -4.65], 'rot_y': 0.0},
-    {'id': 'PictureFrame_01', 'asset': 'PictureFrame', 'room': 'Kitchen', 'pos': [-7.20, 1.04, -5.16], 'rot_y': 0.0},
+    # Mutfak (x[-9.8, -4.8], z[-5.2, 1.2]) - oturma alanı bir arada, kanepe odaya (+Z) bakar
+    {'id': 'KitchenCounter_01', 'asset': 'KitchenCounter', 'room': 'Kitchen', 'pos': [-9.42, 0.0, -1.05], 'rot_y': 90.0},
+    {'id': 'CoffeeMachine_01', 'asset': 'CoffeeMachine', 'room': 'Kitchen', 'pos': [-9.40, 0.60, -0.60], 'rot_y': 90.0},
+    {'id': 'WallCabinet_01', 'asset': 'WallCabinet', 'room': 'Kitchen', 'pos': [-9.60, 1.38, -1.05], 'rot_y': 90.0},
+    {'id': 'Fridge_01', 'asset': 'Fridge', 'room': 'Kitchen', 'pos': [-9.40, 0.0, 0.35], 'rot_y': 90.0},
+    {'id': 'WaterDispenser_01', 'asset': 'WaterDispenser', 'room': 'Kitchen', 'pos': [-8.75, 0.0, 0.85], 'rot_y': 180.0},
+    {'id': 'CupShelf_01', 'asset': 'CupShelf', 'room': 'Kitchen', 'pos': [-5.80, 1.32, 1.00], 'rot_y': 180.0},
+    {'id': 'TrashBin_03', 'asset': 'TrashBin', 'room': 'Kitchen', 'pos': [-9.45, 0.0, -2.18], 'rot_y': 90.0},
+    {'id': 'Sofa_01', 'asset': 'Sofa', 'room': 'Kitchen', 'pos': [-7.35, 0.0, -4.70], 'rot_y': 0.0},
+    {'id': 'SideTable_01', 'asset': 'SideTable', 'room': 'Kitchen', 'pos': [-6.15, 0.0, -4.65], 'rot_y': 0.0},
+    {'id': 'DiningTable_01', 'asset': 'DiningTable', 'room': 'Kitchen', 'pos': [-7.35, 0.0, -3.35], 'rot_y': 0.0},
+    {'id': 'Stool_01', 'asset': 'Stool', 'room': 'Kitchen', 'pos': [-7.65, 0.0, -2.72], 'rot_y': 180.0},
+    {'id': 'Stool_02', 'asset': 'Stool', 'room': 'Kitchen', 'pos': [-7.05, 0.0, -2.72], 'rot_y': 180.0},
+    {'id': 'Stool_03', 'asset': 'Stool', 'room': 'Kitchen', 'pos': [-8.18, 0.0, -3.35], 'rot_y': 90.0},
+    {'id': 'PictureFrame_01', 'asset': 'PictureFrame', 'room': 'Kitchen', 'pos': [-7.35, 1.15, -5.16], 'rot_y': 0.0},
+    {'id': 'WallClock_02', 'asset': 'WallClock', 'room': 'Kitchen', 'pos': [-4.91, 1.85, -3.60], 'rot_y': 270.0},
+    {'id': 'PosterB_01', 'asset': 'PosterB', 'room': 'Kitchen', 'pos': [-4.91, 1.18, -0.35], 'rot_y': 270.0},
 
-    # Depo (x[-4.8, 0], z[1.2, 5.2]) - raflar duvar boyunca
+    # Depo (x[-4.8, 0], z[1.2, 5.2]) - raflar duvar boyunca, pencere yok
     {'id': 'MetalShelf_01', 'asset': 'MetalShelf', 'room': 'Storage', 'pos': [-3.85, 0.0, 4.82], 'rot_y': 180.0},
     {'id': 'MetalShelf_02', 'asset': 'MetalShelf', 'room': 'Storage', 'pos': [-2.40, 0.0, 4.82], 'rot_y': 180.0},
     {'id': 'MetalShelf_03', 'asset': 'MetalShelf', 'room': 'Storage', 'pos': [-0.95, 0.0, 4.82], 'rot_y': 180.0},
     {'id': 'RepairBench_01', 'asset': 'RepairBench', 'room': 'Storage', 'pos': [-4.34, 0.0, 2.65], 'rot_y': 90.0},
     {'id': 'Pegboard_01', 'asset': 'Pegboard', 'room': 'Storage', 'pos': [-4.68, 0.98, 2.65], 'rot_y': 90.0},
+    {'id': 'CardboardBox_03', 'asset': 'CardboardBox', 'room': 'Storage', 'pos': [-4.25, 0.0, 4.15], 'rot_y': 20.0},
+    {'id': 'CardboardBox_04', 'asset': 'CardboardBox', 'room': 'Storage', 'pos': [-0.85, 0.0, 4.18], 'rot_y': -15.0},
+    {'id': 'FloorCables_03', 'asset': 'FloorCables', 'room': 'Storage', 'pos': [-4.15, 0.0, 1.75], 'rot_y': 85.0},
+    {'id': 'WallBoard_02', 'asset': 'WallBoard', 'room': 'Storage', 'pos': [-0.95, 1.18, 1.31], 'rot_y': 0.0},
 
-    # Soyunma (x[-9.8, -4.8], z[1.2, 5.2])
-    {'id': 'LockerClosed_01', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 2.10], 'rot_y': 90.0},
-    {'id': 'LockerClosed_02', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 2.60], 'rot_y': 90.0},
-    {'id': 'LockerOpen_01', 'asset': 'LockerOpen', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 3.10], 'rot_y': 90.0},
-    {'id': 'HangingUniform_01', 'asset': 'HangingUniform', 'room': 'LockerRoom', 'pos': [-9.50, 0.52, 3.10], 'rot_y': 90.0},
-    {'id': 'LockerClosed_03', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 3.60], 'rot_y': 90.0},
-    {'id': 'Bench_01', 'asset': 'Bench', 'room': 'LockerRoom', 'pos': [-5.65, 0.0, 3.10], 'rot_y': 270.0},
-    {'id': 'LockerClosed_04', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 1.95], 'rot_y': 270.0},
-    {'id': 'LockerClosed_05', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 4.25], 'rot_y': 270.0},
+    # Soyunma (x[-9.8, -4.8], z[1.2, 5.2]) - batı penceresi z[2.4, 4.0] açık, spor eşyaları serpiştirilmiş
+    {'id': 'LockerClosed_01', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 1.65], 'rot_y': 90.0},
+    {'id': 'LockerClosed_02', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 4.55], 'rot_y': 90.0},
+    {'id': 'LockerClosed_03', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 2.50], 'rot_y': 270.0},
+    {'id': 'LockerOpen_01', 'asset': 'LockerOpen', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 3.10], 'rot_y': 270.0},
+    {'id': 'HangingUniform_01', 'asset': 'HangingUniform', 'room': 'LockerRoom', 'pos': [-5.18, 0.52, 3.10], 'rot_y': 270.0},
+    {'id': 'LockerClosed_04', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 1.90], 'rot_y': 270.0},
+    {'id': 'LockerClosed_05', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 3.70], 'rot_y': 270.0},
+    {'id': 'Bench_01', 'asset': 'Bench', 'room': 'LockerRoom', 'pos': [-8.85, 0.0, 3.20], 'rot_y': 90.0},
+    {'id': 'TowelStack_01', 'asset': 'TowelStack', 'room': 'LockerRoom', 'pos': [-8.85, 0.32, 2.85], 'rot_y': 15.0},
+    {'id': 'GymBag_01', 'asset': 'GymBag', 'room': 'LockerRoom', 'pos': [-8.85, 0.0, 2.22], 'rot_y': 25.0},
+    {'id': 'ShoePair_01', 'asset': 'ShoePair', 'room': 'LockerRoom', 'pos': [-5.65, 0.0, 2.50], 'rot_y': 260.0},
+    {'id': 'ShoePair_02', 'asset': 'ShoePair', 'room': 'LockerRoom', 'pos': [-8.85, 0.0, 4.02], 'rot_y': 80.0},
+    {'id': 'PosterA_02', 'asset': 'PosterA', 'room': 'LockerRoom', 'pos': [-5.85, 1.25, 1.31], 'rot_y': 0.0},
+    {'id': 'PosterB_02', 'asset': 'PosterB', 'room': 'LockerRoom', 'pos': [-5.85, 1.25, 5.09], 'rot_y': 180.0},
 
-    # Ring Odası (x[-9.8, 0], z[5.2, 12.0]) - ring odanın tam ortasında
+    # Ring Odası (x[-9.8, 0], z[5.2, 12.0]) - ring ortada, kum torbası tavandan zincirli, 2 köşe taburesi
     {'id': 'BoxingRing_01', 'asset': 'BoxingRing', 'room': 'RingRoom', 'pos': [-4.90, 0.0, 8.60], 'rot_y': 0.0},
+    {'id': 'CornerStool_01', 'asset': 'CornerStool', 'room': 'RingRoom', 'pos': [-6.65, 0.35, 6.85], 'rot_y': 45.0},
+    {'id': 'CornerStool_02', 'asset': 'CornerStool', 'room': 'RingRoom', 'pos': [-3.15, 0.35, 10.35], 'rot_y': 225.0},
+    {'id': 'PunchingBag_01', 'asset': 'PunchingBag', 'room': 'RingRoom', 'pos': [-1.25, 0.96, 9.80], 'rot_y': 0.0},
+    {'id': 'GymBag_02', 'asset': 'GymBag', 'room': 'RingRoom', 'pos': [-9.25, 0.0, 6.40], 'rot_y': 75.0},
+    {'id': 'TowelStack_02', 'asset': 'TowelStack', 'room': 'RingRoom', 'pos': [-4.90, 0.35, 6.38], 'rot_y': 0.0},
+    {'id': 'ShoePair_03', 'asset': 'ShoePair', 'room': 'RingRoom', 'pos': [-1.25, 0.0, 11.20], 'rot_y': 210.0},
+    {'id': 'PosterA_03', 'asset': 'PosterA', 'room': 'RingRoom', 'pos': [-2.20, 1.25, 11.97], 'rot_y': 180.0},
+    {'id': 'PosterB_03', 'asset': 'PosterB', 'room': 'RingRoom', 'pos': [-7.80, 1.25, 11.97], 'rot_y': 180.0},
+    {'id': 'WallBoard_03', 'asset': 'WallBoard', 'room': 'RingRoom', 'pos': [-0.15, 1.20, 7.20], 'rot_y': 270.0},
+    {'id': 'WallClock_03', 'asset': 'WallClock', 'room': 'RingRoom', 'pos': [-0.15, 2.05, 8.60], 'rot_y': 270.0},
 ]
 
 DOOR_OPENINGS = [
@@ -1214,32 +1711,32 @@ def render_office_views(render_dir, ceiling_objects):
     scene.render.image_settings.file_format = 'PNG'
     scene.view_settings.view_transform = 'AgX'
     scene.view_settings.look = 'AgX - Medium High Contrast'
-    scene.view_settings.exposure = 0.0
+    scene.view_settings.exposure = -0.35
 
     world = bpy.data.worlds.new('Office_World')
     scene.world = world
     world.use_nodes = True
     bg = world.node_tree.nodes.get('Background')
-    bg.inputs[0].default_value = (0.78, 0.80, 0.84, 1.0)
-    bg.inputs[1].default_value = 0.85
+    bg.inputs[0].default_value = (0.58, 0.50, 0.40, 1.0)
+    bg.inputs[1].default_value = 0.45
 
     render_helpers = []
-    # Oda içi sıcak tavan ışıkları + genel güneş/alan ışığı
+    # Oda içi sıcak tavan ışıkları + genel güneş/alan ışığı (duvarları patlatmayan sıcak aydınlatma)
     room_lights = [
-        ('Light_Office', (-2.4, 2.95, -2.0), 180.0, 3.2),
-        ('Light_Kitchen', (-7.3, 2.95, -2.0), 180.0, 3.2),
-        ('Light_Storage', (-2.4, 2.95, 3.2), 160.0, 2.8),
-        ('Light_Locker', (-7.3, 2.95, 3.2), 150.0, 2.8),
-        ('Light_Ring_1', (-6.8, 2.95, 8.6), 220.0, 3.8),
-        ('Light_Ring_2', (-3.0, 2.95, 8.6), 220.0, 3.8),
-        ('Light_IsoKey', (6.0, 14.0, -6.0), 1400.0, 8.0),
+        ('Light_Office', (-2.4, 2.92, -2.0), 115.0, 3.4),
+        ('Light_Kitchen', (-7.3, 2.92, -2.0), 115.0, 3.4),
+        ('Light_Storage', (-2.4, 2.92, 3.2), 105.0, 3.0),
+        ('Light_Locker', (-7.3, 2.92, 3.2), 105.0, 3.0),
+        ('Light_Ring_1', (-6.8, 2.92, 8.6), 140.0, 4.0),
+        ('Light_Ring_2', (-3.0, 2.92, 8.6), 140.0, 4.0),
+        ('Light_IsoKey', (6.0, 14.0, -6.0), 820.0, 9.0),
     ]
     for lname, lpos_u, power, lsize in room_lights:
         ldata = bpy.data.lights.new(lname, 'AREA')
         ldata.energy = power
         ldata.shape = 'DISK'
         ldata.size = lsize
-        ldata.color = (1.0, 0.96, 0.90)
+        ldata.color = (1.0, 0.86, 0.68)
         lobj = bpy.data.objects.new(lname, ldata)
         bpy.context.collection.objects.link(lobj)
         lobj.location = u2b_point(*lpos_u)
@@ -1254,10 +1751,10 @@ def render_office_views(render_dir, ceiling_objects):
     # 5 oda için chibi göz hizası (y = 1.09 m) kameraları
     eye_views = [
         ('room_office_eye', (-3.35, 1.09, -4.35), (-1.20, 0.95, -0.10), 24.0),
-        ('room_kitchen_eye', (-5.45, 1.09, -1.90), (-8.40, 0.88, -2.50), 24.0),
+        ('room_kitchen_eye', (-5.45, 1.09, -1.90), (-8.20, 0.85, -2.85), 24.0),
         ('room_storage_eye', (-0.75, 1.09, 1.85), (-3.10, 0.95, 3.85), 24.0),
-        ('room_locker_eye', (-6.95, 1.09, 1.55), (-8.15, 0.92, 3.25), 24.0),
-        ('room_ring_eye', (-8.40, 1.09, 5.75), (-4.90, 0.85, 8.60), 24.0),
+        ('room_locker_eye', (-7.30, 1.09, 1.50), (-7.30, 0.92, 3.40), 24.0),
+        ('room_ring_eye', (-8.40, 1.09, 5.75), (-4.60, 0.95, 8.80), 24.0),
     ]
     durations = {}
     for vname, pos_u, tgt_u, lens in eye_views:
@@ -1333,14 +1830,14 @@ def main():
         obj.rotation_euler = (0.0, 0.0, 0.0)
         bpy.context.view_layer.update()
         tri_count = len(obj.data.polygons)
-        if tri_count > 3000:
-            raise ValueError(f'{asset_name} üçgen bütçesini aştı: {tri_count} > 3000')
+        if tri_count > 1500:
+            raise ValueError(f'{asset_name} üçgen bütçesini aştı: {tri_count} > 1500')
         triangle_counts[asset_name] = tri_count
         asset_objects[asset_name] = obj
         asset_bounds[asset_name] = size_u
         export_fbx_objects([obj], out_dir / f'{asset_name}.fbx')
 
-    # 2. Oda kabuklarını (Room_<Ad>_Floor/Walls/Ceiling + Fixtures) üret ve tek FBX (Office_Shell.fbx) olarak aktar
+    # 2. Oda kabuklarını (Room_<Ad>_Floor/Walls/Windows/Ceiling + Fixtures) üret ve tek FBX (Office_Shell.fbx) olarak aktar
     shell_objects = []
     ceiling_objects = []
     rooms_meta = []
@@ -1349,10 +1846,14 @@ def main():
         rid = room['id']
         f_obj = build_room_floor(room)
         w_obj = build_room_walls(rid)
+        win_obj = build_room_windows(rid)
         c_obj = build_room_ceiling(room)
         l_obj = build_room_fixtures(room)
 
-        for sobj in (f_obj, w_obj, c_obj, l_obj):
+        room_shell_list = [f_obj, w_obj, c_obj, l_obj]
+        if win_obj is not None:
+            room_shell_list.append(win_obj)
+        for sobj in room_shell_list:
             triangle_counts[sobj.name] = len(sobj.data.polygons)
             shell_objects.append(sobj)
         ceiling_objects.extend([c_obj, l_obj])
@@ -1367,6 +1868,7 @@ def main():
             'shell_objects': {
                 'floor': f_obj.name,
                 'walls': w_obj.name,
+                'windows': win_obj.name if win_obj is not None else None,
                 'ceiling': c_obj.name,
                 'fixtures': l_obj.name,
             },
@@ -1381,6 +1883,10 @@ def main():
     for item in LAYOUT_PLACEMENTS:
         aname = item['asset']
         sx, sy, sz = asset_bounds[aname]
+        collider = None if aname in NULL_COLLIDER_ASSETS else {
+            'center': [0.0, round(sy * 0.5, 4), 0.0],
+            'size': [round(sx, 4), round(sy, 4), round(sz, 4)],
+        }
         entry = {
             'id': item['id'],
             'asset': aname,
@@ -1388,10 +1894,7 @@ def main():
             'room': item['room'],
             'position': [round(c, 4) for c in item['pos']],
             'rotation_y': round(float(item['rot_y']), 2),
-            'box_collider': {
-                'center': [0.0, round(sy * 0.5, 4), 0.0],
-                'size': [round(sx, 4), round(sy, 4), round(sz, 4)],
-            },
+            'box_collider': collider,
         }
         if aname == 'MetalShelf':
             entry['shelf_heights_y_m'] = METAL_SHELF_HEIGHTS
