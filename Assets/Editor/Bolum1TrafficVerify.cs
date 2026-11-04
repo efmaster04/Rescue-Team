@@ -464,9 +464,10 @@ public static class Bolum1TrafficVerify
             maxRear < 0.1f && spinSamples > 0 && maxSpinError < 0.1f,
             "arka " + maxRear.ToString("F3", Inv) + "°, spin hatası " + maxSpinError.ToString("F3", Inv) + "°, dönen örnek " + spinSamples);
         // Sabit eğrilikte iki sürüşün yaw adımı eşitlenebilir; karşılaştırma aynı gövdeden hedefe
-        // anında dönme ile yapılır. Güzergâhın tepe yaw değeri de yumuşatmasız koşudan küçük olmalı.
+        // anında dönme ile yapılır. Güzergâhın tepe yaw değeri yumuşatmasız koşudan büyük olmamalı: maxHeadingLagDeg sınırı
+        // (şerit taşmasın diye) tepe noktada adımı yumuşatmasız değere eşitleyebilir; yumuşatmanın etkisini reducedSteps gösterir.
         Check(label + " sabit adım yaw ≤ 4°, üstel yumuşatma ve kapatma seçeneği",
-            reducedSteps > 0 && maxHeadingError < 0.1f && maxYaw <= 4f && maxYaw < maxRawYaw
+            reducedSteps > 0 && maxHeadingError < 0.1f && maxYaw <= 4f && maxYaw <= maxRawYaw + 0.01f
             && maxHeadingLag <= headingLagLimit + 0.05f,
             "en büyük yaw " + maxYaw.ToString("F3", Inv) + "°, yumuşatmasız " + maxRawYaw.ToString("F3", Inv) + "°, azaltılan adım " + reducedSteps
             + ", yön hatası " + maxHeadingError.ToString("F3", Inv)
