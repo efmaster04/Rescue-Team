@@ -391,7 +391,7 @@ public class LootItem : MonoBehaviour
         float pivotUp = Mathf.Min(0.42f, heldTopLimit - (heldHeight - bottomOffset));
 
         Vector3 local = new Vector3(0.28f, pivotUp, 0.38f) + firstPersonHoldShift * OrbitCamera.FirstPersonBlendFor(r);
-        Vector3 basePos = r.position + right * local.x + Vector3.up * local.y + fwd * local.z;
+        Vector3 basePos = r.position + right * local.x + Vector3.up * local.y + fwd * local.z - Vector3.up * Holder.CrouchBodyDrop;
         transform.SetPositionAndRotation(basePos, rot);
     }
 

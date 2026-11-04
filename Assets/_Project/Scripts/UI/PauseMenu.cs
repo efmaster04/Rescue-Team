@@ -46,12 +46,12 @@ namespace CompanySim
             Place(Label("SwayLabel",toggle.transform,"Elde eşya salınımı",20,Paper).gameObject,40,0,450,48);
             var controlsTitle=Label("ControlsHeading",pauseControls.transform,"Kontroller",28,Paper); controlsTitle.font=headingFont;
             Place(controlsTitle.gameObject,36,31,520,44);
-            string[] keys={"W A S D","Fare","E","F / R","TAB","ESC"};
-            string[] text={"Yürü / Shift ile koş","Etrafa bak","Etkileşim / eşyayı al","Eşyayı bırak / döndür","İş fişini aç / kapat","Menü / geri"};
+            string[] keys={"W A S D","Fare","E","Sol tık","Sağ tık","Ctrl","Q","V","TAB","ESC"};
+            string[] text={"Yürü / Shift ile koş","Etrafa bak / tekerlek: yakınlaş","Etkileşim / al / bırak","Yumruk (koşarken: dalış)","İt / elde eşya: nişan al, bırak fırlat","Eğil (basılı tut)","Düdük","Birinci / üçüncü şahıs","İş fişini aç / kapat","Menü / geri"};
             for(int i=0;i<keys.Length;i++)
             {
-                Place(Label("ControlKey_"+i,pauseControls.transform,keys[i],19,Mint).gameObject,36,105+i*48,130,40);
-                Place(Label("ControlText_"+i,pauseControls.transform,text[i],19,Paper).gameObject,180,105+i*48,400,40);
+                Place(Label("ControlKey_"+i,pauseControls.transform,keys[i],19,Mint).gameObject,36,105+i*40,130,40);
+                Place(Label("ControlText_"+i,pauseControls.transform,text[i],19,Paper).gameObject,180,105+i*40,400,40);
             }
             PausePage(true); pausePanel.SetActive(false);
         }

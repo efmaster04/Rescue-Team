@@ -207,7 +207,7 @@ public class TrafficCone : MonoBehaviour
         fwd.Normalize();
         Vector3 right = Vector3.Cross(Vector3.up, fwd);
         Vector3 local = Vector3.Lerp(new Vector3(0f, 0.35f, 0.45f), firstPersonHoldOffset, OrbitCamera.FirstPersonBlendFor(r));
-        Vector3 basePos = r.position + right * local.x + Vector3.up * local.y + fwd * local.z;
+        Vector3 basePos = r.position + right * local.x + Vector3.up * local.y + fwd * local.z - Vector3.up * holder.CrouchBodyDrop;
         target.SetPositionAndRotation(basePos + Vector3.up * baseOffset, rot);
     }
 
