@@ -82,6 +82,13 @@ public static partial class Bolum1AnimVerify
         var savedS = s0.transform.position;
         var savedR = s0.transform.rotation;
         s0.Teleport(origin, Quaternion.identity);
+        // Hasta kopyası: asıl hastaların yeri ve durumu testten etkilenmez. Sedye HASTALI olmalı: boş sedyeyi oyuncu tek başına
+        // taşır, bot boş sedyeye bağlanmaz (ebe2b35; ölçüldü: boş sedyede bot hızı 0 çıkıyordu). Kopya aşağıda (düzeltme 2) yeniden kullanılır.
+        var patientGo = UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath("Tourist")));
+        var patient = patientGo.GetComponent<Patient>();
+        patient.LieOnGround(origin + Vector3.forward * 3f, Vector3.forward, Vector3.up);
+        yield return Seconds(.2f);
+        s0.PlacePatient(patient);
         Player.Teleport(origin - Vector3.forward * 1.6f, Quaternion.identity);
         s0.Grab(Player, false);
         bot.assistEnabled = true;
@@ -100,13 +107,12 @@ public static partial class Bolum1AnimVerify
         Player.SetMoveInput(Vector2.zero);
         bot.ReleaseHeld(); s0.Release(Player);
         yield return Seconds(.6f);
+        s0.TakePatient();
         s0.Teleport(savedS, savedR);
         bot.assistEnabled = false;
         Player.SetRunInput(false);
 
-        // Hasta kopyası: asıl hastaların yeri ve durumu testten etkilenmez.
-        var patientGo = UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath("Tourist")));
-        var patient = patientGo.GetComponent<Patient>();
+        // Hasta kopyası yere (düzeltme 2 için)
         patient.LieOnGround(origin + Vector3.forward * 3f, Vector3.forward, Vector3.up);
         yield return Seconds(.2f);
         var body = patient.GetComponent<NpcBody>();
