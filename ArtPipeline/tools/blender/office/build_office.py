@@ -1062,6 +1062,9 @@ def build_hanging_uniform():
     return geo.finish((0.0, 0.0, 0.0)), (0.40, 0.68, 0.14)
 
 
+RING_STEP_RISE = 0.35 / 3.0  # basamak başına yükseklik (~0.1167 m)
+
+
 def build_boxing_ring():
     """Ring: BoxingRing (4.6x4.6 m, platform y≈0.35 m, köşede tek direk ve direğe tam oturan kırmızı/mavi minderler)."""
     geo = Geo('BoxingRing')
@@ -1090,13 +1093,32 @@ def build_boxing_ring():
     rope_mats = ['M_ToolboxLipRed', 'M_FridgeWhite', 'M_RingBlue']
     span = 4.12
     for ry, rmat in zip(rope_heights, rope_mats):
-        # Kuzey ve Güney halatları (X boyunca, direklere doğrudan bağlanır)
-        for sz in (-2.06, 2.06):
-            geo.cylinder_u((0.0, ry, sz), 0.018, span, rmat, axis_u=(1, 0, 0), segments=8)
+        # Kuzey halatı (X boyunca, direklere doğrudan bağlanır)
+        geo.cylinder_u((0.0, ry, 2.06), 0.018, span, rmat, axis_u=(1, 0, 0), segments=8)
+        # Güney halatı: ortada 1.4 m giriş açıklığı (x[-0.70, 0.70]), iki yanda ayrı parça
+        for seg_cx in (-1.38, 1.38):
+            geo.cylinder_u((seg_cx, ry, -2.06), 0.018, 1.36, rmat, axis_u=(1, 0, 0), segments=8)
         # Batı ve Doğu halatları (Z boyunca)
         for sx in (-2.06, 2.06):
             geo.cylinder_u((sx, ry, 0.0), 0.018, span, rmat, axis_u=(0, 0, 1), segments=8)
+    # Giriş açıklığının iki yanında kısa ara direkler (halat uçlarını tutar)
+    for px in (-0.70, 0.70):
+        geo.cylinder_u((px, 0.815, -2.06), 0.035, 0.93, 'M_Anthracite', segments=8)
     return geo.finish((0.0, 0.0, 0.0)), (4.60, 1.36, 4.60)
+
+
+def build_ring_steps():
+    """Ring: RingSteps (zeminden ring platformuna 3 basamak; üst basamak +Z yönünde ringe bitişir)."""
+    geo = Geo('RingSteps')
+    rise = RING_STEP_RISE
+    for i in range(3):
+        h = rise * (i + 1)
+        z0 = -0.45 + 0.30 * i          # basamak başlangıcı (dışa en yakın alçak basamak)
+        zc = (z0 + 0.45) * 0.5
+        geo.box_u((0.0, (h - 0.02) * 0.5, zc), (1.20, h - 0.02, 0.45 - z0), 'M_Anthracite', bevel=0.006)
+        # Üst yüzeyde mavi sünger kaplama (ring platformuyla uyumlu)
+        geo.box_u((0.0, h - 0.01, zc), (1.20, 0.02, 0.45 - z0), 'M_RingBlue', bevel=0.004)
+    return geo.finish((0.0, 0.0, 0.0)), (1.20, 0.35, 0.90)
 
 
 # --- İKİNCİ TUR EKLENEN EŞYALAR (Pivot = Taban Ortası (0, 0, 0), Üçgen <= 1500, Yazı/Logo Yok) ---
@@ -1398,6 +1420,7 @@ ASSET_BUILDERS = [
     ('Bench', build_bench),
     ('HangingUniform', build_hanging_uniform),
     ('BoxingRing', build_boxing_ring),
+    ('RingSteps', build_ring_steps),
     ('PaperStack', build_paper_stack),
     ('CardboardBox', build_cardboard_box),
     ('PenHolder', build_pen_holder),
@@ -1418,6 +1441,19 @@ ASSET_BUILDERS = [
     ('WallClock', build_wall_clock),
     ('WallBoard', build_wall_board),
 ]
+
+# ISTISNA: BoxingRing tek kutu yerine çok parçalı çarpışma (box_colliders) kullanır.
+# Merkezler eşya pivotuna (taban ortası) göredir; güney kenarda 1.4 m giriş açıklığı bırakılır.
+MULTI_COLLIDER_ASSETS = {
+    'BoxingRing': [
+        {'name': 'Platform', 'center': [0.0, 0.175, 0.0], 'size': [4.60, 0.35, 4.60]},
+        {'name': 'Rope_North', 'center': [0.0, 0.855, 2.08], 'size': [4.32, 1.01, 0.16]},
+        {'name': 'Rope_East', 'center': [2.08, 0.855, 0.0], 'size': [0.16, 1.01, 4.00]},
+        {'name': 'Rope_West', 'center': [-2.08, 0.855, 0.0], 'size': [0.16, 1.01, 4.00]},
+        {'name': 'Rope_South_West', 'center': [-1.43, 0.855, -2.08], 'size': [1.46, 1.01, 0.16]},
+        {'name': 'Rope_South_East', 'center': [1.43, 0.855, -2.08], 'size': [1.46, 1.01, 0.16]},
+    ],
+}
 
 # Küçük süs/dağınıklık ve yüksek duvar eşyaları için collider null bırakılır
 NULL_COLLIDER_ASSETS = {
@@ -1494,8 +1530,8 @@ LAYOUT_PLACEMENTS = [
     {'id': 'LockerClosed_01', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 1.65], 'rot_y': 90.0},
     {'id': 'LockerClosed_02', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-9.50, 0.0, 4.55], 'rot_y': 90.0},
     {'id': 'LockerClosed_03', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 2.50], 'rot_y': 270.0},
-    {'id': 'LockerOpen_01', 'asset': 'LockerOpen', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 3.10], 'rot_y': 270.0},
-    {'id': 'HangingUniform_01', 'asset': 'HangingUniform', 'room': 'LockerRoom', 'pos': [-5.18, 0.52, 3.10], 'rot_y': 270.0},
+    {'id': 'LockerOpen_01', 'asset': 'LockerOpen', 'room': 'LockerRoom', 'pos': [-5.215, 0.0, 3.10], 'rot_y': 270.0},
+    {'id': 'HangingUniform_01', 'asset': 'HangingUniform', 'room': 'LockerRoom', 'pos': [-5.215, 0.52, 3.10], 'rot_y': 270.0},
     {'id': 'LockerClosed_04', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 1.90], 'rot_y': 270.0},
     {'id': 'LockerClosed_05', 'asset': 'LockerClosed', 'room': 'LockerRoom', 'pos': [-5.18, 0.0, 3.70], 'rot_y': 270.0},
     {'id': 'Bench_01', 'asset': 'Bench', 'room': 'LockerRoom', 'pos': [-8.85, 0.0, 3.20], 'rot_y': 90.0},
@@ -1508,11 +1544,12 @@ LAYOUT_PLACEMENTS = [
 
     # Ring Odası (x[-9.8, 0], z[5.2, 12.0]) - ring ortada, kum torbası tavandan zincirli, 2 köşe taburesi
     {'id': 'BoxingRing_01', 'asset': 'BoxingRing', 'room': 'RingRoom', 'pos': [-4.90, 0.0, 8.60], 'rot_y': 0.0},
-    {'id': 'CornerStool_01', 'asset': 'CornerStool', 'room': 'RingRoom', 'pos': [-6.65, 0.35, 6.85], 'rot_y': 45.0},
-    {'id': 'CornerStool_02', 'asset': 'CornerStool', 'room': 'RingRoom', 'pos': [-3.15, 0.35, 10.35], 'rot_y': 225.0},
+    {'id': 'RingSteps_01', 'asset': 'RingSteps', 'room': 'RingRoom', 'pos': [-4.90, 0.0, 5.85], 'rot_y': 0.0},
+    {'id': 'CornerStool_01', 'asset': 'CornerStool', 'room': 'RingRoom', 'pos': [-7.55, 0.0, 6.65], 'rot_y': 45.0},
+    {'id': 'CornerStool_02', 'asset': 'CornerStool', 'room': 'RingRoom', 'pos': [-2.25, 0.0, 10.55], 'rot_y': 225.0},
     {'id': 'PunchingBag_01', 'asset': 'PunchingBag', 'room': 'RingRoom', 'pos': [-1.25, 0.96, 9.80], 'rot_y': 0.0},
     {'id': 'GymBag_02', 'asset': 'GymBag', 'room': 'RingRoom', 'pos': [-9.25, 0.0, 6.40], 'rot_y': 75.0},
-    {'id': 'TowelStack_02', 'asset': 'TowelStack', 'room': 'RingRoom', 'pos': [-4.90, 0.35, 6.38], 'rot_y': 0.0},
+    {'id': 'TowelStack_02', 'asset': 'TowelStack', 'room': 'RingRoom', 'pos': [-6.60, 0.35, 6.38], 'rot_y': 0.0},
     {'id': 'ShoePair_03', 'asset': 'ShoePair', 'room': 'RingRoom', 'pos': [-1.25, 0.0, 11.20], 'rot_y': 210.0},
     {'id': 'PosterA_03', 'asset': 'PosterA', 'room': 'RingRoom', 'pos': [-2.20, 1.25, 11.97], 'rot_y': 180.0},
     {'id': 'PosterB_03', 'asset': 'PosterB', 'room': 'RingRoom', 'pos': [-7.80, 1.25, 11.97], 'rot_y': 180.0},
@@ -1894,8 +1931,22 @@ def main():
             'room': item['room'],
             'position': [round(c, 4) for c in item['pos']],
             'rotation_y': round(float(item['rot_y']), 2),
-            'box_collider': collider,
         }
+        if aname in MULTI_COLLIDER_ASSETS:
+            # İstisna şema: tek 'box_collider' yerine 'box_colliders' listesi
+            entry['box_colliders'] = MULTI_COLLIDER_ASSETS[aname]
+        else:
+            entry['box_collider'] = collider
+        if aname == 'RingSteps':
+            # Basamak çıkışı: yerel +Z yönünde 3 basamak, ring platformuna (y=0.35) çıkar
+            entry['steps'] = {
+                'count': 3,
+                'rise_m': round(RING_STEP_RISE, 4),
+                'tread_depth_m': 0.30,
+                'width_m': 1.20,
+                'climb_direction_local': [0.0, 0.0, 1.0],
+                'top_y_m': 0.35,
+            }
         if aname == 'MetalShelf':
             entry['shelf_heights_y_m'] = METAL_SHELF_HEIGHTS
         if aname == 'CityMapBoard':
@@ -1905,6 +1956,11 @@ def main():
 
     layout_data = {
         'schema_version': 1,
+        'schema_notes': {
+            'box_collider': 'Çoğu eşya tek kutu kullanır: center/size eşya pivotuna göre (yerel, rotation_y ile döner).',
+            'box_colliders_exception': 'Yalnız BoxingRing_01: tek box_collider yerine box_colliders listesi (platform + halat kutuları, güney kenarda 1.4 m açıklık). Aynı yerel çerçeve.',
+            'steps': 'Yalnız RingSteps_01: box_collider sınır kutusudur; steps alanı basamak çıkış bilgisini verir.',
+        },
         'units': 'metres',
         'coordinates': {'system': 'Unity', 'x': 'east(+), west(-)', 'y': 'up(+), floor=0', 'z': 'north/back(+), south/front(-)'},
         'character_eye_height_m': 1.09,
