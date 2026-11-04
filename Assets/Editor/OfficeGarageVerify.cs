@@ -236,6 +236,8 @@ public static class OfficeGarageVerify
         yield return Until(() => player.HasControl, 3f, "oyuncu hazır");
         yield return null; yield return null;
 
+        yield return VerifyCeilingThrow();
+
         // (1) Tek oyuncu, bizim karakter, üçüncü şahıs başlangıç
         var interactors = UnityEngine.Object.FindObjectsByType<PlayerInteractor>(FindObjectsSortMode.None);
         var animator = player.GetComponent<Animator>();
@@ -450,6 +452,51 @@ public static class OfficeGarageVerify
         item.definitionId = "toolbox";
         item.uid = Guid.NewGuid().ToString("N");
         return item;
+    }
+
+    private static IEnumerator VerifyCeilingThrow()
+    {
+        var ceiling = GarageCeiling.ColliderInstance;
+        bool built = ceiling != null && ceiling.name == "GarageCeilingCollider" && !ceiling.isTrigger
+            && ceiling.GetComponent<Rigidbody>() == null && ceiling.gameObject.layer == 0
+            && Mathf.Abs(ceiling.bounds.min.y - GarageCeiling.UndersideY) < .01f;
+        Check("(tavan) Play sahnesinde görünmez statik GarageCeilingCollider var", built,
+            ceiling != null ? "alt yüz " + M(GarageCeiling.UndersideY) + ", boyut " + V(ceiling.size) : "collider yok");
+        if (!built) yield break;
+
+        // Ayrı bir CarryableItem, mevcut alet çantası ve kayıt akışını bozmaz.
+        GameObject prop = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        prop.name = "GarageVerify_CarryableItem_Ceiling";
+        prop.transform.localScale = Vector3.one * .2f;
+        Vector3 ahead = player.transform.position + player.transform.forward * 1.2f;
+        Bounds roof = ceiling.bounds;
+        ahead.x = Mathf.Clamp(ahead.x, roof.min.x + .5f, roof.max.x - .5f);
+        ahead.z = Mathf.Clamp(ahead.z, roof.min.z + .5f, roof.max.z - .5f);
+        ahead.y = GarageCeiling.UndersideY - 2f;
+        prop.transform.position = ahead;
+        var item = prop.AddComponent<CarryableItem>();
+        var body = prop.GetComponent<Rigidbody>();
+        try
+        {
+            item.Throw(ahead, Quaternion.identity, Vector3.up * 25f);
+            float end = Time.time + 2f;
+            float maximumY = prop.transform.position.y;
+            bool descending = false;
+            float previousY = maximumY;
+            while (Time.time < end)
+            {
+                yield return null;
+                float y = prop.transform.position.y;
+                maximumY = Mathf.Max(maximumY, y);
+                if (y < previousY - .005f && body.linearVelocity.y < 0f) descending = true;
+                previousY = y;
+            }
+            Check("(tavan) CarryableItem 25 m/sn yukarı fırlatılınca 2 sn içinde tavanı aşmaz ve geri düşer",
+                maximumY <= GarageCeiling.UndersideY + .5f && descending && body.collisionDetectionMode != CollisionDetectionMode.Discrete,
+                "en yüksek Y " + M(maximumY) + ", alt yüz " + M(GarageCeiling.UndersideY) +
+                ", iniş " + descending + ", çarpışma modu " + body.collisionDetectionMode);
+        }
+        finally { UnityEngine.Object.Destroy(prop); }
     }
 
     private static IEnumerator GarageRegression(CompanyRuntime runtime)
