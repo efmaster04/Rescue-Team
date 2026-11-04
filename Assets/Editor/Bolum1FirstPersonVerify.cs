@@ -50,7 +50,7 @@ public static class Bolum1FirstPersonVerify
     {
         bool mine = SessionState.GetString(StageKey, "") == "play";
         bool other = false;
-        foreach (var k in new[] { "Bolum1AmbulanceVerify.Stage", "Bolum1AnimVerify.Stage", "Bolum1TrafficVerify.Stage", "Bolum1Verify.Stage" })
+        foreach (var k in new[] { "Bolum1AmbulanceVerify.Stage", "Bolum1AnimVerify.Stage", "Bolum1TrafficVerify.Stage", "Bolum1Verify.Stage", "CameraVerify.Stage" })
             other |= !string.IsNullOrEmpty(SessionState.GetString(k, ""));
         OrbitCamera.IgnoreSavedMode = !mine && (other || Application.isBatchMode);
     }

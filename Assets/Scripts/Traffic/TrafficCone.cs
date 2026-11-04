@@ -22,6 +22,8 @@ public class TrafficCone : MonoBehaviour
     [Tooltip("Taban yarıçapı (m): araç ön tamponu koninin bu kadar gerisinde durur (+ durma payı).")]
     public float radius = 0.2f;
     public float height = 0.7f;
+    [Tooltip("Elde (birinci şahıs): taşıyıcıya göre sağ / yukarı / ileri (m). Üçüncü şahısta önde ortada (0, 0.35, 0.45); FP'de sağ alta kayar, aşağı bakınca ekran merkezini kapatmaz (kullanıcı isteği 2026-11-05).")]
+    public Vector3 firstPersonHoldOffset = new Vector3(0.24f, 0.22f, 0.38f);
     [Tooltip("Yol yüzeyi (SM_B1_Road). Koni yalnız bunun üstündeyse şeridi kapatır.")]
     public Transform road;
     [Tooltip("Bu yüksekliğin altına inen koni yok olur (FallRespawnPlane).")]
@@ -194,7 +196,7 @@ public class TrafficCone : MonoBehaviour
         if (target != null && target != transform) transform.position = target.position;
     }
 
-    // Elde: taşıyıcının önünde, bel hizasında, dik.
+    // Elde: taşıyıcının önünde, bel hizasında, dik. Birinci şahısta (kamera geçişiyle yumuşak) firstPersonHoldOffset'e kayar.
     private void FollowHolder()
     {
         if (holder == null) return;
@@ -202,7 +204,10 @@ public class TrafficCone : MonoBehaviour
         Vector3 fwd = r.forward; fwd.y = 0f;
         if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
         Quaternion rot = Quaternion.LookRotation(fwd.normalized, Vector3.up) * Quaternion.FromToRotation(localUp.normalized, Vector3.up);
-        Vector3 basePos = r.position + fwd.normalized * 0.45f + Vector3.up * 0.35f;
+        fwd.Normalize();
+        Vector3 right = Vector3.Cross(Vector3.up, fwd);
+        Vector3 local = Vector3.Lerp(new Vector3(0f, 0.35f, 0.45f), firstPersonHoldOffset, OrbitCamera.FirstPersonBlendFor(r));
+        Vector3 basePos = r.position + right * local.x + Vector3.up * local.y + fwd * local.z;
         target.SetPositionAndRotation(basePos + Vector3.up * baseOffset, rot);
     }
 
