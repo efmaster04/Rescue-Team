@@ -191,7 +191,11 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     {
         bool allowed = CanCrouch;
         if (!IsCrouching && crouchHeld && allowed) SetCrouchCapsule(true);
-        else if (IsCrouching && !allowed) SetCrouchCapsule(false); // sedye / sırt / halat / düşme: zorunlu kalkış (kapsül çakışmayı kendisi çözer)
+        else if (IsCrouching && !allowed)
+        {
+            if (IsDown || CanStandUp()) SetCrouchCapsule(false);
+            else StandBlockedFrames++;
+        }
         else if (IsCrouching && !crouchHeld)
         {
             if (CanStandUp()) SetCrouchCapsule(false);
