@@ -370,16 +370,23 @@ public static partial class Bolum1AnimVerify
                 }
                 // tekerlek ekseni ve dönüş yönü (araç uzayında)
                 Quaternion inv = Quaternion.Inverse(v.transform.rotation);
+                // Ön tekerlekler direksiyonla döner (LaneFollower.CurrentSteerAngle, sağa +): beklenen aks = direksiyon açısı kadar
+                // yukarı eksen etrafında dönmüş araç sağ ekseni (ön = kök uzayında z'si tekerlek ortalamasından büyük). Arkada açı 0.
+                float meanZ = 0f;
+                foreach (var ow in f.wheels) meanZ += v.transform.InverseTransformPoint(ow.position).z;
+                meanZ /= Mathf.Max(1, f.wheels.Length);
+                bool frontWheel = v.transform.InverseTransformPoint(w.position).z > meanZ;
+                Quaternion steerRot = Quaternion.AngleAxis(frontWheel ? f.CurrentSteerAngle : 0f, Vector3.up);
                 if (!wheelTracks.TryGetValue(w, out WheelTrack tr))
                 {
-                    tr = new WheelTrack { axleLocal = Quaternion.Inverse(w.rotation) * v.transform.right, upLocal = Quaternion.Inverse(w.rotation) * v.transform.up, prevS = f.Distance };
+                    tr = new WheelTrack { axleLocal = Quaternion.Inverse(w.rotation) * (v.transform.rotation * (steerRot * Vector3.right)), upLocal = Quaternion.Inverse(w.rotation) * v.transform.up, prevS = f.Distance };
                     tr.prevUp = inv * (w.rotation * tr.upLocal);
                     wheelTracks[w] = tr;
                     continue;
                 }
                 Vector3 axle = inv * (w.rotation * tr.axleLocal);
                 axisSamples++;
-                if (Vector3.Dot(axle, Vector3.right) < 0.999f) { axisBad++; if (axisInfo.Length == 0) axisInfo = v.name + "/" + w.name + " aks " + V(axle); }
+                if (Vector3.Dot(axle, steerRot * Vector3.right) < 0.999f) { axisBad++; if (axisInfo.Length == 0) axisInfo = v.name + "/" + w.name + " aks " + V(axle); }
                 Vector3 up = inv * (w.rotation * tr.upLocal);
                 float expected = (f.Distance - tr.prevS) / Mathf.Max(0.05f, f.wheelRadius) * Mathf.Rad2Deg;
                 if (expected > 2f && expected < 90f)
