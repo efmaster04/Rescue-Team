@@ -19,8 +19,16 @@ using UnityEngine.InputSystem;
 // durunca eski ebeveyn ve fizik durumu geri gelir (düşmez, titremez).
 // Ekip: oturunca oyuncu ve bot koltuk objelerine bağlanır, hareket / etkileşim bileşenleri kapanır, Animator "Seated" parametresi
 // (1 şoför, 2 yolcu) oturma döngüsünü seçer; inince serbest noktalara ışınlanır, bileşenler açılır.
+// Yeniden binme (kullanıcı şikâyeti 2026-11-04: dururken yanlışlıkla E'ye basan oyuncu iniyor ve bir daha binemiyordu): minibüs
+// Parked'ken oyuncu şoför kapısının yanında E'ye basınca (PlayerInteraction.BoardVan → Board) yeniden oturur; bot yakındaysa ve
+// hastalı sedye taşımıyorsa yolcu koltuğuna biner, yoksa oyuncu yalnız sürer. Binişten hemen sonra E yok sayılır (çift basış).
+// Zemin: dört tekerleğin de altında zemin yoksa (yol bitti) yerçekimiyle düşer; fallBelowY (FallRespawnPlane) altına inince ekip
+// ve yüküyle sürüş girişinin başlangıç şeridine ışınlanır, sürüş sürer. Oturan ekibin kendi yeniden doğması (PlayerFallRespawn)
+// oturma boyunca kapalıdır: minibüs "ekip içeride" sanırken oyuncu dışarıda kalamaz.
+// Arka kapılar: sürerken kapanır, park edince eski (açık) açıya döner (yük bölümüne erişim).
 // Şerit: ILaneObstacle olarak LaneOccupancy'ye kayıtlıdır; ayak izi bir şeridin şeridine giriyorsa o şeridin trafiği durur,
 // korna çalar, 5 sn sonra çarpar (TrafficVehicle). Çarpma hasar ekler (Damage → FieldPayout.vanDamage → vehicleWear).
+// Yük bölümünde ayakta / yerde ekip varken (CrewInCargo) trafik çarpmaz, korna çalıp bekler.
 [DefaultExecutionOrder(-20)]
 public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
 {
@@ -31,6 +39,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public const string StatePassengerSeated = "Passenger_Seated";
     public const string NoExitWhileMovingText = "Durmadan inilmez";
     public const string NoSafeExitText = "Burada inilemez — minibüsü biraz açın";
+    public const string BoardedText = "Minibüse bindiniz: W/S gaz-fren, A/D direksiyon, durunca E ile inin";
+    public const string RearDoorLeftName = "RearDoor_Left", RearDoorRightName = "RearDoor_Right", DriverDoorName = "FrontDoor_Left";
 
     public static ServiceVanDriver Instance { get; private set; }
 
@@ -66,6 +76,26 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public float shoveProbeMargin = .4f;
     [Tooltip("İtilme bitince yük bölümünde ayakta duran ekip bu hızla (m/sn) yere düşer (ragdoll).")]
     public float riderKnockSpeed = 2.5f;
+
+    [Header("Düşme (zemin bitince)")]
+    [Tooltip("Dört tekerleğin de altında zemin yokken uygulanan yerçekimi (m/sn²).")]
+    public float fallGravity = 20f;
+    [Tooltip("Bu yüksekliğin altı boşluk (FallRespawnPlane); Awake'te oyuncunun PlayerFallRespawn.killBelowY değerinden alınır.")]
+    public float fallBelowY = -60f;
+
+    [Header("Yeniden binme ve kapılar")]
+    [Tooltip("Oyuncu şoför kapısı noktasına bu kadar yakınken (yatay, m) binebilir.")]
+    public float boardRange = 2f;
+    [Tooltip("Bot minibüse bu kadar yakınsa (m) oyuncuyla birlikte yolcu koltuğuna biner.")]
+    public float botBoardRange = 12f;
+    [Tooltip("Binişten sonra E bu kadar süre (sn) yok sayılır: binme basışı inişe dönüşmesin.")]
+    public float exitLockoutSeconds = .5f;
+    [Tooltip("Arka kapıların kapanma / açılma süresi (sn).")]
+    public float doorSeconds = .6f;
+    [Tooltip("Birinci şahısta sürerken kamera eğimi (°, + aşağı): ön panel yolu kapatmasın.")]
+    public float driveFirstPersonPitch = 0f;
+    [Tooltip("Sürerken göz noktasına eklenen yükseklik (m).")]
+    public float driveEyeUp = .05f;
 
     [Header("Hasar")]
     [Tooltip("Kontrol hızından bu kadar (m/sn) ani sapma çarpma sayılır.")]
@@ -113,8 +143,22 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public string LastShoveReason { get; private set; } = "";
     public int RiderCount { get { return riders.Count; } }
     public int RidersKnocked { get; private set; }
+    // Yeniden binme / düşme / kapılar (test ve HUD)
+    public int Boardings { get; private set; }
+    public int Exits { get; private set; }
+    public bool BotSeated { get { foreach (var c in seated) if (bot != null && c.root == bot.transform) return true; return false; } }
+    public int FallRespawns { get; private set; }
+    public bool Falling { get; private set; }
+    public float RearDoorOpenFraction { get { return doorOpenT; } }  // 1 açık, 0 kapalı
+    public bool RearDoorsClosed { get { return rearDoors.Count > 0 && doorOpenT <= 0.01f; } }
+    public bool RearDoorsOpen { get { return rearDoors.Count == 0 || doorOpenT >= 0.99f; } }
+    public Transform DriverDoor { get; private set; }
+    // Şoför kapısının önündeki biniş noktası (dünya, taban yüksekliğinde)
+    public Vector3 DriverDoorPoint { get { float seatZ = driverSeat != null ? driverSeat.localPosition.z : bodyMin.z + 1.6f; return transform.TransformPoint(new Vector3(bodyMax.x + 0.7f, bodyMin.y, seatZ)); } }
 
+    public event Action<ServiceVanDriver> Boarded;
     public event Action<ServiceVanDriver> Exited;
+    public event Action<ServiceVanDriver> FallRespawned;
     public event Action<ServiceVanDriver, TrafficVehicle> Rammed;
     public event Action<ServiceVanDriver> Settled;
 
@@ -158,10 +202,32 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private readonly RaycastHit[] hits = new RaycastHit[24];
     private float settleSince = -1f;
     private Quaternion wheelBaseRotation = Quaternion.identity;
+    private float boardedAt = -100f;
+    private float fallSpeed;                       // zeminsizken düşey hız (m/sn, aşağı negatif)
+    private Vector3 fallRespawnPosition;           // plan altına düşünce dönülen poz (DriveIntro yazar; yoksa sahne pozu)
+    private Quaternion fallRespawnRotation;
+    private readonly List<Transform> rearDoors = new List<Transform>();
+    private readonly List<Quaternion> rearDoorOpenRotations = new List<Quaternion>();
+    private float doorOpenT = 1f;
+    private float savedPitch, savedEyeUp;
+    private OrbitCamera.ViewMode lastCameraMode;
 
     private void Awake()
     {
         Instance = this;
+        fallRespawnPosition = transform.position;
+        fallRespawnRotation = transform.rotation;
+        // Arka kapılar (sahnede açık pozda) ve şoför kapısı: görsel hiyerarşide ada göre
+        foreach (var t in GetComponentsInChildren<Transform>(true))
+        {
+            if (t.name == RearDoorLeftName || t.name == RearDoorRightName) { rearDoors.Add(t); rearDoorOpenRotations.Add(t.localRotation); }
+            else if (t.name == DriverDoorName) DriverDoor = t;
+        }
+        if (player != null)
+        {
+            var respawn = player.GetComponent<PlayerFallRespawn>();
+            if (respawn != null) fallBelowY = respawn.killBelowY;
+        }
         rb = GetComponent<Rigidbody>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
         rb.useGravity = false;
@@ -204,9 +270,11 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         if (crew.root == null) return;
         // Başka bileşenlerin Awake'i (PlayerKnockdown.SetRagdoll(false) CharacterController'ı açar) kapattığımızı yeniden açabilir:
         // listede olsa da açık bulunan yeniden kapatılır.
+        // PlayerFallRespawn da kapanır: oturan oyuncu minibüsle plan altına inerse minibüs ışınlanır (FixedUpdate); oyuncunun kendi
+        // yeniden doğması koltuktayken ışınlayıp CharacterController'ı açıyor, minibüs "ekip içeride" sanırken oyuncu dışarıda kalıyordu.
         foreach (var b in crew.root.GetComponents<Behaviour>())
         {
-            if (b is Animator || b is FirstPersonBody || b is PlayerHealth || b is PlayerFallRespawn || b is ServiceVanDriver) continue;
+            if (b is Animator || b is FirstPersonBody || b is PlayerHealth || b is ServiceVanDriver) continue;
             if (!b.enabled) continue;
             b.enabled = false;
             if (!crew.disabled.Contains(b)) crew.disabled.Add(b);
@@ -259,6 +327,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         rb.angularVelocity = Vector3.zero;
         State = VanState.Driving;
         settleSince = -1f;
+        fallSpeed = 0f;
+        Falling = false;
         if (sound != null && sound.engine != null && !sound.engine.isPlaying) sound.engine.Play();
     }
 
@@ -269,6 +339,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
         rb.isKinematic = true;
         State = VanState.Parked;
+        fallSpeed = 0f;
+        Falling = false;
         ReleaseCargo();
         ReleaseRiders();
         shoveOriginSet = false;
@@ -305,6 +377,9 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         if (parked) SetParked(); else SetDriving();
     }
 
+    // Plan altına düşünce dönülecek poz (DriveIntro: sürüş girişinin başlangıç şeridi).
+    public void SetFallRespawn(Vector3 position, Quaternion rotation) { fallRespawnPosition = position; fallRespawnRotation = rotation; }
+
     // Dört tekerlek noktasındaki zemin düzlemine hemen oturtur (yaw korunur).
     public void AlignToGroundNow()
     {
@@ -337,7 +412,22 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
 
     private void Update()
     {
+        // Arka kapılar: sürerken kapalı, aksi hâlde sahnedeki açık poz
+        float doorGoal = State == VanState.Driving ? 0f : 1f;
+        if (rearDoors.Count > 0 && doorOpenT != doorGoal)
+        {
+            doorOpenT = Mathf.MoveTowards(doorOpenT, doorGoal, Time.deltaTime / Mathf.Max(0.01f, doorSeconds));
+            float eased = Mathf.SmoothStep(0f, 1f, doorOpenT);
+            for (int i = 0; i < rearDoors.Count; i++)
+                if (rearDoors[i] != null) rearDoors[i].localRotation = Quaternion.Slerp(Quaternion.identity, rearDoorOpenRotations[i], eased);
+        }
         if (!CrewInside) return;
+        // Sürerken birinci şahsa geçilirse eğim sıfırlanır (TP'nin 18° aşağı eğimi ön paneli ekranın yarısına çıkarıyordu)
+        if (orbitCamera != null && orbitCamera.Mode != lastCameraMode)
+        {
+            lastCameraMode = orbitCamera.Mode;
+            if (lastCameraMode == OrbitCamera.ViewMode.FirstPerson) orbitCamera.Pitch = driveFirstPersonPitch;
+        }
         if (testInput) { Throttle = testThrottle; Steer = testSteer; }
         else
         {
@@ -418,12 +508,30 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         }
         MaxSpeedReached = Mathf.Max(MaxSpeedReached, Mathf.Abs(Speed));
 
-        // Zemin: tekerlek noktalarından düzlem; yoksa son eğim ve yükseklik korunur
+        // Zemin: tekerlek noktalarından düzlem; sürerken dört tekerlek de boştaysa yerçekimi (yol bitti), bir kısmı boştaysa
+        // son eğim ve yükseklik korunur (kenar / mesh dikişi titretmesin)
         float liftVel = 0f;
-        if (GroundPlane(out Vector3 up, out float lift))
+        Falling = false;
+        if (GroundPlane(out Vector3 up, out float lift, out int grounded))
         {
             groundUp = up;
             liftVel = Mathf.Clamp(lift * groundGain, -maxGroundVelocity, maxGroundVelocity);
+            fallSpeed = 0f;
+        }
+        else if (State == VanState.Driving && grounded == 0)
+        {
+            Falling = true;
+            fallSpeed -= fallGravity * dt;
+            liftVel = fallSpeed;
+            if (transform.position.y < fallBelowY)
+            {
+                // Boşluğa düştü: ekip ve yükle sürüş girişinin başlangıç şeridine (ya da sahne pozuna) dön, sürüş sürsün
+                FallRespawns++;
+                TeleportTo(fallRespawnPosition, fallRespawnRotation, false);
+                GameNotice.Show("Minibüs uçuruma düştü: yolun başına dönüldü");
+                FallRespawned?.Invoke(this);
+                return;
+            }
         }
         else if (State == VanState.Shoved)
         {
@@ -476,18 +584,21 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     }
 
     // Dört tekerlek noktasının altındaki zeminden: yukarı vektör ve ortalama yükseklik düzeltmesi (+ = yukarı kaldır).
-    private bool GroundPlane(out Vector3 up, out float lift)
+    private bool GroundPlane(out Vector3 up, out float lift) { return GroundPlane(out up, out lift, out _); }
+
+    // grounded: altında zemin bulunan tekerlek sayısı (0–4); düzlem yalnız dördü de bulununca döner.
+    private bool GroundPlane(out Vector3 up, out float lift, out int grounded)
     {
-        up = groundUp; lift = 0f;
+        up = groundUp; lift = 0f; grounded = 0;
         if (wheelPointsLocal == null || wheelPointsLocal.Length < 4) return false;
         var ground = new Vector3[4];
         var world = new Vector3[4];
         for (int i = 0; i < 4; i++)
         {
             world[i] = transform.TransformPoint(wheelPointsLocal[i]);
-            if (!GroundBelow(world[i], out RaycastHit hit)) return false;
-            ground[i] = hit.point;
+            if (GroundBelow(world[i], out RaycastHit hit)) { ground[i] = hit.point; grounded++; }
         }
+        if (grounded < 4) return false;
         Vector3 frontMid = (ground[0] + ground[1]) * .5f, rearMid = (ground[2] + ground[3]) * .5f;
         Vector3 leftMid = (ground[0] + ground[2]) * .5f, rightMid = (ground[1] + ground[3]) * .5f;
         Vector3 rearDir = (rearMid - frontMid).normalized;
@@ -720,10 +831,13 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     // Yük bağlama
     // ---------------------------------------------------------------------------------------------
 
-    private bool InCargo(Vector3 world)
+    private bool InCargo(Vector3 world) { return InCargo(world, 0f); }
+
+    private bool InCargo(Vector3 world, float margin)
     {
         Vector3 l = transform.InverseTransformPoint(world);
-        return l.x >= cargoMin.x && l.x <= cargoMax.x && l.y >= cargoMin.y && l.y <= cargoMax.y && l.z >= cargoMin.z && l.z <= cargoMax.z;
+        return l.x >= cargoMin.x - margin && l.x <= cargoMax.x + margin && l.y >= cargoMin.y - margin && l.y <= cargoMax.y + margin
+            && l.z >= cargoMin.z - margin && l.z <= cargoMax.z + margin;
     }
 
     private static bool IsCrewOrCharacter(Component c)
@@ -836,7 +950,10 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     // Ekip: oturma ve inme
     // ---------------------------------------------------------------------------------------------
 
-    public void SeatCrew()
+    // Sürüş girişi ve testler: oyuncu şoför, bot yolcu koltuğuna (withBot=false: yalnız oyuncu).
+    public void SeatCrew() { SeatCrew(true); }
+
+    public void SeatCrew(bool withBot)
     {
         if (CrewInside) return;
         if (State == VanState.Parked) SetDriving(); // park hâlinde oturtulursa (test / API) ekip inebilsin: TryExit yalnız Driving'de (review P3-1)
@@ -844,18 +961,77 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         HasExited = false;
         cameraYawPending = true;
         if (player != null) Seat(player.transform, driverSeat, 1);
-        if (bot != null) Seat(bot.transform, passengerSeat, 2);
+        if (withBot && bot != null) Seat(bot.transform, passengerSeat, 2);
         if (orbitCamera != null)
         {
             savedDistance = orbitCamera.distance;
             savedPivot = orbitCamera.pivotHeight;
+            savedPitch = orbitCamera.Pitch;
+            savedEyeUp = orbitCamera.eyeUp;
             orbitCamera.distance = driveCameraDistance;
             orbitCamera.pivotHeight = driveCameraPivotHeight;
             orbitCamera.obstructionIgnoreRoot = transform;
             orbitCamera.Yaw = HeadingYaw;
+            orbitCamera.eyeUp += driveEyeUp;
+            lastCameraMode = orbitCamera.Mode;
+            if (lastCameraMode == OrbitCamera.ViewMode.FirstPerson) orbitCamera.Pitch = driveFirstPersonPitch;
             lastHeadingYaw = HeadingYaw;
         }
         if (!testInput) EnableInput();
+    }
+
+    // Yeniden binme koşulu: minibüs park hâlinde (itilmiyor), ekip dışarıda, oyuncu ayakta ve etkin.
+    public bool CanBoard()
+    {
+        return !CrewInside && State == VanState.Parked && player != null && player.isActiveAndEnabled && !player.IsDown;
+    }
+
+    // Oyuncu şoför kapısı noktasına yatay ≤ boardRange m'de mi (aynı kotta)?
+    public bool PlayerAtDriverDoor()
+    {
+        if (player == null) return false;
+        Vector3 d = player.transform.position - DriverDoorPoint;
+        float dy = Mathf.Abs(d.y);
+        d.y = 0f;
+        return d.magnitude <= boardRange && dy < 1.5f;
+    }
+
+    // Bot da biner mi: yakın, etkin, yerde değil, hastalı sedye taşımıyor (boş sedyeyi bırakır).
+    public bool BotCanBoard()
+    {
+        if (bot == null || !bot.isActiveAndEnabled || bot.IsDown) return false;
+        if (bot.HeldStretcher != null && bot.HeldStretcher.Passenger != null) return false;
+        Vector3 d = bot.transform.position - transform.position; d.y = 0f;
+        return d.magnitude <= botBoardRange;
+    }
+
+    // E (PlayerInteraction.BoardVan): oyuncu şoför koltuğuna, uygunsa bot yolcu koltuğuna; sürüş yeniden başlar.
+    public bool Board()
+    {
+        if (!CanBoard()) return false;
+        bool withBot = BotCanBoard();
+        if (withBot) bot.ReleaseHeld();
+        SeatCrew(withBot);
+        boardedAt = Time.time;
+        Boardings++;
+        GameNotice.Show(BoardedText);
+        Boarded?.Invoke(this);
+        return true;
+    }
+
+    // Yük bölümünde (koltukta değil) ayakta ya da yerde ekip var mı: trafik çarpmaz, korna çalıp bekler (TrafficVehicle okur).
+    public bool CrewInCargo
+    {
+        get
+        {
+            if (player != null && player.isActiveAndEnabled && !player.transform.IsChildOf(transform))
+            {
+                Vector3 p = player.IsDown && player.knockdown != null ? player.knockdown.GroundPosition : player.transform.position;
+                if (InCargo(p, 0.3f)) return true;
+            }
+            if (bot != null && bot.isActiveAndEnabled && !bot.transform.IsChildOf(transform) && InCargo(bot.GroundPosition, 0.3f)) return true;
+            return false;
+        }
     }
 
     private void Seat(Transform root, Transform seat, int seatedValue)
@@ -884,6 +1060,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public bool TryExit()
     {
         if (!CrewInside) return false;
+        if (Time.time - boardedAt < exitLockoutSeconds) return false; // biniş basışı / çift E inişe dönüşmesin
         Vector3 hv = rb.isKinematic ? Vector3.zero : rb.linearVelocity; hv.y = 0f;
         if (State != VanState.Driving || Mathf.Abs(Speed) > 0.3f || hv.magnitude > 0.3f)
         {
@@ -917,6 +1094,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         UnseatCrew(exitPoints);
         CrewInside = false;
         HasExited = true;
+        Exits++;
         GoodParking = EvaluateParking();
         if (sound != null && sound.engine != null) sound.engine.Stop();
         Exited?.Invoke(this);
@@ -953,6 +1131,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         {
             orbitCamera.distance = savedDistance;
             orbitCamera.pivotHeight = savedPivot;
+            orbitCamera.eyeUp = savedEyeUp;
+            if (orbitCamera.Mode == OrbitCamera.ViewMode.FirstPerson) orbitCamera.Pitch = savedPitch;
             orbitCamera.obstructionIgnoreRoot = null;
         }
         Physics.SyncTransforms();

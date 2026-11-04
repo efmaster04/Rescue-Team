@@ -64,8 +64,10 @@ public class DriveIntro : MonoBehaviour
         }
         ChosenStartS = s;
         StartPosition = van.transform.position;
+        van.SetFallRespawn(van.transform.position, van.transform.rotation); // uçuruma düşerse buraya döner
         van.SeatCrew();
         van.Exited += OnExited;
+        van.Boarded += OnBoarded;
         Active = true;
         nextHint = Time.time + 1f;
     }
@@ -73,7 +75,14 @@ public class DriveIntro : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
-        if (van != null) van.Exited -= OnExited;
+        if (van != null) { van.Exited -= OnExited; van.Boarded -= OnBoarded; }
+    }
+
+    // Yeniden binme: sürüş ipuçları yeniden akar (görev saati ve hırsızlar ilk inişte başladı, bir daha tutulmaz)
+    private void OnBoarded(ServiceVanDriver v)
+    {
+        Active = true;
+        nextHint = Time.time + hintSeconds;
     }
 
     private void Update()
@@ -90,11 +99,15 @@ public class DriveIntro : MonoBehaviour
     private void OnExited(ServiceVanDriver v)
     {
         Active = false;
-        Done = true;
-        ExitTime = Time.time;
         GoodParking = v.GoodParking;
-        if (mission != null) mission.ClockHeld = false;
-        if (thieves != null) thieves.enabled = true;
+        if (!Done)
+        {
+            // Yalnız ilk iniş: görev saati ve hırsız dalgaları başlar. Sonraki inişler yalnız park sonucunu bildirir.
+            Done = true;
+            ExitTime = Time.time;
+            if (mission != null) mission.ClockHeld = false;
+            if (thieves != null) thieves.enabled = true;
+        }
         GameNotice.Show(GoodParking ? goodParkText : badParkText + (v.parkingZone != null ? " (" + v.parkingZone.LastReason + ")" : ""));
     }
 }

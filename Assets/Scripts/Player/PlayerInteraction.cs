@@ -65,6 +65,8 @@ public class PlayerInteraction : MonoBehaviour
     // U4b: açık bagajdan geri alma: "E: Geri al (Laptop'lu çanta 400 ₺)" (en değerliden başlar)
     public const string HintRetrievePrefix = "E: Geri al (";
     public static string HintRetrieve(LootItem item) { return HintRetrievePrefix + item.LabelText + ")"; }
+    // Servis minibüsüne yeniden binme (şoför kapısının yanında, minibüs park hâlindeyken)
+    public const string HintBoardVan = "E: Minibüse bin";
 
     [Header("U3: yüz dönük kuralı (bütün E etkileşimleri)")]
     [Tooltip("Hedef, yatay ileri yönden en fazla bu kadar ° sapabilir (~60° koni).")]
@@ -133,8 +135,9 @@ public class PlayerInteraction : MonoBehaviour
     private enum Action { None, Release, PlaceCone, Revive, PlacePatient, Grab, PickCone,
         OpenTailgate, Extract, AttachRope, DetachRope, Piggyback, PutDownBack, PullRope,
         OpenLocker, CloseLocker, TakeCoil, DropCoil, TieStake, ThrowRope,
-        TakeLoot, DropLoot, SecureLoot, RetrieveLoot }
+        TakeLoot, DropLoot, SecureLoot, RetrieveLoot, BoardVan }
     private MinivanTailgate targetTailgate;
+    private ServiceVanDriver targetVan; // yeniden binilecek servis minibüsü
     private Transform targetSafe;   // U3: güvenli yerin vurgu hedefi (halka ya da ambulans kapısı)
     private RopeAnchor targetRope;
     private TowTruckLocker targetLocker;
@@ -213,6 +216,8 @@ public class PlayerInteraction : MonoBehaviour
                 var rc = LootTarget.GetComponent<TrafficCone>();
                 return rc != null && rc.target != null ? rc.target : LootTarget.transform;
             }
+            // Servis minibüsü: şoför kapısı (görsel parça; yoksa vurgu yok)
+            case Action.BoardVan: return targetVan != null ? targetVan.DriverDoor : null;
             default: return null;
         }
     }
@@ -232,6 +237,7 @@ public class PlayerInteraction : MonoBehaviour
         PullTarget = null;
         LootTarget = null;
         VanTarget = null;
+        targetVan = null;
         targetSafe = null;
         CurrentHint = "";
         HintIsWarning = false;
@@ -517,6 +523,17 @@ public class PlayerInteraction : MonoBehaviour
                 return;
             }
         }
+        // Servis minibüsüne yeniden binme (en düşük öncelik; eli doluyken yukarıdaki "bırak / koy" eylemleri kazanır: önce bırakır,
+        // sonra biner). Minibüs park hâlinde, oyuncu şoför kapısının yanında ve kapıya dönük.
+        var serviceVan = ServiceVanDriver.Instance;
+        if (serviceVan != null && serviceVan.CanBoard() && serviceVan.PlayerAtDriverDoor())
+        {
+            Vector3 door = serviceVan.DriverDoor != null ? ClosestOnRenderers(serviceVan.DriverDoor, me) : serviceVan.DriverDoorPoint;
+            if (!Facing(door)) { FacingRejections++; return; }
+            targetVan = serviceVan;
+            action = Action.BoardVan;
+            CurrentHint = HintBoardVan;
+        }
     }
 
     // E'ye basıldı.
@@ -608,6 +625,10 @@ public class PlayerInteraction : MonoBehaviour
             // U4b
             case Action.RetrieveLoot:
                 if (VanTarget != null && LootTarget != null && VanTarget.Retrieve(LootTarget, player)) Retrievals++;
+                break;
+            // Servis minibüsü: şoför koltuğuna bin (bot uygunsa yolcu koltuğuna)
+            case Action.BoardVan:
+                if (targetVan != null) targetVan.Board();
                 break;
         }
         Evaluate();

@@ -106,6 +106,8 @@ public class TrafficVehicle : MonoBehaviour
             ramBlocks = RammingObstacle.BlocksLane(Follower.lane, out ramEdgeS, out float farNow, out _);
             if (ramBlocks) ramFarS = Mathf.Max(ramFarS, farNow);
             if (Follower.RearS > ramFarS + 1f || Time.time - ramStartTime > settings.vanRamMaxSeconds) RammingObstacle = null;
+            // Yük bölümüne ekipten biri girdiyse süren çarpma biter: araç yeniden engel görüp durur (korna ve bekleme sürer)
+            else if (RammingObstacle is ServiceVanDriver crewVan && crewVan.CrewInCargo) { RammingObstacle = null; ramBlocks = false; }
         }
 
         // 1) Öndeki engel
@@ -168,7 +170,9 @@ public class TrafficVehicle : MonoBehaviour
             if (WaitingObstacle != b.obstacle) { WaitingObstacle = b.obstacle; ObstacleWaitTime = 0f; lastObstacleHorn = -100f; }
             // Sürüş girişinde ekip içeride ve minibüs henüz hiç hareket etmediyse sayaç işlemez (korna çalar): ipucunu okuyan oyuncu
             // gaza basmadan arkadan çıkan araçça çarpılmasın (review P2-4). İlk hareketten sonra kural normal işler.
-            bool gracePeriod = b.obstacle is ServiceVanDriver van && van.CrewInside && van.MaxSpeedReached < 1f;
+            // Yük bölümünde ekipten biri (ayakta ya da yerde) varken de sayaç donar: araç çarpmaz, korna çalıp bekler; ekip çıkınca
+            // bekle-korna-çarp döngüsü kaldığı yerden sürer.
+            bool gracePeriod = b.obstacle is ServiceVanDriver van && ((van.CrewInside && van.MaxSpeedReached < 1f) || van.CrewInCargo);
             if (!gracePeriod) ObstacleWaitTime += dt;
             if (Time.time - lastObstacleHorn >= settings.vanHornInterval)
             {

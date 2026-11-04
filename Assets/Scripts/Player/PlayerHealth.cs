@@ -71,6 +71,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     public bool TakeDamage(float amount, Transform source)
     {
         if (player == null || player.IsDown || amount <= 0f || Current <= 0f) return false;
+        if (!player.enabled) return false; // minibüs koltuğunda (ServiceVanDriver kapattı): koltukta ragdoll olmaz
         Current = Mathf.Max(0f, Current - amount);
         LastDamageTime = Time.time;
         Hits++;

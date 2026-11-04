@@ -1,10 +1,16 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 // Fareyle dönen yörünge kamera (kullanıcı kararı 15). Hedefin arkasında durur, araya duvar girerse yaklaşır.
+// İmleç: Start'ta kilitlenir. Editörde Esc imleci serbest bırakır (kullanıcı şikâyeti 2026-11-04: sürüş sırasında Esc'den sonra
+// girdi "ölü" sanılıyordu); serbest imleçle ve açık UI yokken (PlayerInputReader.InputBlocked kapalı) oyun penceresine sol tık
+// imleci yeniden kilitler. O tık saldırı / fırlatma sayılmaz (RelockedThisFrame; PlayerInputReader okur). Update -50: girdi
+// okuyucusundan önce koşar.
 // FP (kullanıcı kararı, 2026-10-28): V ile birinci şahıs ↔ üçüncü şahıs. Birinci şahısta kamera baş kemiğindeki göz noktasında
 // durur, gövde kamera yönüne bakar (ThirdPersonPlayer.FaceCameraYaw), baş FirstPersonBody ile gizlenir. İki yönde de
 // transitionSeconds süren yumuşak geçiş (konum SmoothStep ile karışır; dönüş iki modda da aynı Yaw/Pitch). Son seçim
 // PlayerPrefs'te saklanır; ilk açılışta üçüncü şahıs. Yaw/Pitch/target/distance API'si korunur (doğrulamalar yazar).
+[DefaultExecutionOrder(-50)]
 public class OrbitCamera : MonoBehaviour
 {
     public enum ViewMode { ThirdPerson = 0, FirstPerson = 1 }
@@ -53,8 +59,13 @@ public class OrbitCamera : MonoBehaviour
     // Tanı: son geçişin süresi (sn; mod değişiminden Blend'in hedefe varmasına geçen oyun zamanı)
     public float LastTransitionSeconds { get; private set; }
     public int ModeChanges { get; private set; }
+    // İmleç bu karede sol tıkla yeniden kilitlendi (o tık oyuna saldırı olarak gitmez)
+    public bool RelockedThisFrame { get { return relockFrame == Time.frameCount; } }
+    public int Relocks { get; private set; }
 
     private static readonly RaycastHit[] hits = new RaycastHit[16];
+    private int relockFrame = -1;
+    private PlayerInputReader inputReader;
     private Camera cam;
     private float defaultNearClip = -1f;
     private float transitionStart = -1f;
@@ -83,6 +94,26 @@ public class OrbitCamera : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private void Update()
+    {
+        if (Application.isBatchMode || Cursor.lockState == CursorLockMode.Locked) return;
+        var mouse = Mouse.current;
+        if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
+        TryRelockCursor();
+    }
+
+    // Serbest imleci oyun penceresine kilitler; açık UI varken (girdi kilitli) dokunmaz. true: kilitlendi.
+    public bool TryRelockCursor()
+    {
+        if (inputReader == null) inputReader = FindAnyObjectByType<PlayerInputReader>();
+        if (inputReader != null && inputReader.InputBlocked) return false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        relockFrame = Time.frameCount;
+        Relocks++;
+        return true;
     }
 
     // Hedef değişmişse baş kemiğini, gövde bileşenini ve yön kilidini yeniden bağla (sahnede bileşen eksikse çalışma zamanında kurulur).

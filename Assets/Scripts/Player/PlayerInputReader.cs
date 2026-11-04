@@ -113,8 +113,10 @@ public class PlayerInputReader : MonoBehaviour
         if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
         if (combat != null)
         {
-            if (attack.WasPressedThisFrame()) { AttackPresses++; if (combat.Attack()) AttackAccepted++; }
-            bool held = throwHold.IsPressed();
+            // Serbest imleci oyun penceresine kilitleyen sol tık (OrbitCamera.RelockedThisFrame) saldırı / fırlatma sayılmaz
+            bool relockClick = orbitCamera != null && orbitCamera.RelockedThisFrame;
+            if (attack.WasPressedThisFrame() && !relockClick) { AttackPresses++; if (combat.Attack()) AttackAccepted++; }
+            bool held = throwHold.IsPressed() && !relockClick;
             if (held) ThrowHoldFrames++;
             combat.SetThrowHeld(held);
             if (whistle.WasPressedThisFrame()) { WhistlePresses++; combat.Whistle(); }
