@@ -4557,8 +4557,49 @@
         -0.298,
         0.642
       ]
+    },
+    "Punch_Jab": {
+      "file": "Punch_Jab.fbx",
+      "duration_s": 0.5,
+      "frames": 16,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kısa hazırlık, sağ kolla hızlı düz yumruk ve geri toparlanma; slapstick, kök ve ayaklar yerinde.",
+      "action_sha256": "e3f6a91b7d3088e25e90a3f4fcc0deb30d0f44ac0b3270fdbb7a50f38b8164a6",
+      "hit_frame": 7
+    },
+    "Crouch_Idle": {
+      "file": "Crouch_Idle.fbx",
+      "duration_s": 2.0,
+      "frames": 61,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Dizler bükük, kalça alçak (ayakta kalça yüksekliğinin ~%66'sı) eğik bekleme; hafif nefes salınımı.",
+      "action_sha256": "71f29518e886cd1641fda1486e6f02677f4722a533562c4a986e08d2cb1eb21e"
+    },
+    "Crouch_Walk": {
+      "file": "Crouch_Walk.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Dizler bükük, kalça alçak ve gövde öne eğik yürüyüş; yerinde döngü (1.2 m/sn).",
+      "action_sha256": "b6f3edc0a627bf8105a750f6799ff41f818261e099f9ca3bbb1302b53e4b331b",
+      "target_speed_mps": 1.2,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.48,
+      "stance_travel_m": 0.48
     }
   },
-  "actions_sha256": "e048f04a04ddf592737ade06a7cc3292c7bf26cfdec9c7889fd4529c853c33d4",
-  "source_sha256": "53dca12345127efd9e318dd5f10c9c33aba89d97d637a4fc4048e2d4142d8c1c"
+  "actions_sha256": "8c8c1172846cb48b9f6775f6752f4113ca8b2d0eaa68d674b0d4ace6bbc3c5aa",
+  "source_sha256": "7959efb861648ce6f064853774c2540f0a98cf7c5fb739f6ce752815a022a2a5"
 }

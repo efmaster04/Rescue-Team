@@ -633,6 +633,7 @@ def check_crouch_punch(rig, f0, f1, name, m, hips, errors):
                 continue
             pose_rel = (pb.parent.matrix.inverted() @ pb.matrix).to_quaternion()
             deg = math.degrees(rest_rel[pb.name].rotation_difference(pose_rel).angle)
+            deg = min(deg, 360.0 - deg)  # kuaternyon cift ortusu: 337 = 23 derece
             max_deg = max(max_deg, deg)
             if name in ('Crouch_Idle', 'Crouch_Walk') and pb.name in (PREFIX + 'LeftLeg', PREFIX + 'RightLeg'):
                 if not 25.0 <= deg <= 140.0:
