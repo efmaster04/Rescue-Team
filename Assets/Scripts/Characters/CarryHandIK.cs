@@ -281,6 +281,7 @@ public sealed class CarryHandIK : MonoBehaviour
             // Klipte kollar iki yana açılır: avuçlar eşyanın yanlarına çekilir, eşya avuçların ortasında
             leftWeight = Mathf.MoveTowards(leftWeight, 1f, Time.deltaTime / Mathf.Max(0.01f, blendSeconds));
             Vector3 attached = mid0 + up * gripBelowCenter;
+            attached.y = Mathf.Max(attached.y, root.y + height * 0.5f + 0.01f); // uzanınca eşya yere girmez
             Place(attached, flat, size, HoldMode.Attached);
             float hxAttached = Mathf.Clamp(halfW + 0.005f, minHandSpread, sideGripMaxSpread);
             Solve(true, LastCenter - right * hxAttached - up * gripBelowCenter, leftWeight);
