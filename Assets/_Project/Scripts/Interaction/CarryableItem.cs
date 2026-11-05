@@ -54,8 +54,34 @@ namespace CompanySim
                 return item?item.weightKg:5f;
             }
         }
-        // Eşyanın kendi eksenlerinde tam boyutu (kutu collider'ı)
-        public Vector3 FullSize => HalfSize*2f;
+        // Eşyanın kendi eksenlerinde görünen boyutu (Renderer sınırlarından; collider bazı eşyalarda ayrı ölçüde: lastik) ve
+        // görünen merkezin kutu merkezine göre yeri. Elde konum ve duruş bunlarla hesaplanır (CompanyPlayerBridge.PlaceHeld).
+        Vector3 visualSize, visualCenter;
+        bool visualKnown;
+        public Vector3 FullSize { get { MeasureVisual(); return visualSize; } }
+        public Vector3 VisualCenterFromBox { get { MeasureVisual(); return visualCenter-(footprint?Vector3.Scale(footprint.center,transform.lossyScale):Vector3.zero); } }
+        void MeasureVisual()
+        {
+            if(visualKnown) return;
+            visualKnown=true;
+            visualSize=HalfSize*2f; visualCenter=footprint?Vector3.Scale(footprint.center,transform.lossyScale):Vector3.zero;
+            if(visualRenderers==null||visualRenderers.Length==0) return;
+            Vector3 min=Vector3.positiveInfinity,max=Vector3.negativeInfinity;
+            Quaternion inverse=Quaternion.Inverse(transform.rotation);
+            foreach(var r in visualRenderers)
+            {
+                if(!r) continue;
+                Bounds b=r.localBounds;
+                for(int i=0;i<8;i++)
+                {
+                    Vector3 corner=b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+                    Vector3 p=inverse*(r.transform.TransformPoint(corner)-transform.position);
+                    min=Vector3.Min(min,p); max=Vector3.Max(max,p);
+                }
+            }
+            if(min.x>max.x) return;
+            visualSize=max-min; visualCenter=(min+max)*.5f;
+        }
 
         void Awake()
         {

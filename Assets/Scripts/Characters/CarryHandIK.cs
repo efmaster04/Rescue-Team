@@ -30,7 +30,7 @@ public sealed class CarryHandIK : MonoBehaviour
     [Tooltip("Tutma noktası (eşyanın tepesi) avucun bu kadar altında (m): yumruk eşyayı sarmış görünür.")]
     public float lightGripInset = 0.02f;
     [Tooltip("Birinci şahısta hafif eşyayı tutan avuç (kök uzayında sağ, yukarı, ileri; m).")]
-    public Vector3 lightFirstPersonPalm = new Vector3(0.22f, 0.78f, 0.26f);
+    public Vector3 lightFirstPersonPalm = new Vector3(0.22f, 0.82f, 0.30f);
     [Header("Orta / ağır (iki el)")]
     [Tooltip("Gövde ön yüzü, kökten ileri (m): eşyanın arka yüzü bu düzleme dayanır (CharacterController yarıçapı 0.25).")]
     public float bodyFront = 0.23f;
@@ -38,8 +38,12 @@ public sealed class CarryHandIK : MonoBehaviour
     public float minHandSpread = 0.185f;
     [Tooltip("Eşya yarı genişliği bu sınırı (m) aşmıyorsa avuçlar yan yüzlerde, aşıyorsa alt yüzde.")]
     public float sideGripMaxHalfWidth = 0.27f;
+    [Tooltip("Bundan yüksek eşya (m) genişliği ne olursa olsun yanından tutulur: alttan tutulsa kısa kollar onu görüşe kaldırırdı.")]
+    public float underGripMaxHeight = 0.36f;
+    [Tooltip("Yan tutuşta avuçların en geniş yarı açıklığı (m; chibi kol erişimi).")]
+    public float sideGripMaxSpread = 0.30f;
     [Tooltip("Yan tutuşta avucun yüksekliği: eşya merkezinin bu oran × boy altında.")]
-    public float sideGripDrop = 0.2f;
+    public float sideGripDrop = 0.05f;
     [Tooltip("Eşya avuçların bu kadar üstünde başlar (m; alt tutuş).")]
     public float palmLift = 0.01f;
     [Tooltip("Orta sınıfta eşya merkezinin yükseklik aralığı (kök üstü, m): uzun eşya yüzü kapatmasın diye aşağı iner.")]
@@ -47,7 +51,9 @@ public sealed class CarryHandIK : MonoBehaviour
     [Tooltip("Ağır sınıfta eşya merkezinin yükseklik aralığı (kök üstü, m).")]
     public Vector2 heavyCenterHeight = new Vector2(0.56f, 0.80f);
     [Tooltip("Eşya tepesinin kökten en yüksek yeri (m; çene hizası). Geçerse merkez aşağı iner.")]
-    public float maxTopHeight = 1.0f;
+    public float maxTopHeight = 0.97f;
+    [Tooltip("Ayakta kalça yüksekliği (m): eşya yükseklik aralığı kalçayla birlikte iner / çıkar (eğilme, zıplama, yürüyüş).")]
+    public float standingHipHeight = 0.445f;
     [Tooltip("Birinci şahısta (kamera karışımıyla) iki elde eşya bu kadar alçalır (m): görüş merkezini kapatmaz.")]
     public float firstPersonDrop = 0.10f;
 
@@ -158,8 +164,9 @@ public sealed class CarryHandIK : MonoBehaviour
     {
         Vector3 up = Vector3.up, fwd = Forward(), right = Vector3.Cross(up, fwd), root = transform.position;
         float fp = OrbitCamera.FirstPersonBlendFor(transform);
-        float tilt = Mathf.Deg2Rad * lightTilt * (1f - 0.7f * fp);
-        Vector3 itemUp = (up * Mathf.Cos(tilt) - right * Mathf.Sin(tilt) * 0.8f - fwd * Mathf.Sin(tilt) * 0.6f).normalized;
+        // FP: taban öne uzanır, aşağı bakınca eşya görünür
+        float tilt = Mathf.Deg2Rad * Mathf.Lerp(lightTilt, 42f, fp);
+        Vector3 itemUp = (up * Mathf.Cos(tilt) - right * Mathf.Sin(tilt) * Mathf.Lerp(0.8f, 0.25f, fp) - fwd * Mathf.Sin(tilt) * Mathf.Lerp(0.6f, 1f, fp)).normalized;
         Quaternion rot = Quaternion.FromToRotation(up, itemUp) * Quaternion.LookRotation(fwd, up);
         float hang = Mathf.Max(0f, size.y - lightGripInset);
         Vector3 palm0 = Palm(HumanBodyBones.RightHand);
@@ -180,7 +187,10 @@ public sealed class CarryHandIK : MonoBehaviour
         Solve(false, target, Weight);
         Vector3 palm = Palm(HumanBodyBones.RightHand);
         Vector3 center = palm - itemUp * (size.y * 0.5f - lightGripInset);
-        Place(center, rot, size);
+        LastCenter = center; LastRotation = rot;
+        Prop.PlaceHeld(center, rot);
+        // Gövde teması yalnız alt yarıda ölçülür: tepesi avuçta, kolun yanında (koni orada dar)
+        BodyOverlap = ComputeBodyOverlap(center - itemUp * (size.y * 0.25f), rot, new Vector3(size.x, size.y * 0.5f, size.z));
         GripErrorLeft = 0f;
         GripErrorRight = Vector3.Distance(palm, center + itemUp * (size.y * 0.5f - lightGripInset));
     }
@@ -191,7 +201,7 @@ public sealed class CarryHandIK : MonoBehaviour
         Vector3 up = Vector3.up, fwd = Forward(), right = Vector3.Cross(up, fwd), root = transform.position;
         Quaternion flat = Quaternion.LookRotation(fwd, up);
         float halfW = Mathf.Max(0.04f, size.x * 0.5f), height = Mathf.Max(0.02f, size.y), depth = Mathf.Max(0.02f, size.z);
-        bool side = halfW <= sideGripMaxHalfWidth;
+        bool side = halfW <= sideGripMaxHalfWidth || height > underGripMaxHeight;
         SideGrip = side;
         float gripBelowCenter = side ? height * sideGripDrop : height * 0.5f + palmLift;
         Vector3 l0 = Palm(HumanBodyBones.LeftHand), r0 = Palm(HumanBodyBones.RightHand);
@@ -201,7 +211,7 @@ public sealed class CarryHandIK : MonoBehaviour
         {
             // Yumruk, darbe tepkisi: eşya gövdeye göre yerinde, sol el üstünde; sağ el klibi oynar
             Vector3 home = transform.TransformPoint(homeLocal);
-            float hxHome = side ? Mathf.Max(minHandSpread, halfW + 0.005f) : Mathf.Abs(Vector3.Dot(l0 - r0, right)) * 0.5f;
+            float hxHome = side ? Mathf.Clamp(halfW + 0.005f, minHandSpread, sideGripMaxSpread) : Mathf.Abs(Vector3.Dot(l0 - r0, right)) * 0.5f;
             Solve(true, home - right * hxHome - up * gripBelowCenter, 1f);
             Place(home, flat, size);
             GripErrorLeft = SurfaceDistance(Palm(HumanBodyBones.LeftHand), home, flat, size);
@@ -210,18 +220,22 @@ public sealed class CarryHandIK : MonoBehaviour
         }
 
         float spread = Mathf.Abs(Vector3.Dot(l0 - r0, right)) * 0.5f;
-        float hx = side ? Mathf.Max(minHandSpread, halfW + 0.005f) : Mathf.Max(minHandSpread, spread);
+        float hx = side ? Mathf.Clamp(halfW + 0.005f, minHandSpread, sideGripMaxSpread) : Mathf.Max(minHandSpread, spread);
         float sx0 = Vector3.Dot(mid0 - root, right);
         // Avuç ileri: eşyanın ortası, klip konumundan çok uzaklaşmaz (erişim küresi ileride keser)
         float z0 = Vector3.Dot(mid0 - root, fwd);
-        float hz = Mathf.Clamp(bodyFront + depth * 0.5f, z0 - 0.05f, z0 + 0.06f);
+        float hz = Mathf.Clamp(bodyFront + depth * 0.5f, z0 - 0.05f, z0 + 0.01f);
         // Yükseklik: eşya merkezi sınıf aralığında, tepesi çene altında; klipteki yaylanma korunur (eşya canlı sallanır)
         Vector2 range = heavy ? heavyCenterHeight : mediumCenterHeight;
-        float crouch = player != null ? player.CrouchBodyDrop : 0f;
+        // FP: eller eşyanın üst kenarında, eşya aşağıda sarkar: aşağı bakınca ekran merkezini kapatmaz (kullanıcı isteği 2026-11-05)
+        var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+        float bodyDrop = hips != null ? standingHipHeight - (hips.position.y - root.y) : 0f; // eğilme, yürüyüş: +; zıplama: −
         float fp = OrbitCamera.FirstPersonBlendFor(transform);
+        gripBelowCenter = Mathf.Lerp(gripBelowCenter, -(height * 0.5f - 0.03f), fp);
         float y0 = mid0.y - root.y;
         float top = Mathf.Min(range.y, maxTopHeight - height * 0.5f);
-        float centerY = Mathf.Clamp(y0 + gripBelowCenter, Mathf.Min(range.x, top), top) - firstPersonDrop * fp - crouch;
+        float bottomLimit = Mathf.Lerp(Mathf.Min(range.x, top), -10f, fp);
+        float centerY = Mathf.Clamp(y0 + gripBelowCenter, bottomLimit - bodyDrop, top - bodyDrop) - firstPersonDrop * fp;
         float hy = centerY - gripBelowCenter;
         Vector3 lt = root + fwd * hz + up * (hy + l0.y - mid0.y) + right * (sx0 - hx);
         Vector3 rt = root + fwd * hz + up * (hy + r0.y - mid0.y) + right * (sx0 + hx);

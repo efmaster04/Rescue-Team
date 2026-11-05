@@ -1900,9 +1900,10 @@ def clip_twohand_run(P, t, T):
     c2 = math.cos(2 * TAU * (ph - stance / 2))
     s1 = math.sin(TAU * ph)
     bob = -0.092 - 0.022 * c2
-    P.hips((0, 0, bob), pitch=12 + 3 * c2, roll=7 * s1, yaw=-5 * s1)
-    P.spine(pitch=6 + 3 * c2, roll=-6 * s1, yaw=5 * s1)
-    P.neck_head(pitch=-12 + 5 * math.cos(2 * TAU * ph - 1.0), roll=4 * s1, yaw=-3 * s1)
+    # Dik koşu: öne eğilince baş eşyaya giriyordu
+    P.hips((0, 0, bob), pitch=5 + 3 * c2, roll=7 * s1, yaw=-5 * s1)
+    P.spine(pitch=1 + 2 * c2, roll=-6 * s1, yaw=5 * s1)
+    P.neck_head(pitch=-5 + 5 * math.cos(2 * TAU * ph - 1.0), roll=4 * s1, yaw=-3 * s1)
     for s, side in ((1, 'Left'), (-1, 'Right')):
         P.shrug(side, up=8 + 3 * c2, fwd=12)
     two_hands(P, (TWOHAND_GRIP[0], TWOHAND_GRIP[1] - 0.02, TWOHAND_GRIP[2] - 0.03), bob=0.5 * (bob + 0.092))

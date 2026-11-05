@@ -25,7 +25,7 @@ public static class CarryClassVerify
     private const float GripLimit = 0.05f;      // avuç → eşya yüzeyi (m)
     private const float BodyLimit = 0.03f;      // eşya → gövde kapsülü (m)
     private const float HeadLimit = 0.03f;      // eşya → baş küresi (m)
-    private const float HeadRadius = 0.235f;    // baş + kask küresi (m; merkez Head kemiği + 0.20 yukarı)
+    private const float HeadRadius = 0.26f;     // baş + kask küresi (m; merkez Head kemiği + 0.20 yukarı; mesh: ön 0.265, alt kask 0.988)
 
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     private static StringBuilder report;
@@ -194,6 +194,9 @@ public static class CarryClassVerify
         ik = player.GetComponent<CarryHandIK>();
         crew = player.GetComponent<CrewAnimation>();
         orbit = Camera.main.GetComponent<OrbitCamera>();
+        // Girdi test sürer: gerçek girdi okuyucusu her kare hareketi sıfırlardı
+        var reader = player.GetComponent<PlayerInputReader>();
+        if (reader != null) reader.enabled = false;
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 60; // batchmode sınırsız koşar; kare başı ölçümler 60 fps'de anlamlı
         Check("(0) kurulum: CarryHandIK ThirdPersonPlayer'a eklendi, LowerBody katmanı Crouch'un altında", ik != null && crew != null
@@ -229,6 +232,7 @@ public static class CarryClassVerify
         startPos = player.transform.position;
         startRot = player.transform.rotation;
         orbit.SetMode(OrbitCamera.ViewMode.ThirdPerson, true);
+        yield return WarmUp();
 
         var cone = TrafficCone.All.Count > 0 ? TrafficCone.All[0] : null;
         if (cone == null) Fail("sahnede koni yok");
@@ -345,14 +349,15 @@ public static class CarryClassVerify
         float t0 = Time.time;
         yield return (Func<bool>)(() => (runtime.Data != null && runtime.manualModules != null && runtime.manualModules.Initialized && player.HasControl) || Time.time - t0 > 6f);
         var bridge = player.GetComponent<CompanyPlayerBridge>();
-        // Garaj zemininde yürüme için boş yer: minibüsün arkası
+        // Yürüme için boş yer: binanın arkasındaki çimen, duvara paralel
         Vector3 back = runtime.vehicle.transform.TransformPoint(new Vector3(0f, 0.02f, 6.5f));
-        startRot = Quaternion.LookRotation(Flat(runtime.vehicle.transform.right), Vector3.up);
+        startRot = Quaternion.LookRotation(Flat(-runtime.vehicle.transform.right), Vector3.up);
         if (Physics.Raycast(back + Vector3.up * 1.5f, Vector3.down, out RaycastHit hit, 4f, ~0, QueryTriggerInteraction.Ignore)) back.y = hit.point.y + 0.02f;
         startPos = back;
         player.Teleport(startPos, startRot);
         yield return Seconds(0.2f);
         orbit.SetMode(OrbitCamera.ViewMode.ThirdPerson, true);
+        yield return WarmUp();
         var catalog = runtime.catalog;
         var cases = new (string id, CarryClass want)[]
         {
@@ -383,6 +388,14 @@ public static class CarryClassVerify
             Vector3 savedPos = package.transform.position; Quaternion savedRot = package.transform.rotation; var savedParent = package.transform.parent;
             yield return TestItem("modul", CarryClass.Heavy, () => bridge.Hold(package), () => { bridge.TakeHeld(); package.Drop(savedPos); package.transform.SetParent(savedParent, true); package.definitionId = savedDef; }, () => package.GetComponentsInChildren<Renderer>());
         }
+    }
+
+    // İlk kare ışık / gölge ve kamera mesafesi oturmadan alınan görüntü işe yaramaz
+    private static IEnumerator WarmUp()
+    {
+        yield return Seconds(1f);
+        yield return CaptureFrame("_isinma", 18f);
+        yield return Seconds(0.5f);
     }
 
     // =====================================================================================
@@ -425,10 +438,12 @@ public static class CarryClassVerify
         player.SetRunInput(true);
         player.SetMoveInput(Vector2.up);
         yield return Seconds(0.45f);
-        p0 = player.transform.position;
+        // Ortanca anlık hız: garajda yol kısa, sonda bir engele değmek ölçümü bozmaz
+        var runSamples = new List<float>();
         t0 = Time.time;
-        while (Time.time - t0 < 0.7f) { worst.Sample(); yield return null; }
-        float run = Flat(player.transform.position - p0).magnitude / (Time.time - t0);
+        while (Time.time - t0 < 0.5f) { worst.Sample(); runSamples.Add(player.HorizontalVelocity.magnitude); yield return null; }
+        runSamples.Sort();
+        float run = runSamples.Count > 0 ? runSamples[runSamples.Count / 2] : 0f;
         bool runClipOk = cls == CarryClass.Heavy || player.animator.GetCurrentAnimatorClipInfo(0).Any(c => c.clip.name.EndsWith("_Run") && c.weight > 0.8f);
         player.SetRunInput(false);
         player.SetMoveInput(Vector2.zero);
@@ -499,7 +514,7 @@ public static class CarryClassVerify
             "TP tutuş " + Cm(worst.grip) + ", gövde " + Cm(worst.body) + ", baş " + Cm(worst.head) + "; FP tutuş " + Cm(fpWorst.grip) + ", gövde " + Cm(fpWorst.body) + ", baş " + Cm(fpWorst.head) + "; erişime çekilen el " + worst.clamped + " kare");
         Check("(" + label + ") zıplama ve eğilme kuralı", jumpOk && crouchOk, "yükselme " + (maxY - y0).ToString("F2", Inv) + " m, döngüde kaldı " + loopInAir + ", havada tutuş " + Cm(airGrip) + ", eğilme " + crouchOk);
         Check("(" + label + ") FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz",
-            view45 > 0.02f && !center0, "görünür oran 0° %" + (view0 * 100f).ToString("F0", Inv) + ", 45° %" + (view45 * 100f).ToString("F0", Inv) + ", merkez " + center0);
+            view45 > 0.2f && !center0, "görünür oran 0° %" + (view0 * 100f).ToString("F0", Inv) + ", 45° %" + (view45 * 100f).ToString("F0", Inv) + ", merkez " + center0);
 
         release();
         yield return null;
@@ -526,7 +541,7 @@ public static class CarryClassVerify
         }
     }
 
-    // Eşya sınırlarının 8 köşesi + merkezinden ekrana düşen oran
+    // Eşya sınır kutusunun içindeki 5×5×5 örnek noktadan ekrana düşen oran
     private static float VisibleFraction(Renderer[] rs)
     {
         var cam = Camera.main;
@@ -535,10 +550,9 @@ public static class CarryClassVerify
         {
             if (r == null || !r.enabled) continue;
             Bounds b = r.bounds;
-            for (int i = 0; i < 9; i++)
+            for (int x = 0; x < 5; x++) for (int y = 0; y < 5; y++) for (int z = 0; z < 5; z++)
             {
-                Vector3 p = i == 8 ? b.center : b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
-                Vector3 v = cam.WorldToViewportPoint(p);
+                Vector3 v = cam.WorldToViewportPoint(b.min + Vector3.Scale(b.size, new Vector3(x / 4f, y / 4f, z / 4f)));
                 n++;
                 if (v.z > cam.nearClipPlane && v.x > 0f && v.x < 1f && v.y > 0f && v.y < 1f) seen++;
             }

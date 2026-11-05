@@ -259,7 +259,8 @@ namespace CompanySim
             if (HeldItem == null) return;
             Quaternion frame = Quaternion.identity;
             if (CarryClass != CarryClass.Light) CarryRules.HeldFrame(HeldItem.FullSize, out frame);
-            holdPoint.SetPositionAndRotation(center, rotation * frame);
+            Quaternion held = rotation * frame;
+            holdPoint.SetPositionAndRotation(center - held * HeldItem.VisualCenterFromBox, held);
             HeldItem.UpdateHandVisibility(viewCamera);
         }
 

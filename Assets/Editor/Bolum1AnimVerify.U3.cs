@@ -121,13 +121,14 @@ public static partial class Bolum1AnimVerify
         // Düz yerde taşıma kontrolü (patika), koşu serbest
         ParkCarriersOffLane();
         yield return Seconds(1.2f);
-        bool carryAnim = PlayerAnim.InState(CrewAnimation.StateCarryCone);
+        // Taşıma revizyonu (2026-11-05): çanta orta sınıf (iki el, koşu 2.6); küçük eşya hafif, büyük valiz ağır (CarryClassVerify ölçer)
+        bool carryAnim = PlayerAnim.InState(item.CarryClass == CarryClass.Medium ? CrewAnimation.StateCarryTwoHand : item.CarryClass == CarryClass.Heavy ? CrewAnimation.StateCarryHeavy : CrewAnimation.StateCarryCone);
         Player.SetRunInput(true);
-        bool runAllowed = Mathf.Abs(Player.RequestedSpeed - Player.runSpeed) < 0.01f;
+        bool runAllowed = Mathf.Abs(Player.RequestedSpeed - Player.Rules.Speed(item.CarryClass, true, Player.moveSpeed, Player.runSpeed)) < 0.01f;
         Player.SetRunInput(false);
         Vector3 local = Player.transform.InverseTransformPoint(item.Center);
         Note("al / taşı", pickAnim && held && carryAnim && runAllowed && local.z > 0.1f && local.y > 0.2f,
-            "PickUp " + pickAnim + ", elde " + held + ", CarryCone " + carryAnim + ", koşu serbest " + runAllowed + ", eşya kök uzayında " + V(local));
+            "PickUp " + pickAnim + ", elde " + held + ", sınıf " + item.CarryClass + " durumu " + carryAnim + ", sınıf koşusu " + runAllowed + ", eşya kök uzayında " + V(local));
         // Bırak (hedefsiz), yerde; tekrar al
         Note("bırak ipucu (hedefsiz)", Interaction.CurrentHint == PlayerInteraction.HintDropLoot && Highlight.Current == null, "ipucu \"" + Interaction.CurrentHint + "\" vurgu " + HlName());
         Interaction.Interact();
