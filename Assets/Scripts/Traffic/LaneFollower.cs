@@ -145,6 +145,38 @@ public class LaneFollower : MonoBehaviour
     public void StopAt(float s) { stopDistance = s; }
     public void ClearStop() { stopDistance = float.PositiveInfinity; }
 
+    // Dingil mesafesi (m): ön-arka aks arası; dingil bilgisi yoksa görsel ön aksın kökten uzaklığının iki katı, o da yoksa 3 m.
+    public float Wheelbase
+    {
+        get
+        {
+            if (axleHalfSpan > 0.01f) return axleHalfSpan * 2f;
+            if (wheelAxes == null || wheelAxes.Length != wheels.Length) CacheWheelAxes();
+            return frontAxleOffset > 0.1f ? frontAxleOffset * 2f : 3f;
+        }
+    }
+
+    // Şerit dışı manevra (hırsız kamyonetinin park / kalkış manevrası, ThiefVan): konum ve yön dışarıdan verilir, burada yalnız
+    // gövde taşınır ve tekerlek görseli (dönüş + direksiyon) uygulanır. travelled: bu adımda kat edilen yol (m; geri gidişte
+    // negatif, tekerlek geri döner), steerDeg: ön tekerlek açısı (sağa +), laneS: kökün şerit izdüşümü (şerit doluluk servisi
+    // Distance / FrontS / RearS'i buradan okur). Normal sürüş (Tick) bu çağrıdan etkilenmez; şeride dönüşte Place kullanılır.
+    public void ApplyExternalPose(Vector3 position, Quaternion rotation, float travelled, float steerDeg, float laneS, float dt)
+    {
+        if (body == null) body = GetComponent<Rigidbody>();
+        if (lane != null) Distance = Mathf.Clamp(laneS, 0f, lane.Length);
+        Speed = dt > 1e-5f ? Mathf.Abs(travelled) / dt : 0f;
+        body.MovePosition(position);
+        body.MoveRotation(rotation);
+        float limit = Mathf.Abs(maxSteerAngle);
+        CurrentSteerAngle = Mathf.Clamp(steerDeg, -limit, limit);
+        if (wheelAxes == null || wheelAxes.Length != wheels.Length) CacheWheelAxes();
+        spinDegrees = Mathf.Repeat(spinDegrees + travelled / Mathf.Max(0.05f, wheelRadius) * Mathf.Rad2Deg, 360f);
+        ApplyWheelRotations();
+    }
+
+    // Toplam tekerlek dönüşü (derece, 0–360; testler okur: manevrada tekerlek döndü mü)
+    public float WheelSpinDegrees { get { return spinDegrees; } }
+
     // s'deki kök pozu. axleHalfSpan > 0: aks noktaları şeritte, kök aralarında, yön akstan aksa.
     public void Pose(float s, out Vector3 position, out Quaternion rotation)
     {

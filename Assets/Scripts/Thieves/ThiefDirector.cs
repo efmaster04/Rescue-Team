@@ -51,10 +51,18 @@ public class ThiefDirector : MonoBehaviour
     public int WarningsShown { get; private set; }
 
     public event Action<ThiefVan> VanSpawned;
+    // Kamyonet kötü park etmiş minibüse vurdu (kullanıcı kararı 2026-11-05): kamyonet, ceza (₺), çarpma hızı (m/sn), minibüsün yeri.
+    // HUD uçan "−₺X" yazısını, görev sonu hesabı (FieldPayout) toplamı buradan alır.
+    public event Action<ThiefVan, int, float, Vector3> VanRammedMinibus;
+    public struct RamRecord { public float elapsed; public float speed; public int fine; public string source; }
+    public readonly List<RamRecord> RamLog = new List<RamRecord>();
+    public int RamPenaltyTotal { get; private set; }
+    public int RamCount { get { return RamLog.Count; } }
 
     private float lastSpawnElapsed = -100f;
     private int warnedWave = -1;
     private NavMeshDataInstance navMeshInstance;
+    private ServiceVanDriver subscribedMinibus;
     public bool NavMeshLoaded { get { return navMeshInstance.valid; } }
 
     private void Awake()
@@ -67,7 +75,31 @@ public class ThiefDirector : MonoBehaviour
     {
         if (Instance == this) Instance = null;
         if (navMeshInstance.valid) navMeshInstance.Remove();
+        if (subscribedMinibus != null) subscribedMinibus.Rammed -= OnMinibusRammed;
     }
+
+    // Trafik kuralıyla (şeridi kapatan minibüs: bekle-korna-çarp, TrafficVehicle) çarpan kamyonet de vuruş sayılır.
+    private void OnMinibusRammed(ServiceVanDriver minibus, TrafficVehicle by)
+    {
+        var van = by != null ? by.GetComponent<ThiefVan>() : null;
+        if (van == null || minibus == null) return;
+        ChargeRam(van, by.Follower != null ? by.Follower.Speed : 0f, minibus.transform.position, "şerit");
+    }
+
+    // Vuruş cezası: hıza göre ₺ (ThiefSettings.RamPenalty), toplam kasadan düşer (görev sonu: FieldPayout.thiefRamPenalty;
+    // sahada: HUD bakiyesi), uçan yazı HUD'da. Kaynak: "manevra" (geri geri itme) / "şerit" (trafik kuralı çarpması).
+    public int ChargeRam(ThiefVan van, float speed, Vector3 at, string source)
+    {
+        var s = Active != null ? Active : settings;
+        int fine = s != null ? s.RamPenalty(speed) : 100;
+        RamPenaltyTotal += fine;
+        RamLog.Add(new RamRecord { elapsed = Elapsed, speed = Mathf.Abs(speed), fine = fine, source = source });
+        VanRammedMinibus?.Invoke(van, fine, Mathf.Abs(speed), at);
+        return fine;
+    }
+
+    // Test: ceza kaydı sıfırlanır
+    public void ResetPenaltiesForTest() { RamPenaltyTotal = 0; RamLog.Clear(); }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics() { SuppressedForTests = false; }
@@ -109,6 +141,7 @@ public class ThiefDirector : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (subscribedMinibus == null && ServiceVanDriver.Instance != null) { subscribedMinibus = ServiceVanDriver.Instance; subscribedMinibus.Rammed += OnMinibusRammed; }
         if (Active == null) return;
         Elapsed += Time.fixedDeltaTime;
         Vans.RemoveAll(v => v == null);

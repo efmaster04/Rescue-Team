@@ -616,7 +616,9 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             var c = overlaps[i];
             if (c == null || c.isTrigger || c.transform.IsChildOf(transform)) continue;
             var other = c.attachedRigidbody;
-            if (other == null || !other.isKinematic || other.linearVelocity.magnitude < physicalShoveMinSpeed || IsCrewOrCharacter(c)) continue;
+            // Karakterler elenir, araçlar elenmez (Codex review P1: IsCrewOrCharacter LaneFollower'lı hırsız kamyonetini de eliyordu,
+            // kamyonet fiziksel itmeyi hiç başlatamıyordu)
+            if (other == null || !other.isKinematic || other.linearVelocity.magnitude < physicalShoveMinSpeed || IsCharacter(c)) continue;
             LastPusher = other;
             BeginShove(true);
             lastRamContact = Time.time;
@@ -654,12 +656,16 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     }
 
     // Çarpışma itkisi hasarı: yatay normalli temas (korkuluk, kaya, araç) Δv = itki / kütle eşiği aşınca; alt / üst temas (gravel dudağı,
-    // zemin) ve dinamikleşmeden sonraki ilk oturma sayılmaz. Trafik aracının betikli çarpması ayrıca hasar yazar (Ram), 1 sn içinde tekrar yok.
+    // zemin) ve dinamikleşmeden sonraki ilk oturma sayılmaz. Trafik aracının betikli çarpması ayrıca hasar yazar (Ram); o hasarın
+    // 1 sn içinde aynı temastan itki hasarıyla tekrarlanmaması için yalnız betikli itilmede ve yalnız Ram hasarından sonraki 1 sn
+    // atlanır (Codex review P2: eskiden her kinematik temas lastRamContact'ı güncelleyip sürüşteki araç çarpmasını ve 1 sn
+    // içindeki kaya çarpmasını da bastırıyordu).
     private void OnCollisionEnter(Collision c)
     {
         if (rb == null || rb.isKinematic || c.collider == null || c.collider.transform.IsChildOf(transform)) return;
         NoteKinematicContact(c);
-        if (Time.time - dynamicSince < .5f || Time.time - lastRamContact < 1f && !PhysicalShove) return;
+        if (Time.time - dynamicSince < .5f) return;
+        if (State == VanState.Shoved && !PhysicalShove && Time.time - lastRamDamage < 1f) return;
         if (c.contactCount == 0) return;
         Vector3 n = c.GetContact(0).normal;
         if (Mathf.Abs(n.y) > .7f) return;
@@ -681,7 +687,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private void NoteKinematicContact(Collision c)
     {
         var other = c.rigidbody;
-        if (other == null || !other.isKinematic || IsCrewOrCharacter(c.collider)) return;
+        if (other == null || !other.isKinematic || IsCharacter(c.collider)) return; // araçlar sayılır (review P1)
         if (other.linearVelocity.magnitude < physicalShoveMinSpeed) return;
         lastRamContact = Time.time;
         LastPusher = other;
@@ -1161,8 +1167,15 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
 
     private static bool IsCrewOrCharacter(Component c)
     {
+        return IsCharacter(c) || c.GetComponentInParent<LaneFollower>() != null;
+    }
+
+    // Yalnız karakterler (oyuncu, bot, hasta, hırsız); araçlar değil. İtici tespiti (fiziksel itme) bunu kullanır: hırsız
+    // kamyoneti / trafik aracı kinematik gövdesiyle park hâlindeki minibüsü itebilmeli.
+    private static bool IsCharacter(Component c)
+    {
         return c.GetComponentInParent<ThirdPersonPlayer>() != null || c.GetComponentInParent<StretcherHelperBot>() != null
-            || c.GetComponentInParent<Patient>() != null || c.GetComponentInParent<LaneFollower>() != null || c.GetComponentInParent<Thief>() != null;
+            || c.GetComponentInParent<Patient>() != null || c.GetComponentInParent<Thief>() != null;
     }
 
     public void HoldCargo()

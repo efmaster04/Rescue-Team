@@ -28,6 +28,35 @@ public class ThiefSettings : ScriptableObject
     public float doorOpenAngle = 150f;
     [Min(0.1f)] public float doorSeconds = 0.6f;
 
+    [Header("Park manevrası (kullanıcı kararı 2026-11-05: gerçek park gibi görünsün)")]
+    [Tooltip("Kamyonet durağı şeritte bu kadar geçip durur (m), sonra direksiyon kırarak GERİ GERİ bankete girer (paralel park). Durak çekicinin hemen önünde olduğundan ileri yanaşma minibüsün köşesini süpürürdü.")]
+    [Min(4f)] public float parkOvershoot = 9.5f;
+    [Tooltip("Durmadan önce şeridin sağına bu kadar kayar (m): geri manevrada burun karşı şeride taşmaz.")]
+    [Range(0f, 1.2f)] public float parkPreShift = 0.8f;
+    [Tooltip("Manevra hızları (m/sn): geri park, ileri düzeltme / kalkış; hızlanma ve direksiyon dönme hızı (°/sn).")]
+    [Min(0.3f)] public float reverseSpeed = 1.4f;
+    [Min(0.3f)] public float maneuverSpeed = 1.8f;
+    [Min(0.5f)] public float maneuverAccel = 2.5f;
+    [Min(10f)] public float steerRateDegPerSec = 110f;
+    [Tooltip("Rota takibinde ileriye bakış (m): küçük = sıkı viraj, büyük = yumuşak.")]
+    [Min(1f)] public float lookAhead = 3.2f;
+
+    [Header("Kötü park edilmiş minibüsü itme (kullanıcı kararı 2026-11-05)")]
+    [Tooltip("Yer doluysa kamyonet minibüse arka arkaya vurur: ilk vuruş hızı ve her vuruşta artan hız (m/sn), en yüksek hız.")]
+    [Min(0.3f)] public float ramSpeedMin = 1.5f;
+    [Min(0f)] public float ramSpeedStep = 0.6f;
+    [Min(0.3f)] public float ramSpeedMax = 3.5f;
+    [Tooltip("Bir vuruşta temastan sonra en çok bu kadar iter (m), sonra ileri açılır (m) ve yeniden dener.")]
+    [Min(0.2f)] public float ramPushDistance = 2.0f;
+    [Min(0.5f)] public float ramBackOff = 2.2f;
+    [Tooltip("İtme bütçesi: en çok bu kadar vuruş / bu kadar sn; sonra yer boşalmadıysa kamyonet şeritte (durduğu yerde) park eder.")]
+    [Range(1, 12)] public int maxRams = 8;
+    [Min(5f)] public float maxRamSeconds = 40f;
+    [Tooltip("Her vuruşta şirket kasasından düşen ceza (₺): çarpma hızı ramPenaltySpeedLow → ramPenaltySpeedHigh arasında min → max.")]
+    [Min(0)] public int ramPenaltyMin = 50;
+    [Min(0)] public int ramPenaltyMax = 250;
+    public float ramPenaltySpeedLow = 1f, ramPenaltySpeedHigh = 3.5f;
+
     [Header("Hırsız hareketi")]
     [Tooltip("Sinsi yürüyüş (Thief_Sneak_Walk target_speed_mps) ve koşu (Thief_Run / Thief_Run_Carry) hızı (m/sn).")]
     public float sneakSpeed = 1.6f;
@@ -105,6 +134,14 @@ public class ThiefSettings : ScriptableObject
     [Tooltip("Açıkken hırsız varyantı ve küçük rastgelelikler sabit sırayla.")]
     public bool useFixedSeed = false;
     public int seed = 20261019;
+
+    // Çarpma hızından ceza (₺): hafif sürtünme ucuz, sert çarpma pahalı; 10'a yuvarlanır.
+    public int RamPenalty(float speed)
+    {
+        float u = Mathf.InverseLerp(ramPenaltySpeedLow, ramPenaltySpeedHigh, Mathf.Abs(speed));
+        int fine = Mathf.RoundToInt(Mathf.Lerp(ramPenaltyMin, ramPenaltyMax, u) / 10f) * 10;
+        return Mathf.Clamp(fine, Mathf.Min(ramPenaltyMin, ramPenaltyMax), Mathf.Max(ramPenaltyMin, ramPenaltyMax));
+    }
 
     // k. dalganın (0'dan başlar) hırsız sayısı: 1 → 2 → … → maxThieves.
     public int ThievesForWave(int k) { return Mathf.Clamp(k + 1, 1, maxThieves); }

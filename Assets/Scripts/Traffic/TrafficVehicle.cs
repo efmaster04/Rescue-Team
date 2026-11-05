@@ -219,7 +219,10 @@ public class TrafficVehicle : MonoBehaviour
 
         if (Follower.AtEnd)
         {
-            if (GetComponent<ThiefVan>() != null) Debug.Log("ThiefVan şerit sonunda kayboluyor: " + name + " s " + Follower.Distance.ToString("F1") + "/" + Follower.lane.Length.ToString("F1") + " park " + parked + " dışDurak " + externalStopS);
+            // Hırsız kamyoneti hiç park etmeden şeridin sonuna vardıysa bu bir hatadır (normal kalkıştan sonraki kayboluş loglanmaz:
+            // eski "ThiefVan şerit sonunda kayboluyor" satırı her kalkışta yazılıp hata sanılıyordu, 2026-11-05)
+            var thiefVan = GetComponent<ThiefVan>();
+            if (thiefVan != null && !thiefVan.HasParked) Debug.LogWarning("ThiefVan park etmeden şerit sonunda kayboldu: " + name + " faz " + thiefVan.Phase + " s " + Follower.Distance.ToString("F1") + "/" + Follower.lane.Length.ToString("F1") + " dışDurak " + externalStopS);
             Despawned?.Invoke(this);
             Destroy(gameObject);
         }

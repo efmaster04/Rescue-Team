@@ -48,12 +48,15 @@ public static class FieldPayout
         public List<string> lostEquipmentUids = new List<string>();
         public List<string> lostEquipmentNames = new List<string>();
         public float vanDamage;         // sürüş girişi: minibüsün aldığı hasar (%; trafik çarpması, korkuluk / kaya teması)
+        public int thiefRamPenalty;     // hırsız kamyonetinin kötü park etmiş minibüse vuruş cezaları toplamı (₺; ThiefDirector.RamPenaltyTotal)
+        public int thiefRams;           // vuruş sayısı (rapor satırı)
     }
 
     public sealed class Breakdown
     {
         public bool succeeded;
         public int bonus, expenses, stolenGoodsCharge, missedAmbulanceCharge;
+        public int thiefRamCharge, thiefRams; // giderin hırsız kamyoneti vuruşlarından gelen kalemi (₺) ve vuruş sayısı
         public float equipmentWear, vehicleWear;
         public float vanDamage;         // araç aşınmasının sürüş hasarından gelen payı (rapor satırı)
         public List<string> consumedItemUids = new List<string>();
@@ -69,7 +72,9 @@ public static class FieldPayout
         b.bonus = i.succeeded ? Mathf.Clamp(Mathf.RoundToInt(i.rescuedGoodsValue * RescueBonusShare), 0, cap) : 0;
         b.stolenGoodsCharge = Mathf.RoundToInt(i.stolenGoodsValue * StolenGoodsLiability);
         b.missedAmbulanceCharge = i.missedAmbulances * MissedAmbulanceFine;
-        b.expenses = Mathf.Clamp(b.stolenGoodsCharge + b.missedAmbulanceCharge, 0, cap);
+        b.thiefRamCharge = Mathf.Max(0, i.thiefRamPenalty);
+        b.thiefRams = Mathf.Max(0, i.thiefRams);
+        b.expenses = Mathf.Clamp(b.stolenGoodsCharge + b.missedAmbulanceCharge + b.thiefRamCharge, 0, cap);
         b.equipmentWear = Mathf.Clamp(Round1(BaseEquipmentWear + i.coneHits * WearPerConeHit +
             i.equipmentThrows * WearPerEquipmentThrow + i.equipmentRecovered * WearPerEquipmentRecovered), 0f, 100f);
         b.vehicleWear = Mathf.Clamp(Round1(i.distanceKm * 2f * VehicleWearPerKm +
@@ -92,7 +97,8 @@ public static class FieldPayout
         lines.Add("İş bedeli: " + (b.succeeded ? Money(jobPayment) : Money(0) + " (görev başarısız)"));
         lines.Add("Kurtarılan eşya bonusu: +" + Money(b.bonus));
         lines.Add("Giderler: −" + Money(b.expenses) + "  (çalınan eşya " + Money(b.stolenGoodsCharge) +
-                  ", kaçırılan ambulans " + Money(b.missedAmbulanceCharge) + ")");
+                  ", kaçırılan ambulans " + Money(b.missedAmbulanceCharge)
+                  + (b.thiefRamCharge > 0 ? ", hırsız kamyoneti çarpması " + Money(b.thiefRamCharge) + " [" + b.thiefRams + " vuruş, kötü park]" : "") + ")");
         lines.Add("Ekipman aşınması %" + b.equipmentWear.ToString("0.#", Tr) + " · araç aşınması %" + b.vehicleWear.ToString("0.#", Tr)
                   + (b.vanDamage > 0f ? " (sürüş hasarı %" + b.vanDamage.ToString("0.#", Tr) + ")" : ""));
         lines.Add(b.lostNames.Count > 0 ? "Kaybolan ekipman: " + string.Join(", ", b.lostNames) : "Kaybolan ekipman yok");
