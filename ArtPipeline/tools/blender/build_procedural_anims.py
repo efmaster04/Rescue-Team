@@ -1820,16 +1820,16 @@ def tow_pull_pose(P, heave=0.0, s1=0.0):
 
 def tow_sit_ground_pose(P):
     """Tow_Fall_Sit bitişi ve Tow_SitUp başlangıcı: yerde popo üstü oturuş, bacaklar önde, eller yanda."""
-    P.hips((0, 0, -0.282), pitch=-14.0)
+    P.hips((0, 0, -0.265), pitch=-12.0)
     P.spine(pitch=18.0)
     P.neck_head(pitch=8.0)
     for s, side in ((1, 'Left'), (-1, 'Right')):
         P.shrug(side, up=2.0, fwd=4.0)
-        P.arm_ik(side, (s * 0.25, -0.14, 0.34), pole=(s * 1.0, 0.35, 0.10),
+        P.arm_ik(side, (s * 0.25, -0.14, 0.355), pole=(s * 1.0, 0.35, 0.10),
                  hand_dir=Vector((-s * 0.20, -0.90, -0.38)).normalized())
         P.fist(side, 0.35)
-        P.leg(side, (s * 0.18, -0.28, 0.112), pole=(s * 0.55, -0.35, 1.0),
-              pitch=-42.0, yaw=s * 12.0, auto_toe=False)
+        P.leg(side, (s * 0.18, -0.29, 0.128), pole=(s * 0.50, -0.55, 0.85),
+              pitch=-24.0, yaw=s * 12.0, auto_toe=False)
 
 
 def clip_tow_pull(P, t, T):
@@ -1852,13 +1852,13 @@ def clip_tow_fall_sit(P, t, T):
     if t <= 0.10:
         hz = -0.055 + 0.010 * smooth(t / 0.10)
     elif t <= tg:
-        hz = -0.045 + (-0.302 - (-0.045)) * smooth((t - 0.10) / (tg - 0.10))
+        hz = -0.045 + (-0.272 - (-0.045)) * smooth((t - 0.10) / (tg - 0.10))
     elif t <= 0.70:
-        hz = -0.302 + (-0.268 - (-0.302)) * smooth((t - tg) / (0.70 - tg))
+        hz = -0.272 + (-0.255 - (-0.272)) * smooth((t - tg) / (0.70 - tg))
     else:
-        hz = -0.268 + (-0.282 - (-0.268)) * smooth((t - 0.70) / (T - 0.70))
-    hip_pitch = sp(t, [(0.0, 8.0), (0.12, -16.0), (tg, -24.0), (0.70, -10.0), (T, -14.0)])
-    spine_pitch = sp(t, [(0.0, 12.0), (0.12, -14.0), (tg, -14.0), (0.70, 22.0), (T, 18.0)])
+        hz = -0.255 + (-0.265 - (-0.255)) * smooth((t - 0.70) / (T - 0.70))
+    hip_pitch = sp(t, [(0.0, 8.0), (0.12, -14.0), (tg, -20.0), (0.70, -10.0), (T, -12.0)])
+    spine_pitch = sp(t, [(0.0, 12.0), (0.12, -12.0), (tg, -12.0), (0.70, 22.0), (T, 18.0)])
     head_pitch = sp(t, [(0.0, -14.0), (0.12, -18.0), (tg, 20.0), (0.70, 12.0), (T, 8.0)])
     wob = math.sin(TAU * 2.2 * t) * smooth(t / 0.12) * (1.0 - smooth((t - 0.50) / 0.32))
     P.hips((0, 0, hz), pitch=hip_pitch, roll=4.5 * wob, yaw=3.0 * wob)
@@ -1872,7 +1872,7 @@ def clip_tow_fall_sit(P, t, T):
         P.shrug(side, up=up_shrug, fwd=fwd_shrug)
         w0 = Vector((s * 0.105, -0.33 - 0.025 * s, 0.72 - 0.005 * (1 - s)))
         flail = P.head(side + 'Arm') + Vector((s * 0.15, -0.15, 0.13 + 0.03 * s * math.sin(TAU * 3.5 * t)))
-        w_sit = Vector((s * 0.25, -0.14, 0.34))
+        w_sit = Vector((s * 0.25, -0.14, 0.355))
         wrist = w0.lerp(flail, u_flail).lerp(w_sit, u_settle)
         pole = Vector((s * 1.0, 0.25, -0.35)).lerp(Vector((s * 1.0, 0.35, 0.10)), u_settle)
         d0 = Vector((-s * 0.32, -0.94, 0.08)).normalized()
@@ -1886,11 +1886,11 @@ def clip_tow_fall_sit(P, t, T):
     u_pole = smooth(t / 0.28)
     for s, side in ((1, 'Left'), (-1, 'Right')):
         a0 = Vector((s * (FOOT_X + 0.035), -0.025 * s, ANKLE_Z))
-        a_kick = Vector((s * 0.18, -0.26, 0.29 + 0.02 * s))
-        a_sit = Vector((s * 0.18, -0.28, 0.112))
+        a_kick = Vector((s * 0.18, -0.28, 0.26 + 0.015 * s))
+        a_sit = Vector((s * 0.18, -0.29, 0.128))
         ankle = a0.lerp(a_kick, u_kick).lerp(a_sit, u_leg_down)
-        lp = Vector((s * 0.50, -1.0, 0.10)).lerp(Vector((s * 0.55, -0.35, 1.0)), u_pole)
-        fp = (-56.0 * u_kick) * (1.0 - u_leg_down) + (-42.0) * u_leg_down
+        lp = Vector((s * 0.50, -1.0, 0.10)).lerp(Vector((s * 0.50, -0.55, 0.85)), u_pole)
+        fp = (-36.0 * u_kick) * (1.0 - u_leg_down) + (-24.0) * u_leg_down
         fyaw = s * (14.0 * (1.0 - u_pole) + 12.0 * u_pole)
         P.leg(side, ankle, pole=lp, pitch=fp, yaw=fyaw, auto_toe=False)
 
@@ -1903,10 +1903,10 @@ def clip_tow_situp(P, t, T):
     if t >= T - 1e-6:
         tow_pull_pose(P, 0.0, 0.0)
         return
-    hz = sp(t, [(0.0, -0.282), (0.18, -0.265), (0.42, -0.185), (0.66, -0.068), (T, -0.055)])
-    hip_pitch = sp(t, [(0.0, -14.0), (0.28, 22.0), (0.55, 14.0), (T, 8.0)])
-    spine_pitch = sp(t, [(0.0, 18.0), (0.28, 24.0), (0.55, 16.0), (T, 12.0)])
-    head_pitch = sp(t, [(0.0, 8.0), (0.28, -22.0), (0.55, -18.0), (T, -14.0)])
+    hz = sp(t, [(0.0, -0.265), (0.20, -0.205), (0.42, -0.115), (0.64, -0.064), (T, -0.055)])
+    hip_pitch = sp(t, [(0.0, -12.0), (0.25, -2.0), (0.52, 10.0), (T, 8.0)])
+    spine_pitch = sp(t, [(0.0, 18.0), (0.26, 28.0), (0.52, 18.0), (T, 12.0)])
+    head_pitch = sp(t, [(0.0, 8.0), (0.26, -20.0), (0.52, -16.0), (T, -14.0)])
     P.hips((0, 0, hz), pitch=hip_pitch)
     P.spine(pitch=spine_pitch)
     P.neck_head(pitch=head_pitch)
@@ -1914,22 +1914,23 @@ def clip_tow_situp(P, t, T):
     u_push = math.sin(PI * clamp(t / 0.45, 0.0, 1.0))
     for s, side in ((1, 'Left'), (-1, 'Right')):
         P.shrug(side, up=2.0 + 2.0 * u_arm, fwd=4.0 + 8.0 * u_arm)
-        w_sit = Vector((s * 0.25, -0.14, 0.34))
+        w_sit = Vector((s * 0.25, -0.14, 0.355))
         w_pull = Vector((s * 0.105, -0.33 - 0.025 * s, 0.72 - 0.005 * (1 - s)))
-        wrist = w_sit.lerp(w_pull, u_arm) + Vector((s * 0.03, -0.04, -0.03)) * u_push
+        wrist = w_sit.lerp(w_pull, u_arm) + Vector((s * 0.03, -0.04, -0.02)) * u_push
         pole = Vector((s * 1.0, 0.35, 0.10)).lerp(Vector((s * 1.0, 0.25, -0.35)), u_arm)
         d_sit = Vector((-s * 0.20, -0.90, -0.38)).normalized()
         d_pull = Vector((-s * 0.32, -0.94, 0.08)).normalized()
         d = d_sit.lerp(d_pull, u_arm).normalized()
         P.arm_ik(side, wrist, pole=pole, hand_dir=d)
         P.fist(side, 0.35 + 0.55 * u_arm)
-    u_tuck = smooth(t / 0.42)
+    u_tuck = smooth(t / 0.56)
+    u_pole = smooth(t / 0.32)
     for s, side in ((1, 'Left'), (-1, 'Right')):
-        a_sit = Vector((s * 0.18, -0.28, 0.112))
+        a_sit = Vector((s * 0.18, -0.29, 0.128))
         a_stand = Vector((s * (FOOT_X + 0.035), -0.025 * s, ANKLE_Z))
-        ankle = a_sit.lerp(a_stand, u_tuck) + Vector((0.0, 0.0, 0.045 * math.sin(PI * u_tuck)))
-        lp = Vector((s * 0.55, -0.35, 1.0)).lerp(Vector((s * 0.50, -1.0, 0.10)), u_tuck)
-        fp = -42.0 * (1.0 - u_tuck)
+        ankle = a_sit.lerp(a_stand, u_tuck) + Vector((0.0, 0.0, 0.012 * math.sin(PI * u_tuck)))
+        lp = Vector((s * 0.50, -0.55, 0.85)).lerp(Vector((s * 0.50, -1.0, 0.10)), u_pole)
+        fp = -24.0 * (1.0 - u_tuck)
         fyaw = s * (12.0 * (1.0 - u_tuck) + 14.0 * u_tuck)
         P.leg(side, ankle, pole=lp, pitch=fp, yaw=fyaw, auto_toe=False)
 
