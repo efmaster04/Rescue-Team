@@ -106,9 +106,9 @@ public sealed class CarryHandIK : MonoBehaviour
 
     private bool InCarryLoop()
     {
-        var st = animator.GetCurrentAnimatorStateInfo(0);
-        if (IsCarryLoop(st)) return true;
-        return animator.IsInTransition(0) && IsCarryLoop(animator.GetNextAnimatorStateInfo(0));
+        // Geçişte hedef durum belirler: yumruğa geçerken eller şimdiden klibe döner
+        if (animator.IsInTransition(0)) return IsCarryLoop(animator.GetNextAnimatorStateInfo(0));
+        return IsCarryLoop(animator.GetCurrentAnimatorStateInfo(0));
     }
 
     private static bool IsCarryLoop(AnimatorStateInfo st)
@@ -203,11 +203,14 @@ public sealed class CarryHandIK : MonoBehaviour
         float halfW = Mathf.Max(0.04f, size.x * 0.5f), height = Mathf.Max(0.02f, size.y), depth = Mathf.Max(0.02f, size.z);
         bool side = halfW <= sideGripMaxHalfWidth || height > underGripMaxHeight;
         SideGrip = side;
-        float gripBelowCenter = side ? height * sideGripDrop : height * 0.5f + palmLift;
+        float fp = OrbitCamera.FirstPersonBlendFor(transform);
+        // FP: eller eşyanın üst kenarında, eşya aşağıda sarkar: aşağı bakınca ekran merkezini kapatmaz (kullanıcı isteği 2026-11-05)
+        float gripBelowCenter = Mathf.Lerp(side ? height * sideGripDrop : height * 0.5f + palmLift, -(height * 0.5f - 0.03f), fp);
         Vector3 l0 = Palm(HumanBodyBones.LeftHand), r0 = Palm(HumanBodyBones.RightHand);
         Vector3 mid0 = (l0 + r0) * 0.5f;
 
-        if (!loop && !FollowsClipHands() && homeKnown)
+        // Eylem sürerken ve döngüye dönerken (IK ağırlığı dolana kadar) eşya gövdeye göre sabit
+        if ((!loop || Weight < 0.99f) && !FollowsClipHands() && homeKnown)
         {
             // Yumruk, darbe tepkisi: eşya gövdeye göre yerinde, sol el üstünde; sağ el klibi oynar
             Vector3 home = transform.TransformPoint(homeLocal);
@@ -227,11 +230,8 @@ public sealed class CarryHandIK : MonoBehaviour
         float hz = Mathf.Clamp(bodyFront + depth * 0.5f, z0 - 0.05f, z0 + 0.01f);
         // Yükseklik: eşya merkezi sınıf aralığında, tepesi çene altında; klipteki yaylanma korunur (eşya canlı sallanır)
         Vector2 range = heavy ? heavyCenterHeight : mediumCenterHeight;
-        // FP: eller eşyanın üst kenarında, eşya aşağıda sarkar: aşağı bakınca ekran merkezini kapatmaz (kullanıcı isteği 2026-11-05)
         var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
         float bodyDrop = hips != null ? standingHipHeight - (hips.position.y - root.y) : 0f; // eğilme, yürüyüş: +; zıplama: −
-        float fp = OrbitCamera.FirstPersonBlendFor(transform);
-        gripBelowCenter = Mathf.Lerp(gripBelowCenter, -(height * 0.5f - 0.03f), fp);
         float y0 = mid0.y - root.y;
         float top = Mathf.Min(range.y, maxTopHeight - height * 0.5f);
         float bottomLimit = Mathf.Lerp(Mathf.Min(range.x, top), -10f, fp);

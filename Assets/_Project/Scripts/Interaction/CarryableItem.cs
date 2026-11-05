@@ -80,7 +80,10 @@ namespace CompanySim
                 }
             }
             if(min.x>max.x) return;
-            visualSize=max-min; visualCenter=(min+max)*.5f;
+            // Mesh sınırı okunamadıysa (0 boyut) collider ölçüsü kalır
+            Vector3 measured=max-min;
+            if(measured.x<.02f||measured.y<.02f||measured.z<.02f) return;
+            visualSize=measured; visualCenter=(min+max)*.5f;
         }
 
         void Awake()

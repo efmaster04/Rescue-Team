@@ -467,6 +467,29 @@ public static class CarryClassVerify
         bool jumpOk = cls == CarryClass.Heavy ? maxY - y0 < 0.05f && crew.CarriedJumps == jumps0 : maxY - y0 > 0.4f && crew.CarriedJumps == jumps0 + 1 && loopInAir && airGrip < GripLimit;
         yield return Seconds(0.5f);
 
+        // Yumruk (orta / ağır): eşya gövdeye göre yerinde, sol el üstünde, sağ el klibi oynar
+        var combat = player.GetComponent<PlayerCombat>();
+        if (combat != null && cls != CarryClass.Light)
+        {
+            Vector3 before = player.transform.InverseTransformPoint(ik.LastCenter);
+            if (combat.Attack())
+            {
+                float drift = 0f, leftGrip = 0f;
+                bool punchState = false;
+                t0 = Time.time;
+                while (Time.time - t0 < 0.3f)
+                {
+                    yield return null;
+                    drift = Mathf.Max(drift, Vector3.Distance(before, player.transform.InverseTransformPoint(ik.LastCenter)));
+                    leftGrip = Mathf.Max(leftGrip, ik.GripErrorLeft);
+                    punchState |= crew.InState(PlayerCombat.StatePunchJab);
+                }
+                Check("(" + label + ") yumruk: eşya yerinde, sol el üstünde", punchState && drift < 0.05f && leftGrip < GripLimit, "durum " + punchState + ", kayma " + Cm(drift) + ", sol el " + Cm(leftGrip));
+                yield return Seconds(0.5f);
+            }
+            else Line("  (" + label + ") yumruk atılamadı: " + combat.LastRejectReason);
+        }
+
         // Eğilme: ağırda yok
         player.SetCrouchInput(true);
         yield return Seconds(0.15f);
