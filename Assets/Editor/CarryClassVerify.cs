@@ -244,7 +244,9 @@ public static class CarryClassVerify
             var item = l;
             if (!item.CanPickUp) { Line("  atlandı (alınamaz): " + item.name); continue; }
             Vector3 at = item.transform.position;
-            yield return TestItem(item.name.Replace("SM_B1_Prop_", ""), item.CarryClass, () => { player.HeldValuable = item; item.PickUp(player); }, () => { player.HeldValuable = null; item.Drop(startPos + player.transform.right * 3f, 0f); },
+            // Sınıf beklentisi sabit: Valiz ve Çanta orta (valiz kullanıcı kararı), hasta eşyası hafif
+            CarryClass wantClass = item.kind == LootKind.Luggage ? CarryClass.Medium : CarryClass.Light;
+            yield return TestItem(item.name.Replace("SM_B1_Prop_", ""), wantClass, () => { player.HeldValuable = item; item.PickUp(player); }, () => { player.HeldValuable = null; item.Drop(startPos + player.transform.right * 3f, 0f); },
                 () => item.GetComponentsInChildren<Renderer>());
         }
 

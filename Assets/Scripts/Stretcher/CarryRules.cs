@@ -43,7 +43,8 @@ public class CarryRules : ScriptableObject
     [Tooltip("Kangalla Shift'te hız (m/sn; Carry_Coil_Run 2.8). Kangalla zıplama yine yok.")]
     public float coilRunSpeed = 2.8f;
     [Tooltip("Kimliğe göre sınıf istisnası (EquipmentDefinition.id ya da eşya adı).")]
-    public ClassOverride[] classOverrides = new ClassOverride[0];
+    // Valiz boyuta göre ağır çıkıyor; kullanıcı kararı (2026-11-05, tablo onayı): orta sınıf, iki el, 2.0 / 2.6, koşu ve zıplama serbest.
+    public ClassOverride[] classOverrides = new[] { new ClassOverride { id = "Valiz", carryClass = CarryClass.Medium } };
 
     [System.Serializable]
     public class ClassOverride { public string id; public CarryClass carryClass = CarryClass.Light; }
