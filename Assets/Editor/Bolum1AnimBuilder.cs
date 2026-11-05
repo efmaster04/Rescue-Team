@@ -66,12 +66,13 @@ public static class Bolum1AnimBuilder
     // =====================================================================================
 
     // walkSpeed: normal yürüme (koni taşırken de); carryStretcherSpeed: sedye taşırken yürüme hızı (m/sn).
-    public static void AddCrewStates(AnimatorController ac, AnimatorState locomotion, float walkSpeed, float carryStretcherSpeed)
+    // resetPatient: tam kurulumda hasta Animator'ı da baştan kurulur; RebuildCrewController yalnız ekip Animator'ına dokunur.
+    public static void AddCrewStates(AnimatorController ac, AnimatorState locomotion, float walkSpeed, float carryStretcherSpeed, bool resetPatient = true)
     {
         report.Length = 0;
         EnsureClipImports();
         // Hasta Animator'ı da her kurulumda baştan kurulur (ilk PatientController çağrısı oluşturur).
-        if (AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientLyingControllerPath) != null) AssetDatabase.DeleteAsset(PatientLyingControllerPath);
+        if (resetPatient && AssetDatabase.LoadAssetAtPath<AnimatorController>(PatientLyingControllerPath) != null) AssetDatabase.DeleteAsset(PatientLyingControllerPath);
         ac.AddParameter(CrewAnimation.ParamCarry, AnimatorControllerParameterType.Int);
         ac.AddParameter(CrewAnimation.ParamReviving, AnimatorControllerParameterType.Bool);
         foreach (var t in new[] { CrewAnimation.TriggerPickUp, CrewAnimation.TriggerPutDown, CrewAnimation.TriggerJump, CrewAnimation.TriggerStartled, CrewAnimation.TriggerCelebrate })
@@ -79,17 +80,22 @@ public static class Bolum1AnimBuilder
         ac.AddParameter(CrewAnimation.ParamRope, AnimatorControllerParameterType.Int);
         ac.AddParameter(CrewAnimation.ParamPulling, AnimatorControllerParameterType.Bool);
         ac.AddParameter(CrewAnimation.ParamAction, AnimatorControllerParameterType.Bool);
+        // Durum hızı çarpanları: varsayılan 1 (0 kalırsa durum donar)
+        ac.AddParameter(new AnimatorControllerParameter { name = CrewAnimation.ParamCarryRate, type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
 
         var sm = ac.layers[0].stateMachine;
         locomotion.name = CrewAnimation.StateLocomotion;
         var carryStretcher = CarryState(ac, sm, CrewAnimation.StateCarryStretcher, "Carry_Stretcher_Walk", carryStretcherSpeed, new Vector3(300f, 120f));
-        var carryCone = CarryState(ac, sm, CrewAnimation.StateCarryCone, "Carry_OneHand_Walk", walkSpeed, new Vector3(300f, 220f));
+        // Taşıma sınıfları: hafif (tek el), orta (iki el), ağır (kucakta); her biri kendi bekleme / yürüme / koşu klibiyle
+        var carryCone = ClassCarryState(ac, sm, CrewAnimation.StateCarryCone, "Carry_OneHand_Idle", "Carry_OneHand_Walk", "Carry_OneHand_Run", false, new Vector3(300f, 220f));
+        var carryTwoHand = ClassCarryState(ac, sm, CrewAnimation.StateCarryTwoHand, "Carry_TwoHand_Idle", "Carry_TwoHand_Walk", "Carry_TwoHand_Run", true, new Vector3(300f, 620f));
+        var carryHeavy = ClassCarryState(ac, sm, CrewAnimation.StateCarryHeavy, "Carry_Heavy_Idle", "Carry_Heavy_Walk", null, true, new Vector3(300f, 720f));
         // D2: sırtta hastayla yürüyüş (Piggyback_Walk 1.2 m/sn'de ×1, beklerken yavaşlatılmış)
         var carryPiggyback = CarryState(ac, sm, CrewAnimation.StateCarryPiggyback, "Piggyback_Walk", PiggybackSpeed, new Vector3(300f, 320f));
         var carryFront = CarryState(ac, sm, CrewAnimation.StateCarryStretcherFront, "Carry_Stretcher_Front_Walk", carryStretcherSpeed, new Vector3(300f, 420f));
-        // U2: kangal taşıma — ayrı bekleme ve yürüyüş klipleri (Carry_Coil_Idle 0, Carry_Coil_Walk 2.4 m/sn ×1); koşu yok
+        // U2: kangal taşıma — ayrı bekleme, yürüyüş ve koşu klipleri (Carry_Coil_Idle 0, Carry_Coil_Walk 2.4, Carry_Coil_Run 2.8 m/sn ×1)
         var carryCoil = CoilCarryState(ac, sm, walkSpeed, new Vector3(300f, 520f));
-        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback, carryFront, carryCoil }; // dizin = Carry parametresi
+        var loops = new[] { locomotion, carryStretcher, carryCone, carryPiggyback, carryFront, carryCoil, carryTwoHand, carryHeavy }; // dizin = Carry parametresi
 
         // Döngüler arası (Carry değişince; AnyState tetikleyicileri önceliklidir)
         for (int a = 0; a < loops.Length; a++)
@@ -112,7 +118,8 @@ public static class Bolum1AnimBuilder
         ReturnByCarry(putDown, loops, 0.85f, 0.15f);
 
         var jump = OneShot(sm, CrewAnimation.StateJump, "Jump", 1f, new Vector3(560f, 120f));
-        AnyTo(sm, jump, CrewAnimation.TriggerJump, 0.08f);
+        // Fizik zıplaması tuşla başlar, uçuş ~0.57 sn: klibin çömelme hazırlığı atlanır (iniş çömelmesi yere değişe denk gelir)
+        AnyTo(sm, jump, CrewAnimation.TriggerJump, 0.08f).offset = 0.125f;
         ReturnByCarry(jump, loops, 0.85f, 0.15f);
 
         var startled = OneShot(sm, CrewAnimation.StateStartled, "Startled", 1f, new Vector3(560f, 180f));
@@ -175,6 +182,7 @@ public static class Bolum1AnimBuilder
         }
         AddRescueStates(sm, loops);
         AddSeatedStates(ac, sm, loops);
+        AddLowerBodyLayer(ac);
         AddCrouchLayer(ac);
         EditorUtility.SetDirty(ac);
         Line("Ekip Animator'ı: " + AssetDatabase.GetAssetPath(ac) + " → " + string.Join(", ", sm.states.Select(s => s.state.name))
@@ -190,13 +198,50 @@ public static class Bolum1AnimBuilder
     public const string CrouchStateName = "Crouch";
     // Taşıma döngüleri Carry parametresi sırasıyla (AddCrewStates'teki loops dizisi)
     private static readonly string[] LoopStateNames = { CrewAnimation.StateLocomotion, CrewAnimation.StateCarryStretcher, CrewAnimation.StateCarryCone,
-        CrewAnimation.StateCarryPiggyback, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCoil };
+        CrewAnimation.StateCarryPiggyback, CrewAnimation.StateCarryStretcherFront, CrewAnimation.StateCarryCoil, CrewAnimation.StateCarryTwoHand, CrewAnimation.StateCarryHeavy };
 
     // Punch_Jab: yalnız kodla (PlayerCombat → PlayAction); bitince taşımaya göre döngüye.
     private static void AddPunchState(AnimatorStateMachine sm, AnimatorState[] loops)
     {
         var punch = OneShot(sm, PlayerCombat.StatePunchJab, "Punch_Jab", 1f, new Vector3(560f, 840f));
         ReturnByCarry(punch, loops, 0.9f, 0.12f);
+    }
+
+    // Alt gövde katmanı (taşıma revizyonu): eğilmeyle aynı maske (gövde + baş + bacaklar; kollar taban katmandan: taşıma pozu ve IK bozulmaz).
+    // "Strafe": MoveX / MoveY ile Strafe_Left, Strafe_Right, Walk_Back; oynatma hızı StrafeRate (gerçek hız / 1.6: ayak kaymaz).
+    // "Jump": elde eşyayla zıplama (taban katman taşıma döngüsünde kalır). Ağırlığı CrewAnimation yazar, varsayılan 0.
+    private static void AddLowerBodyLayer(AnimatorController ac)
+    {
+        ac.AddParameter(CrewAnimation.ParamMoveX, AnimatorControllerParameterType.Float);
+        ac.AddParameter(CrewAnimation.ParamMoveY, AnimatorControllerParameterType.Float);
+        ac.AddParameter(new AnimatorControllerParameter { name = CrewAnimation.ParamStrafeRate, type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
+        ac.AddLayer(CrewAnimation.LowerBodyLayerName);
+        var layers = ac.layers;
+        int i = layers.Length - 1;
+        layers[i].defaultWeight = 0f;
+        layers[i].blendingMode = AnimatorLayerBlendingMode.Override;
+        layers[i].avatarMask = CrouchMask();
+        layers[i].iKPass = false;
+        ac.layers = layers;
+        var lsm = ac.layers[i].stateMachine;
+        var tree = new BlendTree { name = CrewAnimation.StateLowerStrafe + "_Blend", blendType = BlendTreeType.FreeformDirectional2D, blendParameter = CrewAnimation.ParamMoveX, blendParameterY = CrewAnimation.ParamMoveY, useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
+        AssetDatabase.AddObjectToAsset(tree, ac);
+        tree.children = new[]
+        {
+            new ChildMotion { motion = Clip("Strafe_Left"), position = new Vector2(-1f, 0f), timeScale = 1f },
+            new ChildMotion { motion = Clip("Strafe_Right"), position = new Vector2(1f, 0f), timeScale = 1f },
+            new ChildMotion { motion = Clip("Walk_Back"), position = new Vector2(0f, -1f), timeScale = 1f },
+        };
+        var strafe = lsm.AddState(CrewAnimation.StateLowerStrafe, new Vector3(300f, 120f));
+        strafe.motion = tree;
+        strafe.speedParameterActive = true;
+        strafe.speedParameter = CrewAnimation.ParamStrafeRate;
+        lsm.defaultState = strafe;
+        var jump = lsm.AddState(CrewAnimation.StateJump, new Vector3(300f, 220f));
+        jump.motion = Clip("Jump");
+        var back = jump.AddTransition(strafe);
+        back.hasExitTime = true; back.exitTime = 0.93f; back.duration = 0.05f; back.hasFixedDuration = true;
+        Line("Alt gövde katmanı: " + CrewAnimation.LowerBodyLayerName + " (Override, maske " + CrouchMaskPath + "): Strafe_Left/Right + Walk_Back (" + CrewAnimation.ParamMoveX + "/" + CrewAnimation.ParamMoveY + ", hız " + CrewAnimation.ParamStrafeRate + "), Jump");
     }
 
     // Eğilme katmanı: Override, maske = gövde (kalça dahil) + baş + bacaklar (kollar ve parmaklar hariç). Tek durum: Speed ile
@@ -248,48 +293,57 @@ public static class Bolum1AnimBuilder
         return m;
     }
 
-    // Var olan AC_Crew_Locomotion'a yalnız yumruk durumunu ve eğilme katmanını (yeniden) ekler; sahne ve öbür asset'ler yeniden
-    // kurulmaz (tam kurulum AddCrewStates ile aynı sonucu verir). Batchmode: -executeMethod Bolum1AnimBuilder.UpgradeCrewControllerBatch
-    public static void UpgradeCrewControllerBatch()
+    // AC_Crew_Locomotion'ı yerinde baştan kurar (asset GUID'i aynı kalır): Bölüm 1 ve ofis-garaj sahneleri / prefab'ları yeniden üretilmez,
+    // yalnız controller dosyası değişir. Tam kurulum (BuildLocomotionController → AddCrewStates) ile aynı içerik.
+    // Batchmode: -executeMethod Bolum1AnimBuilder.RebuildCrewControllerBatch
+    public static void RebuildCrewControllerBatch()
     {
         try
         {
-            UpgradeCrewController();
+            RebuildCrewController();
             Debug.Log(report.ToString());
-            Debug.Log("CREW CONTROLLER UPGRADE OK");
+            Debug.Log("CREW CONTROLLER REBUILD OK");
             EditorApplication.Exit(0);
         }
         catch (Exception e)
         {
-            Debug.LogError("CREW CONTROLLER UPGRADE FAILED: " + e);
+            Debug.LogError("CREW CONTROLLER REBUILD FAILED: " + e);
             EditorApplication.Exit(1);
         }
     }
 
-    public static void UpgradeCrewController()
+    public static void RebuildCrewController()
     {
-        report.Length = 0;
         EnsureClipImports();
         var ac = AssetDatabase.LoadAssetAtPath<AnimatorController>(Bolum1AmbulanceBuilder.LocomotionControllerPath);
         if (ac == null) throw new Exception("Ekip Animator'ı yok: " + Bolum1AmbulanceBuilder.LocomotionControllerPath);
+        for (int i = ac.layers.Length - 1; i >= 1; i--) ac.RemoveLayer(i);
         var sm = ac.layers[0].stateMachine;
-        var old = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == PlayerCombat.StatePunchJab);
-        if (old != null) sm.RemoveState(old);
-        for (int i = ac.layers.Length - 1; i >= 1; i--)
+        foreach (var t in sm.anyStateTransitions) sm.RemoveAnyStateTransition(t);
+        foreach (var cs in sm.states) sm.RemoveState(cs.state);
+        foreach (var o in AssetDatabase.LoadAllAssetsAtPath(Bolum1AmbulanceBuilder.LocomotionControllerPath))
+            if (o is BlendTree) UnityEngine.Object.DestroyImmediate(o, true);
+        foreach (var p in ac.parameters) ac.RemoveParameter(p);
+        Func<string, AnimationClip> first = path =>
         {
-            if (ac.layers[i].name != ThirdPersonPlayer.CrouchLayerName) continue;
-            foreach (var cs in ac.layers[i].stateMachine.states)
-                if (cs.state.motion is BlendTree bt && AssetDatabase.IsSubAsset(bt)) UnityEngine.Object.DestroyImmediate(bt, true);
-            ac.RemoveLayer(i);
-        }
-        var loops = LoopStateNames.Select(n =>
-        {
-            var st = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == n);
-            if (st == null) throw new Exception("Döngü durumu yok: " + n);
-            return st;
-        }).ToArray();
-        AddPunchState(sm, loops);
-        AddCrouchLayer(ac);
+            var c = AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
+            var clip = c != null ? c.animationClips.FirstOrDefault() : null;
+            if (clip == null) throw new Exception("Klip bulunamadı: " + path);
+            return clip;
+        };
+        var idle = first("Assets/Animations/RescueCrew/Controllers/AC_RescueCrew_Idle.controller");
+        var walk = first("Assets/Animations/RescueCrew/Controllers/AC_RescueCrew_Walking.controller");
+        var run = first("Assets/Animations/RescueCrew/Controllers/AC_RescueCrew_Running.controller");
+        ac.AddParameter("Speed", AnimatorControllerParameterType.Float);
+        var state = ac.CreateBlendTreeInController("Locomotion", out BlendTree tree, 0);
+        tree.blendType = BlendTreeType.Simple1D;
+        tree.blendParameter = "Speed";
+        tree.useAutomaticThresholds = false;
+        tree.AddChild(idle, 0f);
+        tree.AddChild(walk, Bolum1AmbulanceBuilder.WalkThreshold);
+        tree.AddChild(run, Bolum1AmbulanceBuilder.RunThreshold);
+        ac.layers[0].stateMachine.defaultState = state;
+        AddCrewStates(ac, state, Bolum1AmbulanceBuilder.PlayerMoveSpeed, Bolum1AmbulanceBuilder.PlayerCarryStretcherSpeed, false);
         EditorUtility.SetDirty(ac);
         AssetDatabase.SaveAssets();
     }
@@ -418,23 +472,46 @@ public static class Bolum1AnimBuilder
             new ChildMotion { motion = clip, threshold = 0f, timeScale = CarryIdleScale },
             new ChildMotion { motion = clip, threshold = walkSpeed, timeScale = CarryWalkScale },
         };
-        if (name == CrewAnimation.StateCarryCone)
-            tree.children = new[] { tree.children[0], tree.children[1], new ChildMotion { motion = clip, threshold = 3.2f, timeScale = CarryWalkScale * 3.2f / walkSpeed } };
         var st = sm.AddState(name, pos);
         st.motion = tree;
         return st;
     }
 
     // U2: kangal taşıma döngüsü — hız 0'da Carry_Coil_Idle, yürüme hızında Carry_Coil_Walk (ikisi de yazıldığı hızda ×1).
+    // Taşıma sınıfı döngüsü: Speed 0 bekleme, yürüme hızında yürüyüş, varsa koşu hızında koşu (hepsi yazıldığı hızda ×1, eşikler clips_meta'dan).
+    // rateParam: orta / ağırda durum hızı CarryRate (CarryRules hızı değişirse ayak kaymasın).
+    private static AnimatorState ClassCarryState(AnimatorController ac, AnimatorStateMachine sm, string name, string idleClip, string walkClip, string runClip, bool rateParam, Vector3 pos)
+    {
+        var tree = new BlendTree { name = name + "_Blend", blendType = BlendTreeType.Simple1D, blendParameter = "Speed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
+        AssetDatabase.AddObjectToAsset(tree, ac);
+        var kids = new List<ChildMotion>
+        {
+            new ChildMotion { motion = Clip(idleClip), threshold = 0f, timeScale = 1f },
+            new ChildMotion { motion = Clip(walkClip), threshold = MetaFloat(walkClip, "target_speed_mps", 2.4f), timeScale = 1f },
+        };
+        if (runClip != null) kids.Add(new ChildMotion { motion = Clip(runClip), threshold = MetaFloat(runClip, "target_speed_mps", 3.2f), timeScale = 1f });
+        tree.children = kids.ToArray();
+        var st = sm.AddState(name, pos);
+        st.motion = tree;
+        if (rateParam)
+        {
+            st.speedParameterActive = true;
+            st.speedParameter = CrewAnimation.ParamCarryRate;
+        }
+        return st;
+    }
+
     private static AnimatorState CoilCarryState(AnimatorController ac, AnimatorStateMachine sm, float walkSpeed, Vector3 pos)
     {
         var tree = new BlendTree { name = CrewAnimation.StateCarryCoil + "_Blend", blendType = BlendTreeType.Simple1D, blendParameter = "Speed", useAutomaticThresholds = false, hideFlags = HideFlags.HideInHierarchy };
         AssetDatabase.AddObjectToAsset(tree, ac);
         float coilWalk = MetaFloat("Carry_Coil_Walk", "target_speed_mps", walkSpeed);
+        float coilRun = MetaFloat("Carry_Coil_Run", "target_speed_mps", 2.8f);
         tree.children = new[]
         {
             new ChildMotion { motion = Clip("Carry_Coil_Idle"), threshold = 0f, timeScale = 1f },
             new ChildMotion { motion = Clip("Carry_Coil_Walk"), threshold = coilWalk, timeScale = 1f },
+            new ChildMotion { motion = Clip("Carry_Coil_Run"), threshold = coilRun, timeScale = 1f },
         };
         var st = sm.AddState(CrewAnimation.StateCarryCoil, pos);
         st.motion = tree;
@@ -449,7 +526,7 @@ public static class Bolum1AnimBuilder
         return st;
     }
 
-    private static void AnyTo(AnimatorStateMachine sm, AnimatorState st, string trigger, float duration)
+    private static AnimatorStateTransition AnyTo(AnimatorStateMachine sm, AnimatorState st, string trigger, float duration)
     {
         var t = sm.AddAnyStateTransition(st);
         t.canTransitionToSelf = false;
@@ -457,6 +534,7 @@ public static class Bolum1AnimBuilder
         t.duration = duration;
         t.hasFixedDuration = true;
         t.AddCondition(AnimatorConditionMode.If, 0f, trigger);
+        return t;
     }
 
     private static void ReturnByCarry(AnimatorState from, AnimatorState[] loops, float exitTime, float duration)

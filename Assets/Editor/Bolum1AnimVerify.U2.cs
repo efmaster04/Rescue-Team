@@ -8,7 +8,7 @@ using UnityEngine;
 //  (U2-1) başlangıç: kazık boş (SM_RopeAnchor_Bare), halat çizilmiyor, bağlanılamıyor; kangal kapalı L1 dolabında
 //  (U2-2) dolap: uzakta / sırtı dönük ipucu yok; ≤ 1 m yüz dönük "E: Dolabı aç" + kapak vurgusu; 0.4 sn'de açılır;
 //         açıkken "E: Halatı al" + kangal vurgusu; Cabinet_TakeCoil, grab karesinden sonra kangal ellerde; "E: Dolabı kapat"
-//  (U2-3) taşıma: Carry_Coil_Walk, Shift'le 2.4 m/sn (koşu yok), zıplama yok, kangal ellerde ≤ 3 cm; bırak (yerde, vurgu yok) / yerden al (PickUp)
+//  (U2-3) taşıma: Shift'le Carry_Coil_Run 2.8 m/sn (kullanıcı isteği 2026-11-05: "kangalla koşu yok" sert bulundu), zıplama yok, kangal ellerde ≤ 3 cm; bırak (yerde, vurgu yok) / yerden al (PickUp)
 //  (U2-4) kazık: uzak / sırtı dönük bağlama ipucu yok; ≤ 1 m yüz dönük "E: Halatı kazığa bağla" + kazık vurgusu; Rope_TieStake;
 //         kangal yerde aralığında kazık yanında dik; sonunda bağlı (Tied), kangal ellerde, çizgi kazıktan kangala
 //  (U2-5) atış: yanlış yönde ipucu yok; kenara dönük "E: Halatı at" + kazık vurgusu; Rope_Throw; kangal uçar (çizgi uzar);
@@ -212,12 +212,12 @@ public static partial class Bolum1AnimVerify
         yield return Capture("u2_tasima", Player.transform.position + Vector3.forward * 2.6f + Vector3.right * 1.2f + Vector3.up * 1.3f, Player.transform.position + Vector3.up * 0.8f, 45f);
         Player.SetMoveInput(Vector2.zero);
         yield return Seconds(0.3f);
-        Check("(U2-3) kangal taşıma: Carry_Coil_Walk, Shift basılıyken 2.4 m/sn (koşu yok), zıplama yok, kangal iki avuçta (tutuş hatası ≤ 3 cm), beklerken CarryCoil",
-            heldBefore && Mathf.Abs(vWalk - Player.moveSpeed) < 0.08f && walkState > walkFrames * 0.9f && maxRise < 0.05f && worstGrip <= 0.03f && idleGrip <= 0.03f && idleState && local.z > 0.15f && local.y > 0.5f,
-            "hız " + vWalk.ToString("F3", Inv) + " m/sn (istenen " + Player.moveSpeed.ToString(Inv) + ", koşu " + Player.runSpeed.ToString(Inv) + "), CarryCoil kare oranı " + walkState + "/" + walkFrames
+        Check("(U2-3) kangal taşıma: Shift basılıyken Carry_Coil_Run 2.8 m/sn (taşıma revizyonu: kangalla kısa koşu var), zıplama yok, kangal iki avuçta (tutuş hatası ≤ 3 cm), beklerken CarryCoil",
+            heldBefore && Mathf.Abs(vWalk - Player.Rules.coilRunSpeed) < 0.08f && walkState > walkFrames * 0.9f && maxRise < 0.05f && worstGrip <= 0.03f && idleGrip <= 0.03f && idleState && local.z > 0.15f && local.y > 0.5f,
+            "hız " + vWalk.ToString("F3", Inv) + " m/sn (istenen " + Player.Rules.coilRunSpeed.ToString(Inv) + "), CarryCoil kare oranı " + walkState + "/" + walkFrames
             + ", zıplama yükselmesi " + Cm(maxRise) + ", tutuş hatası yürürken " + Cm(worstGrip) + " / beklerken " + Cm(idleGrip) + ", bekleme durumu " + idleState
             + ", kangal kök uzayında " + V(local));
-        CheckFootSlide("(U2-3b) ÖLÇÜM Carry_Coil_Walk ayak kayması (2.4 m/sn)", meter, Mathf.Abs(vWalk - Player.moveSpeed) < 0.08f, "hız " + vWalk.ToString("F3", Inv) + " m/sn");
+        CheckFootSlide("(U2-3b) ÖLÇÜM Carry_Coil_Run ayak kayması (2.8 m/sn)", meter, Mathf.Abs(vWalk - Player.Rules.coilRunSpeed) < 0.08f, "hız " + vWalk.ToString("F3", Inv) + " m/sn");
     }
 
     // ---- (U2-4) kazığa bağlama ----

@@ -325,8 +325,8 @@ public static class OfficeGarageVerify
             bool held = toolbox != null && bridge.HeldItem == toolbox && ReferenceEquals(player.HeldProp, bridge) && toolbox.transform.IsChildOf(player.transform);
             var crew = player.GetComponent<CrewAnimation>();
             yield return Seconds(0.3f);
-            Check("(4a) alet çantası: hedeflenir, E ile ele alınır (köprü HeldItem, oyuncu HeldProp, eşya karakterin altında), tek el taşıma pozu (Carry 2)",
-                tbReached && held && crew != null && crew.Carry == 2,
+            Check("(4a) alet çantası: hedeflenir, E ile ele alınır (köprü HeldItem, oyuncu HeldProp, eşya karakterin altında), alet çantası orta sınıf: iki el taşıma pozu (Carry 6; taşıma revizyonu 2026-11-05)",
+                tbReached && held && crew != null && crew.Carry == CrewAnimation.CarryTwoHand,
                 "hedef " + tbReached + ", elde " + held + ", Carry " + (crew != null ? crew.Carry.ToString() : "-") + ", yer " + (toolbox != null ? V(toolbox.transform.position) : "-"));
             bool canWork = system.CanWork(bridge, out string workReason);
             var connector = GameObject.Find("ModuleConnector")?.GetComponent<ModuleFastener>();
@@ -379,7 +379,7 @@ public static class OfficeGarageVerify
             yield return null;
             bool unloaded = toolbox != null && !toolbox.Loaded && bridge.HeldItem == toolbox && !vehicle.LoadedItems.Contains(toolbox);
             Check("(5) minibüs yük yuvası: arka kapılar açık, araç hedeflenir (\"" + loadPrompt + "\"), E ile alet çantası yuvaya yüklenir (Loaded, yuva ≥ 0, el boş), E ile geri alınır",
-                vehicle.RearAccessOpen && rearReached && loaded && unloaded && crew != null && crew.Carry == 2,
+                vehicle.RearAccessOpen && rearReached && loaded && unloaded && crew != null && crew.Carry == CrewAnimation.CarryTwoHand,
                 "kapılar " + vehicle.RearAccessOpen + ", hedef " + rearReached + ", yüklendi " + loaded + ", geri alındı " + unloaded + ", Carry " + (crew != null ? crew.Carry.ToString() : "-"));
 
             // (6) Fırlatma: sağ tık basılı tut (nişan) ve bırak; eşya uçar, sert çarpınca dayanıklılık düşer
@@ -393,7 +393,7 @@ public static class OfficeGarageVerify
             int throws0 = combat.PropThrows;
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right));
             yield return Seconds(0.3f);
-            bool aiming = combat.Aiming && crew != null && crew.Carry == 2;
+            bool aiming = combat.Aiming && crew != null && crew.Carry == CrewAnimation.CarryTwoHand;
             InputSystem.QueueStateEvent(mouse, new MouseState());
             yield return Until(() => combat.PropThrows == throws0 + 1, 2f, "fırlatma");
             yield return null;
@@ -403,7 +403,7 @@ public static class OfficeGarageVerify
             yield return Until(() => toolbox != null && toolbox.ImpactHits > hits0, 3f, "sert çarpma");
             float dur1 = toolbox != null ? toolbox.durability : -1f;
             yield return Until(() => toolbox != null && !toolbox.Thrown, 6f, "eşya durdu");
-            Check("(6) fırlatma: sağ tık nişan (Throw_Aim, Carry 2), bırakınca eşya elden çıkıp uçar (kinematik değil, ebeveynsiz), sert çarpmada (≥ " + CarryableItem.ImpactDamageSpeed.ToString("F1", Inv) + " m/sn) dayanıklılık " + CarryableItem.ImpactDamage.ToString("F0", Inv) + " düşer, eşya durur",
+            Check("(6) fırlatma: sağ tık nişan (Throw_Aim, Carry 6), bırakınca eşya elden çıkıp uçar (kinematik değil, ebeveynsiz), sert çarpmada (≥ " + CarryableItem.ImpactDamageSpeed.ToString("F1", Inv) + " m/sn) dayanıklılık " + CarryableItem.ImpactDamage.ToString("F0", Inv) + " düşer, eşya durur",
                 aiming && flying && speed0 > CarryableItem.ImpactDamageSpeed && toolbox != null && toolbox.ImpactHits > hits0 && Mathf.Abs(dur0 - dur1 - CarryableItem.ImpactDamage) < 0.01f && !toolbox.Thrown && toolbox.transform.position.y > -1f,
                 "nişan " + aiming + ", uçuş " + flying + ", hız " + speed0.ToString("F1", Inv) + " m/sn, çarpma hızı " + (toolbox != null ? toolbox.LastImpactSpeed.ToString("F1", Inv) : "-") + ", dayanıklılık " + dur0.ToString("F1", Inv) + "→" + dur1.ToString("F1", Inv) + ", yay " + combat.LastAimArc + ", son yer " + (toolbox != null ? V(toolbox.transform.position) : "-"));
 

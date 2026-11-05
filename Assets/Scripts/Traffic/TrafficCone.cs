@@ -9,7 +9,7 @@ using UnityEngine;
 // Bu bileşen koninin kendisinde değil, ayrı bir kontrol objesinde durur ve koniyi (target) yönetir: koniler
 // servis minibüsünün yük bölümündeki raflarda duran bağımsız fizik objesidir (Bolum1ServiceVan), araca oyun betiği eklenmez. Kontrol objesi koniyi izler (ses kaynağı onunla gider).
 [DefaultExecutionOrder(60)] // taşıyıcı hareket ettikten sonra elde konumlanır
-public class TrafficCone : MonoBehaviour
+public class TrafficCone : MonoBehaviour, ICarriedProp
 {
     public static readonly List<TrafficCone> All = new List<TrafficCone>();
 
@@ -173,7 +173,20 @@ public class TrafficCone : MonoBehaviour
     private void LateUpdate()
     {
         if (target == null) { Destroy(gameObject); return; }
-        if (holder != null) FollowHolder();
+        if (holder != null && !CarryHandIK.Drives(holder, this)) FollowHolder();
+        SyncSelf();
+    }
+
+    // ---- ICarriedProp: CarryHandIK avuca bağlar ----
+    [Tooltip("Taşıma sınıfı için ağırlık (kg; EquipmentDefinition cone).")]
+    public float carryWeightKg = 2f;
+    public CarryClass CarryClass { get { return (holder != null ? holder.Rules : CarryRules.Fallback).ClassFor("cone", carryWeightKg, HeldSize); } }
+    public Vector3 HeldSize { get { return new Vector3(radius * 2f, height, radius * 2f); } }
+    public void PlaceHeld(Vector3 center, Quaternion rotation)
+    {
+        if (holder == null || target == null) return;
+        Vector3 up = rotation * Vector3.up;
+        target.SetPositionAndRotation(center - up * (height * 0.5f) + up * baseOffset, rotation * Quaternion.FromToRotation(localUp.normalized, Vector3.up));
         SyncSelf();
     }
 
@@ -196,7 +209,7 @@ public class TrafficCone : MonoBehaviour
         if (target != null && target != transform) transform.position = target.position;
     }
 
-    // Elde: taşıyıcının önünde, bel hizasında, dik. Birinci şahısta (kamera geçişiyle yumuşak) firstPersonHoldOffset'e kayar.
+    // Yedek konum (CarryHandIK sürmüyorken): taşıyıcının önünde, bel hizasında, dik. Birinci şahısta (kamera geçişiyle yumuşak) firstPersonHoldOffset'e kayar.
     private void FollowHolder()
     {
         if (holder == null) return;

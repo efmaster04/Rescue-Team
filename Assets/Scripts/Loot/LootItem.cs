@@ -15,7 +15,7 @@ using UnityEngine;
 public enum LootKind { Luggage, PatientItem, Equipment }
 
 [DefaultExecutionOrder(60)] // taşıyıcı hareket ettikten sonra elde konumlanır (TrafficCone ile aynı)
-public class LootItem : MonoBehaviour
+public class LootItem : MonoBehaviour, ICarriedProp
 {
     public static readonly List<LootItem> All = new List<LootItem>();
 
@@ -39,6 +39,8 @@ public class LootItem : MonoBehaviour
     public float heldTopLimit = 0.94f;
     [Tooltip("Birinci şahısta elde ek kayma: sağ / yukarı / ileri (m). Aşağı bakınca valiz ekran merkezini kapatmasın diye sağ alta iner.")]
     public Vector3 firstPersonHoldShift = new Vector3(0.1f, -0.22f, -0.06f);
+    [Tooltip("Taşıma sınıfı için ağırlık (kg). 0: türden türetilir (hasta eşyası 3 kg, valiz hacimden ~110 kg/m³).")]
+    public float carryWeightKg;
 
     public LootState State { get; private set; } = LootState.AtStart;
     public ThirdPersonPlayer Holder { get; private set; }
@@ -140,6 +142,64 @@ public class LootItem : MonoBehaviour
         RememberStart();
     }
 
+    // ---- ICarriedProp: CarryHandIK avuca bağlar ----
+    public float WeightKg
+    {
+        get
+        {
+            RememberStart();
+            if (carryWeightKg > 0f) return carryWeightKg;
+            if (kind == LootKind.PatientItem) return 3f;
+            return holdRawSize.x * holdRawSize.y * holdRawSize.z * 110f;
+        }
+    }
+    public CarryClass CarryClass { get { return (Holder != null ? Holder.Rules : CarryRules.Fallback).ClassFor(displayName, WeightKg, RawHoldSize); } }
+    private Vector3 RawHoldSize { get { RememberStart(); return holdRawSize; } }
+    public Vector3 HeldSize
+    {
+        get
+        {
+            Vector3 raw = RawHoldSize;
+            if (CarryClass == CarryClass.Light) return raw; // tek elde dik sarkar
+            return CarryRules.HeldFrame(raw, out _);
+        }
+    }
+    public void PlaceHeld(Vector3 center, Quaternion rotation)
+    {
+        if (Holder == null) return;
+        Quaternion frame = Quaternion.identity;
+        if (CarryClass != CarryClass.Light) CarryRules.HeldFrame(RawHoldSize, out frame);
+        Quaternion held = rotation * frame;
+        transform.SetPositionAndRotation(center - held * holdBoxCenter, held * holdBaseRotation);
+    }
+
+    // Eşyanın kendi dikey ekseni etrafında (yaw 0) çerçevede boyutu ve kutu merkezinin pivota göre yeri (Renderer sınırlarının köşelerinden).
+    private void MeasureHoldBox()
+    {
+        // Elde dönüş: valiz başlangıç dönüşünü korur (yalnız yaw değişir), hasta kutusu dik tutulur (Elde: FollowHolder ile aynı)
+        holdBaseRotation = kind == LootKind.PatientItem ? Quaternion.identity : Quaternion.Inverse(Quaternion.Euler(0f, startRotation.eulerAngles.y, 0f)) * startRotation;
+        var rs = GetComponentsInChildren<Renderer>(true);
+        if (rs.Length == 0) { holdRawSize = Vector3.one * 0.2f; holdBoxCenter = Vector3.zero; return; }
+        Vector3 min = Vector3.positiveInfinity, max = Vector3.negativeInfinity;
+        foreach (var r in rs)
+        {
+            Bounds b = r.localBounds;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 c = b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f));
+                // Dünya → eşya yerel (ölçekli, dönüşsüz) → elde çerçeve
+                Vector3 p = holdBaseRotation * (Quaternion.Inverse(transform.rotation) * (r.transform.TransformPoint(c) - transform.position));
+                min = Vector3.Min(min, p);
+                max = Vector3.Max(max, p);
+            }
+        }
+        holdRawSize = max - min;
+        holdBoxCenter = (min + max) * 0.5f;
+    }
+
+    private Vector3 holdRawSize = Vector3.one * 0.2f, holdBoxCenter;
+    private Quaternion holdBaseRotation = Quaternion.identity;
+
     private void RememberStart()
     {
         if (startKnown) return;
@@ -154,6 +214,7 @@ public class LootItem : MonoBehaviour
         else bottomOffset = Mathf.Max(0f, transform.position.y - WorldBounds.min.y);
         // Yükseklik (elde dik tutulur; yalnız yaw döner, dünya y boyu aynı kalır)
         heldHeight = kind == LootKind.PatientItem || r == null ? 2f * bottomOffset : WorldBounds.size.y;
+        MeasureHoldBox();
     }
 
     private void OnEnable()
@@ -364,7 +425,7 @@ public class LootItem : MonoBehaviour
         Physics.SyncTransforms();
     }
 
-    // Elde: tek elle, taşıyanın sağ önünde bel hizasında (koni gibi; Carry_OneHand_Walk). Yalnız görsel konum: collider'lar elde kapalı.
+    // Yedek konum (CarryHandIK sürmüyorken; nişanda sağ el): tek elle, taşıyanın sağ önünde bel hizasında. Yalnız görsel konum: collider'lar elde kapalı.
     private void FollowHolder()
     {
         if (Holder == null) return;
@@ -377,7 +438,7 @@ public class LootItem : MonoBehaviour
         Quaternion rot = kind == LootKind.PatientItem ? Quaternion.Euler(0f, yaw, 0f) : Quaternion.AngleAxis(yaw - startRotation.eulerAngles.y, Vector3.up) * startRotation;
         // U4: nişan alırken (Throw_Aim) eşya sağ elde yukarı-geride (hold_grip RightHand avuç +5 cm)
         var combat = Holder.GetComponent<PlayerCombat>();
-        if (combat != null && combat.Aiming && Holder.animator != null && Holder.animator.isHuman)
+        if (combat != null && combat.ThrowPose && Holder.animator != null && Holder.animator.isHuman)
         {
             var hand = Holder.animator.GetBoneTransform(HumanBodyBones.RightHand);
             if (hand != null)
@@ -578,7 +639,7 @@ public class LootItem : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (Holder != null) FollowHolder();
+        if (Holder != null && !CarryHandIK.Drives(Holder, this)) FollowHolder();
         else if (ThiefHolder != null) FollowThief();
         else if (State == LootState.InVan && Van != null) FollowVan();
     }

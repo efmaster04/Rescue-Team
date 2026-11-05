@@ -51,6 +51,8 @@ public class PlayerCombat : MonoBehaviour
     public const float WhistleSeconds = 1.2f, WhistleBlowTime = 14f / 30f;
 
     public bool Aiming { get; private set; }
+    // Nişan ya da atış penceresi: eşya sağ elde kalır (taşıma el IK'sı çekilir)
+    public bool ThrowPose { get { return Aiming || (Busy && LastAction == "throw"); } }
     public bool Busy { get; private set; }
     public float PunchReadyAt { get; private set; } = -100f;
     public float PushReadyAt { get; private set; } = -100f;

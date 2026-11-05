@@ -1,17 +1,17 @@
 using UnityEngine;
 
 // Taşıma el IK'sı (kullanıcı isteği 2026-11-05: "eller eşyaya otursun, eşya ele bağlı olsun"). StretcherHandIK deseninin tek
-// taşıyıcılı eşyalara (ICarriedProp: koni, değerli eşya, ofis-garaj eşyası) genellemesi:
+// taşıyıcılı eşyalara (ICarriedProp: koni, değerli eşya, ofis-garaj eşyası) genellemesi. Eşya hesaplanmış bir noktaya değil
+// GERÇEK avuçlara göre konur; hiçbir durumda elden kopmaz:
 //  - Hafif: sağ el klip pozunda kalır; eşya tepesinden (tutma noktası) sağ avuca asılır, dışa-öne eğik sarkar. Eşya yere girecekse
-//    el yere pay bırakacak kadar yukarı kaldırılır (kısa koni, uzun bidon: poz boyuta uyar).
-//  - Orta / ağır: iki avuç eşyanın ALT yüzüne kaydırılır (±yarı genişlik, derinliğe göre ileri); eşya avuçların üstüne, arka yüzü
-//    gövde önüne (bodyFront) dayalı konur. Uzun eşyada eller alçalır (merkez yüksekliği sınıf aralığında kalır).
-//  Chibi kol zinciri kısa (0.177 + 0.14 m): hedef omuzdan maximumReach'ten uzaksa hedef erişim küresine çekilir (sedye IK'sındaki
-//  "vazgeç" yerine); eşya her zaman GERÇEK avuçlara göre konduğundan hiçbir durumda elden kopmaz.
-// Sıra: Animator → Crouch katmanı → StretcherHandIK (300) → bu (310) → FirstPersonBody (400). Eşyayı burada konumlar; eşyaların
-// kendi yedek konumlaması (TrafficCone / LootItem / CompanyPlayerBridge.LateUpdate) IK sürüyorsa (Drives) atlanır.
-// Nişan alırken (PlayerCombat.Aiming) sürmez: eşya eski gibi sağ ele gider ve fırlatılır. Sedye / sırtta hasta / kangal kapsam dışı.
-// Birinci şahısta (OrbitCamera.Blend) iki elde eşya biraz alçalır, görüş merkezini kapatmaz; ayrı FP kol sistemi yoktur.
+//    el yere pay bırakacak kadar yukarı kaldırılır. Birinci şahısta el göğüs önüne gelir (aşağı bakınca eşya görünür).
+//  - Orta / ağır: eşyanın genişliği omuz açıklığına yakınsa avuçlar yan yüzlerde (alt çeyrek), genişse alt yüzde; eller klipteki gibi
+//    omuz genişliğinde kalır (±0.17'de ön kol gövdeye giriyordu). Arka yüz gövde önüne dayanır, tepe çene altında kalır.
+//  Chibi kol zinciri kısa (0.177 + 0.14 m): hedef omuzdan maximumReach'ten uzaksa hedef erişim küresine çekilir.
+// Sıra: Animator → katmanlar → StretcherHandIK (300) → bu (310) → FirstPersonBody (400). Eşyaların kendi yedek konumlaması
+// (TrafficCone / LootItem / CompanyPlayerBridge.LateUpdate) IK sürüyorsa (Drives) atlanır.
+// Nişan ve atışta (PlayerCombat.ThrowPose) sürmez: eşya eski gibi sağ ele gider ve fırlatılır. Sedye / sırtta hasta / kangal kapsam dışı.
+// Yumrukta eller klibe döner; orta / ağır eşya gövdeye göre yerinde kalır, sol el üstünde (sağ el yumruk atar).
 // ThirdPersonPlayer Awake'te kendi ekler; sahne / prefab dosyası değişmez.
 [DefaultExecutionOrder(310)]
 public sealed class CarryHandIK : MonoBehaviour
@@ -26,21 +26,29 @@ public sealed class CarryHandIK : MonoBehaviour
     [Tooltip("Sarkan eşyanın tabanı ile zemin arasındaki pay (m).")]
     public float lightGroundClearance = 0.06f;
     [Tooltip("Sarkan eşyanın dışa-öne eğimi (°): tabanı kalçadan uzaklaşır.")]
-    public float lightTilt = 28f;
+    public float lightTilt = 22f;
     [Tooltip("Tutma noktası (eşyanın tepesi) avucun bu kadar altında (m): yumruk eşyayı sarmış görünür.")]
     public float lightGripInset = 0.02f;
+    [Tooltip("Birinci şahısta hafif eşyayı tutan avuç (kök uzayında sağ, yukarı, ileri; m).")]
+    public Vector3 lightFirstPersonPalm = new Vector3(0.22f, 0.78f, 0.26f);
     [Header("Orta / ağır (iki el)")]
     [Tooltip("Gövde ön yüzü, kökten ileri (m): eşyanın arka yüzü bu düzleme dayanır (CharacterController yarıçapı 0.25).")]
     public float bodyFront = 0.23f;
-    [Tooltip("Avuçlar eşyanın alt kenarından bu kadar içeride (m).")]
-    public float edgeInset = 0.035f;
-    [Tooltip("Eşya avuçların bu kadar üstünde başlar (m).")]
+    [Tooltip("En dar el aralığının yarısı (m): daha içeride ön kol gövdeye girer.")]
+    public float minHandSpread = 0.185f;
+    [Tooltip("Eşya yarı genişliği bu sınırı (m) aşmıyorsa avuçlar yan yüzlerde, aşıyorsa alt yüzde.")]
+    public float sideGripMaxHalfWidth = 0.27f;
+    [Tooltip("Yan tutuşta avucun yüksekliği: eşya merkezinin bu oran × boy altında.")]
+    public float sideGripDrop = 0.2f;
+    [Tooltip("Eşya avuçların bu kadar üstünde başlar (m; alt tutuş).")]
     public float palmLift = 0.01f;
-    [Tooltip("Orta sınıfta eşya merkezinin yükseklik aralığı (kök üstü, m): uzun eşya yüzü kapatmasın diye eller alçalır.")]
-    public Vector2 mediumCenterHeight = new Vector2(0.62f, 0.88f);
+    [Tooltip("Orta sınıfta eşya merkezinin yükseklik aralığı (kök üstü, m): uzun eşya yüzü kapatmasın diye aşağı iner.")]
+    public Vector2 mediumCenterHeight = new Vector2(0.60f, 0.84f);
     [Tooltip("Ağır sınıfta eşya merkezinin yükseklik aralığı (kök üstü, m).")]
-    public Vector2 heavyCenterHeight = new Vector2(0.52f, 0.76f);
-    [Tooltip("Birinci şahısta (kamera karışımıyla) iki elde eşya bu kadar alçalır (m).")]
+    public Vector2 heavyCenterHeight = new Vector2(0.56f, 0.80f);
+    [Tooltip("Eşya tepesinin kökten en yüksek yeri (m; çene hizası). Geçerse merkez aşağı iner.")]
+    public float maxTopHeight = 1.0f;
+    [Tooltip("Birinci şahısta (kamera karışımıyla) iki elde eşya bu kadar alçalır (m): görüş merkezini kapatmaz.")]
     public float firstPersonDrop = 0.10f;
 
     // Tanı (doğrulama okur)
@@ -52,6 +60,7 @@ public sealed class CarryHandIK : MonoBehaviour
     public float GripErrorLeft { get; private set; }        // avuç → eşya yüzeyi (m); hafifte sağ el tutma noktası
     public float GripErrorRight { get; private set; }
     public float BodyOverlap { get; private set; }          // eşya kutusunun gövde kapsülüne girme derinliği (m, yatay)
+    public bool SideGrip { get; private set; }
     public Vector3 LastCenter { get; private set; }
     public Quaternion LastRotation { get; private set; } = Quaternion.identity;
     public Vector3 LastSize { get; private set; }
@@ -60,11 +69,13 @@ public sealed class CarryHandIK : MonoBehaviour
     private ThirdPersonPlayer player;
     private PlayerCombat combat;
     private CharacterController controller;
+    private Vector3 homeLocal;                // son döngü karesinde eşya merkezi (kök uzayında): eylem sırasında yerinde kalır
+    private bool homeKnown;
 
     private void Awake()
     {
-        animator = GetComponent<Animator>();
         player = GetComponent<ThirdPersonPlayer>();
+        animator = player != null && player.animator != null ? player.animator : GetComponent<Animator>();
         combat = GetComponent<PlayerCombat>();
         controller = GetComponent<CharacterController>();
     }
@@ -81,7 +92,7 @@ public sealed class CarryHandIK : MonoBehaviour
     {
         if (player == null || player.IsDown || player.Rope != null) return null;
         if (player.HeldStretcher != null || player.Piggyback != null || player.HeldCoil != null) return null;
-        if (combat != null && combat.Aiming) return null;
+        if (combat != null && combat.ThrowPose) return null;
         if (player.HeldCone != null) return player.HeldCone;
         if (player.HeldValuable != null) return player.HeldValuable;
         return player.HeldProp as ICarriedProp;
@@ -99,12 +110,24 @@ public sealed class CarryHandIK : MonoBehaviour
         return st.IsName(CrewAnimation.StateCarryCone) || st.IsName(CrewAnimation.StateCarryTwoHand) || st.IsName(CrewAnimation.StateCarryHeavy);
     }
 
+    // PickUp / PutDown: eller klipteki gibi eşyaya gidip gelir, eşya avuçları izler.
+    private bool FollowsClipHands()
+    {
+        var st = animator.GetCurrentAnimatorStateInfo(0);
+        if (st.IsName(CrewAnimation.StatePickUp) || st.IsName(CrewAnimation.StatePutDown)) return true;
+        if (!animator.IsInTransition(0)) return false;
+        var next = animator.GetNextAnimatorStateInfo(0);
+        return next.IsName(CrewAnimation.StatePickUp) || next.IsName(CrewAnimation.StatePutDown);
+    }
+
     // Karar Update'te (310: ThirdPersonPlayer, PlayerCombat ve PlayerInteraction'dan sonra): eşyaların LateUpdate'i (60) aynı karede görür.
     private void Update()
     {
         var prop = CurrentProp();
         bool ready = prop != null && animator != null && animator.enabled && animator.isHuman && animator.runtimeAnimatorController != null;
+        var previous = Prop;
         Prop = ready ? prop : null;
+        if (!ReferenceEquals(previous, Prop)) homeKnown = false;
         Class = Prop != null ? Prop.CarryClass : CarryClass.None;
     }
 
@@ -113,13 +136,13 @@ public sealed class CarryHandIK : MonoBehaviour
         ClampedHands = 0;
         MaximumShoulderDistance = 0f;
         float dt = Time.deltaTime;
-        if (Prop == null) { Weight = Mathf.MoveTowards(Weight, 0f, dt / Mathf.Max(0.01f, blendSeconds)); return; }
+        if (Prop == null || Class == CarryClass.None) { Weight = Mathf.MoveTowards(Weight, 0f, dt / Mathf.Max(0.01f, blendSeconds)); return; }
         bool loop = InCarryLoop();
         Weight = Mathf.MoveTowards(Weight, loop ? 1f : 0f, dt / Mathf.Max(0.01f, blendSeconds));
         Vector3 size = Prop.HeldSize;
         LastSize = size;
         if (Class == CarryClass.Light) SolveLight(size);
-        else SolveTwoHand(size, Class == CarryClass.Heavy);
+        else SolveTwoHand(size, Class == CarryClass.Heavy, loop);
     }
 
     private Vector3 Palm(HumanBodyBones bone)
@@ -133,20 +156,26 @@ public sealed class CarryHandIK : MonoBehaviour
     // ---- hafif: eşya sağ avuca asılı ----
     private void SolveLight(Vector3 size)
     {
-        Vector3 up = Vector3.up, fwd = Forward(), right = Vector3.Cross(up, fwd);
-        float tilt = Mathf.Deg2Rad * lightTilt;
+        Vector3 up = Vector3.up, fwd = Forward(), right = Vector3.Cross(up, fwd), root = transform.position;
+        float fp = OrbitCamera.FirstPersonBlendFor(transform);
+        float tilt = Mathf.Deg2Rad * lightTilt * (1f - 0.7f * fp);
         Vector3 itemUp = (up * Mathf.Cos(tilt) - right * Mathf.Sin(tilt) * 0.8f - fwd * Mathf.Sin(tilt) * 0.6f).normalized;
         Quaternion rot = Quaternion.FromToRotation(up, itemUp) * Quaternion.LookRotation(fwd, up);
         float hang = Mathf.Max(0f, size.y - lightGripInset);
         Vector3 palm0 = Palm(HumanBodyBones.RightHand);
         // Yere pay: tabanın yüksekliği = avuç − sarkan boy × itemUp.y
-        float groundY = transform.position.y;
-        float needPalmY = groundY + lightGroundClearance + hang * itemUp.y;
+        float needPalmY = root.y + lightGroundClearance + hang * itemUp.y;
         Vector3 target = palm0;
         if (palm0.y < needPalmY)
         {
             float raise = needPalmY - palm0.y;
             target = palm0 + up * raise + right * raise * 0.25f; // yukarı ve hafif dışa: dirsek geriye, önkol öne
+        }
+        if (fp > 0f)
+        {
+            float crouch = player != null ? player.CrouchBodyDrop : 0f;
+            Vector3 fpPalm = root + right * lightFirstPersonPalm.x + up * (lightFirstPersonPalm.y - crouch) + fwd * lightFirstPersonPalm.z;
+            target = Vector3.Lerp(target, fpPalm, fp);
         }
         Solve(false, target, Weight);
         Vector3 palm = Palm(HumanBodyBones.RightHand);
@@ -156,40 +185,62 @@ public sealed class CarryHandIK : MonoBehaviour
         GripErrorRight = Vector3.Distance(palm, center + itemUp * (size.y * 0.5f - lightGripInset));
     }
 
-    // ---- orta / ağır: iki avuç eşyanın altında, eşya gövdeye dayalı ----
-    private void SolveTwoHand(Vector3 size, bool heavy)
+    // ---- orta / ağır: iki avuç eşyada, eşya gövdeye dayalı ----
+    private void SolveTwoHand(Vector3 size, bool heavy, bool loop)
     {
-        Vector3 up = Vector3.up, fwd = Forward(), right = Vector3.Cross(up, fwd);
-        Vector3 l0 = Palm(HumanBodyBones.LeftHand), r0 = Palm(HumanBodyBones.RightHand);
-        Vector3 root = transform.position;
-        Vector3 mid0 = (l0 + r0) * 0.5f;
-        float spacing0 = Mathf.Abs(Vector3.Dot(l0 - r0, right));
+        Vector3 up = Vector3.up, fwd = Forward(), right = Vector3.Cross(up, fwd), root = transform.position;
+        Quaternion flat = Quaternion.LookRotation(fwd, up);
         float halfW = Mathf.Max(0.04f, size.x * 0.5f), height = Mathf.Max(0.02f, size.y), depth = Mathf.Max(0.02f, size.z);
-        // Avuç x: klip aralığı ile eşya genişliği içinden küçüğü (eller eşyanın altında kalır)
-        float hx = Mathf.Max(0.05f, Mathf.Min(spacing0 * 0.5f, halfW - edgeInset));
-        // Avuç ileri: eşyanın arka yüzü gövde önünde, avuçlar ön-alt kenarda (erişim küresi ileride keser)
+        bool side = halfW <= sideGripMaxHalfWidth;
+        SideGrip = side;
+        float gripBelowCenter = side ? height * sideGripDrop : height * 0.5f + palmLift;
+        Vector3 l0 = Palm(HumanBodyBones.LeftHand), r0 = Palm(HumanBodyBones.RightHand);
+        Vector3 mid0 = (l0 + r0) * 0.5f;
+
+        if (!loop && !FollowsClipHands() && homeKnown)
+        {
+            // Yumruk, darbe tepkisi: eşya gövdeye göre yerinde, sol el üstünde; sağ el klibi oynar
+            Vector3 home = transform.TransformPoint(homeLocal);
+            float hxHome = side ? Mathf.Max(minHandSpread, halfW + 0.005f) : Mathf.Abs(Vector3.Dot(l0 - r0, right)) * 0.5f;
+            Solve(true, home - right * hxHome - up * gripBelowCenter, 1f);
+            Place(home, flat, size);
+            GripErrorLeft = SurfaceDistance(Palm(HumanBodyBones.LeftHand), home, flat, size);
+            GripErrorRight = 0f;
+            return;
+        }
+
+        float spread = Mathf.Abs(Vector3.Dot(l0 - r0, right)) * 0.5f;
+        float hx = side ? Mathf.Max(minHandSpread, halfW + 0.005f) : Mathf.Max(minHandSpread, spread);
+        float sx0 = Vector3.Dot(mid0 - root, right);
+        // Avuç ileri: eşyanın ortası, klip konumundan çok uzaklaşmaz (erişim küresi ileride keser)
         float z0 = Vector3.Dot(mid0 - root, fwd);
-        float hz = Mathf.Clamp(bodyFront + depth - edgeInset, z0 - 0.03f, z0 + 0.12f);
-        // Avuç yükseklik: eşya merkezi sınıf aralığında kalsın (uzun eşya yüzü kapatmaz, kısa eşya bel altına inmez)
+        float hz = Mathf.Clamp(bodyFront + depth * 0.5f, z0 - 0.05f, z0 + 0.06f);
+        // Yükseklik: eşya merkezi sınıf aralığında, tepesi çene altında; klipteki yaylanma korunur (eşya canlı sallanır)
         Vector2 range = heavy ? heavyCenterHeight : mediumCenterHeight;
+        float crouch = player != null ? player.CrouchBodyDrop : 0f;
         float fp = OrbitCamera.FirstPersonBlendFor(transform);
         float y0 = mid0.y - root.y;
-        float centerY = Mathf.Clamp(y0 + palmLift + height * 0.5f, range.x, range.y) - firstPersonDrop * fp;
-        float hy = centerY - palmLift - height * 0.5f;
-        Vector3 lt = root + fwd * hz + up * hy - right * hx;
-        Vector3 rt = root + fwd * hz + up * hy + right * hx;
+        float top = Mathf.Min(range.y, maxTopHeight - height * 0.5f);
+        float centerY = Mathf.Clamp(y0 + gripBelowCenter, Mathf.Min(range.x, top), top) - firstPersonDrop * fp - crouch;
+        float hy = centerY - gripBelowCenter;
+        Vector3 lt = root + fwd * hz + up * (hy + l0.y - mid0.y) + right * (sx0 - hx);
+        Vector3 rt = root + fwd * hz + up * (hy + r0.y - mid0.y) + right * (sx0 + hx);
         Solve(true, lt, Weight);
         Solve(false, rt, Weight);
         Vector3 l = Palm(HumanBodyBones.LeftHand), r = Palm(HumanBodyBones.RightHand);
         Vector3 mid = (l + r) * 0.5f;
-        // Eşya: avuçların üstünde; ileri-geri: avuçlar ön-alt kenarın edgeInset içinde, ama arka yüz gövde önünden geriye geçmez
+        // Eşya gerçek avuçlara göre: arka yüz gövde önünden geriye geçmez; önkol öne uzanırsa eşya da gider
         float midZ = Vector3.Dot(mid - root, fwd);
-        float cz = Mathf.Max(midZ - depth * 0.5f + edgeInset, bodyFront + depth * 0.5f);
-        float cy = mid.y - root.y + palmLift + height * 0.5f;
+        float cz = bodyFront + depth * 0.5f + Mathf.Max(0f, midZ - hz);
+        float cy = mid.y - root.y + gripBelowCenter;
         float cx = Vector3.Dot(mid - root, right);
         Vector3 center = root + fwd * cz + up * cy + right * cx;
-        Quaternion rot = Quaternion.LookRotation(fwd, up);
+        // İki avucun yükseklik farkı eşyayı hafif yatırır (yürüyüşte canlı durur). Cross(fwd, sağ) = yukarı.
+        Vector3 across = r - l;
+        across -= fwd * Vector3.Dot(across, fwd);
+        Quaternion rot = across.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(fwd, Vector3.Cross(fwd, across.normalized)) : flat;
         Place(center, rot, size);
+        if (loop && Weight >= 0.99f) { homeLocal = transform.InverseTransformPoint(center); homeKnown = true; }
         GripErrorLeft = SurfaceDistance(l, center, rot, size);
         GripErrorRight = SurfaceDistance(r, center, rot, size);
     }

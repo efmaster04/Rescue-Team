@@ -39,6 +39,23 @@ namespace CompanySim
         public string DisplayName => modulePackage?modulePackage.DisplayName:catalog?catalog.Item(definitionId)?.displayName??definitionId:definitionId;
         public Vector3 HalfSize => footprint ? Vector3.Scale(footprint.size*.5f,transform.lossyScale) : Vector3.one*.2f;
         public Vector3 CenterOffset => footprint ? transform.TransformVector(footprint.center) : Vector3.zero;
+        // Taşıma sınıfı için ağırlık: katalogdaki eşya ya da modül (modül paketi "module:<id>"); bulunamazsa boyuttan karar verilir.
+        public float WeightKg
+        {
+            get
+            {
+                if(!catalog||string.IsNullOrEmpty(definitionId)) return 5f;
+                if(definitionId.StartsWith("module:"))
+                {
+                    var module=catalog.Module(definitionId.Substring(7));
+                    return module?module.weightKg:40f;
+                }
+                var item=catalog.Item(definitionId);
+                return item?item.weightKg:5f;
+            }
+        }
+        // Eşyanın kendi eksenlerinde tam boyutu (kutu collider'ı)
+        public Vector3 FullSize => HalfSize*2f;
 
         void Awake()
         {

@@ -3,9 +3,12 @@ using System.Linq;
 using UnityEngine;
 
 // Ekip karakterinin (oyuncu ve test botu) prosedürel animasyonlarını tetikler. Oyun durumunu DEĞİŞTİRMEZ, yalnız okur:
-//  - Taşıma: elde sedye → CarryStretcher, elde koni → CarryCone (Speed ile; hız 0'da klip yavaşlatılmış oynar).
-//    Elde bir şey belirince PickUp, bırakınca PutDown (tek sefer), sonra uygun döngüye döner.
-//  - Jump: ThirdPersonPlayer.Jumped olayı.
+//  - Taşıma: elde sedye → CarryStretcher; tek başına taşınan eşyada sınıfa göre CarryCone (hafif), CarryTwoHand (orta), CarryHeavy (ağır):
+//    bekleme / yürüme / koşu klipleri Speed ile karışır. Duruyorken eşya alınca PickUp, bırakınca PutDown (tek sefer), sonra uygun döngü;
+//    yürürken alma / bırakma ayak kaydırmasın diye klip oynamaz, döngüye yumuşak geçilir.
+//  - Jump: ThirdPersonPlayer.Jumped olayı. Elde eşya varken (kollar eşyada kalsın) Jump yalnız "LowerBody" katmanında oynar.
+//  - Yana / geri adım: FP'de ya da nişanda gövde kameraya bakar; LowerBody katmanı (bacak + gövde, kollar taban katmandan) Strafe_Left/Right,
+//    Walk_Back oynatır. Ağırlık gerçek gidiş yönünden gelir; öne yürürken 0.
 //  - Startled: 6 m içinde bir trafik aracı korna çalınca (VehicleAudio.HornPlayed). Elde bir şey varken ATLANIR (sade seçim).
 //  - Revive_Helper: kaldıran taraf (oyuncu ya da bot) her kare MarkReviving çağırır; çağrı kesilince biter.
 //  - GetUp_FromBack: ragdoll'dan kalkış (BeginGetUp), ragdoll pozundan animasyona yumuşak geçişle.
@@ -46,7 +49,16 @@ public class CrewAnimation : MonoBehaviour
     public const string StatePushShove = "PushShove", StateTackleDive = "TackleDive", StateTackleGetUp = "TackleGetUp";
     public const string StateThrowAim = "ThrowAim", StateThrowRelease = "ThrowRelease", StateWhistle = "WhistleBlow";
 
-    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 koni / değerli eşya (U3), 3 sırtta hasta (D2), 4 sedye ön uç, 5 kangal (U2)
+    // Taşıma sınıfları (2026-11-05): orta iki el, ağır kucakta. Hafif = CarryCone (Carry 2).
+    public const string StateCarryTwoHand = "CarryTwoHand", StateCarryHeavy = "CarryHeavy";
+    public const int CarryLight = 2, CarryTwoHand = 6, CarryHeavy = 7;
+    // Alt gövde katmanı: yana / geri adım ve elde eşyayla zıplama
+    public const string LowerBodyLayerName = "LowerBody", StateLowerStrafe = "Strafe";
+    public const string ParamMoveX = "MoveX", ParamMoveY = "MoveY", ParamStrafeRate = "StrafeRate", ParamCarryRate = "CarryRate";
+    public const float StrafeClipSpeed = 1.6f;   // Strafe_* ve Walk_Back klibinin yazıldığı hız (m/sn)
+    public const float CarriedJumpSeconds = 0.68f; // Jump klibinin elde eşyayla oynayan kısmı (sn)
+
+    public const string ParamCarry = "Carry";        // int: 0 yok, 1 sedye, 2 hafif eşya, 3 sırtta hasta (D2), 4 sedye ön uç, 5 kangal (U2), 6 orta eşya, 7 ağır eşya
     public const string ParamReviving = "Reviving";  // bool
     public const string TriggerPickUp = "PickUp", TriggerPutDown = "PutDown", TriggerJump = "Jump", TriggerStartled = "Startled", TriggerCelebrate = "Celebrate";
 
@@ -63,6 +75,13 @@ public class CrewAnimation : MonoBehaviour
     public Behaviour[] disableDuringGetUp = new Behaviour[0];
 
     public int Carry { get; private set; }
+    // Tanı: alt gövde katmanının ağırlığı ve elde eşyayla zıplama sürüyor mu
+    public float LowerBodyWeight { get; private set; }
+    public bool CarriedJumpActive { get { return Time.time < lowerJumpUntil; } }
+    public int CarriedJumps { get; private set; }
+    private int lowerLayer = -2;   // -2: aranmadı, -1: yok
+    private float lowerJumpUntil = -1f;
+    private PlayerCombat combat;
     public bool GettingUp { get { return getUpEnd > 0f && Time.time < getUpEnd; } }
     public float GetUpEndTime { get { return getUpEnd; } }
     public int Startles { get; private set; }
@@ -91,6 +110,7 @@ public class CrewAnimation : MonoBehaviour
     private void Awake()
     {
         if (animator == null) animator = GetComponent<Animator>();
+        combat = GetComponent<PlayerCombat>();
         bindBones = GetComponentsInChildren<Transform>(true);
         bindPositions = bindBones.Select(t => t.localPosition).ToArray();
     }
@@ -130,7 +150,17 @@ public class CrewAnimation : MonoBehaviour
 
     private int CurrentCarry()
     {
-        if (player != null) return player.HeldStretcher != null ? (player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1) : player.HeldCone != null || player.HeldValuable != null || player.HeldProp != null ? 2 : player.Piggyback != null ? CarryPiggyback : player.HeldCoil != null ? CarryCoil : 0;
+        if (player != null)
+        {
+            if (player.HeldStretcher != null) return player.HeldStretcher.HoldsFront(player) ? CarryStretcherFront : 1;
+            switch (player.HeldClass)
+            {
+                case CarryClass.Light: return CarryLight;
+                case CarryClass.Medium: return CarryTwoHand;
+                case CarryClass.Heavy: return CarryHeavy;
+            }
+            return player.Piggyback != null ? CarryPiggyback : player.HeldCoil != null ? CarryCoil : 0;
+        }
         if (bot != null) return bot.HeldStretcher != null ? (bot.HeldStretcher.HoldsFront(bot) ? CarryStretcherFront : 1) : 0;
         return 0;
     }
@@ -157,8 +187,10 @@ public class CrewAnimation : MonoBehaviour
             bool throwing = InAction && (LastAction == StateThrowRelease || LastAction == StateThrowAim);
             if (carry != CarryPiggyback && Carry != CarryPiggyback && !coilAction && !throwing)
             {
-                if (Carry == 0 && carry != 0) animator.SetTrigger(TriggerPickUp);
-                else if (carry == 0) animator.SetTrigger(TriggerPutDown);
+                // Yürürken alma / bırakma klibi oynamaz: klip ayakları yerinde tutar, kayma görünürdü. Döngüler arası geçiş yumuşak (0.2 sn).
+                bool moving = player != null && player.HorizontalVelocity.sqrMagnitude > 0.36f;
+                if (Carry == 0 && carry != 0) { if (!moving) animator.SetTrigger(TriggerPickUp); }
+                else if (carry == 0) { if (!moving) animator.SetTrigger(TriggerPutDown); }
             }
             Carry = carry;
         }
@@ -173,6 +205,33 @@ public class CrewAnimation : MonoBehaviour
             RopeMode = v > 0.01f ? (player.Piggyback != null ? 4 : 2) : v < -0.01f ? 3 : 1;
         }
         animator.SetInteger(ParamRope, RopeMode);
+        UpdateLowerBody();
+    }
+
+    // Alt gövde katmanı: gövde kameraya bakarken (FP, nişan) gerçek gidiş yönünden yana / geri adım ağırlığı; elde eşyayla zıplamada 1.
+    private void UpdateLowerBody()
+    {
+        if (player == null) return;
+        if (lowerLayer == -2) lowerLayer = animator.GetLayerIndex(LowerBodyLayerName);
+        if (lowerLayer < 0) return;
+        float target = 0f, rate = 1f;
+        Vector3 v = player.HorizontalVelocity;
+        float speed = v.magnitude;
+        bool facesLook = player.FaceCameraYaw || (combat != null && combat.Aiming);
+        if (facesLook && speed > 0.2f && player.HasControl && player.Rope == null && player.HeldStretcher == null && player.Piggyback == null && !InAction)
+        {
+            Vector3 local = transform.InverseTransformDirection(v / speed);
+            animator.SetFloat(ParamMoveX, local.x, 0.08f, Time.deltaTime);
+            animator.SetFloat(ParamMoveY, local.z, 0.08f, Time.deltaTime);
+            float forward = Mathf.Max(0f, local.z);
+            target = (1f - forward * forward) * Mathf.Clamp01(speed / 0.5f);
+            rate = Mathf.Clamp(speed / StrafeClipSpeed, 0.5f, 2.2f);
+        }
+        animator.SetFloat(ParamStrafeRate, rate);
+        bool jumping = Time.time < lowerJumpUntil;
+        if (jumping) target = 1f;
+        LowerBodyWeight = Mathf.MoveTowards(LowerBodyWeight, target, Time.deltaTime / (jumping ? 0.06f : 0.12f));
+        animator.SetLayerWeight(lowerLayer, LowerBodyWeight);
     }
 
     // Kaldıran taraf her kare çağırır.
@@ -212,7 +271,20 @@ public class CrewAnimation : MonoBehaviour
 
     private void OnJumped()
     {
-        if (Ready && !IsDown) animator.SetTrigger(TriggerJump);
+        if (!Ready || IsDown) return;
+        // Elde eşya: taban katman taşıma pozunda kalır (el IK'sı ve eşya kopmaz), yalnız bacak + gövde zıplar.
+        if ((Carry == CarryLight || Carry == CarryTwoHand) && lowerLayer != -1)
+        {
+            if (lowerLayer == -2) lowerLayer = animator.GetLayerIndex(LowerBodyLayerName);
+            if (lowerLayer >= 0)
+            {
+                animator.CrossFadeInFixedTime(StateJump, 0.06f, lowerLayer, 0.1f);
+                lowerJumpUntil = Time.time + CarriedJumpSeconds;
+                CarriedJumps++;
+                return;
+            }
+        }
+        animator.SetTrigger(TriggerJump);
     }
 
     private void OnHorn(VehicleAudio source, Vector3 at)

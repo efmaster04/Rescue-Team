@@ -24,7 +24,7 @@ public class CarryRules : ScriptableObject
     // Sınıf = ağırlık + "çevre" (eşyanın en büyük iki boyutundan küçüğü; uzun ama ince koni tek elde kalır).
     //  Hafif: ≤ lightMaxKg ve çevre ≤ lightMaxGirth → tek el (oyuncunun kendi yürüme/koşu hızı, koni hissi).
     //  Ağır:  > heavyMinKg veya çevre > heavyMinGirth → kucakta (heavyWalkSpeed; koşu, zıplama, eğilme yok).
-    //  Orta:  arası → iki el göğüs önünde (mediumWalk/RunSpeed). Kangal da orta hızlarla taşınır (kendi klibi).
+    //  Orta:  arası → iki el göğüs önünde (mediumWalk/RunSpeed). Kangal ayrı: yürüyüş oyuncunun yürümesi, Shift coilRunSpeed.
     // Kimliğe göre istisna classOverrides'ta (EquipmentDefinition.id, ör. "toolbox"). Değerler Inspector'dan değiştirilebilir.
     [Header("Taşıma sınıfları")]
     [Tooltip("Hafif sınıfın üst ağırlık sınırı (kg).")]
@@ -35,11 +35,13 @@ public class CarryRules : ScriptableObject
     public float heavyMinKg = 15f;
     [Tooltip("Bu çevrenin (m) üstü ağır.")]
     public float heavyMinGirth = 0.6f;
-    [Tooltip("Orta sınıf yürüme / koşu hızı (m/sn). Klipler Carry_TwoHand_Walk 2.0, _Run 2.6 için yazıldı; farklıysa oynatma hızı ölçeklenir.")]
+    [Tooltip("Orta sınıf yürüme / koşu hızı (m/sn). Klipler Carry_TwoHand_Walk 2.0, _Run 2.6 için yazıldı; farklıysa oynatma hızı ölçeklenir (ayak kaymaz).")]
     public float mediumWalkSpeed = 2.0f;
     public float mediumRunSpeed = 2.6f;
     [Tooltip("Ağır sınıf yürüme hızı (m/sn; Carry_Heavy_Walk 1.4). Koşu yok.")]
     public float heavyWalkSpeed = 1.4f;
+    [Tooltip("Kangalla Shift'te hız (m/sn; Carry_Coil_Run 2.8). Kangalla zıplama yine yok.")]
+    public float coilRunSpeed = 2.8f;
     [Tooltip("Kimliğe göre sınıf istisnası (EquipmentDefinition.id ya da eşya adı).")]
     public ClassOverride[] classOverrides = new ClassOverride[0];
 
@@ -61,6 +63,36 @@ public class CarryRules : ScriptableObject
         if (weightKg > heavyMinKg || girth > heavyMinGirth) return CarryClass.Heavy;
         if (weightKg > lightMaxKg || girth > lightMaxGirth) return CarryClass.Medium;
         return CarryClass.Light;
+    }
+
+    // Orta / ağır kliplerin yazıldığı hızlar (m/sn; clips_meta target_speed_mps)
+    public const float MediumClipWalk = 2.0f, MediumClipRun = 2.6f, HeavyClipWalk = 1.4f;
+
+    // Klibin oynatma çarpanı: sınıf hızı Inspector'dan değişse de ayak kaymasın diye klip aynı oranda hızlanır. Hafif: oyuncunun kendi hızı.
+    public float ClipRate(CarryClass c, bool run)
+    {
+        switch (c)
+        {
+            case CarryClass.Medium: return run ? mediumRunSpeed / MediumClipRun : mediumWalkSpeed / MediumClipWalk;
+            case CarryClass.Heavy: return heavyWalkSpeed / HeavyClipWalk;
+            default: return 1f;
+        }
+    }
+
+    // Elde duruş: size eşyanın kendi eksenlerinde boyutu. Çok yüksek eşya (yedek lastik: > tallLimit) en ince boyutu dikey gelecek
+    // şekilde yatırılır (yüzü ve görüşü kapatmasın), sonra uzun kenarı gövdeye paralel olur (öne doğru sarkmasın). frame: eşya → tutuş ekseni.
+    public static Vector3 HeldFrame(Vector3 size, out Quaternion frame)
+    {
+        frame = Quaternion.identity;
+        Vector3 s = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+        const float tallLimit = 0.6f;
+        if (s.y > tallLimit)
+        {
+            if (s.z <= s.x) { frame = Quaternion.Euler(90f, 0f, 0f); s = new Vector3(s.x, s.z, s.y); }
+            else { frame = Quaternion.Euler(0f, 0f, 90f); s = new Vector3(s.y, s.x, s.z); }
+        }
+        if (s.z > s.x) { frame = Quaternion.Euler(0f, 90f, 0f) * frame; s = new Vector3(s.z, s.y, s.x); }
+        return s;
     }
 
     public bool CanRun(CarryClass c) { return c != CarryClass.Heavy; }

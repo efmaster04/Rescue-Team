@@ -5,7 +5,7 @@ using UnityEngine;
 //  - Light  (hafif): tek el, eşya sağ avuca asılı. Hız oyuncunun kendi yürüme / koşusu (koni hissi korunur: 2.4 / 3.2).
 //  - Medium (orta):  iki el göğüs önünde, eşya avuçların üstünde gövdeye dayalı. CarryRules medium* hızları (2.0 / 2.6).
 //  - Heavy  (ağır):  kucakta, dizler kırık. CarryRules heavyWalkSpeed (1.4); koşu, zıplama ve eğilme yok.
-// Animator Carry parametresi: Light 2 (CarryCone), Medium 6 (CarryTwoHand), Heavy 7 (CarryHeavy); kangal 5 ayrı kalır (Medium hızları).
+// Animator Carry parametresi: Light 2 (CarryCone), Medium 6 (CarryTwoHand), Heavy 7 (CarryHeavy); kangal 5 ayrı kalır.
 public enum CarryClass
 {
     None = 0,

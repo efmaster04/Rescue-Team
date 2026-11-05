@@ -2,7 +2,7 @@ using UnityEngine;
 
 // Oyuncu hareketi (kullanıcı kararı 15): CharacterController tabanlı 3. şahıs.
 // Girdi bu sınıfa dışarıdan verilir (PlayerInputReader); böylece oyun durumu ile girdi ayrı kalır (ileride ağ senkronu).
-// Shift koşar; sedye taşırken hız sabittir. Düşme ve kaldırılma PlayerKnockdown'da.
+// Shift koşar; sedye taşırken hız sabittir, tek başına taşınan eşyada hız sınıfa bağlıdır (CarryRules: hafif / orta / ağır). Düşme ve kaldırılma PlayerKnockdown'da.
 // Eğilme (kullanıcı isteği 2026-11-05, sol Ctrl basılı): crouchSpeed ile yürür, koşu ve zıplama yok, CharacterController boyu
 // crouchHeight'a iner (alçak engelin altından geçilir); tuş bırakılınca üstte engel yoksa kalkar, varsa eğik kalır (CanStandUp).
 // Sedye / sırtta hasta / kangal / halat / yerdeyken eğilinmez (eğikken biri başlarsa kalkar). Animasyon: Animator'ın "Crouch"
@@ -102,7 +102,33 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public float LastLandingDrop { get; private set; }
     public bool IsSliding { get; private set; }
     public int SlideStarts { get; private set; }
-    public float RequestedSpeed => HeldStretcher != null ? carryStretcherSpeed : Piggyback != null ? piggybackSpeed : IsCrouching ? crouchSpeed : HeldCoil != null ? moveSpeed : runHeld ? runSpeed : moveSpeed;
+    public float RequestedSpeed
+    {
+        get
+        {
+            if (HeldStretcher != null) return carryStretcherSpeed;
+            if (Piggyback != null) return piggybackSpeed;
+            if (IsCrouching) return crouchSpeed;
+            if (HeldCoil != null) return runHeld ? Rules.coilRunSpeed : moveSpeed;
+            var held = HeldClass;
+            if (held != CarryClass.None) return Rules.Speed(held, runHeld, moveSpeed, runSpeed);
+            return runHeld ? runSpeed : moveSpeed;
+        }
+    }
+    // Sahnede kural asset'i bağlı değilse varsayılan değerler
+    public CarryRules Rules { get { return rules != null ? rules : CarryRules.Fallback; } }
+    // Tek başına taşınan eşyanın sınıfı (koni, değerli eşya, ofis-garaj eşyası); elde yoksa ya da sedye / kangal / sırtta hastaysa None.
+    public CarryClass HeldClass
+    {
+        get
+        {
+            if (HeldCone != null) return HeldCone.CarryClass;
+            if (HeldValuable != null) return HeldValuable.CarryClass;
+            if (HeldProp == null) return CarryClass.None;
+            var prop = HeldProp as ICarriedProp;
+            return prop != null ? prop.CarryClass : CarryClass.Light;
+        }
+    }
     private float verticalSpeed;
     private Vector3 moveWish; // bu karenin yatay hareket isteği (OnControllerColliderHit okur)
     private bool walkableUnderNow; // bu karede ayağın altı yürünebilir zemin (OnControllerColliderHit okur)
@@ -122,6 +148,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         lastGroundHeight = transform.position.y;
         standHeight = controller.height;
         standCenter = controller.center;
+        // Eller eşyaya otursun (taşıma el IK'sı): sahne / prefab dosyası değişmeden her oyuncuda çalışır
+        if (GetComponent<CarryHandIK>() == null) gameObject.AddComponent<CarryHandIK>();
     }
 
     private void OnEnable() { CarrierRegistry.Add(this); }
@@ -143,9 +171,8 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
     public void SetRunInput(bool held) { runHeld = held; }
     public void SetCrouchInput(bool held) { crouchHeld = held; }
 
-    // Eğilmeye izin var mı: yerde değil, halatta değil, sedye / sırtta hasta / kangal yok. Elde tek elle eşya (koni, valiz, garaj
-    // eşyası) serbest.
-    public bool CanCrouch { get { return !IsDown && Rope == null && HeldStretcher == null && Piggyback == null && HeldCoil == null; } }
+    // Eğilmeye izin var mı: yerde değil, halatta değil, sedye / sırtta hasta / kangal / kucakta ağır eşya yok. Hafif ve orta eşya serbest.
+    public bool CanCrouch { get { return !IsDown && Rope == null && HeldStretcher == null && Piggyback == null && HeldCoil == null && Rules.CanCrouch(HeldClass); } }
 
     // Ayakta boyun üst kısmı (eğik kapsülün tepesinden ayakta tepeye) boş mu? Kendi gövdesi, tetikleyiciler, karakterler ve küçük
     // fizik nesneleri (elde / yerde eşya, koni, kutu) engel sayılmaz; tavan, alçak kiriş, araç gövdesi sayılır.
@@ -502,7 +529,7 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
             verticalSpeed = -2f;
         }
         else airborne = true;
-        if (jumpRequested && supported && HasControl && Piggyback == null && HeldCoil == null && !IsCrouching) // sırtta hastayla / kangalla / eğikken zıplanmaz (D2, U2)
+        if (jumpRequested && supported && HasControl && Piggyback == null && HeldCoil == null && !IsCrouching && Rules.CanJump(HeldClass)) // sırtta hastayla / kangalla / eğikken / ağır eşyayla zıplanmaz
         {
             verticalSpeed = Mathf.Sqrt(2f * -gravity * jumpHeight);
             airborne = true;
@@ -567,6 +594,17 @@ public class ThirdPersonPlayer : MonoBehaviour, ICarrier
         HorizontalVelocity = moved / dt;
 
         if (animator != null && animator.runtimeAnimatorController != null)
-            animator.SetFloat(speedParameter, wish.magnitude, 0.1f, dt);
+        {
+            // Orta / ağır sınıfta Speed, klibin yazıldığı hıza çevrilir; CarryRules'taki hız değişirse klip CarryRate ile hızlanır (ayak kaymaz)
+            float animSpeed = wish.magnitude;
+            var heldClass = HeldClass;
+            if (!IsCrouching && (heldClass == CarryClass.Medium || heldClass == CarryClass.Heavy))
+            {
+                float rate = Mathf.Max(0.1f, Rules.ClipRate(heldClass, runHeld));
+                animSpeed /= rate;
+                animator.SetFloat(CrewAnimation.ParamCarryRate, rate);
+            }
+            animator.SetFloat(speedParameter, animSpeed, 0.1f, dt);
+        }
     }
 }

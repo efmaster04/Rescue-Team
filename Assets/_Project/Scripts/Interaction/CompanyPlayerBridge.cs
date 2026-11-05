@@ -9,11 +9,11 @@ namespace CompanySim
     //  - Hedef bulma: kameranın merkez ışını (üçüncü şahısta ışın oyuncunun pivotundan itibaren sayılır; kendi gövdesi yok sayılır).
     //  - Tuşlar bizim düzen: E al / bırak / etkileşim (PlayerInputReader.InteractPressed; bizim PlayerInteraction'ın eylemi yoksa),
     //    E basılı tut = cıvata (InteractHeld), sağ tık fırlat (PlayerCombat → IHeldProp), Tab hazırlık paneli. F ve R kullanılmaz.
-    //  - Taşıma: eşya oyuncu kökünün sağ önünde göğüs hizasında (üçüncü şahıs) ↔ kameranın sağ altında (birinci şahıs), Blend ile karışır.
-    //    Nişan alırken sağ el kemiğinde (LootItem deseni).
+    //  - Taşıma: eşya CarryHandIK ile avuçlara bağlı (ICarriedProp: sınıf ağırlık + boyuttan, PlaceHeld tutma noktasını konumlar). Nişan alırken
+    //    sağ el kemiğinde (LootItem deseni). IK sürmüyorsa (Animator yok, UI kilidi öncesi) yedek konum: kök sağ önü ↔ kameranın sağ altı.
     //  - UI (bilgisayar / duraklatma) açılınca ComputerUI SetCursor(true) çağırır: girdi okuyucusu kilitlenir, imleç serbest; kapanınca geri.
     //  - Fırlatılan CarryableItem sert çarpınca dayanıklılığı düşer (CarryableItem.ImpactDamageSpeed / ImpactDamage).
-    public sealed class CompanyPlayerBridge : PlayerInteractor, IHeldProp
+    public sealed class CompanyPlayerBridge : PlayerInteractor, IHeldProp, ICarriedProp
     {
         [Tooltip("Bizim oyuncu (boşsa aynı nesneden bulunur).")]
         public ThirdPersonPlayer player;
@@ -142,10 +142,11 @@ namespace CompanySim
         protected override void LateUpdate()
         {
             if (HeldItem == null) return;
+            if (CarryHandIK.Drives(this, this)) return; // eşya avuçlarda: PlaceHeld konumlar
             Vector3 half = HeldItem.HalfSize;
             Quaternion rot = Quaternion.LookRotation(Flat(transform.forward), Vector3.up);
             Vector3 position;
-            if (combat != null && combat.Aiming && player != null && player.animator != null && player.animator.isHuman
+            if (combat != null && combat.ThrowPose && player != null && player.animator != null && player.animator.isHuman
                 && player.animator.GetBoneTransform(HumanBodyBones.RightHand) is Transform hand)
             {
                 position = hand.position + hand.up * 0.05f + hand.forward * 0.06f;
@@ -239,6 +240,27 @@ namespace CompanySim
             if (Application.isBatchMode) return;
             Cursor.lockState = free ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = free;
+        }
+
+        // ---- ICarriedProp: CarryHandIK eşyayı avuçlara bağlar ----
+        CarryRules ActiveRules => player != null ? player.Rules : CarryRules.Fallback;
+        public CarryClass CarryClass => HeldItem != null ? ActiveRules.ClassFor(HeldItem.definitionId, HeldItem.WeightKg, HeldItem.FullSize) : CarryClass.None;
+        public Vector3 HeldSize
+        {
+            get
+            {
+                if (HeldItem == null) return Vector3.one * 0.2f;
+                if (CarryClass == CarryClass.Light) return HeldItem.FullSize; // tek elde dik sarkar
+                return CarryRules.HeldFrame(HeldItem.FullSize, out _);
+            }
+        }
+        public void PlaceHeld(Vector3 center, Quaternion rotation)
+        {
+            if (HeldItem == null) return;
+            Quaternion frame = Quaternion.identity;
+            if (CarryClass != CarryClass.Light) CarryRules.HeldFrame(HeldItem.FullSize, out frame);
+            holdPoint.SetPositionAndRotation(center, rotation * frame);
+            HeldItem.UpdateHandVisibility(viewCamera);
         }
 
         // ---- IHeldProp: PlayerCombat fırlatır, ThirdPersonPlayer düşürür ----

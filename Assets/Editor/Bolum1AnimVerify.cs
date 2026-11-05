@@ -131,7 +131,8 @@ public static partial class Bolum1AnimVerify
             CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow, // U2
             CrewAnimation.StateHitReact, // U3
             CrewAnimation.StatePushShove, CrewAnimation.StateTackleDive, CrewAnimation.StateTackleGetUp, CrewAnimation.StateThrowAim, CrewAnimation.StateThrowRelease, CrewAnimation.StateWhistle, // U4
-            PlayerCombat.StatePunchJab }; // 2026-11-05: sol tık yumruk
+            PlayerCombat.StatePunchJab, // 2026-11-05: sol tık yumruk
+            CrewAnimation.StateCarryTwoHand, CrewAnimation.StateCarryHeavy }; // 2026-11-05: taşıma sınıfları
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
         // 2026-11-05: eğilme katmanı (Override, gövde + baş + bacak maskesi, Crouch_Idle ↔ Crouch_Walk; varsayılan ağırlık 0)
