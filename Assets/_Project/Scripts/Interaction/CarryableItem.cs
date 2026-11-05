@@ -191,7 +191,7 @@ namespace CompanySim
             IgnorePlayerCollision();
         }
         // Elden fırlat (bizim PlayerCombat sağ tık; CompanyPlayerBridge çağırır): Drop gibi serbest kalır, verilen hızla uçar.
-        public void Throw(Vector3 position, Quaternion rotation, Vector3 velocity)
+        public void Throw(Vector3 position, Quaternion rotation, Vector3 velocity, float spin=3f)
         {
             SetHandOccluded(false);
             Loaded = false; CargoSlot = -1;
@@ -203,7 +203,7 @@ namespace CompanySim
             body.interpolation=freeInterpolation;
             foreach (var col in colliders) col.enabled = true;
             IgnorePlayerCollision();
-            body.linearVelocity=velocity; body.angularVelocity=UnityEngine.Random.insideUnitSphere*3f;
+            body.linearVelocity=velocity; body.angularVelocity=UnityEngine.Random.insideUnitSphere*spin;
             Thrown=true; lastImpact=Time.time-.18f;
         }
         public void LoadInto(Transform socket, int slot)

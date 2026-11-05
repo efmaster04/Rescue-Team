@@ -182,8 +182,10 @@ namespace CompanySim
         public override void DropHeld()
         {
             if (HeldItem == null) return;
+            SetUpright(HeldItem);
             if (!TryGetDropPosition(HeldItem, out var position))
             {
+                RestoreHeldPose(HeldItem);
                 if (ui != null) ui.Toast("Eşyayı bırakmak için biraz boşluk gerekiyor.");
                 return;
             }
@@ -222,6 +224,19 @@ namespace CompanySim
             var item = HeldItem;
             ClearHeld();
             return item;
+        }
+
+        // Bırakmada eşya elin eğik / yatırılmış dönüşünü taşımaz: kendi dik duruşuna, yalnız oyuncunun yaw'ıyla döner (saha eşyaları gibi).
+        void SetUpright(CarryableItem item)
+        {
+            item.transform.rotation = Quaternion.LookRotation(Flat(transform.forward).normalized, Vector3.up);
+        }
+
+        // Bırakılamadı: eşya elde kalır, tutma noktasına göre eski yerine döner
+        void RestoreHeldPose(CarryableItem item)
+        {
+            item.transform.localRotation = Quaternion.identity;
+            item.CenterInHand();
         }
 
         void ClearHeld()
@@ -274,13 +289,15 @@ namespace CompanySim
             Vector3 position = item.transform.position;
             Quaternion rotation = item.transform.rotation;
             ClearHeld(); Throws++;
-            item.Throw(position, rotation, velocity);
+            // Hasar eşiğinin altındaki hafif itiş (ağır sınıf) savrulmaz
+            item.Throw(position, rotation, velocity, velocity.magnitude < CarryableItem.ImpactDamageSpeed ? 0.5f : 3f);
         }
 
         public void DropFrom(ThirdPersonPlayer by)
         {
             var item = HeldItem;
             if (item == null) { ClearHeld(); return; }
+            SetUpright(item);
             if (!TryGetDropPosition(item, out var position)) position = transform.position + Flat(transform.forward).normalized * 0.5f + Vector3.up * 0.5f;
             ClearHeld(); Drops++;
             item.Drop(position);

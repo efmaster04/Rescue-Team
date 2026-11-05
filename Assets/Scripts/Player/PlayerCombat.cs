@@ -53,6 +53,10 @@ public class PlayerCombat : MonoBehaviour
     public bool Aiming { get; private set; }
     // Nişan ya da atış penceresi: eşya sağ elde kalır (taşıma el IK'sı çekilir)
     public bool ThrowPose { get { return Aiming || (Busy && LastAction == "throw"); } }
+    // Ağır sınıf: nişansız iki elle itiş sürüyor (CarryHandIK eşyayı öne kaydırır, PushHitTime'da eşya elden çıkar)
+    public bool HeavyShoveActive { get; private set; }
+    public float HeavyShoveStart { get; private set; } = -100f;
+    public int HeavyShoves { get; private set; }
     public bool Busy { get; private set; }
     public float PunchReadyAt { get; private set; } = -100f;
     public float PushReadyAt { get; private set; } = -100f;
@@ -305,6 +309,8 @@ public class PlayerCombat : MonoBehaviour
         if (held)
         {
             if (Aiming || !CanThrow) return;
+            // Ağır eşya nişan almaz, tek elle kaldırılamaz: basışta kucağın önüne iki elle itilir
+            if (player.HeldClass == CarryClass.Heavy) { StartCoroutine(HeavyShoveRoutine()); return; }
             Aiming = true;
             LastAction = "aim";
             if (crew != null) crew.HoldAction(CrewAnimation.StateThrowAim);
@@ -325,6 +331,46 @@ public class PlayerCombat : MonoBehaviour
         if (crew != null) crew.ReleaseAction();
     }
 
+    private IEnumerator HeavyShoveRoutine()
+    {
+        Busy = true;
+        LastAction = "shove-drop";
+        HeavyShoves++;
+        HeavyShoveActive = true;
+        HeavyShoveStart = Time.time;
+        player.SuspendControl(PushSeconds - 0.1f);
+        // İki avuçla itiş klibi; eller eşyada kalır, eşya CarryHandIK ile öne kayar
+        if (crew != null) crew.PlayAction(CrewAnimation.StatePushShove, PushSeconds);
+        yield return new WaitForSeconds(PushHitTime);
+        HeavyShoveActive = false;
+        var rules = player.Rules;
+        Vector3 fwd = Flat(player.transform.forward);
+        if (fwd.sqrMagnitude < 1e-4f) fwd = Vector3.forward;
+        Vector3 velocity = fwd.normalized * rules.heavyShoveSpeed + Vector3.up * rules.heavyShoveUpSpeed;
+        var item = player.HeldValuable;
+        var prop = player.HeldProp;
+        if (item != null && item.kind != LootKind.Equipment)
+        {
+            player.HeldValuable = null;
+            item.Throw(velocity, 0f, 0f, killBelowY);
+            LastThrown = item;
+            Throws++;
+        }
+        else if (prop != null)
+        {
+            player.HeldProp = null;
+            prop.ThrowFrom(player, velocity);
+            PropThrows++;
+            Throws++;
+        }
+        Play(SynthClips.Cached("Shove", SynthClips.Shove));
+        yield return new WaitForSeconds(Mathf.Max(0f, PushSeconds - PushHitTime - 0.1f));
+        Busy = false;
+    }
+
+    // Eldeki eşyanın fırlatma hızı (nişanlı sınıflar; balistik ve nişan aynı değeri kullanır)
+    public float CurrentThrowSpeed { get { return player != null && settings != null ? player.Rules.ThrowSpeed(player.HeldClass, settings.throwSpeed) : 0f; } }
+
     private IEnumerator ThrowRoutine()
     {
         Busy = true;
@@ -334,13 +380,14 @@ public class PlayerCombat : MonoBehaviour
         yield return new WaitForSeconds(ThrowReleaseTime);
         var item = player.HeldValuable;
         var prop = player.HeldProp;
+        float throwSpeed = CurrentThrowSpeed;
         if (item != null && item.kind != LootKind.Equipment)
         {
             Vector3 target = AimPoint();
-            Vector3 dir = BallisticDirection(item.Center, target, settings.throwSpeed, out string arc);
+            Vector3 dir = BallisticDirection(item.Center, target, throwSpeed, out string arc);
             LastAimArc = arc;
             player.HeldValuable = null;
-            item.Throw(dir * settings.throwSpeed, settings.throwHitStunSeconds, settings.throwHitDamage, killBelowY);
+            item.Throw(dir * throwSpeed, settings.throwHitStunSeconds, settings.throwHitDamage, killBelowY);
             LastThrown = item;
             Throws++;
         }
@@ -348,10 +395,10 @@ public class PlayerCombat : MonoBehaviour
         {
             // Ofis-garaj eşyası: aynı balistik hedef, fırlatmayı köprü yapar (fizik gövdesi eşyanın kendisinde)
             Vector3 target = AimPoint();
-            Vector3 dir = BallisticDirection(prop.Center, target, settings.throwSpeed, out string arc);
+            Vector3 dir = BallisticDirection(prop.Center, target, throwSpeed, out string arc);
             LastAimArc = arc;
             player.HeldProp = null;
-            prop.ThrowFrom(player, dir * settings.throwSpeed);
+            prop.ThrowFrom(player, dir * throwSpeed);
             PropThrows++;
             Throws++;
         }
@@ -413,7 +460,7 @@ public class PlayerCombat : MonoBehaviour
         var item = player.HeldValuable;
         if (item != null) from = item.Center;
         else if (player.HeldProp != null) from = player.HeldProp.Center;
-        return BallisticDirection(from, target, settings.throwSpeed, out string arc);
+        return BallisticDirection(from, target, CurrentThrowSpeed, out string arc);
     }
 
     // Başlangıç hızı v ile from → target balistik yön: alçak yay; çözüm yoksa hedefe doğru 45° (menzil dışı). arc: "alçak" / "45°".

@@ -134,6 +134,14 @@ public class CrewAnimation : MonoBehaviour
         if (player != null) player.Jumped -= OnJumped;
         if (mission != null) mission.MissionSucceeded -= OnMissionSucceeded;
         mission = null;
+        // Minibüse binince bu bileşen kapanır, Animator açık kalır: katman ağırlığı donarsa koltukta bacaklar Strafe oynar
+        LowerBodyWeight = 0f;
+        lowerJumpUntil = -1f;
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            if (lowerLayer == -2) lowerLayer = animator.GetLayerIndex(LowerBodyLayerName);
+            if (lowerLayer >= 0) animator.SetLayerWeight(lowerLayer, 0f);
+        }
     }
 
     private bool Ready { get { return animator != null && animator.enabled && animator.runtimeAnimatorController != null && animator.isActiveAndEnabled; } }
@@ -217,8 +225,10 @@ public class CrewAnimation : MonoBehaviour
         float target = 0f, rate = 1f;
         Vector3 v = player.HorizontalVelocity;
         float speed = v.magnitude;
-        bool facesLook = player.FaceCameraYaw || (combat != null && combat.Aiming);
-        if (facesLook && speed > 0.2f && player.HasControl && player.Rope == null && player.HeldStretcher == null && player.Piggyback == null && !InAction)
+        bool aiming = combat != null && combat.Aiming;
+        bool facesLook = player.FaceCameraYaw || aiming;
+        // Nişan süresiz eylemdir (HoldAction: InAction hep açık): nişanda da ayaklar gidiş yönüne adım atar, kollar Throw_Aim'de kalır
+        if (facesLook && speed > 0.2f && player.HasControl && player.Rope == null && player.HeldStretcher == null && player.Piggyback == null && (!InAction || aiming))
         {
             Vector3 local = transform.InverseTransformDirection(v / speed);
             animator.SetFloat(ParamMoveX, local.x, 0.08f, Time.deltaTime);

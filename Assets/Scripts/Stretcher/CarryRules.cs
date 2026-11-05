@@ -42,6 +42,17 @@ public class CarryRules : ScriptableObject
     public float heavyWalkSpeed = 1.4f;
     [Tooltip("Kangalla Shift'te hız (m/sn; Carry_Coil_Run 2.8). Kangalla zıplama yine yok.")]
     public float coilRunSpeed = 2.8f;
+
+    // Sınıfa göre fırlatma (kullanıcı kararı 2026-11-05): hafif tam hız (ThiefSettings.throwSpeed), orta daha kısa, ağır nişansız kısa itiş.
+    [Header("Fırlatma")]
+    [Tooltip("Orta sınıfın fırlatma hızı = ThiefSettings.throwSpeed × bu çarpan.")]
+    [Range(0.1f, 1f)] public float mediumThrowFactor = 0.6f;
+    [Tooltip("Ağır sınıf: sağ tıkta nişansız, iki elle öne itiş; eşyanın ileri hızı (m/sn). Yerden çarpma hızı CarryableItem.ImpactDamageSpeed'in altında kalsın diye düşük.")]
+    public float heavyShoveSpeed = 1.8f;
+    [Tooltip("Ağır sınıf itişinde eşyanın yukarı hızı (m/sn).")]
+    public float heavyShoveUpSpeed = 0.4f;
+    [Tooltip("İtişte eşyanın kucaktan öne kayması (m): eller eşyayı ittiği sırada.")]
+    public float heavyShoveReach = 0.18f;
     [Tooltip("Kimliğe göre sınıf istisnası (EquipmentDefinition.id ya da eşya adı).")]
     // Valiz boyuta göre ağır çıkıyor; kullanıcı kararı (2026-11-05, tablo onayı): orta sınıf, iki el, 2.0 / 2.6, koşu ve zıplama serbest.
     public ClassOverride[] classOverrides = new[] { new ClassOverride { id = "Valiz", carryClass = CarryClass.Medium } };
@@ -94,6 +105,12 @@ public class CarryRules : ScriptableObject
         }
         if (s.z > s.x) { frame = Quaternion.Euler(0f, 90f, 0f) * frame; s = new Vector3(s.z, s.y, s.x); }
         return s;
+    }
+
+    // Fırlatma hızı (nişanlı sınıflar): hafif taban hız, orta çarpanlı. Ağırda nişan yok (heavyShove*).
+    public float ThrowSpeed(CarryClass c, float baseSpeed)
+    {
+        return c == CarryClass.Medium ? baseSpeed * mediumThrowFactor : baseSpeed;
     }
 
     public bool CanRun(CarryClass c) { return c != CarryClass.Heavy; }
