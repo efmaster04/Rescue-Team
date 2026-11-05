@@ -58,6 +58,14 @@ public class ThiefSettings : ScriptableObject
     [Min(5f)] public float maxRamSeconds = 40f;
     [Tooltip("Minibüs üst üste bu kadar vuruşta yerinden oynamazsa (kayaya dayalı, kenarda) kamyonet vazgeçer.")]
     [Range(1, 8)] public int maxBlockedRams = 3;
+    [Tooltip("İtme kararı değişince (arkası dolu, kıpırdamıyor, arkada araç) kamyonetin sert fren yavaşlaması (m/sn²).")]
+    [Min(5f)] public float ramStopDecel = 20f;
+    [Tooltip("Yaklaşırken şeritte en çok bu kadar sn beklenir (boşalmayan minibüs, kuyruk); dolunca kamyonet bulunduğu yerde park eder, hırsızlar iner.")]
+    [Min(1f)] public float approachWaitSeconds = 45f;
+    [Tooltip("Banketten şeride dönmeden önce boşluk en çok bu kadar sn beklenir; dolunca kamyonet bulunduğu yerde (bankette) park eder.")]
+    [Min(1f)] public float laneEntryWaitSeconds = 25f;
+    [Tooltip("Minibüs itilemez durumdayken (sürülüyor, yükte ekip var, görev bitti) rotasında en çok bu kadar sn beklenir; dolunca vazgeçer.")]
+    [Min(1f)] public float minibusYieldSeconds = 12f;
     [Tooltip("Her vuruşta şirket kasasından düşen ceza (₺): çarpma hızı ramPenaltySpeedLow → ramPenaltySpeedHigh arasında min → max.")]
     [Min(0)] public int ramPenaltyMin = 50;
     [Min(0)] public int ramPenaltyMax = 250;

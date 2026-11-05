@@ -22,6 +22,15 @@ using UnityEngine;
 //   kamyonet şeritte park eder (döngü yok), hırsız iner, kalkar, kaybolur. (C3) gerçek duvar: minibüs fırlatılmaz. (C4) dışa dönük,
 //   kenarda minibüs: düşmez. (D) minibüs şeritte: bekle-korna-çarp, ücretli. (E/E2) arkada araç: gövdeler kesişmez. (P1/P2) Codex review.
 //   Görüntüler: Captures/Bolum1/thiefvan_*.png
+// (G) Test iticisi: IMinibusPusher DEĞİL (trafik aracı / ambulans gövdesi gibi); kinematik gövdeyi fizik adımında sürer
+public class ThiefVanVerifyMover : MonoBehaviour
+{
+    public Vector3 velocity;
+    private Rigidbody rb;
+    private void Awake() { rb = GetComponent<Rigidbody>(); }
+    private void FixedUpdate() { if (rb != null) rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime); }
+}
+
 [InitializeOnLoad]
 public static class ThiefVanVerify
 {
@@ -238,6 +247,17 @@ public static class ThiefVanVerify
         yield return PhaseLaneBlock();
         yield return PhaseTrafficBehind();
         yield return PhaseReviewFindings();
+        yield return PhaseLaneEntryWait();
+        yield return PhaseFrozenCarBehind();
+        yield return PhaseOnlyThiefVanPushes();
+        yield return PhaseFastHit(false, 0f, 0.5f);
+        yield return PhaseFastHit(true, -0.9f, 0.5f);  // zemin hemen kesilir: hiç itilmez
+        yield return PhaseFastHit(true, 0.5f, 1.8f);   // biraz yer var: itilir, zemin bitmeden durur
+        yield return PhaseApproachBudget();
+        yield return PhaseDrivingMinibus();
+        yield return PhaseCrewInCargo();
+        yield return PhaseLaneRamCycles();
+        yield return PhaseMissionFinished(); // en sonda: görevi bitirir
     }
 
     private static string GroundProfile()
@@ -446,9 +466,9 @@ public static class ThiefVanVerify
 
     // Minibüsü park alanından ~4 m ileri taşmış, durağın üstünde (şerit dışı, banket) bırak: s = durak − 1.5 (gövde durak
     // dikdörtgeninin 4.5 m'sini kapatır), yanal = banket + 0.5 (gövde şeride girmez). Kamyonet onu geriye, park alanına doğru iter.
-    private static void ParkMinibusOnStop()
+    private static void ParkMinibusOnStop(float behindStop = 1.5f)
     {
-        float s = Dir.StopS - 1.5f;
+        float s = Dir.StopS - behindStop;
         Vector3 pos = east.PointAt(s) + east.RightAt(s) * (Dir.ShoulderLateral + 0.5f);
         if (GroundProbe.Find(pos + Vector3.up * 2f, 5f, out RaycastHit g)) pos.y = g.point.y;
         Minibus.ResetDamageForTest();
@@ -758,7 +778,7 @@ public static class ThiefVanVerify
         yield return Seconds(0.5f);
 
         // (E2) en kötü durum: geniş araç (kamyon) manevra başlarken asgari boşlukta arkada duruyor. Kesişme yok; kamyonet ya banket
-        // durağına girer ya da (yanal boşluk yetmezse) şeritte park eder, sonra gider. İkisinde de uyarı yok.
+        // durağına girer ya da (yanal boşluk yetmezse) şeritte park eder. KALKIŞ gerçekten olur (kilit yok: review P1), araç da yürür.
         vanWarnings.Clear();
         van = Spawn(1);
         if (van == null) throw new Exception("kamyonet çıkamadı (E2)");
@@ -779,15 +799,19 @@ public static class ThiefVanVerify
         bool inLane = parked && van.ParkedInLane;
         var e2Log = van != null ? van.ManeuverLog : new List<string>();
         Time.timeScale = 4f;
+        float tParked = Time.time, tDeparted = -1f, carS0 = car != null ? car.Follower.Distance : 0f, carSMax = carS0;
         yield return (Func<bool>)(() =>
         {
             if (van != null && car != null) overlap |= BodiesOverlap(van, car);
-            return van == null || car == null || Time.time - t0 > 200f;
+            if (van != null && tDeparted < 0f && van.Phase == ThiefVan.VanPhase.Departing) tDeparted = Time.time;
+            if (car != null) carSMax = Mathf.Max(carSMax, car.Follower.Distance);
+            return van == null || Time.time - tParked > 60f;
         });
         Time.timeScale = 1f;
-        Check("(E2) geniş araç asgari boşlukta arkadayken: gövdeler kesişmez, kamyonet park eder (bankette ya da araca değecekse şeritte), kalkar; uyarı yok",
-            parked && !overlap && vanWarnings.Count == 0,
-            "park " + parked + " şeritte " + inLane + ", kesişme " + overlap + ", uyarı " + vanWarnings.Count + "; log: " + string.Join(" | ", e2Log));
+        bool e2Gone = van == null;
+        Check("(E2) geniş araç asgari boşlukta arkadayken: gövdeler kesişmez, kamyonet park eder (bankette ya da araca değecekse şeritte), arkadaki araç kalkışı ENGELLEMEZ (60 sn içinde kalkar, kaybolur), araç da yürür; uyarı yok",
+            parked && !overlap && vanWarnings.Count == 0 && tDeparted > 0f && e2Gone && (car == null || carSMax > carS0 + 3f),
+            "park " + parked + " şeritte " + inLane + ", kesişme " + overlap + ", kalkış " + (tDeparted > 0f ? (tDeparted - tParked).ToString("F1", Inv) + " sn" : "YOK") + ", kayboldu " + e2Gone + ", araç " + (carSMax - carS0).ToString("F1", Inv) + " m yürüdü, uyarı " + vanWarnings.Count + "; log: " + string.Join(" | ", e2Log));
         Dir.ClearAll();
         if (car != null) UnityEngine.Object.Destroy(car.gameObject);
         yield return Seconds(0.5f);
@@ -843,6 +867,396 @@ public static class ThiefVanVerify
         Minibus.ResetDamageForTest();
         Minibus.TeleportTo(zonePos, zoneRot, true);
         yield return Seconds(0.3f);
+    }
+
+    // (F) Banketten şeride dönüş boşluk bekler (review P1): vazgeçen kamyonet akan aracın önüne çıkmaz, araç geçtikten sonra döner
+    private static IEnumerator PhaseLaneEntryWait()
+    {
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        ParkMinibusOnStop(4f); // geride: temas gövde şeritten çıktıktan sonra (kamyonet bankette vazgeçer)
+        yield return Seconds(0.3f);
+        ThiefVan.ImmovableMinibusForTest = true;
+        Minibus.physicalShoveEnabled = false;
+        int savedBlocked = Dir.Active.maxBlockedRams;
+        Dir.Active.maxBlockedRams = 1;
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (F)");
+        float t0 = Time.time;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() => van == null || van.Step == ThiefVan.ManeuverStep.Pause || van.IsParked || Time.time - t0 > 90f);
+        TrafficVehicle car = null;
+        bool carFirst = false, overlap = false, sawEntry = false, sampled = false, offLane = van != null && van.LaneCleared;
+        if (van != null && van.Step == ThiefVan.ManeuverStep.Pause)
+        {
+            car = Traffic.ForceSpawn(true, TrafficVehicleType.Sedan);
+            if (car != null) { car.Follower.Place(east, van.Follower.Distance - 30f, car.Follower.cruiseSpeed); sampled = true; }
+        }
+        yield return (Func<bool>)(() =>
+        {
+            if (van != null && car != null)
+            {
+                overlap |= BodiesOverlap(van, car);
+                if (!sawEntry && van.Step == ThiefVan.ManeuverStep.Fallback)
+                {
+                    sawEntry = true;
+                    carFirst = car.Follower.RearS > van.Follower.FrontS;
+                }
+            }
+            if (car == null && !sawEntry) { carFirst = sampled; }
+            return van == null || van.IsParked || Time.time - t0 > 120f;
+        });
+        bool parked = van != null && van.IsParked;
+        Dir.Active.maxBlockedRams = savedBlocked;
+        ThiefVan.ImmovableMinibusForTest = false;
+        Minibus.physicalShoveEnabled = true;
+        var log = van != null ? van.ManeuverLog : new List<string>();
+        yield return (Func<bool>)(() => van == null || Time.time - t0 > 180f);
+        Time.timeScale = 1f;
+        Check("(F) banketten şeride dönüş: akan aracın önüne çıkılmaz (araç geçtikten sonra döner), gövdeler kesişmez, park edip kalkar",
+            sampled && offLane && parked && carFirst && !overlap && van == null,
+            "bankette vazgeçti " + offLane + ", araç örneklendi " + sampled + ", önce araç geçti " + carFirst + ", kesişme " + overlap + ", park " + parked + ", kayboldu " + (van == null) + "; log: " + string.Join(" | ", log));
+        Dir.ClearAll();
+        if (car != null) UnityEngine.Object.Destroy(car.gameObject);
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (E3) Kalıcı kilit (review P1): şeritte park eden kamyonetin hemen arkasında (boşluk < minGap) donmuş araç kalkışı engellemez
+    private static IEnumerator PhaseFrozenCarBehind()
+    {
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        ParkMinibusOnStop();
+        yield return Seconds(0.3f);
+        ThiefVan.ImmovableMinibusForTest = true;
+        Minibus.physicalShoveEnabled = false;
+        int savedBlocked = Dir.Active.maxBlockedRams;
+        Dir.Active.maxBlockedRams = 1;
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (E3)");
+        float t0 = Time.time;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() => van == null || van.IsParked || Time.time - t0 > 90f);
+        bool inLane = van != null && van.IsParked && van.ParkedInLane;
+        TrafficVehicle car = null;
+        float gap0 = -1f;
+        if (inLane)
+        {
+            car = Traffic.ForceSpawn(true, TrafficVehicleType.Sedan);
+            if (car != null) { car.Follower.Place(east, van.Follower.RearS - 2f - car.Follower.frontOverhang, 0f); gap0 = van.Follower.RearS - car.Follower.FrontS; }
+        }
+        float tp = Time.time, tDep = -1f, carS0 = car != null ? car.Follower.Distance : 0f, carSMax = carS0;
+        yield return (Func<bool>)(() =>
+        {
+            if (van != null && tDep < 0f && van.Phase == ThiefVan.VanPhase.Departing) tDep = Time.time;
+            if (car != null) carSMax = Mathf.Max(carSMax, car.Follower.Distance);
+            return van == null || Time.time - tp > 45f;
+        });
+        Time.timeScale = 1f;
+        Dir.Active.maxBlockedRams = savedBlocked;
+        ThiefVan.ImmovableMinibusForTest = false;
+        Minibus.physicalShoveEnabled = true;
+        Check("(E3) şeritte park eden kamyonetin arkasında donmuş araç (boşluk < minGap): kamyonet yine kalkar ve kaybolur, araç yürür; kilit yok",
+            inLane && gap0 >= 0f && gap0 < 4f && tDep > 0f && van == null && (car == null || carSMax > carS0 + 3f),
+            "şeritte " + inLane + ", boşluk " + gap0.ToString("F1", Inv) + " m, kalkış " + (tDep > 0f ? (tDep - tp).ToString("F1", Inv) + " sn" : "YOK") + ", kayboldu " + (van == null) + ", araç " + (carSMax - carS0).ToString("F1", Inv) + " m yürüdü");
+        Dir.ClearAll();
+        if (car != null) UnityEngine.Object.Destroy(car.gameObject);
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (G) Fiziksel itmeyi yalnız hırsız kamyoneti başlatır (review P1b): trafik aracı ve ambulans gövdesi başlatamaz (onlar betikli Ram kullanır)
+    private static IEnumerator PhaseOnlyThiefVanPushes()
+    {
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.3f);
+        // İtici şerit boyunca arkadan gelir (yana doğru korkuluk yakın: CanBePushed zaten reddederdi, test boşa geçerdi)
+        Vector3 toLane = -Flat(east.TangentAt(east.Project(zonePos))).normalized;
+        bool room = Minibus.CanBePushed(-toLane, Minibus.PushProbeFor(2f));
+        int shoves0 = Minibus.PhysicalShoves;
+        var car = Traffic.ForceSpawn(true, TrafficVehicleType.Sedan);
+        if (car == null) throw new Exception("araç çıkamadı (G)");
+        car.parked = true;
+        car.transform.position = zonePos + toLane * 8f + Vector3.up * 0.2f;
+        car.GetComponent<Rigidbody>().position = car.transform.position;
+        car.gameObject.AddComponent<ThiefVanVerifyMover>().velocity = -toLane * 2f;
+        Physics.SyncTransforms();
+        yield return Seconds(4f);
+        int carShoves = Minibus.PhysicalShoves - shoves0;
+        UnityEngine.Object.Destroy(car.gameObject);
+        yield return Seconds(0.3f);
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.3f);
+        int shoves1 = Minibus.PhysicalShoves;
+        var amb = UnityEngine.Object.Instantiate(Mission.ambulancePrefab);
+        amb.enabled = false;
+        amb.transform.position = zonePos + toLane * 8f + Vector3.up * 0.2f;
+        amb.GetComponent<Rigidbody>().position = amb.transform.position;
+        amb.gameObject.AddComponent<ThiefVanVerifyMover>().velocity = -toLane * 2f;
+        Physics.SyncTransforms();
+        yield return Seconds(4f);
+        int ambShoves = Minibus.PhysicalShoves - shoves1;
+        UnityEngine.Object.Destroy(amb.gameObject);
+        yield return Seconds(0.3f);
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.3f);
+        Check("(G) trafik aracı ve ambulans gövdesi park hâlindeki minibüse girince fiziksel itme başlamaz (yalnız hırsız kamyoneti; P1 testi kamyoneti ayrıca sınar)",
+            room && carShoves == 0 && ambShoves == 0, "itme yönü boş " + room + ", araç " + carShoves + " itme, ambulans " + ambShoves + " itme");
+    }
+
+    // (H) Hızlı vuruş (≥ 2.7 m/sn): duvar (edge = false) ya da itme yönünde zemin kenarı (edge = true, kısa zemin plakası). Karar anında
+    // sert fren: kamyonet temastan sonra ≤ 0.6 m gider, minibüs sıkışmaz / kenardan itilmez, kamyonet vazgeçer (review P2a)
+    private static IEnumerator PhaseFastHit(bool edge, float plateBeyondBody, float maxMoved)
+    {
+        string tag = !edge ? "(H1) duvar" : plateBeyondBody < 0f ? "(H2) kenar, yer yok" : "(H3) kenar, az yer";
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        ParkMinibusOnStop();
+        yield return Seconds(0.3f);
+        Vector3 mb = Minibus.transform.position, tan = Flat(east.TangentAt(Dir.StopS)).normalized;
+        float halfLen = 0f;
+        foreach (var p in Minibus.Footprint()) halfLen = Mathf.Max(halfLen, Mathf.Abs(Vector3.Dot(Flat(p - mb), tan)));
+        GameObject obstacle = null;
+        Transform[] savedRoots = Minibus.groundRoots;
+        bool preProbe = true;
+        if (edge)
+        {
+            // Zemin kökü geçici olarak yalnız bu plaka: itme yönünde 0.5 m sonra zemin biter. Önce uzun plakayla "boş" görünmeli (yol engel değil).
+            obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            obstacle.name = "ThiefVanVerify_EdgePlate";
+            obstacle.isStatic = true;
+            obstacle.transform.rotation = Quaternion.LookRotation(tan, Vector3.up);
+            obstacle.transform.localScale = new Vector3(8f, 0.05f, 2f * halfLen + 12f);
+            obstacle.transform.position = mb - Vector3.up * 0.2f - tan * 6f;
+            Physics.SyncTransforms();
+            Minibus.groundRoots = new[] { obstacle.transform };
+            preProbe = Minibus.CanBePushed(-tan, 2f);
+            obstacle.transform.localScale = new Vector3(8f, 0.05f, 2f * (halfLen + plateBeyondBody));
+            obstacle.transform.position = mb - Vector3.up * 0.2f;
+            Physics.SyncTransforms();
+        }
+        else
+        {
+            obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            obstacle.name = "ThiefVanVerify_FastWall";
+            obstacle.isStatic = true;
+            obstacle.transform.position = mb - tan * (halfLen + 0.35f + 0.5f) + Vector3.up * 1.5f;
+            obstacle.transform.rotation = Quaternion.LookRotation(tan, Vector3.up);
+            obstacle.transform.localScale = new Vector3(6f, 3f, 1f);
+            Physics.SyncTransforms();
+        }
+        float savedMin = Dir.Active.ramSpeedMin;
+        Dir.Active.ramSpeedMin = 3.3f;
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (H)");
+        var smp = new Sampler { minibusStart = mb };
+        float t0 = Time.time, maxTilt = 0f, reverseAtHit = -1f, overrun = 0f;
+        int falls0 = Minibus.FallRespawns;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() =>
+        {
+            smp.Tick(van);
+            maxTilt = Mathf.Max(maxTilt, Minibus.TiltDeg);
+            if (van != null && van.Rams >= 1)
+            {
+                if (reverseAtHit < 0f) reverseAtHit = van.ReverseDistance;
+                // Karar anından sonra gidilen yol: ilk vuruşun Push / BackOff adımı (yeniden yanaşma sayılmaz)
+                if (van.Rams == 1 && (van.Step == ThiefVan.ManeuverStep.Push || van.Step == ThiefVan.ManeuverStep.BackOff)) overrun = Mathf.Max(overrun, van.ReverseDistance - reverseAtHit);
+            }
+            return van == null || van.IsParked || Time.time - t0 > 200f;
+        });
+        Time.timeScale = 1f;
+        bool parked = van != null && van.IsParked;
+        float firstSpeed = Dir.RamLog.Count > 0 ? Dir.RamLog[0].speed : 0f;
+        var log = van != null ? van.ManeuverLog : new List<string>();
+        Check(tag + " hızlı vuruşta (≥ 2.7 m/sn): kamyonet temastan sonra ≤ " + (maxMoved + 0.6f).ToString("F1", Inv) + " m gider, minibüs ≤ " + maxMoved.ToString("F1", Inv) + " m / eğim ≤ 8°, düşmez; kamyonet vazgeçip park eder (döngü yok)",
+            parked && firstSpeed >= 2.7f && overrun <= maxMoved + 0.6f && smp.minibusMoved <= maxMoved && maxTilt <= 8f && Minibus.FallRespawns == falls0 && preProbe,
+            "ilk vuruş " + firstSpeed.ToString("F1", Inv) + " m/sn, temastan sonra yol " + overrun.ToString("F2", Inv) + " m, minibüs " + smp.minibusMoved.ToString("F2", Inv) + " m, eğim " + maxTilt.ToString("F1", Inv) + "°, düşme " + (Minibus.FallRespawns - falls0) + ", uzun plakada boş " + preProbe + ", park " + parked + " şeritte " + (van != null && van.ParkedInLane) + ", vuruş " + (van != null ? van.Rams : -1) + "; log: " + string.Join(" | ", log));
+        Dir.Active.ramSpeedMin = savedMin;
+        Minibus.groundRoots = savedRoots;
+        UnityEngine.Object.Destroy(obstacle);
+        Dir.ClearAll();
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (I) Boşalmayan minibüs arkasında yaklaşma bütçesi (review P2b): kamyonet sonsuza dek beklemez, bulunduğu yerde park eder, hırsız iner
+    private static IEnumerator PhaseApproachBudget()
+    {
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        float s = Dir.StopS - 22f;
+        Vector3 pos = east.PointAt(s);
+        if (GroundProbe.Find(pos + Vector3.up * 2f, 5f, out RaycastHit g)) pos.y = g.point.y;
+        Minibus.ResetDamageForTest();
+        Minibus.TeleportTo(pos, Quaternion.LookRotation(-east.TangentAt(s), Vector3.up), true);
+        yield return Seconds(0.3f);
+        float savedWait = Traffic.Active.vanWaitSeconds, savedBudget = Dir.Active.approachWaitSeconds;
+        Traffic.Active.vanWaitSeconds = 99999f; // çarpmaz: minibüs boşalmaz
+        Dir.Active.approachWaitSeconds = 6f;
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (I)");
+        float t0 = Time.time;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() => van == null || van.IsParked || Time.time - t0 > 50f);
+        bool parked = van != null && van.IsParked;
+        float vanS = van != null ? van.Follower.Distance : -1f;
+        yield return (Func<bool>)(() => van == null || van.Spawned >= 1 || Time.time - t0 > 60f);
+        bool unloaded = van != null && van.Spawned >= 1;
+        Time.timeScale = 1f;
+        Traffic.Active.vanWaitSeconds = savedWait;
+        Dir.Active.approachWaitSeconds = savedBudget;
+        Check("(I) şeridi kapatan, boşalmayan minibüs arkasında: süre bütçesi dolunca kamyonet bulunduğu yerde park eder, hırsız iner",
+            parked && unloaded && vanS < s, "park " + parked + " (" + (Time.time - t0).ToString("F1", Inv) + " sn) s " + vanS.ToString("F1", Inv) + " / minibüs s " + s.ToString("F1", Inv) + ", indi " + unloaded + (van != null ? "; log: " + string.Join(" | ", van.ManeuverLog) : ""));
+        Dir.ClearAll();
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (J) Manevra sırasında minibüs sürülür duruma geçer (oyuncu bindi): kamyonet temasa girmeden durur, itmez, ceza yok, süre dolunca vazgeçer (review P2c)
+    private static IEnumerator PhaseDrivingMinibus()
+    {
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        ParkMinibusOnStop();
+        yield return Seconds(0.3f);
+        float savedYield = Dir.Active.minibusYieldSeconds;
+        Dir.Active.minibusYieldSeconds = 4f;
+        Vector3 mb = Minibus.transform.position;
+        Quaternion mbRot = Minibus.transform.rotation;
+        int shoves0 = Minibus.PhysicalShoves;
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (J)");
+        float t0 = Time.time;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() => van == null || van.Phase == ThiefVan.VanPhase.Maneuvering || Time.time - t0 > 60f);
+        Minibus.TeleportTo(mb, mbRot, false); // "oyuncu oturdu": Driving (gaz yok, frenli)
+        var smp = new Sampler { minibusStart = mb };
+        yield return (Func<bool>)(() => { smp.Tick(van); return van == null || van.IsParked || Time.time - t0 > 120f; });
+        Time.timeScale = 1f;
+        bool parked = van != null && van.IsParked;
+        var log = van != null ? van.ManeuverLog : new List<string>();
+        Check("(J) minibüs sürülürken: kamyonet değmeden durur, itmez (≤ 0.2 m), fiziksel itme ve ceza yok, süre dolunca vazgeçip park eder",
+            parked && Dir.RamCount == 0 && Minibus.PhysicalShoves == shoves0 && smp.minibusMoved <= 0.2f,
+            "park " + parked + " şeritte " + (van != null && van.ParkedInLane) + ", ceza ₺" + Dir.RamPenaltyTotal + ", itme " + (Minibus.PhysicalShoves - shoves0) + ", minibüs " + smp.minibusMoved.ToString("F2", Inv) + " m; log: " + string.Join(" | ", log));
+        Dir.Active.minibusYieldSeconds = savedYield;
+        Dir.ClearAll();
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (K) Yük bölümünde ekip varken: itme yok, ücret yok, bekler ve süre dolunca vazgeçer (review P3a; trafik kuralıyla aynı)
+    private static IEnumerator PhaseCrewInCargo()
+    {
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        ParkMinibusOnStop();
+        yield return Seconds(0.3f);
+        float savedYield = Dir.Active.minibusYieldSeconds;
+        Dir.Active.minibusYieldSeconds = 4f;
+        var player = UnityEngine.Object.FindAnyObjectByType<ThirdPersonPlayer>();
+        Vector3 savedPlayer = player.transform.position;
+        Vector3 cargo = Minibus.transform.TransformPoint((Minibus.cargoMin + Minibus.cargoMax) * 0.5f);
+        var cc = player.GetComponent<CharacterController>();
+        bool ccOn = cc != null && cc.enabled;
+        if (cc != null) cc.enabled = false;
+        player.transform.position = cargo;
+        Physics.SyncTransforms();
+        bool crewIn = Minibus.CrewInCargo;
+        Vector3 mb = Minibus.transform.position;
+        int shoves0 = Minibus.PhysicalShoves;
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (K)");
+        var smp = new Sampler { minibusStart = mb };
+        float t0 = Time.time;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() => { player.transform.position = cargo; crewIn &= Minibus.CrewInCargo; smp.Tick(van); return van == null || van.IsParked || Time.time - t0 > 120f; });
+        Time.timeScale = 1f;
+        bool parked = van != null && van.IsParked;
+        Check("(K) yük bölümünde ekip varken: fiziksel itme ve ücret yok, kamyonet bekler, süre dolunca vazgeçip park eder",
+            crewIn && parked && Dir.RamCount == 0 && Minibus.PhysicalShoves == shoves0 && smp.minibusMoved <= 0.2f,
+            "ekip yükte " + crewIn + ", park " + parked + ", ceza ₺" + Dir.RamPenaltyTotal + ", itme " + (Minibus.PhysicalShoves - shoves0) + ", minibüs " + smp.minibusMoved.ToString("F2", Inv) + " m" + (van != null ? "; log: " + string.Join(" | ", van.ManeuverLog) : ""));
+        player.transform.position = savedPlayer;
+        Physics.SyncTransforms();
+        if (cc != null) cc.enabled = ccOn;
+        Dir.Active.minibusYieldSeconds = savedYield;
+        Dir.ClearAll();
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (L) Şeritte çarpma: kamyonetin her yeni çarpma döngüsü ücretli (HitCooldown korunur), hasar araç başına bir kez (review P3c)
+    private static IEnumerator PhaseLaneRamCycles()
+    {
+        Dir.ResetPenaltiesForTest();
+        float s = 60f;
+        Vector3 tan = Flat(east.TangentAt(s)).normalized, pos = east.PointAt(s);
+        if (GroundProbe.Find(pos + Vector3.up * 2f, 5f, out RaycastHit g)) pos.y = g.point.y;
+        Minibus.ResetDamageForTest();
+        Minibus.TeleportTo(pos, Quaternion.LookRotation(-tan, Vector3.up), true);
+        yield return Seconds(0.3f);
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (L)");
+        van.Vehicle.parked = true;
+        var ts = UnityEngine.Object.Instantiate(van.Vehicle.settings);
+        ts.vanRamMaxSeconds = 1f;
+        van.Vehicle.settings = ts;
+        float halfLen = 0f;
+        foreach (var p in Minibus.Footprint()) halfLen = Mathf.Max(halfLen, Mathf.Abs(Vector3.Dot(Flat(p - pos), tan)));
+        for (int i = 0; i < 3; i++)
+        {
+            Minibus.TeleportTo(pos, Quaternion.LookRotation(-tan, Vector3.up), true);
+            van.Follower.Place(east, s - halfLen - van.Follower.frontOverhang + 0.1f, 0f);
+            Physics.SyncTransforms();
+            Minibus.Ram(van.Vehicle);
+            yield return Seconds(1.3f);
+        }
+        int cycles = Dir.RamCount;
+        float dmg = Minibus.Damage;
+        // Aynı döngüde (ya da kilit içinde) ikinci çağrı ücret yazmaz
+        Minibus.TeleportTo(pos, Quaternion.LookRotation(-tan, Vector3.up), true);
+        van.Follower.Place(east, s - halfLen - van.Follower.frontOverhang + 0.1f, 0f);
+        Physics.SyncTransforms();
+        Minibus.Ram(van.Vehicle);
+        int afterFourth = Dir.RamCount;
+        Minibus.Ram(van.Vehicle);
+        Check("(L) şerit çarpması: her yeni döngü ücretli (3 döngü = 3 kayıt), aynı döngü tekrarı ücretsiz, hasar araç başına bir kez",
+            cycles == 3 && afterFourth == 4 && Dir.RamCount == 4 && Dir.RamLog.All(r => r.source == "şerit") && Mathf.Abs(dmg - ts.vanRamDamage) < 0.01f,
+            "3 döngüde " + cycles + " kayıt, 4. döngü " + afterFourth + ", tekrar sonrası " + Dir.RamCount + ", hasar %" + dmg.ToString("F1", Inv) + " (araç başına %" + ts.vanRamDamage.ToString("F1", Inv) + ")");
+        Dir.ClearAll();
+        Minibus.ResetDamageForTest();
+        Minibus.TeleportTo(zonePos, zoneRot, true);
+        yield return Seconds(0.5f);
+    }
+
+    // (M) Görev bitince: ceza yazılmaz, uçan yazı çıkmaz, itme yok (review P3b)
+    private static IEnumerator PhaseMissionFinished()
+    {
+        Dir.ResetPenaltiesForTest();
+        vanWarnings.Clear();
+        ParkMinibusOnStop();
+        yield return Seconds(0.3f);
+        float savedYield = Dir.Active.minibusYieldSeconds;
+        Dir.Active.minibusYieldSeconds = 4f;
+        Mission.ForceFinishForTest(false);
+        int floats0 = Hud != null ? Hud.PenaltyFloatingSpawned : 0;
+        int shoves0 = Minibus.PhysicalShoves;
+        Vector3 mb = Minibus.transform.position;
+        int direct = Dir.ChargeRam(null, 3f, mb, "test");
+        var van = Spawn(1);
+        if (van == null) throw new Exception("kamyonet çıkamadı (M)");
+        var smp = new Sampler { minibusStart = mb };
+        float t0 = Time.time;
+        Time.timeScale = 4f;
+        yield return (Func<bool>)(() => { smp.Tick(van); return van == null || van.IsParked || Time.time - t0 > 120f; });
+        Time.timeScale = 1f;
+        int floats = Hud != null ? Hud.PenaltyFloatingSpawned - floats0 : -1;
+        Check("(M) görev bitince: ChargeRam ₺0, kayıt yok, uçan yazı yok, fiziksel itme yok",
+            direct == 0 && Dir.RamCount == 0 && Dir.RamPenaltyTotal == 0 && floats == 0 && Minibus.PhysicalShoves == shoves0 && smp.minibusMoved <= 0.2f,
+            "doğrudan ₺" + direct + ", kayıt " + Dir.RamCount + ", toplam ₺" + Dir.RamPenaltyTotal + ", uçan yazı " + floats + ", itme " + (Minibus.PhysicalShoves - shoves0) + ", minibüs " + smp.minibusMoved.ToString("F2", Inv) + " m, park " + (van != null && van.IsParked));
+        Dir.Active.minibusYieldSeconds = savedYield;
+        Dir.ClearAll();
     }
 
     // Kamyonet gövdesi ile trafik aracı gövdesi kesişiyor mu (örnek noktalar, iki yönlü)

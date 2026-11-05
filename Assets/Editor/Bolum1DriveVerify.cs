@@ -1270,9 +1270,10 @@ public static class Bolum1DriveVerify
 }
 
 // (p5) Test iticisi: kinematik Rigidbody'yi fizik adımında MovePosition ile sabit hızla sürer (hırsız kamyoneti / trafik aracı gibi).
-public class DriveVerifyKinematicPusher : MonoBehaviour
+public class DriveVerifyKinematicPusher : MonoBehaviour, IMinibusPusher
 {
     public Vector3 velocity;
+    public bool MayPush(ServiceVanDriver minibus) { return true; }
     private Rigidbody rb;
     private void Awake() { rb = GetComponent<Rigidbody>(); }
     private void FixedUpdate() { if (rb != null) rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime); }

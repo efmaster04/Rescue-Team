@@ -4,6 +4,12 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
+// Park hâlindeki minibüsü gövdesiyle fiziksel itebilen kinematik gövde (oyunda yalnız ThiefVan).
+public interface IMinibusPusher
+{
+    bool MayPush(ServiceVanDriver minibus);
+}
+
 // Servis minibüsü sürüşü (kullanıcı kararı 2026-11-04: Bölüm 1, ekip minibüsün içinde yolda başlar).
 //
 // Fizik (kullanıcı kararı 2026-11-05, "arcade-gerçekçi"): dört WheelCollider (lastik mesh'lerinin merkezinde, Awake'te kurulur;
@@ -110,7 +116,9 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     [Tooltip("Fiziksel itme başlamadan itme yönünde bu kadar (m) boşluk ve zemin aranır; yoksa minibüs kıpırdamaz.")]
     public float shovePushProbe = .8f;
     [Tooltip("Fiziksel itmede gövde hız sınırları (m/sn, rad/sn) ve PhysX ayırma hızı: kinematik gövdenin köşe teması minibüsü fırlatmaz (ölçüldü: 18 m/sn).")]
-    public float shoveMaxSpeed = 4f, shoveMaxAngularSpeed = 1f, shoveMaxDepenetration = 1.5f;
+    public float shoveMaxSpeed = 4f, shoveMaxAngularSpeed = 0.6f, shoveMaxDepenetration = 1.5f;
+    [Tooltip("Fiziksel itmede itme yönüne dik hızın sönümü (m/sn²).")]
+    public float shoveSideDecel = 20f;
 
     [Header("İtilme (trafik çarpması)")]
     [Tooltip("Bir çarpma döngüsünde minibüs en fazla bu kadar (m, yatay) itilir; sonra hız eklenmez ve durur.")]
@@ -220,6 +228,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public event Action<ServiceVanDriver> Exited;
     public event Action<ServiceVanDriver> FallRespawned;
     public event Action<ServiceVanDriver, TrafficVehicle> Rammed;
+    // Yeni çarpma döngüsü (araç temas etti, döngü başında bir kez): hasar kuralından (araç başına bir kez, Rammed) bağımsız
+    public event Action<ServiceVanDriver, TrafficVehicle> RamCycleStarted;
     public event Action<ServiceVanDriver> Settled;
 
     private sealed class HeldItem
@@ -261,6 +271,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private Vector3 groundUp = Vector3.up;
     private float lastRamContact = -100f, lastRamDamage = -100f;
     private float savedDepenetration = -1f;
+    private Vector3 shoveDirection = Vector3.forward;
     private TrafficVehicle lastRammer;
     private float savedDistance, savedPivot;
     private float lastHeadingYaw;
@@ -631,11 +642,14 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             var c = overlaps[i];
             if (c == null || c.isTrigger || c.transform.IsChildOf(transform)) continue;
             var other = c.attachedRigidbody;
-            // Karakterler elenir, araçlar elenmez (Codex review P1: IsCrewOrCharacter LaneFollower'lı hırsız kamyonetini de eliyordu,
-            // kamyonet fiziksel itmeyi hiç başlatamıyordu)
-            if (other == null || !other.isKinematic || other.linearVelocity.magnitude < physicalShoveMinSpeed || IsCharacter(c)) continue;
+            if (other == null || !other.isKinematic || other.linearVelocity.magnitude < physicalShoveMinSpeed) continue;
+            // Yalnız itmesine izin verilen gövde (hırsız kamyoneti): trafik aracı ve ambulans betikli Ram / bekleme kuralını kullanır,
+            // karakter ve eşya hiç itmez. Kamyonet de şu an itemeyebilir (yükte ekip, görev bitti).
+            var pusher = other.GetComponentInParent<IMinibusPusher>();
+            if (pusher == null || !pusher.MayPush(this)) continue;
             // Arkası dolu / kenardaysa dinamikleşmez: kinematik gövde sıkışan minibüsü PhysX ile açık tarafa fırlatırdı (ölçüldü: 3 m)
-            if (!CanBePushed(other.linearVelocity, shovePushProbe, other)) continue;
+            if (!CanBePushed(other.linearVelocity, PushProbeFor(other.linearVelocity.magnitude), other)) continue;
+            shoveDirection = Flat(other.linearVelocity);
             LastPusher = other;
             BeginShove(true);
             lastRamContact = Time.time;
@@ -649,7 +663,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     {
         // Zaten fiziksel itiliyorsa yalnız temas tazelenir (itici temas sürerken frenlenmez, park hâline geçilmez)
         if (State == VanState.Shoved && PhysicalShove) { LastPusher = by; lastRamContact = Time.time; settleSince = -1f; return true; }
-        if (State != VanState.Parked || !CanBePushed(pushDirection, shovePushProbe, by)) return false;
+        if (State != VanState.Parked || !CanBePushed(pushDirection, PushProbeFor(by != null ? by.linearVelocity.magnitude : 0f), by)) return false;
+        shoveDirection = Flat(pushDirection);
         LastPusher = by;
         BeginShove(true);
         lastRamContact = Time.time;
@@ -883,6 +898,10 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             }
             Vector3 lv = rb.linearVelocity;
             Vector3 lh = Vector3.ClampMagnitude(new Vector3(lv.x, 0f, lv.z), shoveMaxSpeed);
+            // Lastik yana kaymaz: itme yönüne dik hız söner. Köşe teması minibüsü korkuluğa doğru savuruyor, itme arkası-dolu ile kesiliyordu
+            // (ölçüldü: aynı senaryo koşudan koşuya yer boşaltamıyordu)
+            Vector3 along = shoveDirection * Vector3.Dot(lh, shoveDirection);
+            lh = along + Vector3.MoveTowards(lh - along, Vector3.zero, shoveSideDecel * dt);
             rb.linearVelocity = new Vector3(lh.x, lv.y, lh.z);
             rb.angularVelocity = Vector3.ClampMagnitude(rb.angularVelocity, shoveMaxAngularSpeed);
         }
@@ -1102,7 +1121,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
                 }
             }
         }
-        if (newCycle) { lastRamDamage = Time.time; lastRammer = by; }
+        if (newCycle) { lastRamDamage = Time.time; lastRammer = by; RamCycleStarted?.Invoke(this, by); }
         if (firstHit)
         {
             damagedBy.Add(by);
@@ -1162,6 +1181,9 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
 
     // Minibüs dir yönünde distance kadar itilebilir mi (statik engel yok, dört tekerleğin altında zemin sürüyor). Hırsız kamyoneti
     // itmeden önce sorar: dayalı ya da uçurum kenarındaki minibüsü itmez.
+    // İtme öncesi aranacak boşluk: taban pay + bu hızla gelen minibüsün temas kesilince fren yolu
+    public float PushProbeFor(float speed) { return shovePushProbe + speed * speed / (2f * Mathf.Max(0.5f, shoveBrakeDecel)); }
+
     public bool CanBePushed(Vector3 dir, float distance, Rigidbody pusher = null)
     {
         dir.y = 0f;

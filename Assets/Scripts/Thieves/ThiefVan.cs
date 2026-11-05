@@ -19,7 +19,7 @@ using UnityEngine;
 //  - Pes eden hırsız ÖN kapıdan biner (yolcu tarafı; dalganın son hırsızı şoför kapısı): kapı açılır, biner, kapı kapanır.
 [RequireComponent(typeof(LaneFollower))]
 [RequireComponent(typeof(TrafficVehicle))]
-public class ThiefVan : MonoBehaviour
+public class ThiefVan : MonoBehaviour, IMinibusPusher
 {
     public static readonly List<ThiefVan> All = new List<ThiefVan>();
     // Test (ThiefVanVerify C): minibüs kayaya dayalı gibi kıpırdamaz (fiziksel itme başlatılmaz). Play başında sıfırlanır.
@@ -484,7 +484,8 @@ public class ThiefVan : MonoBehaviour
     // Arkada araç: geri rotası önce bankete kırılır, sonra düz gelir; arka köşe arkadaki aracın önünden geçer, gövde şeritten çıkınca
     // şerit kaydından düşer ve araç geçer. Yine de araca değecekse kamyonet geri gitmeyi kesip şeritte park eder (çarpmaz). Her temas
     // (hangi adımda olursa olsun) tek noktada ücretlenir: CheckMinibusContact.
-    public enum ManeuverStep { None, Reverse, Push, BackOff, Pause, Fallback, Merge }
+    // FallbackWait: banketten şeride dönmeden önce boşluk beklenir (süre dolunca bulunduğu yerde park).
+    public enum ManeuverStep { None, Reverse, Push, BackOff, Pause, FallbackWait, Fallback, Merge }
 
     public ManeuverStep Step { get; private set; }
     public float OvershootS { get; private set; }
@@ -520,9 +521,10 @@ public class ThiefVan : MonoBehaviour
     private Vector3 backOffStart, hitMinibusPos;
     private int attempt, blockedStreak, seenShoves;
     private float lastHitTime = -100f;
-    private bool justHit;
+    private bool justHit, brakeHard;
+    private float approachBlocked, yieldTime, fallbackWaitStart;
     private const float HitCooldown = 0.8f;   // temas titreşimi çift ceza yazmasın
-    private const float LaneClearMargin = 0.3f;
+    private const float LaneClearMargin = 0.05f; // park pozunda gövde kenarı şerit kenarının 0.3 m dışında (shoulderClearance)
     private readonly RaycastHit[] groundHits = new RaycastHit[16];
     private const float SoftSnapLength = 1.5f;
 
@@ -557,6 +559,8 @@ public class ThiefVan : MonoBehaviour
         float dt = Time.fixedDeltaTime;
         UpdateFrontDoors(dt);
         justHit = false;
+        var bus = ServiceVanDriver.Instance;
+        Vehicle.ramSuppressed = bus != null && (MustYieldTo(bus) || Rams >= (settings != null ? settings.maxRams : 8));
         if (Phase != VanPhase.Parked) CheckMinibusContact(Step != ManeuverStep.None ? Mathf.Abs(speedSigned) : Follower.Speed);
         switch (Phase)
         {
@@ -566,7 +570,15 @@ public class ThiefVan : MonoBehaviour
                 float pre = settings != null ? settings.parkPreShift : 0.8f;
                 float u = Mathf.InverseLerp(OvershootS - 12f, OvershootS, Follower.Distance);
                 Follower.lateralOffset = Mathf.Lerp(BaseLateral, BaseLateral + pre, Mathf.SmoothStep(0f, 1f, u));
-                if (Follower.AtStop && Follower.StopDistance >= OvershootS - 0.001f) BeginManeuver();
+                if (Follower.AtStop && Follower.StopDistance >= OvershootS - 0.001f) { BeginManeuver(); break; }
+                // Süre bütçesi: boşalmayan minibüs / kuyruk arkasında sonsuza dek beklenmez, bulunduğu yerde park edilir (şerit kaydında kalır)
+                if (Follower.Speed < 0.05f) approachBlocked += dt;
+                if (approachBlocked >= (settings != null ? settings.approachWaitSeconds : 45f))
+                {
+                    Note("yaklaşma bütçesi doldu (" + approachBlocked.ToString("F0") + " sn) → bulunduğu yerde park");
+                    InitController();
+                    FinishLanePark();
+                }
                 break;
             }
             case VanPhase.Maneuvering:
@@ -606,6 +618,7 @@ public class ThiefVan : MonoBehaviour
             }
             case VanPhase.Departing:
                 if (Step == ManeuverStep.Merge) Maneuver(dt);
+                else Follower.lateralOffset = Mathf.MoveTowards(Follower.lateralOffset, BaseLateral, 0.5f * dt); // şeritte park edenin kalan yanal kayması
                 break;
         }
     }
@@ -685,16 +698,17 @@ public class ThiefVan : MonoBehaviour
         float maxSec = settings != null ? settings.maxRamSeconds : 40f;
         if (Phase == VanPhase.Maneuvering)
         {
-            UpdateLaneClear();
+            if (Step != ManeuverStep.Fallback) UpdateLaneClear(); // şeride dönüş rotası baştan kayıtlı (araçlar görsün)
             // Bekçi: hangi adımda olursa olsun manevra sonsuza uzamaz
-            if (Step != ManeuverStep.Fallback && ManeuverTime > maxSec + 25f) { Note("manevra süresi doldu → şeritte park"); StartFallback(); }
+            if (Step != ManeuverStep.Fallback && Step != ManeuverStep.FallbackWait && ManeuverTime > maxSec + 25f) { Note("manevra süresi doldu → şeritte park"); StartFallback(); }
         }
+        if (minibus != null && YieldHold(minibus, dt)) return;
         switch (Step)
         {
             case ManeuverStep.Reverse:
             {
                 // Gövde hâlâ şeritteyken arkadan araç yaklaştıysa geri gidilmez: şeritte kal (araç bekler; çarpmaz)
-                if (!LaneCleared && RearConflict()) { Note("arkada araç → geri manevra iptal, şeritte park"); StartFallback(); break; }
+                if (!LaneCleared && RearConflict()) { Note("arkada araç → geri manevra iptal, şeritte park"); brakeHard = true; StartFallback(); break; }
                 // Yer doluysa artan vuruş hızıyla, boşsa park hızıyla geri
                 float v = SpotOccupied ? RamSpeed(attempt) : reverse;
                 bool done = FollowPath(dt, v, out _);
@@ -718,7 +732,7 @@ public class ThiefVan : MonoBehaviour
                 // Dayalı mı: itme yönünde engel / zemin kenarı var, minibüs kamyonetin yolunu izlemiyor (kamyonet gövdeye gömülüyor) ya da
                 // 0.8 sn'de kıpırdamadı. Erken bırakılır: sıkışan minibüsü PhysX açık tarafa fırlatır (ölçüldü).
                 float moved = minibus != null ? Horizontal(minibus.transform.position - hitMinibusPos).magnitude : 0f;
-                bool noRoom = minibus != null && !minibus.CanBePushed(heading * pathDir, 0.8f, GetComponent<Rigidbody>());
+                bool noRoom = minibus != null && !minibus.CanBePushed(PushAxis(heading * pathDir), minibus.PushProbeFor(Mathf.Abs(speedSigned)), GetComponent<Rigidbody>());
                 bool blocked = minibus != null && (noRoom || (Time.time - hitTime > 0.15f && pushTravel - moved > 0.45f) || (Time.time - hitTime > 0.8f && moved < 0.15f));
                 if (Time.time >= nextPushNote) { nextPushNote = Time.time + 0.25f; Note("  itme: kamyonet " + pushTravel.ToString("F2") + " m, minibüs " + moved.ToString("F2") + " m, hız " + (minibus != null ? minibus.Body.linearVelocity.magnitude.ToString("F2") : "-") + " durum " + (minibus != null ? minibus.State.ToString() : "-")); }
                 SpotOccupied = IsSpotOccupied();
@@ -727,6 +741,7 @@ public class ThiefVan : MonoBehaviour
                 {
                     Note((noRoom ? "minibüsün arkası dolu / kenar" : blocked ? "minibüs kıpırdamıyor" : "itme bütçesi doldu") + " → geri açıl");
                     blockedStreak = moved > 0.3f ? 0 : blockedStreak + 1;
+                    brakeHard = blocked; // dayalı / kenarda: karar anında sert fren (eskiden 3.3 m/sn'de 2.2 m daha gidiyordu)
                     backOffStart = rearAxle;
                     Step = ManeuverStep.BackOff;
                 }
@@ -754,6 +769,19 @@ public class ThiefVan : MonoBehaviour
                 }
                 break;
             }
+            case ManeuverStep.FallbackWait:
+            {
+                // Gövde hâlâ şeritteyse (kayıtlı; arkadaki araç onu görüp bekliyor) beklenmez: ileri gitmek boşluğu yalnız büyütür
+                Integrate(dt, 0f, 0f);
+                ApplyPose(dt, speedSigned * dt, 0f);
+                if (!LaneCleared || LaneEntryClear()) BeginFallbackDrive();
+                else if (Time.time - fallbackWaitStart >= (settings != null ? settings.laneEntryWaitSeconds : 25f))
+                {
+                    Note("şeride boşluk yok → bankette, bulunduğu yerde park");
+                    ParkWhereStanding();
+                }
+                break;
+            }
             case ManeuverStep.Fallback:
             {
                 if (FollowPath(dt, cruise, out _)) FinishLanePark();
@@ -776,19 +804,63 @@ public class ThiefVan : MonoBehaviour
         if (m == null || !m.isActiveAndEnabled) { TouchingMinibus = false; return; }
         bool was = TouchingMinibus;
         TouchingMinibus = Touches(m);
-        if (m.State == ServiceVanDriver.VanState.Driving) { seenShoves = m.PhysicalShoves; return; }
+        if (MustYieldTo(m)) { seenShoves = m.PhysicalShoves; return; } // itme ve ücret yok; durma: YieldHold
         if (body == null) body = GetComponent<Rigidbody>();
         // Gidiş yönü minibüse doğru mu: geri açılırken süren temas (ya da açılan itme) vuruş sayılmaz
         Vector3 moveDir = Step != ManeuverStep.None ? heading * Mathf.Sign(speedSigned) : Flat(transform.forward);
         // (BackOff başında kamyonet hâlâ geriye doğru yavaşlıyor: aynı vuruşun kuyruğu, yeni vuruş değil)
         bool toward = Step != ManeuverStep.BackOff && Step != ManeuverStep.Pause && Vector3.Dot(moveDir, Horizontal(m.transform.position - transform.position)) > 0f;
         // Test: "kayaya dayalı" minibüs — fiziksel itme başlatılmaz, minibüs kinematik kalır (kıpırdamaz)
-        if (speed >= 0.3f && toward && TouchingMinibus && !ImmovableMinibusForTest) m.BeginPhysicalShove(body, moveDir);
+        if (speed >= 0.3f && toward && TouchingMinibus && !ImmovableMinibusForTest) m.BeginPhysicalShove(body, PushAxis(moveDir));
         bool shovedByMe = m.PhysicalShoves != seenShoves && m.LastPusher == body;
         if (!shovedByMe || !toward) seenShoves = m.PhysicalShoves;
         if (!toward || !(shovedByMe || (TouchingMinibus && !was && speed >= 0.3f)) || Time.time - lastHitTime < HitCooldown) return; // itme ücreti kilit bitince yazılır
         seenShoves = m.PhysicalShoves;
         Hit(m, speed);
+    }
+
+    // İtme ekseni: geri manevrada durak ekseni (kamyonetin o anki sapması değil): minibüs park yerinden düz çıkar, korkuluğa doğru savrulmaz
+    private Vector3 PushAxis(Vector3 moveDir)
+    {
+        return Step == ManeuverStep.Reverse || Step == ManeuverStep.Push ? -TargetForward : moveDir;
+    }
+
+    // Minibüs şu an itilemez: sürülüyor (oyuncu oturdu), yük bölümünde ekip var (trafik kuralıyla aynı) ya da görev bitti.
+    public bool MustYieldTo(ServiceVanDriver m)
+    {
+        return m.State == ServiceVanDriver.VanState.Driving || m.CrewInCargo || (director != null && director.MissionOver);
+    }
+
+    public bool MayPush(ServiceVanDriver minibus) { return !MustYieldTo(minibus); }
+
+    // Trafik kuralı çarpmasında ücret: minibüs itilebilir durumda, kilit dolmuş, vuruş bütçesi dolmamış
+    public bool CanChargeLaneRam(ServiceVanDriver m)
+    {
+        return !MustYieldTo(m) && Time.time - lastHitTime >= HitCooldown && Rams < (settings != null ? settings.maxRams : 8);
+    }
+
+    // Minibüs itilemezken rotasındaysa kamyonet değmeden durur ve bekler; vazgeçme sayacı işler (manevra başına birikir: gel-git döngü yapmaz).
+    // Dönüş: bu adımda sürüş burada yapıldı.
+    private bool YieldHold(ServiceVanDriver m, float dt)
+    {
+        bool back = Step == ManeuverStep.Reverse || Step == ManeuverStep.Push, ahead = Step == ManeuverStep.Fallback || Step == ManeuverStep.Merge;
+        if ((!back && !ahead) || !MustYieldTo(m)) return false;
+        float reach = 0.5f + speedSigned * speedSigned / (2f * (settings != null ? settings.ramStopDecel : 20f));
+        if (!Touches(m, reach)) return false;
+        Vector3 dir = heading * (ahead ? 1f : -1f);
+        if (Vector3.Dot(dir, Horizontal(m.transform.position - transform.position)) <= 0f) return false;
+        if (Step == ManeuverStep.Push) Step = ManeuverStep.Reverse;
+        brakeHard = true;
+        Integrate(dt, 0f, 0f);
+        ApplyPose(dt, speedSigned * dt, 0f);
+        yieldTime += dt;
+        if (yieldTime < (settings != null ? settings.minibusYieldSeconds : 12f)) return true;
+        yieldTime = 0f;
+        Note("minibüs itilemez (sürülüyor / yükte ekip / görev bitti) → vazgeç");
+        if (Step == ManeuverStep.Reverse) StartFallback();
+        else if (Step == ManeuverStep.Fallback) ParkWhereStanding();
+        else FinishMerge();
+        return true;
     }
 
     // Trafik kuralı çarpması (bekle-korna-çarp; ThiefDirector ücretler): sayaç ve çift ücret kilidi
@@ -857,7 +929,10 @@ public class ThiefVan : MonoBehaviour
         float steerRate = settings != null ? settings.steerRateDegPerSec : 110f;
         float accel = settings != null ? settings.maneuverAccel : 2.5f;
         steer = Mathf.MoveTowards(steer, Mathf.Clamp(steerTarget, -maxSteer, maxSteer), steerRate * dt);
-        speedSigned = Mathf.MoveTowards(speedSigned, targetSpeed, accel * dt);
+        // Sert fren: yalnız yavaşlarken; durunca biter
+        bool slowing = Mathf.Abs(targetSpeed) < Mathf.Abs(speedSigned) || speedSigned * targetSpeed < 0f;
+        speedSigned = Mathf.MoveTowards(speedSigned, targetSpeed, (brakeHard && slowing ? (settings != null ? settings.ramStopDecel : 20f) : accel) * dt);
+        if (Mathf.Abs(speedSigned) < 0.05f) brakeHard = false;
         float ds = speedSigned * dt;
         float dyaw = ds / Mathf.Max(0.5f, wheelbase) * Mathf.Tan(steer * Mathf.Deg2Rad) * Mathf.Rad2Deg;
         heading = Flat(Quaternion.AngleAxis(dyaw, Vector3.up) * heading);
@@ -906,16 +981,18 @@ public class ThiefVan : MonoBehaviour
 
     // Kamyonet gövdesi minibüse değiyor mu? İki yönlü: kamyonet gövdesinin örnek noktaları (tampon yüksekliği) minibüsün ayak
     // izinde YA DA minibüsün köşeleri / kenar ortaları kamyonet gövdesinde (dönmüş minibüsün köşesi iki örnek arasına girebilir).
-    private bool Touches(ServiceVanDriver m)
+    private bool Touches(ServiceVanDriver m) { return Touches(m, 0.08f); }
+
+    private bool Touches(ServiceVanDriver m, float margin)
     {
         float halfW = Vehicle.bodySize.x * 0.5f, rear = Follower.rearOverhang, front = Follower.frontOverhang;
         foreach (float x in new[] { -halfW, 0f, halfW })
             foreach (float z in new[] { -rear, -rear * 0.5f, 0f, front * 0.5f, front })
-                if (m.InsideFootprint(transform.TransformPoint(new Vector3(x, 0.6f, z)), 0.08f)) return true;
+                if (m.InsideFootprint(transform.TransformPoint(new Vector3(x, 0.6f, z)), margin)) return true;
         var fp = m.Footprint();
         for (int i = 0; i < fp.Length; i++)
         {
-            if (InBody(fp[i], 0.08f) || InBody((fp[i] + fp[(i + 1) % fp.Length]) * 0.5f, 0.08f)) return true;
+            if (InBody(fp[i], margin) || InBody((fp[i] + fp[(i + 1) % fp.Length]) * 0.5f, margin)) return true;
         }
         return false;
     }
@@ -978,7 +1055,9 @@ public class ThiefVan : MonoBehaviour
     // Geri giderken arka köşe arkadaki araca değecek mi: araç bu kadar yakında VE yanal olarak gövdesi hizasında
     private bool RearConflict()
     {
-        float need = settings != null ? settings.reverseRearClearance : 1.2f;
+        // Taban boşluk + bu hızdan sert fren yolu + arkadaki aracın yaklaşma payı (hızlı vuruşta geri giderken de araca değmesin)
+        float stopDecel = settings != null ? settings.ramStopDecel : 20f;
+        float need = (settings != null ? settings.reverseRearClearance : 1.2f) + speedSigned * speedSigned / (2f * stopDecel);
         var lane = Follower.lane;
         float side = ShoulderLateral >= 0f ? 1f : -1f, halfW = Vehicle.bodySize.x * 0.5f;
         float cornerLat = float.PositiveInfinity;
@@ -990,7 +1069,7 @@ public class ThiefVan : MonoBehaviour
         foreach (var f in LaneOccupancy.Followers)
         {
             if (f == null || f == Follower || f.lane != lane || f.Distance >= Follower.Distance) continue;
-            if (f.FrontS <= Follower.RearS - need) continue;
+            if (f.FrontS <= Follower.RearS - need - f.Speed * 0.5f) continue;
             var tv = f.GetComponent<TrafficVehicle>();
             float edge = f.lateralOffset * side + (tv != null ? tv.bodySize.x * 0.5f : 1f) + 0.25f;
             if (cornerLat < edge) return true;
@@ -998,13 +1077,46 @@ public class ThiefVan : MonoBehaviour
         return false;
     }
 
-    // Rotayı şeride geri çıkıp şeritte park etmek üzere kurar (yer boşaltılamadı / ileri çıkılamıyor)
+    // Yer boşaltılamadı / arkada araç: şeride dön, şeritte park et. Bankettense önce şeritte boşluk beklenir (FallbackWait).
     private void StartFallback()
+    {
+        yieldTime = 0f;
+        fallbackWaitStart = Time.time;
+        Step = ManeuverStep.FallbackWait;
+    }
+
+    private float FallbackEndS(LanePath lane, float s0)
+    {
+        return Mathf.Min(Mathf.Max(OvershootS, s0 + halfSpan + 3f), lane.Length - Follower.frontOverhang - 2f);
+    }
+
+    // Bankette bekleyen kamyonet şeride girebilir mi: arkadan gelen aracın önüne çıkmaz (en az minGap + hız × 3 sn), girilecek şerit
+    // aralığında araç yok (yandan geçen, önde duran).
+    private bool LaneEntryClear()
+    {
+        var lane = Follower.lane;
+        var s = Vehicle.settings;
+        float minGap = s != null ? s.minGap : 4f;
+        float headway = Mathf.Max(3f, s != null ? s.timeHeadway : 2f);
+        float root = lane.Project(transform.position);
+        float entryRear = root - Follower.rearOverhang, entryFront = FallbackEndS(lane, root - halfSpan) + Follower.frontOverhang;
+        foreach (var f in LaneOccupancy.Followers)
+        {
+            if (f == null || f == Follower || f.lane != lane) continue;
+            if (f.Distance < root) { if (entryRear - f.FrontS < minGap + f.Speed * headway) return false; }
+            else if (f.RearS - entryFront < minGap) return false;
+        }
+        return true;
+    }
+
+    // Rotayı şerit ortasına kurar ve şeride kaydolur (arkadaki araç artık kamyoneti görür)
+    private void BeginFallbackDrive()
     {
         var lane = Follower.lane;
         float s0 = lane.Project(rearAxle, out float lat0, out _);
-        float s1 = Mathf.Max(OvershootS, s0 + halfSpan + 3f);
-        s1 = Mathf.Min(s1, lane.Length - Follower.frontOverhang - 2f);
+        float s1 = FallbackEndS(lane, s0);
+        LaneCleared = false;
+        LaneOccupancy.Register(Follower);
         BuildPath(lane, s0, lat0, s1 - halfSpan, BaseLateral, 1);
         Follower.lateralOffset = BaseLateral;
         Follower.Pose(s1, out Vector3 p, out Quaternion r);
@@ -1018,6 +1130,14 @@ public class ThiefVan : MonoBehaviour
         Note("bankete park: s " + Follower.Distance.ToString("F1") + " (" + Rams + " vuruş, " + ManeuverTime.ToString("F1") + " sn)");
         Step = ManeuverStep.None;
         Park(false);
+    }
+
+    // Olduğu yerde park: gövde şerit dışındaysa bankette (kayıt dışı), değilse şeritte
+    private void ParkWhereStanding()
+    {
+        Note("bulunduğu yerde park: s " + Follower.Distance.ToString("F1") + " şerit dışı " + LaneCleared);
+        if (LaneCleared) { Step = ManeuverStep.None; Park(false); }
+        else FinishLanePark();
     }
 
     private void FinishLanePark()
@@ -1038,7 +1158,9 @@ public class ThiefVan : MonoBehaviour
         ParkedAtElapsed = director != null ? director.Elapsed : Time.time;
         Vehicle.parked = true;
         if (!inLane) LaneOccupancy.Unregister(Follower); // bankette şeridi kapatmaz; şeritte kaldıysa kayıtlı kalır (trafik bekler)
-        Follower.lateralOffset = inLane ? BaseLateral : ShoulderLateral;
+        // Şeritte park: gerçek yanal kayma korunur (kalkışta sıçrama yok; Departing şerit ortasına süzer)
+        if (inLane) { Follower.lane.Project(transform.position, out float parkedLat, out _); Follower.lateralOffset = parkedLat; }
+        else Follower.lateralOffset = ShoulderLateral;
         nextUnloadAt = Time.time + (settings != null ? settings.doorSeconds : 0.6f);
         if (!doorSoundDone) { doorSoundDone = true; doorSource.Play(); }
         Parked?.Invoke(this);
@@ -1051,7 +1173,7 @@ public class ThiefVan : MonoBehaviour
         Phase = VanPhase.Departing;
         LaneOccupancy.Register(Follower);
         Departed?.Invoke(this);
-        if (ParkedInLane) { Resume(Follower.Distance, 0f); return; }
+        if (ParkedInLane) { Resume(Follower.Distance, 0f, Follower.lateralOffset); return; }
         InitController();
         var lane = Follower.lane;
         float s0 = lane.Project(rearAxle, out float lat0, out _);
@@ -1071,9 +1193,11 @@ public class ThiefVan : MonoBehaviour
     }
 
     // LaneFollower'a devir: şeritteki s'den normal trafik gibi sürer
-    private void Resume(float s, float speed)
+    private void Resume(float s, float speed) { Resume(s, speed, BaseLateral); }
+
+    private void Resume(float s, float speed, float lateral)
     {
-        Follower.lateralOffset = BaseLateral;
+        Follower.lateralOffset = lateral;
         Follower.Place(Follower.lane, s, speed);
         Vehicle.parked = false;
         Vehicle.externalStopS = float.PositiveInfinity;
@@ -1091,6 +1215,9 @@ public class ThiefVan : MonoBehaviour
             if (f == null || f == Follower || f.lane != Follower.lane) continue;
             if (f.Distance < Follower.Distance)
             {
+                // Şeritte park eden zaten şeritte: arkadaki aracın önüne çıkmıyor, ileri gitmek boşluğu büyütür. Arkadaki araç kalkışı
+                // engellemez (donan araç boşluğu 4 m altında kalınca kalıcı kilit oluyordu: review P1).
+                if (ParkedInLane) continue;
                 if (Follower.RearS - f.FrontS < minGap + f.Speed * headway) return false;
             }
             else if (f.RearS - Follower.FrontS < minGap) return false;
