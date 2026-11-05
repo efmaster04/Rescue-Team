@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 // Bölüm 1 görevi: ambulans takvimi, hasta başına kaçırma sayacı, görev sonu (kullanıcı kararları 1, 4, 5, 6).
 // Saat fizik adımında (FixedUpdate) ilerler; ambulans da fizik adımında sürüldüğü için varış zamanı tutarlıdır.
 [DefaultExecutionOrder(-50)]
-public class MissionDirector : MonoBehaviour
+public class MissionDirector : MonoBehaviour, IFieldMission
 {
     public static MissionDirector Instance { get; private set; }
 

@@ -23,7 +23,7 @@ Depodaki ekipmana E ile bakıp alın. Arka kapıdan yük alanına E ile sabitley
 
 Modülsüz araçla da lift çalışır. Üzerinde yarım takılmış modül varsa önce bağlantıları tamamlayın. Kumanda yazısı engel nedenini gösterir. [Lift düzeltmesinin doğrulaması](LiftFix.md).
 
-Gerçek saha bölümü bulunmadığından geliştirme testinde F9 ile dönüş sonucu oluşturun; İşler → Raporlar'da onaylayın. Hasarlı ekipmanı tezgâhta onarın; elde eşya yokken aynı tezgâh van bakımını yapar. Mağaza ekipman, Şirket → Geliştirmeler bina yatırımları içindir. Kaydet düğmesi ve otomatik kayıt şirket durumunu, fiziksel modülleri ve yarım montajı saklar.
+Saha görevine gitmeden geliştirme testinde F9 ile dönüş sonucu oluşturabilirsiniz; İşler → Raporlar'da onaylayın. Hasarlı ekipmanı tezgâhta onarın; elde eşya yokken aynı tezgâh van bakımını yapar. Mağaza ekipman, Şirket → Geliştirmeler bina yatırımları içindir. Kaydet düğmesi ve otomatik kayıt şirket durumunu, fiziksel modülleri ve yarım montajı saklar.
 
 Uygulama penceresinin sağ üstündeki çizgi masaüstüne döndürür, kare pencereyi büyütür/küçültür, X uygulamayı kapatıp masaüstüne döndürür. Bilgisayardan çıkmak için alt çubuktaki Çıkış düğmesini kullanın. Uzun içerikler fare tekerleğiyle kaydırılır. Arayüz 16:9 çalışma alanını farklı ekran oranlarına sığdırır.
 
@@ -41,7 +41,7 @@ Mevcut sahnenin ışık, yansıma ve kamera kurulumunu uygulamak için `Company 
 
 Garajın yüzey, LED armatür, yön levhası, kapı fiziği ve gölge kurulumunu ayrıca `Company > Refine Garage and Doors` ile uygulayabilirsiniz. Bu kurulum artık aynı minibüsün tam kaynak modelini ve yeni metal tezgâh/dolap/tavan/servis zemini düzenlemesini de uygular. Lift kumandasının E hedefi kolonun önündeki küçük paneldedir. [Garaj ve kapı notları](GarageRefinement.md), [tam araç ve atölye notları](VanAndWorkshop.md) kaynak denetimini ve testleri açıklar.
 
-Bu sürümde oyuncu yalnızca ofis/garaj sahnesinde yürür. F9 sonucu gerçek saha oynanışı değildir. Çok oyunculu oturum başlatma seçeneği yoktur.
+Saha görevleri ayrı sahnelerde oynanır: Bölüm 1 kurtarma işi ve [Sel Vadisi saha görevi](SelVadisiSahaGorevi.md). F9 sonucu gerçek saha oynanışı değildir. Çok oyunculu oturum başlatma seçeneği yoktur.
 
 Son model/atmosfer düzenlemesi `Company > Refine Workshop Models and Atmosphere` ile uygulanır. Tekerlek, tezgâh ve raf yüzeyleri kaynak ofis düzenine dokunmadan yenilenir. [Önce/sonra görselleri ve kapsam](WorkshopCraft.md).
 

@@ -12,17 +12,27 @@ namespace CompanySim
         public ModuleDefinition[] modules;
         public EquipmentDefinition[] equipment;
 
-        // Görev köprüsü: sahnedeki katalogda olmayan ek ekipman tanımları kayıt yüklenmeden önce eklenir.
+        // Görev köprüsü: sahnedeki katalogda olmayan ek ekipman ve iş tanımları kayıt yüklenmeden önce eklenir.
         void Awake() => MergeAddons();
 
         public void MergeAddons()
         {
             var addon = Resources.Load<CatalogAddon>(CatalogAddon.ResourcePath);
-            if (!addon || addon.equipment == null) return;
-            var list = (equipment ?? Array.Empty<EquipmentDefinition>()).ToList();
-            foreach (var def in addon.equipment)
-                if (def && !list.Any(x => x && x.id == def.id)) list.Add(def);
-            equipment = list.ToArray();
+            if (!addon) return;
+            if (addon.equipment != null)
+            {
+                var list = (equipment ?? Array.Empty<EquipmentDefinition>()).ToList();
+                foreach (var def in addon.equipment)
+                    if (def && !list.Any(x => x && x.id == def.id)) list.Add(def);
+                equipment = list.ToArray();
+            }
+            if (addon.jobs != null)
+            {
+                var list = (jobs ?? Array.Empty<JobDefinition>()).ToList();
+                foreach (var job in addon.jobs)
+                    if (job && !list.Any(x => x && x.id == job.id)) list.Add(job);
+                jobs = list.ToArray();
+            }
         }
 
         public JobDefinition Job(string id) => Array.Find(jobs, x => x && x.id == id);

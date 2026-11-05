@@ -6,7 +6,8 @@ using UnityEngine;
 //  - Setup (sceneLoaded, Start'lardan önce): FieldEquipmentMap tablosuyla yüklenen eşyaları sahnedeki nesnelere eşler,
 //    yüklenmeyenleri kaldırır. LootRegistry toplamı Start'ta sayıldığı için kaldırılanlar çalınma çubuğuna girmez.
 //  - Update: koni çarpması, ekipman fırlatma ve hırsızdan geri alma sayaçlarını izler; geç doğan müşteri eşyalarını ekler.
-//  - Görev bitince (MissionDirector.IsFinished) sonucu bir kez hesaplar (FieldPayout), sonuç panelini açar;
+//  - Görev bitince (FieldMission.Current.IsFinished: Bölüm 1'de MissionDirector, Sel Vadisi'nde SelVadisiMission)
+//    sonucu bir kez hesaplar (FieldPayout), sonuç panelini açar;
 //    Enter ile ofise dönülür.
 public sealed class FieldMissionTracker : MonoBehaviour
 {
@@ -66,13 +67,13 @@ public sealed class FieldMissionTracker : MonoBehaviour
             var loot = m.go.GetComponent<LootItem>();
             if (loot != null) { m.throws = Mathf.Max(m.throws, loot.Throws); m.recovered = Mathf.Max(m.recovered, loot.VanRetrievals); }
         }
-        var mission = MissionDirector.Instance;
+        var mission = FieldMission.Current;
         if (!ResultComputed && mission != null && mission.IsFinished) Finish(mission);
         if (ResultComputed && !MissionBridge.IsTransitioning && MissionBridge.ReturnKeyPressed()) MissionBridge.ReturnToOffice();
     }
 
     // Sahadaki olayları formül girdisine çevirir.
-    public FieldPayout.Inputs Collect(MissionDirector mission)
+    public FieldPayout.Inputs Collect(IFieldMission mission)
     {
         var i = new FieldPayout.Inputs
         {
@@ -87,7 +88,7 @@ public sealed class FieldMissionTracker : MonoBehaviour
             if (g.IsSecured) i.rescuedGoodsValue += g.TotalValue;
             else if (g.IsStolen || g.IsInVan) i.stolenGoodsValue += g.TotalValue;
         }
-        if (mission != null) foreach (var p in mission.patients) if (p != null) i.missedAmbulances += p.MissedAmbulances;
+        if (mission is MissionDirector director) foreach (var p in director.patients) if (p != null) i.missedAmbulances += p.MissedAmbulances;
         // Sürüş girişi: minibüsün aldığı hasar araç aşınmasına eklenir (trafik çarpması, korkuluk / kaya teması)
         if (ServiceVanDriver.Instance != null) i.vanDamage = ServiceVanDriver.Instance.Damage;
         // Kötü park: hırsız kamyonetinin minibüse vuruş cezaları (₺) ayrı gider kalemi
@@ -102,7 +103,7 @@ public sealed class FieldMissionTracker : MonoBehaviour
         return i;
     }
 
-    private void Finish(MissionDirector mission)
+    private void Finish(IFieldMission mission)
     {
         ResultComputed = true;
         var breakdown = FieldPayout.Compute(Collect(mission));

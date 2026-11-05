@@ -5,17 +5,22 @@ ekipman, araç ve şirket işlemleri yönetilir. Garajda ekipmanlar elle taşın
 modüller dört cıvata ve servis bağlantısıyla araca takılır.
 
 Bu depo oyunun Unity proje dosyalarını içerir. Hazır bir çalıştırılabilir oyun
-paketi değildir. Mevcut geliştirme sürümünde ofis ve garaj oynanabilir;
-çok oyunculu oturum ve gerçek saha görevleri henüz bulunmaz.
+paketi değildir. Mevcut geliştirme sürümünde ofis, garaj ve iki saha görevi
+oynanabilir: Bölüm 1 (Uçurumda Mahsur Minibüs) ve Sel Vadisi (Mahsur Kalanlar).
+Çok oyunculu oturum henüz bulunmaz.
 
 Projeyi açmak için:
 
-1. Depoyu klonlayın: `git clone https://github.com/ugurlpcck/oyun.git`
-2. Unity Hub üzerinden klasörü **Unity 6000.5.5f1** ile açın.
+1. Depoyu klonlayın: `git clone https://github.com/efmaster04/Rescue-Team.git`
+2. Unity Hub üzerinden klasörü **Unity 6000.6.3f1** ile açın. 6000.5 bu projenin
+   fizik ayarını yanlış okur ve karakter zeminden düşer.
 3. Paketlerin ve varlıkların ilk aktarımının tamamlanmasını bekleyin.
-4. `Assets/_Project/Scenes/OfficeGarage.unity` sahnesini açıp **Play** düğmesine basın.
+4. Unity Sel Vadisi haritasını üretmeyi sorar; kabul edin (yaklaşık 20 saniye).
+5. `Assets/_Project/Scenes/OfficeGarage.unity` sahnesini açıp **Play** düğmesine basın.
 
-Sahne depoda hazırdır; açılışta yeniden üretim menülerini çalıştırmak gerekmez.
+Ofis sahnesi depoda hazırdır. Sel Vadisi haritası (sahne ve yaklaşık 220 MB mesh)
+Git'e girmez; her makinede üretilir. Elle üretmek için
+`Rescue Team > Sel Vadisi > Haritayı Yeniden Üret ve Görevi Kur` kullanılır.
 URP, Input System ve diğer paketler `Packages/manifest.json` içinde tanımlıdır.
 
 | Kontrol | İşlem |
@@ -29,6 +34,7 @@ URP, Input System ve diğer paketler `Packages/manifest.json` içinde tanımlıd
 | Esc | Duraklat veya bilgisayardan geri dön |
 
 [Kurulum ve ayrıntılı kontroller](Documentation/SetupAndControls.md) ·
+[Sel Vadisi saha görevi](Documentation/SelVadisiSahaGorevi.md) ·
 [Elle modül montajı](Documentation/ManualGarageSystems.md) ·
 [Doğrulama kayıtları](Documentation/TestResults.md)
 

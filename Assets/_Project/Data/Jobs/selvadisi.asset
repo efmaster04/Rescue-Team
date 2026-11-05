@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4678dc9699a8774cb8e84dc73540aa8, type: 3}
+  m_Name: selvadisi
+  m_EditorClassIdentifier: Assembly-CSharp::CompanySim.JobDefinition
+  id: selvadisi
+  title: 'Sel Vadisi: Mahsur Kalanlar'
+  client: "\u0130l Afet Koordinasyon Merkezi"
+  description: "Karadeniz'deki k\xF6y\xFC sel bast\u0131. Kurtarma alan\u0131na ge\xE7in,
+    \xE7at\u0131larda ve balkonlarda mahsur kalan aileleri bulup telsizle bildirin,
+    sonra koordinasyon masas\u0131na rapor verin."
+  category: Kurtarma
+  location: Sel Vadisi
+  specialTerms: "Ak\u0131nt\u0131 \xE7ok g\xFC\xE7l\xFC: derin suya girmek yasak.
+    H\u0131zl\u0131 m\xFCdahale: raporu sahada 15 dakika i\xE7inde verirseniz ek
+    \xF6deme al\u0131rs\u0131n\u0131z."
+  distanceKm: 64
+  payment: 1900
+  difficulty: 4
+  risk: 4
+  durationMinutes: 150
+  minimumReputation: 0
+  contractTitle: "H\u0131zl\u0131 m\xFCdahale"
+  contractBonus: 260
+  contractMaxEquipmentWear: 10
+  contractMaxVehicleWear: 23
+  requiredModule: 
+  requiredEquipment:
+  - rope
+  recommendedEquipment:
+  - stretcher
+  - case
+  fieldScene: SelVadisi_BuyukHarita

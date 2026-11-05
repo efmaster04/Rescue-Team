@@ -83,7 +83,7 @@ public static class MissionBridgeVerify
                 recovery.requiredEquipment.Contains("stretcher") && recovery.recommendedEquipment.Contains("cone"),
                 recovery != null ? recovery.requiredModule + " / " + string.Join(",", recovery.requiredEquipment) + " / " + string.Join(",", recovery.recommendedEquipment) : "");
             var otherJobs = AssetDatabase.FindAssets("t:JobDefinition", new[] { "Assets/_Project/Data/Jobs" })
-                .Select(g => AssetDatabase.LoadAssetAtPath<JobDefinition>(AssetDatabase.GUIDToAssetPath(g))).Where(j => j != null && j.id != "recovery").ToList();
+                .Select(g => AssetDatabase.LoadAssetAtPath<JobDefinition>(AssetDatabase.GUIDToAssetPath(g))).Where(j => j != null && j.id != "recovery" && j.id != "selvadisi").ToList();
             Check("(a) diğer işlerde saha sahnesi yok (kilitli / Yakında)", otherJobs.Count > 0 && otherJobs.All(j => !j.HasFieldScene),
                 string.Join(", ", otherJobs.Select(j => j.id)));
             var addon = Resources.Load<CatalogAddon>(CatalogAddon.ResourcePath);

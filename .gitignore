@@ -47,3 +47,12 @@ __pycache__/
 
 # Blender/OptiX kernel önbelleği (makineye özel)
 ArtPipeline/Export/**/cache/
+
+# Sel Vadisi saha haritası: sahne, ~220 MB mesh ve görev malzemesi her makinede üretilir (Git'e girmez).
+# Unity ilk açılışta sorar; elle: Rescue Team > Sel Vadisi > Haritayı Yeniden Üret ve Görevi Kur
+/Assets/SelVadisi/Generated/
+/Assets/SelVadisi/Generated.meta
+/Assets/SelVadisi/Gorev/
+/Assets/SelVadisi/Gorev.meta
+/Assets/SelVadisi/SelVadisi_BuyukHarita.unity
+/Assets/SelVadisi/SelVadisi_BuyukHarita.unity.meta
