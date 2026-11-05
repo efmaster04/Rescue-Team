@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 // InputSystem_Actions.inputactions'a dokunmamak için eylemler burada kodla tanımlanır:
 // WASD hareket, fare bakış, Space zıplama, E etkileşim, R yeniden başlat (görev bitince).
 // U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük. U4b tanı: basış sayaçları ve bağlama özeti (doğrulama okur).
+// 2026-11-05 (kullanıcı isteği): sol tık yumruk (koşarken tackle), sağ tık eli boşken itme / elde fırlatılabilir eşya varken basılı
+// tut nişan + bırak fırlat (PlayerCombat.SecondaryInput), sol Ctrl basılı eğilme (ThirdPersonPlayer.SetCrouchInput).
 // FP: V birinci şahıs ↔ üçüncü şahıs (OrbitCamera.ToggleMode).
 // Ofis-garaj: InputBlocked açıkken (bilgisayar arayüzü / duraklatma menüsü; CompanyPlayerBridge.SetCursor yazar) hareket, kamera,
 // etkileşim ve saldırı girdisi durur (hareket sıfırlanır, basılı tutmalar bırakılır); kapanınca geri gelir. E basışı InteractPressed
@@ -14,17 +16,19 @@ public class PlayerInputReader : MonoBehaviour
     public ThirdPersonPlayer player;
     public PlayerInteraction interaction;
     public OrbitCamera orbitCamera;
-    [Tooltip("U4: sol tık it / tackle, sağ tık basılı tut fırlat, Q düdük (boşsa oyuncudan bulunur).")]
+    [Tooltip("Sol tık yumruk / koşarken tackle, sağ tık it (eli boşken) ya da basılı tut fırlat (elde eşya), Q düdük (boşsa oyuncudan bulunur).")]
     public PlayerCombat combat;
 
     public const string AttackPath = "<Mouse>/leftButton", ThrowPath = "<Mouse>/rightButton", WhistlePath = "<Keyboard>/q", RunPath = "<Keyboard>/leftShift";
-    public const string ViewTogglePath = "<Keyboard>/v";
+    public const string ViewTogglePath = "<Keyboard>/v", CrouchPath = "<Keyboard>/leftCtrl";
 
     // U4b tanı
     public int AttackPresses { get; private set; }
     public int AttackAccepted { get; private set; }
     public int WhistlePresses { get; private set; }
     public int ThrowHoldFrames { get; private set; }
+    public int SecondaryPresses { get; private set; }
+    public int CrouchHoldFrames { get; private set; }
     public int ViewTogglePresses { get; private set; }
     public int InteractPresses { get; private set; }
     // Ofis-garaj: UI açıkken oyun girdisi kilitli (bkz. sınıf yorumu)
@@ -38,8 +42,9 @@ public class PlayerInputReader : MonoBehaviour
     public InputAction WhistleAction { get { return whistle; } }
     public InputAction RunAction { get { return run; } }
     public InputAction ViewToggleAction { get { return viewToggle; } }
+    public InputAction CrouchAction { get { return crouch; } }
 
-    private InputAction move, look, jump, interact, restart, run, attack, throwHold, whistle, viewToggle;
+    private InputAction move, look, jump, interact, restart, run, attack, throwHold, whistle, viewToggle, crouch;
 
     private void Awake()
     {
@@ -58,26 +63,28 @@ public class PlayerInputReader : MonoBehaviour
         interact = new InputAction("Interact", InputActionType.Button, "<Keyboard>/e");
         restart = new InputAction("Restart", InputActionType.Button, "<Keyboard>/r");
         viewToggle = new InputAction("ViewToggle", InputActionType.Button, ViewTogglePath);
+        crouch = new InputAction("Crouch", InputActionType.Button, CrouchPath);
     }
 
     private void OnEnable()
     {
         run.Enable(); move.Enable(); look.Enable(); jump.Enable(); interact.Enable(); restart.Enable();
-        attack.Enable(); throwHold.Enable(); whistle.Enable(); viewToggle.Enable();
+        attack.Enable(); throwHold.Enable(); whistle.Enable(); viewToggle.Enable(); crouch.Enable();
     }
 
     private void OnDisable()
     {
         run.Disable(); move.Disable();
-        if (player != null) player.SetRunInput(false); look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
-        attack.Disable(); throwHold.Disable(); whistle.Disable(); viewToggle.Disable();
+        if (player != null) { player.SetRunInput(false); player.SetCrouchInput(false); }
+        look.Disable(); jump.Disable(); interact.Disable(); restart.Disable();
+        attack.Disable(); throwHold.Disable(); whistle.Disable(); viewToggle.Disable(); crouch.Disable();
         if (combat != null) combat.CancelAim();   // bileşen kapanırken nişan fırlatmadan iptal edilir
     }
 
     private void OnDestroy()
     {
         run.Dispose(); move.Dispose(); look.Dispose(); jump.Dispose(); interact.Dispose(); restart.Dispose();
-        attack.Dispose(); throwHold.Dispose(); whistle.Dispose(); viewToggle.Dispose();
+        attack.Dispose(); throwHold.Dispose(); whistle.Dispose(); viewToggle.Dispose(); crouch.Dispose();
     }
 
     private void Update()
@@ -85,7 +92,7 @@ public class PlayerInputReader : MonoBehaviour
         if (InputBlocked)
         {
             // UI açık: hareket durur, basılı tutmalar bırakılır, tıklamalar oyuna gitmez
-            if (player != null) { player.SetMoveInput(Vector2.zero); player.SetRunInput(false); }
+            if (player != null) { player.SetMoveInput(Vector2.zero); player.SetRunInput(false); player.SetCrouchInput(false); }
             if (interaction != null) interaction.SetInteractHeld(false);
             InteractHeld = false;
             if (combat == null && player != null) combat = player.GetComponent<PlayerCombat>();
@@ -96,6 +103,9 @@ public class PlayerInputReader : MonoBehaviour
         {
             player.SetMoveInput(move.ReadValue<Vector2>());
             player.SetRunInput(run.IsPressed());
+            bool crouchHeld = crouch.IsPressed();
+            if (crouchHeld) CrouchHoldFrames++;
+            player.SetCrouchInput(crouchHeld);
             if (jump.WasPressedThisFrame()) player.RequestJump();
         }
         if (orbitCamera != null) orbitCamera.Rotate(look.ReadValue<Vector2>());
@@ -116,9 +126,12 @@ public class PlayerInputReader : MonoBehaviour
             // Serbest imleci oyun penceresine kilitleyen sol tık (OrbitCamera.RelockedThisFrame) saldırı / fırlatma sayılmaz
             bool relockClick = orbitCamera != null && orbitCamera.RelockedThisFrame;
             if (attack.WasPressedThisFrame() && !relockClick) { AttackPresses++; if (combat.Attack()) AttackAccepted++; }
+            // Sağ tık: basışta eli boşsa itme, elde fırlatılabilir eşya varsa basılı tut nişan / bırak fırlat
             bool held = throwHold.IsPressed() && !relockClick;
+            bool secondaryPressed = throwHold.WasPressedThisFrame() && !relockClick;
             if (held) ThrowHoldFrames++;
-            combat.SetThrowHeld(held);
+            if (secondaryPressed) SecondaryPresses++;
+            combat.SecondaryInput(held, secondaryPressed);
             if (whistle.WasPressedThisFrame()) { WhistlePresses++; combat.Whistle(); }
         }
     }
@@ -127,6 +140,6 @@ public class PlayerInputReader : MonoBehaviour
     public string BindingSummary()
     {
         string One(InputAction a) { return a == null ? "yok" : a.name + " [" + (a.bindings.Count > 0 ? a.bindings[0].effectivePath : "-") + "] " + (a.enabled ? "etkin" : "kapalı") + (a.controls.Count > 0 ? " → " + a.controls[0].path : " → aygıt yok"); }
-        return One(attack) + "; " + One(throwHold) + "; " + One(whistle) + "; " + One(run) + "; fare " + (Mouse.current != null ? "var" : "yok") + ", klavye " + (Keyboard.current != null ? "var" : "yok");
+        return One(attack) + "; " + One(throwHold) + "; " + One(whistle) + "; " + One(run) + "; " + One(crouch) + "; fare " + (Mouse.current != null ? "var" : "yok") + ", klavye " + (Keyboard.current != null ? "var" : "yok");
     }
 }

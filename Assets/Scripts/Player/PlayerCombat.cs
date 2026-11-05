@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // U4 (kullanıcı kararı "Hırsızlar", 2026-10-19): oyuncu savunması. Girdi PlayerInputReader'dan gelir (sol tık, sağ tık, Q).
-//  - Sol tık: Push_Shove; hit_frame'de (kare 9) önündeki pushRange / pushAngle içindeki hırsızlar pushKnockback geri savrulur,
-//    pushStunSeconds sersemler, elindekini düşürür. Bekleme pushCooldown.
+// Tuş düzeni (kullanıcı isteği 2026-11-05): sol tık yumruk, sağ tık itme (elde fırlatılabilir eşya varken nişan / fırlatma), Ctrl eğilme.
+//  - Sol tık: Punch_Jab; hit_frame'de (kare 7) önündeki punchRange / punchAngle içindeki hırsız punchStunSeconds sersemler,
+//    elindekini düşürür, punchKnockback kadar geri teper, punchDamage hasar. Bekleme punchCooldown (kısa).
 //  - Koşarken (Shift + hareket) sol tık: Tackle_Dive; oyuncu tackleDistance öne kayar (CharacterController.Move: zemine ve duvara
 //    saygılı), yolundaki hırsız tackleStunSeconds sersemler; dalış bitince Tackle_GetUp ile kalkar (Animator geçişi). Bekleme tackleCooldown.
-//  - Sağ tık basılı: elinde tek elle taşınan eşya varsa Throw_Aim (döngü; eşya sağ elde); bırakınca Throw_Release, release_frame'de
-//    (kare 8) eşya fırlar (LootItem.Throw: fizik; hırsıza isabet sersemletir; boşluğa düşerse geri döner).
+//    Eğikken tackle yok (sol tık yumruktur).
+//  - Sağ tık, eli boşken (ya da elde fırlatılamayan koni / ekipman): Push_Shove; hit_frame'de (kare 9) önündeki pushRange / pushAngle
+//    içindeki hırsızlar pushKnockback geri savrulur, pushStunSeconds sersemler, elindekini düşürür. Bekleme pushCooldown.
+//  - Sağ tık basılı, elde tek elle fırlatılabilir eşya varken: Throw_Aim (döngü; eşya sağ elde); bırakınca Throw_Release, release_frame'de
+//    (kare 8) eşya fırlar (LootItem.Throw: fizik; hırsıza isabet sersemletir; boşluğa düşerse geri döner). Basışta karar verilir
+//    (SecondaryInput): eşya varsa nişan niyeti, yoksa bir itme.
+//  - Eğikken (ThirdPersonPlayer.IsCrouching) yumruk, itme ve fırlatma serbest; Animator'da kollar taban katmandan, bacaklar eğik.
 //    U4c: nişan alırken HUD'da ekran ortasında nişangah, gövde kameraya döner; hedef kameranın merkez ışınının çarptığı nokta
 //    (yoksa 20 m ilerisi), eşya throwSpeed ile o noktaya düşecek şekilde balistik fırlatılır (menzil dışı → 45°).
 //  - Q: Whistle_Blow; blow_frames başında (kare 15) whistleRadius içindeki hırsızlar fearSeconds korkup kamyonete kaçar. Bekleme whistleCooldown.
@@ -21,8 +27,23 @@ public class PlayerCombat : MonoBehaviour
     public AudioSource audioSource;
     [Tooltip("Bu yüksekliğin altı boşluk (FallRespawnPlane): fırlatılan eşya başlangıç yerine döner.")]
     public float killBelowY = -50f;
+    [Header("Yumruk (sol tık; ThiefSettings'te yok, burada)")]
+    [Tooltip("Yumruk menzili (m; itme menzili kadar) ve koni açısı (derece).")]
+    public float punchRange = 1.4f, punchAngle = 70f;
+    [Tooltip("İsabette hırsızın sersemleme süresi (sn); elindekini düşürür.")]
+    public float punchStunSeconds = 1.2f;
+    [Tooltip("İsabette hırsızın geri tepmesi (m; itmenin 1.5 m'sinden küçük).")]
+    public float punchKnockback = 0.5f;
+    [Tooltip("Yumruk hasarı (hırsız canı 100; itme 25).")]
+    public float punchDamage = 15f;
+    [Tooltip("Yumruklar arası bekleme (sn; klip 0.5 sn).")]
+    public float punchCooldown = 0.45f;
+
+    // Animator durumu (Bolum1AnimBuilder kurar; Punch_Jab klibi)
+    public const string StatePunchJab = "PunchJab";
 
     // Klip olayları (clips_meta.json; 1 tabanlı kare → (kare−1)/30 sn)
+    public const float PunchSeconds = 0.5f, PunchHitTime = 6f / 30f;
     public const float PushSeconds = 0.6f, PushHitTime = 8f / 30f;
     // Tackle_Dive: 28 kare / 0.9 sn, hit_frame 12 (0.37 sn), ground_frame 22 (0.7 sn). Kayma 0.2 → 0.7 sn (havada), isabet 0.1–0.75 sn.
     public const float TackleSeconds = 0.9f, TackleGetUpSeconds = 1.0f, TackleHitStart = 0.1f, TackleHitEnd = 0.75f, TackleSlideStart = 0.2f, TackleSlideSeconds = 0.5f;
@@ -31,6 +52,7 @@ public class PlayerCombat : MonoBehaviour
 
     public bool Aiming { get; private set; }
     public bool Busy { get; private set; }
+    public float PunchReadyAt { get; private set; } = -100f;
     public float PushReadyAt { get; private set; } = -100f;
     public float TackleReadyAt { get; private set; } = -100f;
     public float WhistleReadyAt { get; private set; } = -100f;
@@ -38,6 +60,8 @@ public class PlayerCombat : MonoBehaviour
     public bool WhistleReady { get { return Time.time >= WhistleReadyAt; } }
     public string LastAction { get; private set; } = "";
     // Ölçüm
+    public int Punches { get; private set; }
+    public int PunchHits { get; private set; }
     public int Pushes { get; private set; }
     public int PushHits { get; private set; }
     public int Tackles { get; private set; }
@@ -54,6 +78,8 @@ public class PlayerCombat : MonoBehaviour
     public string LastFacing { get; private set; } = "";
 
     private readonly HashSet<Thief> tackleHit = new HashSet<Thief>();
+    // Sağ tık basışında elde fırlatılabilir eşya vardı: tuş basılı kaldıkça nişan (meşgulken basıldıysa eylem bitince başlar)
+    private bool aimIntent;
 
     private void Awake()
     {
@@ -79,7 +105,9 @@ public class PlayerCombat : MonoBehaviour
     }
     public bool CanAttack { get { return CanAct && !Aiming; } }
     // Ofis-garaj: elde dış eşya (HeldProp, CarryableItem köprüsü) de fırlatılır.
-    public bool CanThrow { get { return CanAct && ((player.HeldValuable != null && player.HeldValuable.kind != LootKind.Equipment) || player.HeldProp != null); } }
+    public bool CanThrow { get { return CanAct && HasThrowable; } }
+    // Elde tek elle fırlatılabilir eşya (valiz / hasta eşyası; garajda dış eşya) var mı (koni ve ekipman değil)
+    public bool HasThrowable { get { return player != null && ((player.HeldValuable != null && player.HeldValuable.kind != LootKind.Equipment) || player.HeldProp != null); } }
     public bool CanWhistle { get { return CanAct && !Aiming && WhistleReady; } }
 
     private void Update()
@@ -92,21 +120,45 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
-    // Sol tık: koşuyorsa tackle, değilse itme.
+    // Sol tık: koşuyorsa (eğik değilken) tackle, değilse yumruk.
     public bool Attack()
     {
         if (!CanAttack) { Rejected++; LastRejectReason = RejectReason(); return false; }
-        bool running = player.RunHeld && player.HorizontalVelocity.magnitude > 1.5f;
+        bool running = !player.IsCrouching && player.RunHeld && player.HorizontalVelocity.magnitude > 1.5f;
         if (running && Time.time >= TackleReadyAt) { FaceForAttack(); StartCoroutine(TackleRoutine()); return true; }
-        if (Time.time >= PushReadyAt) { FaceForAttack(); StartCoroutine(PushRoutine()); return true; }
+        if (Time.time >= PunchReadyAt) { FaceForAttack(); StartCoroutine(PunchRoutine()); return true; }
         Rejected++;
-        LastRejectReason = running ? "tackle beklemede" : "itme beklemede";
+        LastRejectReason = running ? "tackle beklemede" : "yumruk beklemede";
         return false;
+    }
+
+    // Sağ tık eli boşken: itme.
+    public bool Push()
+    {
+        if (!CanAttack) { Rejected++; LastRejectReason = RejectReason(); return false; }
+        if (Time.time < PushReadyAt) { Rejected++; LastRejectReason = "itme beklemede"; return false; }
+        FaceForAttack();
+        StartCoroutine(PushRoutine());
+        return true;
+    }
+
+    // Sağ tık (girdi okuyucusu her kare): basışta elde fırlatılabilir eşya varsa nişan niyeti (basılı kaldıkça Throw_Aim, bırakınca
+    // atış), yoksa bir itme. Basılı tutmak itmeyi tekrarlamaz.
+    public void SecondaryInput(bool held, bool pressedThisFrame)
+    {
+        if (pressedThisFrame)
+        {
+            aimIntent = HasThrowable;
+            if (!aimIntent) Push();
+        }
+        if (!held) aimIntent = false;
+        SetThrowHeld(held && aimIntent);
     }
 
     // Test: beklemeleri sıfırla (önceki fazın düdük / tackle beklemesi yeni testi engellemesin)
     public void ResetCooldownsForTest()
     {
+        PunchReadyAt = -100f;
         PushReadyAt = -100f;
         TackleReadyAt = -100f;
         WhistleReadyAt = -100f;
@@ -153,6 +205,30 @@ public class PlayerCombat : MonoBehaviour
         Vector3 face = best != null ? Flat(best.transform.position - player.transform.position).normalized : look;
         LastFacing = best != null ? "hırsız " + best.name : "kamera";
         player.transform.rotation = Quaternion.LookRotation(face, Vector3.up);
+    }
+
+    // Yumruk: sağ kolla düz vuruş; isabette kısa sersemletme + eşya düşer + küçük geri tepme.
+    private IEnumerator PunchRoutine()
+    {
+        Busy = true;
+        LastAction = "punch";
+        Punches++;
+        PunchReadyAt = Time.time + punchCooldown;
+        player.SuspendControl(0.3f);
+        if (crew != null) crew.PlayAction(StatePunchJab, PunchSeconds);
+        yield return new WaitForSeconds(PunchHitTime);
+        Vector3 fwd = Flat(player.transform.forward);
+        bool hit = false;
+        foreach (var t in Thief.All.ToArray())
+        {
+            if (t == null || !t.CanBeHit || !InCone(t.transform.position, punchRange, punchAngle)) continue;
+            Vector3 away = Flat(t.transform.position - player.transform.position);
+            if (away.sqrMagnitude < 1e-4f) away = fwd;
+            if (t.Hit(punchDamage, punchStunSeconds, away.normalized * punchKnockback, "yumruk")) { PunchHits++; hit = true; }
+        }
+        if (hit) Play(SynthClips.Cached("Punch", SynthClips.Punch));
+        yield return new WaitForSeconds(Mathf.Max(0f, PunchSeconds - PunchHitTime - 0.15f));
+        Busy = false;
     }
 
     private IEnumerator PushRoutine()
@@ -241,6 +317,7 @@ public class PlayerCombat : MonoBehaviour
     // Nişanı fırlatmadan iptal eder (UI açılması gibi durumlarda tuş bırakılmış sayılmasın).
     public void CancelAim()
     {
+        aimIntent = false;
         if (!Aiming) return;
         Aiming = false;
         if (crew != null) crew.ReleaseAction();

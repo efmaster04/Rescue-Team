@@ -69,6 +69,33 @@ public static class Bolum1DriveVerify
     [MenuItem("Rescue Team/Bölüm 1/Sürüş Girişi: Doğrula")]
     public static void RunMenu() { Begin(false); }
 
+    // Tanı (edit modu, batchmode): minibüs görselindeki her renderer'ın kök-yerel bounds'u, materyal / shader / cull değeri.
+    // FP kabin görünümü için hangi parçaların içeriden görünmediğini bulmak amacıyla; Captures/Bolum1/van_mesh_report.txt
+    public static void DumpVanMeshes()
+    {
+        EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
+        var van = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
+        var sb = new StringBuilder();
+        foreach (var mf in van.GetComponentsInChildren<MeshFilter>(true))
+        {
+            var r = mf.GetComponent<Renderer>();
+            if (mf.sharedMesh == null || r == null) continue;
+            var b = mf.sharedMesh.bounds;
+            Vector3 min = Vector3.one * float.MaxValue, max = Vector3.one * float.MinValue;
+            for (int i = 0; i < 8; i++)
+            {
+                var p = van.transform.InverseTransformPoint(mf.transform.TransformPoint(b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1))));
+                min = Vector3.Min(min, p); max = Vector3.Max(max, p);
+            }
+            string mats = string.Join(";", r.sharedMaterials.Select(m => m == null ? "null" : m.name + "[" + (m.shader != null ? m.shader.name : "-") + (m.HasProperty("_Cull") ? " cull" + m.GetFloat("_Cull").ToString(Inv) : "") + (m.HasProperty("_Surface") ? " surf" + m.GetFloat("_Surface").ToString(Inv) : "") + "]"));
+            sb.AppendLine(mf.name + " | üst " + mf.transform.parent.name + " | açık " + mf.gameObject.activeInHierarchy + "/" + r.enabled + " | min " + V(min) + " max " + V(max) + " | üçgen " + mf.sharedMesh.triangles.Length / 3 + " | " + mats);
+        }
+        Directory.CreateDirectory(OutDir);
+        File.WriteAllText(Path.Combine(OutDir, "van_mesh_report.txt"), sb.ToString());
+        Debug.Log("VAN MESH DUMP OK " + sb.Length);
+        if (Application.isBatchMode) EditorApplication.Exit(0);
+    }
+
     public static void Run() { Begin(true); }
 
     private static void Begin(bool batch)
@@ -132,6 +159,13 @@ public static class Bolum1DriveVerify
         Check("Animator: Drive_Seated / Passenger_Seated durumları gerçek döngü klipleriyle, Seated parametresi",
             param && clipsReal && loops,
             "parametre " + param + ", klipler " + (drive != null && drive.motion != null ? drive.motion.name : "YOK") + " / " + (passenger != null && passenger.motion != null ? passenger.motion.name : "YOK") + ", döngü " + loops);
+
+        // Tekerlek fiziği: WheelCollider'lar Awake'te lastik mesh'lerinden kurulur; dört lastik + dört jant mesh'i garaj görselinde olmalı
+        var meshes = van != null ? van.GetComponentsInChildren<MeshFilter>(true).Select(m => m.name).ToList() : new List<string>();
+        int tires = meshes.Count(n => n.Contains(ServiceVanDriver.TireKey)), rims = meshes.Count(n => n.Contains(ServiceVanDriver.RimKey));
+        Check("sahne: görselde 4 lastik + 4 jant mesh'i (WheelCollider ve görsel pivotlar Play'de bunlardan kurulur), sürücü fizik ayarları makul",
+            tires == 4 && rims == 4 && driver != null && driver.maxSteerAngle > driver.highSpeedSteerAngle && driver.suspensionTravel > driver.suspensionSag && driver.sidewaysStiffness >= driver.forwardStiffness,
+            "lastik " + tires + ", jant " + rims + (driver != null ? ", direksiyon " + driver.maxSteerAngle.ToString(Inv) + "→" + driver.highSpeedSteerAngle.ToString(Inv) + "°, süspansiyon yol " + driver.suspensionTravel.ToString(Inv) + " m çökme " + driver.suspensionSag.ToString(Inv) + " m, tutuş ileri " + driver.forwardStiffness.ToString(Inv) + " yanal " + driver.sidewaysStiffness.ToString(Inv) : ""));
 
         var s = Bolum1TrafficBuilder.Settings;
         Check("TrafficSettings: minibüs bekleme 5 sn, çarpma hızı / hasarı / itmesi > 0",
@@ -253,6 +287,7 @@ public static class Bolum1DriveVerify
         yield return PhaseReboard();
         yield return PhaseFall();
         yield return PhaseParkingConsistency();
+        yield return PhasePhysics();
         yield return PhaseBadParkRam();
         yield return PhaseOncomingLane();
         yield return PhaseAmbulanceBlocked();
@@ -279,12 +314,15 @@ public static class Bolum1DriveVerify
             "oturma " + seated + " (" + seatDetail + "; anim " + seatedAnim + "), şerit s " + s.ToString("F1", Inv) + " yanal " + lateral.ToString("F2", Inv) + " m → " + onLane + ", saat durdu " + held + " (Elapsed " + Mission.Elapsed.ToString("F2", Inv)
             + "), yük " + Van.HeldCargoCount + " parça, durum " + Van.State + ", kamera hedef " + (Van.orbitCamera != null ? Van.orbitCamera.target.name : "YOK") + " uzaklık " + (Van.orbitCamera != null ? Van.orbitCamera.distance.ToString("F1", Inv) : "-"));
         yield return CaptureSeats();
+        Line("  tanı (gazdan önce): " + Van.WheelReport());
         Van.SetTestInput(1f, 0f);
-        yield return Seconds(1.5f);
+        yield return Seconds(.3f);
+        Line("  tanı (gaz 0.3 sn): hız " + Van.Speed.ToString("F2", Inv) + " " + Van.WheelReport());
+        yield return Seconds(1.2f);
         bool movingNoExit = Mathf.Abs(Van.Speed) > 2f && !Van.TryExit() && GameNotice.LastMessage == ServiceVanDriver.NoExitWhileMovingText;
         Van.SetTestInput(0f, 0f);
         Check("(a2) hareket hâlindeyken E ile iniş reddedilir (uyarı)", movingNoExit && Van.CrewInside,
-            "1.5 sn gazdan sonra hız " + Van.Speed.ToString("F1", Inv) + " m/sn → red " + movingNoExit + ", uyarı '" + GameNotice.LastMessage + "'");
+            "1.5 sn gazdan sonra hız " + Van.Speed.ToString("F1", Inv) + " m/sn → red " + movingNoExit + ", uyarı '" + GameNotice.LastMessage + "'; " + DriveState(Van.transform.position));
         // Serbest imleç (editörde Esc): açık UI yokken sol tık yeniden kilitler ve o kare saldırı sayılmaz; UI açıkken dokunmaz
         var orbit = Van.orbitCamera;
         var reader = player.GetComponent<PlayerInputReader>();
@@ -421,7 +459,7 @@ public static class Bolum1DriveVerify
     private static string DriveState(Vector3 from)
     {
         return "hız " + Van.Speed.ToString("F2", Inv) + " m/sn, gaz " + Van.Throttle.ToString("F1", Inv) + ", durum " + Van.State + ", kinematik " + Van.Body.isKinematic + ", rb hız " + V(Van.Body.linearVelocity)
-            + ", yol " + Vector3.Distance(from, Van.transform.position).ToString("F2", Inv) + " m, darbe " + Van.Impacts + ", düşüyor " + Van.Falling + ", içeride " + Van.CrewInside + ", kesişen [" + string.Join(",", Van.OverlapReport()) + "]";
+            + ", yol " + Vector3.Distance(from, Van.transform.position).ToString("F2", Inv) + " m, darbe " + Van.Impacts + ", düşüyor " + Van.Falling + ", içeride " + Van.CrewInside + ", kesişen [" + string.Join(",", Van.OverlapReport()) + "], yerde " + Van.WheelsGrounded + " sıkışma %" + (Van.SuspensionMin * 100f).ToString("F0", Inv) + "–" + (Van.SuspensionMax * 100f).ToString("F0", Inv) + ", tekerlekler: " + Van.WheelReport();
     }
 
     // (f) Zemin bitince: dört tekerlek de boştayken minibüs yerçekimiyle düşer; plan (fallBelowY) altına inince ekip ve yükle
@@ -495,16 +533,23 @@ public static class Bolum1DriveVerify
         // eksenin 8 m ötesine nişan (yön hizalanır); merkezi 1.5 m geçince dur.
         yield return DriveTo(() => zone.transform.position - zoneFwd * 1f, 3.5f, 0f, () => Progress() >= -3f, 40f, "alana giriş (yanal)");
         Line("  otopilot: yanal giriş sonrası " + Pose());
-        yield return DriveTo(() => zone.transform.position + zoneFwd * 8f, 3f, 0f, () => Progress() >= 1.5f, 40f, "alana giriş",
-            () => Mathf.Max(0f, 1.5f - Progress()));
+        // Eksen üzerinde minibüsün ilerlemesine göre 3.5 m öndeki / arkadaki nokta (kısa bakış: 0.5 m yanal hata birkaç metrede kapanır;
+        // sabit 8 m'lik hedefle tekerlek fiziğinde dönüş tepkisi yavaş kalıyordu: ölçüldü 5 turda 3.4 → 4.1 m, merkez 4.4)
+        Vector3 AxisAhead(float d) { return zone.transform.position + zoneFwd * (Progress() + d); }
+        // Giriş hizalanana kadar sürer (yaw < 4°; en geç ilerleme 3.2): tekerlek fiziğinde cebin içindeki ileri-geri manevra 0.7 m'lik
+        // yanal farkı kapatamıyor (ölçüldü: 5 turda +0.05 m), hizalı girince düz geri + kısa ileri yetiyor
+        float YawErr() { return Vector3.Angle(Flat(Van.Forward), zoneFwd); }
+        yield return DriveTo(() => AxisAhead(4f), 3f, 0f, () => (Progress() >= 1.5f && YawErr() < 4f) || Progress() >= 3.2f, 40f, "alana giriş",
+            () => Mathf.Max(0f, 3.2f - Progress()), false, 10f);
         Line("  otopilot: alana giriş sonrası " + Pose());
-        for (int attempt = 0; attempt < 3; attempt++)
+        for (int attempt = 0; attempt < 5; attempt++)
         {
-            yield return DriveTo(() => zone.transform.position - zoneFwd * 8f, 2f, 0f, () => Progress() <= -1.5f, 30f, "geri düzeltme",
-                () => Mathf.Max(0f, Progress() + 1.5f), true);
+            // Geri: uzak hedefle yumuşak (neredeyse düz geri; kısa bakışla 17° dönüp yanal kaybediyordu), ileri: kısa bakışla sert yanal düzeltme
+            yield return DriveTo(() => AxisAhead(-8f), 2.5f, 0f, () => Progress() <= -1.5f, 30f, "geri düzeltme",
+                () => Mathf.Max(0f, Progress() + 1.5f), true, 20f);
             Line("  otopilot: geri düzeltme #" + (attempt + 1) + " sonrası " + Pose());
-            yield return DriveTo(() => zone.transform.position + zoneFwd * 8f, 2f, 0f, () => Progress() >= -.3f, 30f, "park",
-                () => Mathf.Max(0f, -.3f - Progress()));
+            yield return DriveTo(() => AxisAhead(3.5f), 2.5f, 0f, () => Progress() >= -.3f, 30f, "park",
+                () => Mathf.Max(0f, -.3f - Progress()), false, 8f);
             Line("  otopilot: park #" + (attempt + 1) + " sonrası " + Pose());
             Van.SetTestInput(-1f, 0f);
             yield return Until(() => Mathf.Abs(Van.Speed) < .05f, 5f, "fren");
@@ -638,6 +683,189 @@ public static class Bolum1DriveVerify
         yield return null;
     }
 
+    // (p) Tekerlek fiziği (kullanıcı kararı 2026-11-05, arcade-gerçekçi): sahneden uzak düz pistte (zemin köklerinden bağımsız) süspansiyon
+    // oturması, hızlanma, fren mesafesi, viraj (yatma hissedilir, devrilmez, az kayar), hız sınırı, kinematik gövdeyle fiziksel itilme,
+    // statik engele çarpma hasarı. Ölçülen değerler rapora yazılır.
+    private static IEnumerator PhasePhysics()
+    {
+        var wheels = Van.Wheels;
+        var pivots = Van.WheelPivots;
+        bool wheelsOk = wheels.All(w => w != null && w.transform.parent == Van.transform && w.radius > .25f && w.radius < .6f && w.suspensionSpring.spring > 0f && w.suspensionSpring.damper > 0f)
+            && pivots.All(p => p != null && p.GetComponentsInChildren<MeshFilter>().Any(m => m.name.Contains(ServiceVanDriver.TireKey)) && p.GetComponentsInChildren<MeshFilter>().Any(m => m.name.Contains(ServiceVanDriver.RimKey)));
+        Check("(p0) dört WheelCollider (kökün altında, yarıçap lastik mesh'inden, yay / sönüm > 0) + dört görsel pivot (lastik + jant altında)", wheelsOk,
+            "yarıçap " + Van.WheelRadius.ToString("F3", Inv) + " m, yay " + (wheels[0] != null ? wheels[0].suspensionSpring.spring.ToString("F0", Inv) : "-") + " N/m, sönüm " + (wheels[0] != null ? wheels[0].suspensionSpring.damper.ToString("F0", Inv) : "-")
+            + " N·s/m, yol " + Van.suspensionTravel.ToString("F2", Inv) + " m, kütle " + Van.Body.mass.ToString("F0", Inv) + " kg, ağırlık merkezi " + V(Van.Body.centerOfMass) + ", pivotlar " + string.Join(" ", pivots.Select(p => p != null ? V(Van.transform.InverseTransformPoint(p.position)) : "YOK")));
+
+        // Pist: sahnenin çok uzağında, FallRespawnPlane'in üstünde; zemin kökü değil (tekerlek raycast'i görmez, WheelCollider görür)
+        var pad = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        pad.name = "DriveVerify_SkidPad";
+        Vector3 padCenter = new Vector3(2000f, 300f, 2000f);
+        pad.transform.position = padCenter;
+        pad.transform.localScale = new Vector3(600f, 1f, 600f);
+        Physics.SyncTransforms();
+        float padTop = padCenter.y + .5f;
+        Vector3 PadPose(Vector3 offset) { return padCenter + offset + Vector3.up * (.5f - Van.bodyMin.y + .05f); }
+        Quaternion Facing(Vector3 forward) { return Quaternion.LookRotation(-forward, Vector3.up); } // kök +Z arka
+        Van.TeleportTo(PadPose(Vector3.zero), Facing(Vector3.forward), false);
+        Van.SeatCrew();
+        yield return Seconds(2f);
+
+        // (p1) süspansiyon oturması
+        float vy = Mathf.Abs(Van.Body.linearVelocity.y);
+        float hub = pivots.Average(p => p.position.y) - padTop;
+        float baseY = Van.transform.TransformPoint(new Vector3(0f, Van.bodyMin.y, 0f)).y - padTop;
+        bool settled = Van.WheelsGrounded == 4 && Van.SuspensionMin > .1f && Van.SuspensionMax < .6f && vy < .05f && Van.TiltDeg < 2f && !Van.Falling
+            && Van.State == ServiceVanDriver.VanState.Driving && Mathf.Abs(hub - Van.WheelRadius) < .06f && Mathf.Abs(Van.Speed) < .05f;
+        Check("(p1) süspansiyon oturması: 2 sn'de dört tekerlek yerde, sıkışma %10–60, düşey hız ≈ 0, eğim < 2°, göbek yüksekliği ≈ yarıçap, el freniyle durur", settled,
+            "yerde " + Van.WheelsGrounded + ", sıkışma %" + (Van.SuspensionMin * 100f).ToString("F0", Inv) + "–" + (Van.SuspensionMax * 100f).ToString("F0", Inv) + ", düşey hız " + vy.ToString("F3", Inv) + " m/sn, eğim " + Van.TiltDeg.ToString("F2", Inv)
+            + "°, göbek " + hub.ToString("F3", Inv) + " m (yarıçap " + Van.WheelRadius.ToString("F3", Inv) + "), gövde tabanı pistten " + baseY.ToString("F3", Inv) + " m, hız " + Van.Speed.ToString("F3", Inv) + ", düşüyor " + Van.Falling + ", durum " + Van.State);
+
+        // (p2) hızlanma ve hız sınırı: tam gaz 9 sn (pistin gerisinden: ~110 m yol)
+        Van.TeleportTo(PadPose(Vector3.back * 200f), Facing(Vector3.forward), false);
+        yield return Seconds(1f);
+        Vector3 from = Van.transform.position;
+        float t0 = Time.time, tTo8 = -1f, v3 = 0f, maxSeen = 0f;
+        Van.SetTestInput(1f, 0f);
+        yield return (Func<bool>)(() =>
+        {
+            if (tTo8 < 0f && Van.Speed >= 8f) tTo8 = Time.time - t0;
+            if (v3 == 0f && Time.time - t0 >= 3f) v3 = Van.Speed;
+            maxSeen = Mathf.Max(maxSeen, Van.Speed);
+            return Time.time - t0 >= 9f;
+        });
+        float accelDist = Vector3.Distance(Flat(from), Flat(Van.transform.position));
+        bool accelOk = v3 >= 7f && tTo8 > 0f && tTo8 <= 3f && maxSeen <= Van.maxSpeed + 1f && maxSeen >= Van.maxSpeed - 1.5f && Van.Impacts == 0 && Van.TiltDeg < 4f;
+        Check("(p2) hızlanma: tam gazda 3 sn'de ≥ 7 m/sn, 0→8 m/sn ≤ 3 sn; hız sınırı maxSpeed ± 1 m/sn; darbe yok", accelOk,
+            "3 sn'de " + v3.ToString("F1", Inv) + " m/sn, 0→8 m/sn " + tTo8.ToString("F2", Inv) + " sn, 9 sn'de en yüksek " + maxSeen.ToString("F1", Inv) + " m/sn (sınır " + Van.maxSpeed.ToString(Inv) + "), yol " + accelDist.ToString("F1", Inv) + " m, motor torku " + Van.MotorTorque.ToString("F0", Inv) + " N·m/teker, eğim " + Van.TiltDeg.ToString("F1", Inv) + "°");
+
+        // (p3) fren mesafesi
+        float vBrake = Van.Speed;
+        Vector3 brakeFrom = Van.transform.position;
+        float tb = Time.time;
+        Van.SetTestInput(-1f, 0f);
+        yield return Until(() => Mathf.Abs(Van.Speed) < .2f, 6f, "fren");
+        float brakeDist = Vector3.Distance(Flat(brakeFrom), Flat(Van.transform.position)), brakeTime = Time.time - tb;
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(1f);
+        bool holds = Mathf.Abs(Van.Speed) < .05f && Van.Body.linearVelocity.magnitude < .1f;
+        float brakeLimit = vBrake * vBrake / (2f * 5f) + 1f;
+        bool brakeOk = vBrake >= 10f && brakeDist <= brakeLimit && brakeTime <= 4f && holds && Van.TiltDeg < 4f;
+        Check("(p3) fren: tam frenle ≥ 5 m/sn² yavaşlama (mesafe ≤ v²/10 + 1 m), ≤ 4 sn, durunca el freni (kıpırdamaz), eğim < 4°", brakeOk,
+            vBrake.ToString("F1", Inv) + " m/sn → durdu: " + brakeDist.ToString("F1", Inv) + " m (sınır " + brakeLimit.ToString("F1", Inv) + "), " + brakeTime.ToString("F2", Inv) + " sn (ortalama " + (brakeTime > 0f ? (vBrake / brakeTime).ToString("F1", Inv) : "-") + " m/sn²), kıpırdamıyor " + holds + ", eğim " + Van.TiltDeg.ToString("F1", Inv) + "°, fren torku " + Van.BrakeTorque.ToString("F0", Inv) + " N·m/teker");
+
+        // (p4) viraj: tam gaz + tam sağ direksiyon 7 sn (daire); yaw sağa artar, yatma hissedilir (≥ 0.8°), devrilmez (< 12°, ≥ 3 teker yerde), az kayar (≤ 25°)
+        Van.TeleportTo(PadPose(Vector3.zero), Facing(Vector3.forward), false);
+        yield return Seconds(1f);
+        float lastYaw = Van.HeadingYaw, totalYaw = 0f, maxTilt = 0f, maxRoll = 0f, maxSlip = 0f, maxV = 0f;
+        int minGrounded = 4;
+        Van.SetTestInput(1f, 1f);
+        float tc = Time.time;
+        yield return (Func<bool>)(() =>
+        {
+            maxTilt = Mathf.Max(maxTilt, Van.TiltDeg); maxRoll = Mathf.Max(maxRoll, Van.RollDeg); maxSlip = Mathf.Max(maxSlip, Van.SlipAngleDeg);
+            minGrounded = Mathf.Min(minGrounded, Van.WheelsGrounded); maxV = Mathf.Max(maxV, Van.Speed);
+            float y = Van.HeadingYaw; totalYaw += Mathf.DeltaAngle(lastYaw, y); lastYaw = y;
+            return Time.time - tc >= 7f;
+        });
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(1.5f);
+        bool cornerOk = totalYaw >= 90f && maxTilt < 12f && minGrounded >= 3 && maxRoll >= .8f && maxSlip <= 25f && Van.TiltDeg < 4f && Van.Impacts == 0;
+        Check("(p4) viraj: tam gaz + tam sağ direksiyonla 7 sn: yaw ≥ +90° (sağa), yatma ≥ 0.8° hissedilir, eğim < 12°, ≥ 3 tekerlek yerde, kayma açısı ≤ 25°, sonunda dik", cornerOk,
+            "yaw +" + totalYaw.ToString("F0", Inv) + "°, en çok eğim " + maxTilt.ToString("F1", Inv) + "° yatma " + maxRoll.ToString("F1", Inv) + "° kayma " + maxSlip.ToString("F1", Inv) + "°, en az yerde " + minGrounded + ", en yüksek hız " + maxV.ToString("F1", Inv) + " m/sn, son eğim " + Van.TiltDeg.ToString("F1", Inv) + "°, direksiyon " + Van.SteerAngle.ToString("F1", Inv) + "°");
+
+        // (p4b) sert manevra: en yüksek hızda tam sola, sonra tam sağa (slalom) — devrilmez
+        Van.TeleportTo(PadPose(Vector3.back * 200f), Facing(Vector3.forward), false);
+        yield return Seconds(1f);
+        Van.SetTestInput(1f, 0f);
+        yield return Until(() => Van.Speed >= Van.maxSpeed - 1.5f, 12f, "en yüksek hıza çıkış");
+        float maxTilt2 = 0f; int minGrounded2 = 4;
+        Van.SetTestInput(1f, -1f);
+        float ts = Time.time;
+        yield return (Func<bool>)(() => { maxTilt2 = Mathf.Max(maxTilt2, Van.TiltDeg); minGrounded2 = Mathf.Min(minGrounded2, Van.WheelsGrounded); return Time.time - ts >= 2f; });
+        Van.SetTestInput(1f, 1f);
+        yield return (Func<bool>)(() => { maxTilt2 = Mathf.Max(maxTilt2, Van.TiltDeg); minGrounded2 = Mathf.Min(minGrounded2, Van.WheelsGrounded); return Time.time - ts >= 4f; });
+        Van.SetTestInput(-1f, 0f);
+        yield return Until(() => Mathf.Abs(Van.Speed) < .3f, 8f, "slalom sonrası fren");
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(1f);
+        bool slalomOk = maxTilt2 < 15f && minGrounded2 >= 2 && Van.TiltDeg < 4f && Van.WheelsGrounded == 4;
+        Check("(p4b) en yüksek hızda sol-sağ slalom: eğim < 15°, ≥ 2 tekerlek hep yerde, sonunda dört teker yerde ve dik (zor devrilir)", slalomOk,
+            "en çok eğim " + maxTilt2.ToString("F1", Inv) + "°, en az yerde " + minGrounded2 + ", son eğim " + Van.TiltDeg.ToString("F1", Inv) + "°, yerde " + Van.WheelsGrounded);
+
+        // (p5) kinematik gövdeyle fiziksel itilme: park hâlindeki (kinematik) minibüsün sağ yanına 2 m/sn ile giren kinematik kamyon kutusu
+        Van.TeleportTo(PadPose(Vector3.zero), Facing(Vector3.forward), true);
+        yield return Seconds(.5f);
+        bool parkedKinematic = Van.State == ServiceVanDriver.VanState.Parked && Van.Body.isKinematic;
+        Vector3 pushDir = Flat(Van.transform.right); // kök +X sol: itici sağdan gelir, sola doğru iter
+        var pusher = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        pusher.name = "DriveVerify_Pusher";
+        pusher.transform.localScale = new Vector3(2.4f, 1.6f, 5f);
+        pusher.transform.rotation = Quaternion.LookRotation(pushDir, Vector3.up);
+        pusher.transform.position = Van.transform.position - pushDir * 6f + Vector3.up * (padTop - Van.transform.position.y + .8f);
+        var prb = pusher.AddComponent<Rigidbody>();
+        prb.isKinematic = true;
+        prb.mass = 3000f;
+        var mover = pusher.AddComponent<DriveVerifyKinematicPusher>();
+        mover.velocity = pushDir * 2f;
+        Physics.SyncTransforms();
+        Vector3 vanBefore = Van.transform.position;
+        var conesInside = Bolum1ServiceVan.ConeNames.Select(n => GameObject.Find(n)).Where(c => c != null && Van.InsideFootprint(c.transform.position, .2f)).ToList();
+        int shoves0 = Van.PhysicalShoves;
+        bool sawPhysical = false; float maxTiltP = 0f; float shoveStartT = -1f; float cargoCount = 0f;
+        float tp = Time.time;
+        yield return (Func<bool>)(() =>
+        {
+            if (Van.State == ServiceVanDriver.VanState.Shoved && Van.PhysicalShove) { sawPhysical = true; if (shoveStartT < 0f) shoveStartT = Time.time - tp; cargoCount = Mathf.Max(cargoCount, Van.HeldCargoCount); }
+            maxTiltP = Mathf.Max(maxTiltP, Van.TiltDeg);
+            return Time.time - tp >= 5f;
+        });
+        float pushedMid = Vector3.Dot(Flat(Van.transform.position - vanBefore), pushDir);
+        mover.velocity = Vector3.zero;
+        yield return Seconds(1f);
+        UnityEngine.Object.Destroy(pusher);
+        yield return Until(() => Van.State == ServiceVanDriver.VanState.Parked, 8f, "fiziksel itilme sonrası park");
+        float settleT = Time.time - tp;
+        yield return Seconds(.5f);
+        float pushedTotal = Vector3.Dot(Flat(Van.transform.position - vanBefore), pushDir);
+        bool conesBack = conesInside.Count >= 3 && conesInside.All(c => c != null && !c.transform.IsChildOf(Van.transform) && Van.InsideFootprint(c.transform.position, .2f));
+        bool pushOk = parkedKinematic && sawPhysical && Van.PhysicalShoves == shoves0 + 1 && pushedMid >= 1.5f && maxTiltP < 10f && pushedTotal <= 9f && pushedTotal >= pushedMid - .1f
+            && Van.State == ServiceVanDriver.VanState.Parked && Van.Body.isKinematic && Van.TiltDeg < 3f && conesBack && cargoCount >= 6f && Van.LastPusher == null;
+        Check("(p5) park hâlindeki minibüse 2 m/sn ile giren kinematik kamyon kutusu: fiziksel itilme başlar (dinamik), ≥ 1.5 m itilir, devrilmez (< 10°), itici durunca yeniden park (kinematik), yük bağlanıp serbest bırakılır", pushOk,
+            "parkta kinematik " + parkedKinematic + ", fiziksel itilme " + sawPhysical + " (" + (shoveStartT >= 0f ? shoveStartT.ToString("F2", Inv) + " sn'de başladı" : "başlamadı") + ", sayı " + (Van.PhysicalShoves - shoves0) + ", yük " + cargoCount.ToString("F0", Inv) + " parça), 5 sn'de " + pushedMid.ToString("F2", Inv)
+            + " m, toplam " + pushedTotal.ToString("F2", Inv) + " m, en çok eğim " + maxTiltP.ToString("F1", Inv) + "°, park " + settleT.ToString("F1", Inv) + " sn'de (durum " + Van.State + ", kinematik " + Van.Body.isKinematic + "), koniler yerinde " + conesBack + " (" + conesInside.Count + " koni), hasar %" + Van.Damage.ToString("F1", Inv) + ", darbe " + Van.Impacts);
+
+        // (p6) statik engele çarpma hasarı: 25 m ilerideki duvara tam gazla
+        var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = "DriveVerify_Wall";
+        wall.transform.localScale = new Vector3(14f, 3f, 1f);
+        Van.TeleportTo(PadPose(Vector3.back * 40f), Facing(Vector3.forward), false);
+        wall.transform.position = Van.transform.position + Flat(Van.Forward) * 28f + Vector3.up * (padTop - Van.transform.position.y + 1.5f);
+        wall.transform.rotation = Quaternion.LookRotation(Flat(Van.Forward), Vector3.up);
+        Physics.SyncTransforms();
+        yield return Seconds(.5f);
+        float dmg0 = Van.Damage; int imp0 = Van.Impacts;
+        float vHit = 0f;
+        Van.SetTestInput(1f, 0f);
+        yield return (Func<bool>)(() => { if (Van.Impacts == imp0) vHit = Van.Speed; return Van.Impacts > imp0 || Vector3.Distance(Flat(Van.transform.position), Flat(wall.transform.position)) < 2f; });
+        yield return Until(() => Van.Impacts > imp0, 3f, "duvara çarpma darbesi");
+        Van.SetTestInput(0f, 0f);
+        yield return Seconds(1f);
+        bool crashOk = Van.Impacts == imp0 + 1 && Van.Damage > dmg0 && Mathf.Abs(Van.Speed) < 1f && Van.TiltDeg < 6f && Van.WheelsGrounded >= 3;
+        Check("(p6) statik duvara çarpma: bir darbe, hasar artar, minibüs duvarda durur, devrilmez", crashOk,
+            "çarpma hızı " + vHit.ToString("F1", Inv) + " m/sn, darbe " + (Van.Impacts - imp0) + ", hasar %" + dmg0.ToString("F1", Inv) + " → %" + Van.Damage.ToString("F1", Inv) + ", hız " + Van.Speed.ToString("F1", Inv) + ", eğim " + Van.TiltDeg.ToString("F1", Inv) + "°, yerde " + Van.WheelsGrounded);
+
+        // Temizlik: pist ve duvar kaldırılır, minibüs park alanına, ekip iner
+        UnityEngine.Object.Destroy(wall);
+        UnityEngine.Object.Destroy(pad);
+        yield return null;
+        Physics.SyncTransforms();
+        Van.TeleportTo(zone.transform.position, zone.transform.rotation, false);
+        yield return Seconds(.5f);
+        bool exited = Van.TryExit();
+        yield return Seconds(.5f);
+        Line("  fizik sonrası: iniş " + exited + ", durum " + Van.State + ", hasar %" + Van.Damage.ToString("F1", Inv) + " (c aşamasında sıfırlanır)");
+    }
+
     // (c) Kötü park: minibüs EastBound'da şeridin ortasında; araç durur, korna, ~5 sn, çarpıp iter; hasar sonuca ulaşır.
     private static IEnumerator PhaseBadParkRam()
     {
@@ -682,7 +910,13 @@ public static class Bolum1DriveVerify
         Line("  itilme: " + Van.LastShoveReason);
         float passEnd = Time.time + 45f;
         string lastState = "";
-        while (Time.time < passEnd && !(v == null || v.Follower.Distance > far + 8f)) { lastState = RamState(v); yield return null; }
+        float nextTrace = Time.time;
+        while (Time.time < passEnd && !(v == null || v.Follower.Distance > far + 8f))
+        {
+            lastState = RamState(v);
+            if (Time.time >= nextTrace && Time.time - pushedAt < 8f) { nextTrace = Time.time + .5f; east.Project(Van.transform.position, out float latT, out _); Line("  iz +" + (Time.time - pushedAt).ToString("F1", Inv) + " sn: yanal " + latT.ToString("F2", Inv) + " m, rb hız " + V(Van.Body.linearVelocity) + ", itilme " + Van.ShoveDistance.ToString("F2", Inv) + " m, durum " + Van.State + (v != null ? ", araç s " + v.Follower.Distance.ToString("F1", Inv) + " hız " + v.Follower.Speed.ToString("F1", Inv) + " çarpıyor " + (v.RammingObstacle != null) : "")); }
+            yield return null;
+        }
         if (!(v == null || v.Follower.Distance > far + 8f)) throw new Exception("beklenen olmadı: araç minibüsü geçip devam eder — " + lastState);
         yield return Until(() => Van.State == ServiceVanDriver.VanState.Parked, 15f, "minibüs yeniden durur");
         float pushed = Vector3.Distance(Flat(before), Flat(Van.transform.position));
@@ -822,8 +1056,34 @@ public static class Bolum1DriveVerify
         yield return CaptureMain("drive_seat_fp");
         // FP'de ön panel yolu kapatmasın: ekranın sağ yarısında alttan yukarı ilk renk kırılması (panel üst kenarı) ≤ %40 yükseklikte
         float dash = MeasureDashCoverage();
-        Check("(a1) birinci şahısta sürerken ön panel ekranın en fazla %40'ını kapatır (eğim " + orbit.Pitch.ToString("F0", Inv) + "°)", dash <= .4f && Mathf.Abs(orbit.Pitch - Van.driveFirstPersonPitch) < .5f,
-            "panel üst kenarı ekran yüksekliğinin %" + (dash * 100f).ToString("F0", Inv) + "'inde, eğim " + orbit.Pitch.ToString("F1", Inv) + "°, göz yukarı " + orbit.eyeUp.ToString("F2", Inv) + " m");
+        // Göz kabinin İÇİNDE olmalı: ön cam eğik (altı önde); göz yüksekliğindeki cam z'sinin en az 3 cm arkasında (ölçüldü 2026-11-05:
+        // yürüyüş eyeForward'ı 0.16 ile göz camın 7 cm önünde, kaputun üstündeydi; tavan / direk / panel görünmüyordu)
+        var glass = Van.GetComponentsInChildren<MeshFilter>(true).FirstOrDefault(m => m.name.Contains("Ön cam") && !m.name.Contains("silece"));
+        Vector3 eyeLocal = Van.transform.InverseTransformPoint(orbit.EyePoint());
+        float glassZ = float.NegativeInfinity;
+        if (glass != null)
+        {
+            var gb = glass.sharedMesh.bounds; // kök uzayında (birim dönüşüm)
+            float t = Mathf.Clamp01((eyeLocal.y - gb.min.y) / Mathf.Max(.01f, gb.size.y));
+            glassZ = Mathf.Lerp(gb.min.z, gb.max.z, t);
+        }
+        bool eyeInside = glass != null && eyeLocal.z >= glassZ + .03f && eyeLocal.y < 2.4f && eyeLocal.y > 1.6f;
+        // Cam saydam: ön cam ve içe bakan kopyası VanGlass (Transparent) kullanır; garajın opak dumanlı camı kalmamış
+        var glassMats = Van.GetComponentsInChildren<MeshRenderer>(true).Where(r => r.name.Contains("cam") || r.name.StartsWith("CabinInnerFace")).SelectMany(r => r.sharedMaterials).Where(m => m != null).ToList();
+        bool glassClear = glassMats.Any(m => m.name == "VanGlass" && m.GetFloat("_Surface") > .5f) && !glassMats.Any(m => m.name == Bolum1ServiceVan.GarageGlassMaterialName);
+        eyeInside &= glassClear;
+        Check("(a1) birinci şahısta sürerken göz kabinin içinde (ön camın arkasında), ön panel ekranın en fazla %40'ını kapatır (eğim " + orbit.Pitch.ToString("F0", Inv) + "°)", eyeInside && dash <= .4f && Mathf.Abs(orbit.Pitch - Van.driveFirstPersonPitch) < .5f,
+            "göz yerel " + V(eyeLocal) + ", cam o yükseklikte z " + glassZ.ToString("F2", Inv) + " → içeride " + eyeInside + ", cam saydam " + glassClear + ", panel üst kenarı ekran yüksekliğinin %" + (dash * 100f).ToString("F0", Inv) + "'inde, eğim " + orbit.Pitch.ToString("F1", Inv) + "°, göz yukarı " + orbit.eyeUp.ToString("F2", Inv) + " m ileri " + orbit.eyeForward.ToString("F2", Inv) + " m");
+        // FP çevre görünümleri (kullanıcı şikâyeti 2026-11-05: "ön taraf güzel gözükmüyor"): aşağı bakış, sol / sağ cam, hafif yukarı
+        float pitch0 = orbit.Pitch, yaw0 = orbit.Yaw;
+        foreach (var view in new[] { ("drive_fp_down", 20f, 0f), ("drive_fp_left", 5f, -75f), ("drive_fp_right", 5f, 75f), ("drive_fp_up", -12f, 0f) })
+        {
+            orbit.Pitch = view.Item2; orbit.Yaw = yaw0 + view.Item3;
+            yield return null; yield return null;
+            yield return CaptureMain(view.Item1);
+            orbit.Yaw = yaw0;
+        }
+        orbit.Pitch = pitch0; orbit.Yaw = yaw0;
         orbit.SetMode(OrbitCamera.ViewMode.ThirdPerson, true);
         yield return null;
         Vector3 look = Van.driverSeat.position + Vector3.up * .75f;
@@ -930,7 +1190,8 @@ public static class Bolum1DriveVerify
     // Pure-pursuit otopilot: hedefe dön, hız sınırı ve durma mesafesine göre gaz / fren. until verilirse o sağlanınca biter.
     // remaining: verilirse fren mesafesi bu uzaklığa göre (hedef noktaya değil); until ile birlikte kullanılır.
     // reverse: geri giderken hedefe arka uç nişanlanır (direksiyon işareti gerçek araçtaki gibi: sağa çevirince arka sağa savrulur).
-    private static IEnumerator DriveTo(Func<Vector3> target, float speedLimit, float stopDistance, Func<bool> until, float timeout, string what, Func<float> remaining = null, bool reverse = false)
+    // steerGain: hedef açısının (°) bu kadarı tam direksiyon; park manevralarında (düşük hız, tekerlek fiziğinde dönüş yarıçapı ~7 m) daha sert.
+    private static IEnumerator DriveTo(Func<Vector3> target, float speedLimit, float stopDistance, Func<bool> until, float timeout, string what, Func<float> remaining = null, bool reverse = false, float steerGain = 20f)
     {
         float end = Time.time + timeout;
         float stuckSince = -1f;
@@ -944,7 +1205,7 @@ public static class Bolum1DriveVerify
             if (until == null && dist <= stopDistance) break;
             float angle = Vector3.SignedAngle(Flat(Van.Forward) * dirSign, to.normalized, Vector3.up);
             // Geri giderken işaret ters: arka ucun sağa (hedefe) savrulması için direksiyon sola (ServiceVanDriver: yawRate ∝ steer·sign(hız))
-            float steer = Mathf.Clamp(angle / 20f, -1f, 1f) * dirSign;
+            float steer = Mathf.Clamp(angle / steerGain, -1f, 1f) * dirSign;
             float allowed = remaining != null ? Mathf.Min(speedLimit, Mathf.Sqrt(2f * 2.5f * remaining()) + .3f)
                 : until != null ? speedLimit : Mathf.Min(speedLimit, Mathf.Sqrt(2f * 2.5f * Mathf.Max(0f, dist - stopDistance)) + .4f);
             if (Mathf.Abs(angle) > 35f) allowed = Mathf.Min(allowed, 3f);
@@ -1000,4 +1261,13 @@ public static class Bolum1DriveVerify
     private static void Line(string s) { report.AppendLine(s); }
     private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
     private static string V(Vector3 v) { return "(" + v.x.ToString("F2", Inv) + ", " + v.y.ToString("F2", Inv) + ", " + v.z.ToString("F2", Inv) + ")"; }
+}
+
+// (p5) Test iticisi: kinematik Rigidbody'yi fizik adımında MovePosition ile sabit hızla sürer (hırsız kamyoneti / trafik aracı gibi).
+public class DriveVerifyKinematicPusher : MonoBehaviour
+{
+    public Vector3 velocity;
+    private Rigidbody rb;
+    private void Awake() { rb = GetComponent<Rigidbody>(); }
+    private void FixedUpdate() { if (rb != null) rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime); }
 }

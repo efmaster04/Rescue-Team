@@ -132,6 +132,7 @@ public static partial class Bolum1AnimVerify
             yield return PhaseU4Defense(dir);
             yield return PhaseU4b(dir);
             yield return PhaseU4c(dir); // U4c: kasa içi görünür + eşyalar kasada, nişangah + kamera merkezine atış, pes edenin barı gizli
+            yield return PhaseU4d(dir); // 2026-11-05: sol tık yumruk, sağ tık itme / fırlatma, Ctrl eğilme
             yield return PhaseU4Rules(dir);
             yield return PhaseU4Roof(roof);
             yield return PhaseU4Fail(dir);
@@ -404,20 +405,20 @@ public static partial class Bolum1AnimVerify
         yield return Capture("u4_yumruk", ap + Vector3.Cross(Vector3.up, af) * 2.8f + af * 0.6f + Vector3.up * 1.6f, (ap + Player.transform.position) * 0.5f + Vector3.up * 1.0f, 50f);
         Note("yumruk", A.PunchHits == 1 && Mathf.Abs(hp0 - h.Current - combat.settings.punchDamage) < 0.01f && punchAnimSeen && hitReact && holding,
             "hasar " + (hp0 - h.Current).ToString("F0", Inv) + ", Thief_Punch " + punchAnimSeen + ", HitReact " + hitReact + ", elde valiz " + holding);
-        // İtme: oyuncu hırsıza döner (≤ 1.4 m), sol tık
+        // İtme: oyuncu hırsıza döner (≤ 1.4 m), itme API'si (oyunda sağ tık eli boşken; burada elde valiz var, API doğrudan)
         yield return (Func<bool>)(() => Player.HasControl);
         Vector3 toA = Flat(A.transform.position - Player.transform.position);
         Player.Teleport(Player.transform.position, Quaternion.LookRotation(toA.normalized));
         yield return null;
         float dBefore = toA.magnitude;
         Vector3 aBefore = A.transform.position;
-        bool pushStarted = combat.Attack();
+        bool pushStarted = combat.Push();
         bool pushAnim = false;
         float tPush = Time.time;
         yield return (Func<bool>)(() => { if (PlayerAnim.InState(CrewAnimation.StatePushShove)) pushAnim = true; return Time.time - tPush >= 0.35f; });
         bool stunnedPush = A.IsStunned && A.LastStunReason == "itme";
         float stunLeft = A.StunRemaining;
-        bool secondRejected = !combat.Attack(); // 0.8 sn bekleme
+        bool secondRejected = !combat.Push(); // 0.8 sn bekleme
         yield return Capture("u4_itme", Player.transform.position - toA.normalized * 2.5f + Vector3.Cross(Vector3.up, toA.normalized) * 2.2f + Vector3.up * 1.6f, (Player.transform.position + A.transform.position) * 0.5f + Vector3.up * 0.9f, 50f);
         yield return Seconds(0.4f);
         float pushed = Flat(A.transform.position - aBefore).magnitude;
@@ -586,14 +587,18 @@ public static partial class Bolum1AnimVerify
         Interaction.Interact();
         yield return Seconds(0.3f);
         bool holdingStretcher = Player.HeldStretcher == s0;
-        bool noAttack = !combat.Attack() && !combat.CanAct;
+        bool noAttack = !combat.Attack() && !combat.Push() && !combat.CanAct;
+        Player.SetCrouchInput(true); // 2026-11-05: sedyeyle eğilinmez
+        yield return null; yield return null;
+        bool noCrouch = !Player.IsCrouching;
+        Player.SetCrouchInput(false);
         combat.SetThrowHeld(true);
         bool noAim = !combat.Aiming;
         combat.SetThrowHeld(false);
         Interaction.Interact(); // bırak
         yield return Seconds(0.3f);
-        Note("sedye taşırken saldırı yok", holdingStretcher && noAttack && noAim, "sapta ipucu \"" + stretcherHint + "\", sedye elde " + holdingStretcher + ", sol tık reddedildi " + noAttack + ", nişan yok " + noAim);
-        Check("(U4-5) savunma: yumruk " + combat.settings.punchDamage.ToString(Inv) + " hasar (Thief_Punch, HitReact); sol tık Push_Shove → " + combat.settings.pushRange.ToString(Inv) + " m/" + combat.settings.pushAngle.ToString(Inv) + "° içindeki hırsız " + combat.settings.pushKnockback.ToString(Inv) + " m savrulur, " + combat.settings.pushStunSeconds.ToString(Inv) + " sn sersem, bekleme " + combat.settings.pushCooldown.ToString(Inv) + " sn; elden kapma; koşarken sol tık Tackle_Dive → " + combat.settings.tackleDistance.ToString(Inv) + " m kayma, hırsız " + combat.settings.tackleStunSeconds.ToString(Inv) + " sn sersem + eşyayı düşürür, Tackle_GetUp; sağ tık Throw_Aim/Release → " + combat.settings.throwSpeed.ToString(Inv) + " m/sn, isabet " + combat.settings.throwHitStunSeconds.ToString(Inv) + " sn, boşluğa düşen geri döner; Q Whistle_Blow → " + combat.settings.whistleRadius.ToString(Inv) + " m'de " + combat.settings.fearSeconds.ToString(Inv) + " sn korku (eşya bırakılmaz), bekleme " + combat.settings.whistleCooldown.ToString(Inv) + " sn + HUD; sedye taşırken yok",
+        Note("sedye taşırken saldırı ve eğilme yok", holdingStretcher && noAttack && noAim && noCrouch, "sapta ipucu \"" + stretcherHint + "\", sedye elde " + holdingStretcher + ", yumruk/itme reddedildi " + noAttack + ", nişan yok " + noAim + ", eğilme yok " + noCrouch);
+        Check("(U4-5) savunma: yumruk " + combat.settings.punchDamage.ToString(Inv) + " hasar (Thief_Punch, HitReact); itme (sağ tık, eli boşken) Push_Shove → " + combat.settings.pushRange.ToString(Inv) + " m/" + combat.settings.pushAngle.ToString(Inv) + "° içindeki hırsız " + combat.settings.pushKnockback.ToString(Inv) + " m savrulur, " + combat.settings.pushStunSeconds.ToString(Inv) + " sn sersem, bekleme " + combat.settings.pushCooldown.ToString(Inv) + " sn; elden kapma; koşarken sol tık Tackle_Dive → " + combat.settings.tackleDistance.ToString(Inv) + " m kayma, hırsız " + combat.settings.tackleStunSeconds.ToString(Inv) + " sn sersem + eşyayı düşürür, Tackle_GetUp; sağ tık (elde eşya) Throw_Aim/Release → " + combat.settings.throwSpeed.ToString(Inv) + " m/sn, isabet " + combat.settings.throwHitStunSeconds.ToString(Inv) + " sn, boşluğa düşen geri döner; Q Whistle_Blow → " + combat.settings.whistleRadius.ToString(Inv) + " m'de " + combat.settings.fearSeconds.ToString(Inv) + " sn korku (eşya bırakılmaz), bekleme " + combat.settings.whistleCooldown.ToString(Inv) + " sn + HUD; sedye taşırken yok",
             ok, string.Join("; ", parts));
         RestoreLoot(hidden);
         h.SetHealthForTest(h.Max);

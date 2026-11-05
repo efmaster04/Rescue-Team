@@ -78,6 +78,10 @@ CLIPS = [
     # r5: servis minibüsünde oturma (şoför ve yolcu)
     ('Drive_Seated', 2.0, True, True, False, 'RescueCrew'),
     ('Passenger_Seated', 2.4, True, True, False, 'RescueCrew'),
+    # r6: oyuncu yumruk ve eğilme (crew)
+    ('Punch_Jab', 0.5, False, True, False, 'crew'),
+    ('Crouch_Idle', 2.0, True, True, False, 'crew'),
+    ('Crouch_Walk', 0.8, True, True, False, 'crew'),
 ]
 # Taşıma döngüleri: oyundaki hedef hız (m/sn) ve yere basma oranı. Ayak yerdeyken yerel olarak tam bu hızla
 # geriye kayar (stride = hız × basma oranı × süre); oynatma hızı 1.0 iken dünyada ayak kaymaz.
@@ -90,6 +94,7 @@ WALK_SPEEDS = {
     'Carry_OneHand_Walk': (2.4, 0.4),     # normal yürüme hızı: uçuş fazlı telaşlı seğirtme
     'Piggyback_Walk': (1.2, 0.5),         # sırtta hasta: çömelmiş, öne eğik ağır yürüyüş
     'Carry_Stretcher_Front_Walk': (1.4, 0.5),   # arkadaki taşıyıcıyla aynı ritim ve adım
+    'Crouch_Walk': (1.2, 0.5),            # dizler bükük, kalça alçak, öne eğik yürüyüş
 }
 DESCRIPTIONS = {
     'Push_Shove': 'İki avuçla öne itiş; çömelip yüklenir, hızla toparlanır. Slapstick, temas koddan.',
@@ -141,6 +146,9 @@ DESCRIPTIONS = {
                     'direksiyon simidinde (±15° sağ-sol düzeltme); baş yola bakar, hafif yol sarsıntısı.',
     'Passenger_Seated': 'Yolcu koltuğunda oturuş: sol el dizde, sağ el kapı tutamağında; yol sarsıntısıyla gövde ve baş '
                         'hafif yaylanır, ara sıra yan camdan dışarı bakar.',
+    'Punch_Jab': 'Kısa hazırlık, sağ kolla hızlı düz yumruk ve geri toparlanma; slapstick, kök ve ayaklar yerinde.',
+    'Crouch_Idle': 'Dizler bükük, kalça alçak (ayakta kalça yüksekliğinin ~%66\'sı) eğik bekleme; hafif nefes salınımı.',
+    'Crouch_Walk': 'Dizler bükük, kalça alçak ve gövde öne eğik yürüyüş; yerinde döngü (1.2 m/sn).',
 }
 PREVIEW = {'Patient_SitDazed_ArmSling': 'SK_Patient_Civilian'}
 
@@ -1311,6 +1319,7 @@ COMBAT_EVENTS = {
     'Thief_Grab': {'grab_frame': 11},
     'Thief_Punch': {'hit_frame': 14},
     'Thief_ThrowInVan': {'release_frame': 14},
+    'Punch_Jab': {'hit_frame': 7},
 }
 
 
@@ -1699,6 +1708,72 @@ def wheel_meta(name):
     }
 
 
+# ---------------------------------------------------------------- r6: oyuncu düz yumruk ve eğilme (crew)
+CROUCH_HZ = -0.150                     # eğilmede kalça ötelemesi (kalça z ≈ 0.307, ayakta HIP_Z=0.457'nin ~%67'si)
+
+
+def jab_windup(P):
+    """Düz yumruk kısa hazırlık: sağ omuz/el geriye kurulur, sol el önde gard alır, ayaklar sabit."""
+    combat_body(P, -0.04, -8, roll=-4, yaw=-24, head=5)
+    P.shrug('Right', up=3, fwd=-8)
+    combat_reach(P, 'Right', (-0.12, -0.12, 0.04), pole=(-1.0, 0.35, -0.25), fist=1.0)
+    combat_reach(P, 'Left', (0.12, -0.20, 0.02), pole=(1.0, 0.35, -0.25), fist=0.8)
+    stand_legs(P)
+
+
+def jab_hit(P):
+    """Düz yumruk vuruş anı (hit_frame=7): gövde sola-öne döner, sağ kol tam ileri (-Y) uzanır."""
+    combat_body(P, -0.075, 22, roll=5, yaw=28, head=-12)
+    P.shrug('Right', up=2, fwd=14)
+    combat_reach(P, 'Right', (0.04, -0.305, 0.02), pole=(-1.0, 0.15, -0.2), fist=1.0)
+    combat_reach(P, 'Left', (0.16, -0.10, -0.06), pole=(1.0, 0.35, -0.3), fist=0.7)
+    stand_legs(P)
+
+
+def jab_recoil(P):
+    """Vuruş sonrası kısa geri çekiş / toparlanma geçişi."""
+    combat_body(P, -0.05, 10, roll=2, yaw=10, head=-5)
+    combat_reach(P, 'Right', (-0.08, -0.20, 0.02), pole=(-1.0, 0.3, -0.25), fist=0.7)
+    combat_reach(P, 'Left', (0.14, -0.16, -0.04), pole=(1.0, 0.35, -0.3), fist=0.5)
+    stand_legs(P)
+
+
+def clip_punch_jab(P, t, T):
+    pose_sequence(P, t, [(0, neutral), (3 / FPS, jab_windup), (6 / FPS, jab_hit), (9 / FPS, jab_recoil), (T, neutral)])
+
+
+def clip_crouch_idle(P, t, T):
+    """Dizler bükük, kalça alçak (z≈0.295..0.307 m, ayakta boyun ~%66'sı) bekleme döngüsü; hafif nefes salınımı."""
+    ph = 0.0 if abs(t - T) < 1e-6 else (t / T)
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    bob = -0.006 * (1.0 - c1)
+    P.hips((0, 0, CROUCH_HZ + bob), pitch=14 + 2.0 * (1.0 - c1), roll=2.0 * s1, yaw=3.0 * s1)
+    P.spine(pitch=18 + 3.0 * (1.0 - c1), roll=-2.5 * s1, yaw=-3.0 * s1)
+    P.neck_head(pitch=-22 - 3.0 * (1.0 - c1), roll=2.0 * s1, yaw=8.0 * s1)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=3 + 1.5 * (1.0 - c1), fwd=8)
+        combat_reach(P, side, (s * 0.14, -0.20, -0.06 + 0.015 * c1), pole=(s * 1.0, 0.35, -0.3), fist=0.55)
+        P.leg(side, (s * (FOOT_X + 0.035), 0.0, ANKLE_Z), pole=(s * 0.45, -1, 0.05), yaw=s * 14)
+
+
+def clip_crouch_walk(P, t, T):
+    """Eğik yürüyüş döngüsü (1.2 m/sn, yerinde): kalça alçak (z≈0.290..0.314 m), gövde öne eğik, dengeli kol salınımı."""
+    ph = 0.0 if abs(t - T) < 1e-6 else (t / T)
+    stride, stance = walk_stride('Crouch_Walk', T)
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    c2 = math.cos(2 * TAU * ph)
+    bob = -0.145 - 0.012 * c2
+    P.hips((0, 0, bob), pitch=16 + 2.5 * c2, roll=5.0 * s1, yaw=5.0 * math.sin(TAU * ph + 0.3))
+    P.spine(pitch=18 + 2.5 * math.cos(2 * TAU * ph - 0.5), roll=-5.0 * s1, yaw=-7.0 * s1)
+    P.neck_head(pitch=-24 + 4.0 * c2, roll=3.5 * s1, yaw=6.0 * s1)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        sw = s * s1
+        P.shrug(side, up=3 + 2.0 * c2, fwd=8 - 4.0 * sw)
+        combat_reach(P, side, (s * 0.15, -0.18 + 0.055 * sw, -0.04 + 0.015 * c2),
+                     pole=(s * 1.0, 0.35, -0.25), fist=0.65)
+    walk_legs(P, ph, stride=stride, lift=0.085, width=0.045, toe_out=14, stance=stance)
+
+
 CLIP_FUNCS = {
     'Push_Shove': clip_shove,
     'Tackle_Dive': clip_tackle,
@@ -1746,6 +1821,9 @@ CLIP_FUNCS = {
     'Carry_Stretcher_Front_Walk': clip_carry_stretcher_front,
     'Drive_Seated': clip_drive_seated,
     'Passenger_Seated': clip_passenger_seated,
+    'Punch_Jab': clip_punch_jab,
+    'Crouch_Idle': clip_crouch_idle,
+    'Crouch_Walk': clip_crouch_walk,
 }
 
 # ---------------------------------------------------------------- aksiyon / export
@@ -1986,7 +2064,7 @@ def strip_view(name, cam):
         if name.startswith('Tackle_'):
             look(cam, (3.5,-2.8,1.9), (0,-.2,.60), 2.25)
             return (420,400)
-        look(cam, (-3.1 if name in ('Throw_Aim','Throw_Release','Thief_Punch') else 3.1,-3.8,1.8), (0,-.10,.73), 1.95)
+        look(cam, (-3.1 if name in ('Throw_Aim','Throw_Release','Thief_Punch','Punch_Jab') else 3.1,-3.8,1.8), (0,-.10,.73), 1.95)
         return (360,400)
     if name in COIL_CLIPS:
         if name=='Rope_Throw':
@@ -2102,6 +2180,7 @@ def render_strip(name, n, loop, actors, all_objs, cam, tmp, floor, props=(), ext
     frames = {'Rope_TieStake':[1,16,22,26,29,33,46,61],
               'Rope_Throw':[1,7,11,15,19,22,28,34,40,43],
               'Thief_Punch':[1,5,8,11,14,17,21,25],
+              'Punch_Jab':[1,3,5,7,9,12,16],
               'Cabinet_TakeCoil':[1,7,11,17,23,29,35,43]}.get(name, frames)
     tiles = []
     for f in frames:

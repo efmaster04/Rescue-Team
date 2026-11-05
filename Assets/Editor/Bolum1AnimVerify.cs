@@ -130,9 +130,21 @@ public static partial class Bolum1AnimVerify
             CrewAnimation.StateJump, CrewAnimation.StateStartled, CrewAnimation.StateGetUp, CrewAnimation.StateRevive, CrewAnimation.StateCelebrate,
             CrewAnimation.StateCarryCoil, CrewAnimation.StateTakeCoil, CrewAnimation.StateTieStake, CrewAnimation.StateRopeThrow, // U2
             CrewAnimation.StateHitReact, // U3
-            CrewAnimation.StatePushShove, CrewAnimation.StateTackleDive, CrewAnimation.StateTackleGetUp, CrewAnimation.StateThrowAim, CrewAnimation.StateThrowRelease, CrewAnimation.StateWhistle }; // U4
+            CrewAnimation.StatePushShove, CrewAnimation.StateTackleDive, CrewAnimation.StateTackleGetUp, CrewAnimation.StateThrowAim, CrewAnimation.StateThrowRelease, CrewAnimation.StateWhistle, // U4
+            PlayerCombat.StatePunchJab }; // 2026-11-05: sol tık yumruk
         var have = ac != null ? ac.layers[0].stateMachine.states.Select(s => s.state.name).ToList() : new List<string>();
         var missing = want.Where(w => !have.Contains(w)).ToList();
+        // 2026-11-05: eğilme katmanı (Override, gövde + baş + bacak maskesi, Crouch_Idle ↔ Crouch_Walk; varsayılan ağırlık 0)
+        var crouchLayer = ac != null ? ac.layers.FirstOrDefault(l => l.name == ThirdPersonPlayer.CrouchLayerName) : null;
+        var crouchTree = crouchLayer != null && crouchLayer.stateMachine.defaultState != null ? crouchLayer.stateMachine.defaultState.motion as BlendTree : null;
+        var crouchMask = crouchLayer != null ? crouchLayer.avatarMask : null;
+        bool crouchOk = crouchLayer != null && crouchLayer.blendingMode == AnimatorLayerBlendingMode.Override && crouchLayer.defaultWeight == 0f && crouchMask != null
+            && crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Body) && crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg) && crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.RightLeg)
+            && !crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm) && !crouchMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm)
+            && crouchTree != null && crouchTree.children.Length == 2 && crouchTree.children[0].motion != null && crouchTree.children[0].motion.name == "Crouch_Idle"
+            && crouchTree.children[1].motion != null && crouchTree.children[1].motion.name == "Crouch_Walk" && Mathf.Abs(crouchTree.children[1].threshold - 1.2f) < 0.01f;
+        if (!crouchOk) missing.Add("eğilme katmanı (" + (crouchLayer != null ? crouchLayer.name + " maske " + (crouchMask != null) + " ağaç " + (crouchTree != null) : "yok") + ")");
+        else have.Add("katman " + crouchLayer.name + " (Crouch_Idle ↔ Crouch_Walk 1.2)");
         var patients = Bolum1AmbulanceBuilder.PatientTypes.Select(t => AssetDatabase.LoadAssetAtPath<GameObject>(Bolum1AmbulanceBuilder.PatientPrefabPath(t))).ToList();
         var pinfo = patients.Select(p =>
         {
@@ -358,16 +370,23 @@ public static partial class Bolum1AnimVerify
                 }
                 // tekerlek ekseni ve dönüş yönü (araç uzayında)
                 Quaternion inv = Quaternion.Inverse(v.transform.rotation);
+                // Ön tekerlekler direksiyonla döner (LaneFollower.CurrentSteerAngle, sağa +): beklenen aks = direksiyon açısı kadar
+                // yukarı eksen etrafında dönmüş araç sağ ekseni (ön = kök uzayında z'si tekerlek ortalamasından büyük). Arkada açı 0.
+                float meanZ = 0f;
+                foreach (var ow in f.wheels) meanZ += v.transform.InverseTransformPoint(ow.position).z;
+                meanZ /= Mathf.Max(1, f.wheels.Length);
+                bool frontWheel = v.transform.InverseTransformPoint(w.position).z > meanZ;
+                Quaternion steerRot = Quaternion.AngleAxis(frontWheel ? f.CurrentSteerAngle : 0f, Vector3.up);
                 if (!wheelTracks.TryGetValue(w, out WheelTrack tr))
                 {
-                    tr = new WheelTrack { axleLocal = Quaternion.Inverse(w.rotation) * v.transform.right, upLocal = Quaternion.Inverse(w.rotation) * v.transform.up, prevS = f.Distance };
+                    tr = new WheelTrack { axleLocal = Quaternion.Inverse(w.rotation) * (v.transform.rotation * (steerRot * Vector3.right)), upLocal = Quaternion.Inverse(w.rotation) * v.transform.up, prevS = f.Distance };
                     tr.prevUp = inv * (w.rotation * tr.upLocal);
                     wheelTracks[w] = tr;
                     continue;
                 }
                 Vector3 axle = inv * (w.rotation * tr.axleLocal);
                 axisSamples++;
-                if (Vector3.Dot(axle, Vector3.right) < 0.999f) { axisBad++; if (axisInfo.Length == 0) axisInfo = v.name + "/" + w.name + " aks " + V(axle); }
+                if (Vector3.Dot(axle, steerRot * Vector3.right) < 0.999f) { axisBad++; if (axisInfo.Length == 0) axisInfo = v.name + "/" + w.name + " aks " + V(axle); }
                 Vector3 up = inv * (w.rotation * tr.upLocal);
                 float expected = (f.Distance - tr.prevS) / Mathf.Max(0.05f, f.wheelRadius) * Mathf.Rad2Deg;
                 if (expected > 2f && expected < 90f)

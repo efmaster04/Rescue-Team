@@ -541,6 +541,13 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (player == null || !player.HasControl) return;
         Evaluate();
+        if (player.IsCrouching &&
+            (action == Action.Grab || action == Action.Piggyback || action == Action.TakeCoil || action == Action.AttachRope) &&
+            !player.CanStandUp())
+        {
+            GameNotice.Show("Burada ayağa kalkamazsın — önce açıklığa çık");
+            return;
+        }
         switch (action)
         {
             case Action.Release:

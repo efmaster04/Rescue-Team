@@ -35,6 +35,10 @@ public class LootItem : MonoBehaviour
     public Patient patient;
     [Tooltip("Alma menzili: oyuncu kökünden eşya merkezine yatay uzaklık (m).")]
     public float interactRange = 1.5f;
+    [Tooltip("Elde (tek el): eşyanın tepesi taşıyanın ayağından en fazla bu kadar yukarıda (m). Çantalar (0.51 m) eskisi gibi 0.42 m'de taşınır; büyük valiz bu sınırla aşağı iner, omuz üstüne çıkmaz (kullanıcı isteği 2026-11-05).")]
+    public float heldTopLimit = 0.94f;
+    [Tooltip("Birinci şahısta elde ek kayma: sağ / yukarı / ileri (m). Aşağı bakınca valiz ekran merkezini kapatmasın diye sağ alta iner.")]
+    public Vector3 firstPersonHoldShift = new Vector3(0.1f, -0.22f, -0.06f);
 
     public LootState State { get; private set; } = LootState.AtStart;
     public ThirdPersonPlayer Holder { get; private set; }
@@ -114,6 +118,7 @@ public class LootItem : MonoBehaviour
     private Quaternion startLocalRotation;
     private Quaternion startRotation;
     private float bottomOffset;
+    private float heldHeight;
     private bool startKnown;
     // U4: uçuş
     private Rigidbody flightBody;
@@ -147,6 +152,8 @@ public class LootItem : MonoBehaviour
         var r = GetComponentInChildren<Renderer>(true);
         if (kind == LootKind.PatientItem || r == null) bottomOffset = r != null ? r.localBounds.extents.y * transform.lossyScale.y : 0.03f;
         else bottomOffset = Mathf.Max(0f, transform.position.y - WorldBounds.min.y);
+        // Yükseklik (elde dik tutulur; yalnız yaw döner, dünya y boyu aynı kalır)
+        heldHeight = kind == LootKind.PatientItem || r == null ? 2f * bottomOffset : WorldBounds.size.y;
     }
 
     private void OnEnable()
@@ -357,7 +364,7 @@ public class LootItem : MonoBehaviour
         Physics.SyncTransforms();
     }
 
-    // Elde: tek elle, taşıyanın sağ önünde bel hizasında (koni gibi; Carry_OneHand_Walk).
+    // Elde: tek elle, taşıyanın sağ önünde bel hizasında (koni gibi; Carry_OneHand_Walk). Yalnız görsel konum: collider'lar elde kapalı.
     private void FollowHolder()
     {
         if (Holder == null) return;
@@ -379,7 +386,12 @@ public class LootItem : MonoBehaviour
                 return;
             }
         }
-        Vector3 basePos = r.position + fwd * 0.38f + right * 0.28f + Vector3.up * 0.42f;
+        // Büyük valiz (çantadan uzun) daha aşağıda sallanır: tepesi heldTopLimit'i geçmez (çantalar aynen). Birinci şahısta
+        // (kamera geçişiyle yumuşak) firstPersonHoldShift kadar sağa / aşağı / geriye kayar: aşağı bakınca ekran merkezini kapatmaz.
+        float pivotUp = Mathf.Min(0.42f, heldTopLimit - (heldHeight - bottomOffset));
+
+        Vector3 local = new Vector3(0.28f, pivotUp, 0.38f) + firstPersonHoldShift * OrbitCamera.FirstPersonBlendFor(r);
+        Vector3 basePos = r.position + right * local.x + Vector3.up * local.y + fwd * local.z - Vector3.up * Holder.CrouchBodyDrop;
         transform.SetPositionAndRotation(basePos, rot);
     }
 

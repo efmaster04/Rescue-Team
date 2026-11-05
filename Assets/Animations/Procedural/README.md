@@ -1,4 +1,4 @@
-# Prosedürel animasyon klipleri (r5, 46 klip)
+# Prosedürel animasyon klipleri (r6, 49 klip)
 
 Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen klipler. Hepsi RescueCrew / Patient ortak
 31 kemikli `mixamorig:` iskeleti için, 30 fps, her karede anahtar (bake). Ton: Dear Passengers gibi abartılı ve komik.
@@ -266,3 +266,17 @@ Bölüm 1 ekip servis minibüsünün içinde, yolda başlar: oyuncu şoför kolt
 
 ### r5 doğrulaması (verify)
 46 dosya. `Drive_Seated` ve `Passenger_Seated` için 30 fps, 31 kemik/bağ pozu, tam kare sayısı (61 ve 73), döngü ilk/son kare farkı < 0.5° (ve tam matris eşitliği), kalça yatay kayması < 2 cm, kol–gövde ve bacak–bacak içe girmeleri ≤ 3 cm; ayrıca `Drive_Seated` klibinde her karede iki elin (avuç noktası) `wheel` meta'sındaki simit çemberine 3B uzaklığı ≤ 3 cm (`check_wheel`).
+
+## r6: oyuncu düz yumruk ve eğilme (3 klip)
+
+RescueCrew (`crew`, `SK_RescueCrew_Blue`, 31 `mixamorig:` kemik) için slapstick yakın savunma ve eğilme/gizlenme klipleri. Hepsi 30 fps ve yerindedir (kök hareketi yok; yatay ilerleme oyun kodundan).
+
+| Klip | Süre / kare | Döngü | Not |
+|---|---|---|---|
+| Punch_Jab | 0.5 sn / 16 | hayır | Kısa kurma (`f=4`), sağ kolla hızlı düz yumruk (`hit_frame=7`, `y≈-0.45` m) ve geri toparlanma; ayaklar ve kök sabit |
+| Crouch_Idle | 2.0 sn / 61 | evet | Dizler bükük, kalça alçak (`z≈0.295..0.307` m, ayakta `HIP_Z=0.457` m yüksekliğinin ~%66'sı), hafif nefes salınımı |
+| Crouch_Walk | 0.8 sn / 25 | evet | Eğik yürüyüş, yerinde döngü (`z≈0.290..0.314` m); hedef hız **1.2 m/sn** (`stance_ratio=0.5`, adım `0.48` m) |
+
+### Unity import ve doğrulama (r6)
+- **Rig / Bake Into Pose:** Humanoid, Copy From Other Avatar → `SK_RescueCrew_Blue`; Root Transform Rotation, Position Y ve Position XZ **Bake Into Pose açık, Based Upon Original**; `Crouch_Idle` ve `Crouch_Walk` için **Loop Time + Loop Pose açık**, `Punch_Jab` için kapalı.
+- **Doğrulama (`verify_procedural_anims.py`, 49 dosya):** 30 fps, 31 kemik/bağ pozu, tam kare sayısı (16, 61, 25), döngülerde ilk/son kare tam matris eşitliği, yatay kalça kayması ≤ 0.1 mm, `Punch_Jab` ve `Crouch_Idle`'da sabit ayaklar (< 1 cm), `Crouch_Walk`'ta 1.2 m/sn hedef hızda ayak kayması < 3 cm/adım, eklem dönüş sınırları (≤ 150°, eğilmede diz açısı 25°–140° ve kalça yüksekliği 0.26–0.35 m), `Punch_Jab` `hit_frame=7`'de en ileri el uzanımı ve her karede kol–gövde / bacak–bacak içe girme ≤ 3 cm.

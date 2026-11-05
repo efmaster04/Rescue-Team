@@ -8,6 +8,9 @@ using UnityEngine;
 //  - Collider ve Rigidbody yok (dekor + taşınan eşya); yere bırakılınca zemine (GroundProbe) yatay konur.
 //  - Uçuş (atış) RopeAnchor tarafından sürülür (hedef halat dibi, balistik eğri).
 // Sarmal: FBX kökü (model) bu objenin çocuğudur; model eksenleri Grip_L/Grip_R boşlarından ve mesh'in ince ekseninden okunur.
+// Birinci şahıs (kullanıcı isteği 2026-11-05: "ip gibi nesneleri tutarken önünü göremiyor"): kamera FP'deyken elde tutulan kangal
+// görsel olarak küçülür ve avuç hizasından aşağı sarkar (avuçlar üst kenarı tutar); aşağı bakınca ekran merkezini kapatmaz.
+// Üçüncü şahısta değişiklik yok (ölçüldü: gövde arkasında kalır). Elden çıkınca (yere, dolaba, atış, bağlama) ölçek eski hâline döner.
 [DefaultExecutionOrder(150)] // Animator kemikleri yazdıktan sonra elleri izle, RopeAnchor (200) çizmeden önce
 public class RopeCoil : MonoBehaviour
 {
@@ -31,6 +34,9 @@ public class RopeCoil : MonoBehaviour
     public float radius = 0.217f;
     [Tooltip("Alma / bırakma menzili: oyuncu kökünden kangal merkezine yatay uzaklık (m) (U1 kuralı: 1.0).")]
     public float interactRange = 1.0f;
+    [Tooltip("Birinci şahısta elde: görsel ölçek (1 = gerçek boyut) ve merkezin avuç hizasından aşağı kayması (m).")]
+    public float firstPersonHeldScale = 0.7f;
+    public float firstPersonHeldDrop = 0.12f;
     [Tooltip("Yüz kangala dönük: yatay ileri yön ile hedefe yön arasındaki açı ≤ bu kadar °.")]
     public float facingAngle = 30f;
 
@@ -47,6 +53,9 @@ public class RopeCoil : MonoBehaviour
 
     // Bağlama klibinde kangal yerdeyken (coil_ground_frames) eller kangaldan ayrıdır; bu sırada verilen pozda kalır.
     private bool tiePose;
+    // Gerçek ölçek (Awake'te okunur); FP'de elde görsel ölçek bunun katıdır.
+    private Vector3 baseScale = Vector3.one;
+    private bool scaleKnown;
 
     private void OnEnable() { if (!All.Contains(this)) All.Add(this); }
     private void OnDisable() { All.Remove(this); }
@@ -55,6 +64,8 @@ public class RopeCoil : MonoBehaviour
     {
         if (model == null && transform.childCount > 0) model = transform.GetChild(0);
         if (gripL == null || gripR == null) FindGrips();
+        baseScale = transform.localScale;
+        scaleKnown = true;
     }
 
     private void FindGrips()
@@ -112,6 +123,7 @@ public class RopeCoil : MonoBehaviour
     // Yatay yığın: zeminde, disk yüzü yukarı
     public void PoseFlat(Vector3 groundPoint, Vector3 groundNormal, float yawDeg)
     {
+        SetVisualScale(1f);
         Vector3 x = Quaternion.AngleAxis(yawDeg, groundNormal) * Vector3.ProjectOnPlane(Vector3.right, groundNormal).normalized;
         if (x.sqrMagnitude < 1e-6f) x = Vector3.ProjectOnPlane(Vector3.forward, groundNormal).normalized;
         SetPose(groundPoint + groundNormal * halfDepth, x, groundNormal);
@@ -120,6 +132,7 @@ public class RopeCoil : MonoBehaviour
     // Dik: merkez yerden radius yukarıda, disk normali yatay (facing)
     public void PoseUpright(Vector3 groundPoint, Vector3 facing)
     {
+        SetVisualScale(1f);
         facing.y = 0f;
         if (facing.sqrMagnitude < 1e-6f) facing = Vector3.forward;
         facing.Normalize();
@@ -129,6 +142,7 @@ public class RopeCoil : MonoBehaviour
     // ---- durumlar ----
     public void PlaceInLocker(Vector3 center, Vector3 doorOutward)
     {
+        SetVisualScale(1f);
         State = CoilState.Locker;
         Holder = null;
         tiePose = false;
@@ -149,6 +163,7 @@ public class RopeCoil : MonoBehaviour
     // U4: hırsız aldı (konumu LootItem her kare SetPose ile verir; Holder yok).
     public void TakeExternal()
     {
+        SetVisualScale(1f);
         Holder = null;
         State = CoilState.Held;
         tiePose = false;
@@ -187,6 +202,7 @@ public class RopeCoil : MonoBehaviour
     // Atış: elden çıkar, RopeAnchor uçuşu sürer (SetPose ile her kare).
     public void BeginFlight()
     {
+        SetVisualScale(1f);
         Holder = null;
         tiePose = false;
         State = CoilState.Flying;
@@ -223,6 +239,9 @@ public class RopeCoil : MonoBehaviour
     private void FollowHands()
     {
         var a = Holder != null ? Holder.animator : null;
+        // Birinci şahısta görsel küçülme + aşağı sarkma (kamera geçişiyle yumuşak; üçüncü şahısta 1 / 0)
+        float fp = Holder != null ? OrbitCamera.FirstPersonBlendFor(Holder.transform) : 0f;
+        SetVisualScale(Mathf.Lerp(1f, firstPersonHeldScale, fp));
         if (a == null || !a.isHuman)
         {
             if (Holder != null) SetPose(Holder.transform.position + Vector3.up * 0.8f + Holder.transform.forward * 0.33f, -Holder.transform.right, Holder.transform.forward);
@@ -235,9 +254,17 @@ public class RopeCoil : MonoBehaviour
         Vector3 up = Holder.transform.up;
         Vector3 n = Vector3.Cross(x, up);
         if (n.sqrMagnitude < 1e-6f) n = Holder.transform.forward;
-        SetPose((l + r) * 0.5f, x, n);
+        SetPose((l + r) * 0.5f - up * (firstPersonHeldDrop * fp), x, n);
         GripErrorLeft = gripL != null ? Vector3.Distance(gripL.position, l) : 0f;
         GripErrorRight = gripR != null ? Vector3.Distance(gripR.position, r) : 0f;
+    }
+
+    // Görsel ölçek: gerçek ölçeğin katı (1 = gerçek). Collider yok; yalnız elde ve FP'de 1'den farklıdır.
+    private void SetVisualScale(float s)
+    {
+        if (!scaleKnown) { baseScale = transform.localScale; scaleKnown = true; }
+        Vector3 want = baseScale * s;
+        if (transform.localScale != want) transform.localScale = want;
     }
 
     private void LateUpdate()

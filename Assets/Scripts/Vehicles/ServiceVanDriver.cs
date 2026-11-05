@@ -6,15 +6,27 @@ using UnityEngine.InputSystem;
 
 // Servis minibüsü sürüşü (kullanıcı kararı 2026-11-04: Bölüm 1, ekip minibüsün içinde yolda başlar).
 //
+// Fizik (kullanıcı kararı 2026-11-05, "arcade-gerçekçi"): dört WheelCollider (lastik mesh'lerinin merkezinde, Awake'te kurulur;
+// sahne dosyasında yalnız kök Rigidbody + kutu collider'lar durur), süspansiyon (yay = tekerlek yükü / çökme, sönüm oranı
+// suspensionDampingRatio), motor ve fren torku acceleration / brakeDecel'den türetilir (kütle × ivme × yarıçap / 4), direksiyon
+// hız arttıkça daralır (maxSteerAngle → highSpeedSteerAngle), lastik tutuşu yüksek (az kayma), ağırlık merkezi alçak ve
+// "dik tutma yardımı" (UprightAssist: eğim uprightDeadbandDeg'i aşınca düzeltici tork) → ağırlık, süspansiyon ve virajda yatma
+// hissedilir ama kolay sürülür, zor devrilir. Görsel lastik + jant mesh'leri WheelPivot altına alınır ve WheelCollider.GetWorldPose
+// ile döner / direksiyonla kırılır.
+//
 // Durumlar:
-//  - Driving: Rigidbody dinamik, yerçekimi kapalı; hız ve yön kodla verilir (arcade), yükseklik ve eğim dört tekerlek
-//    noktasındaki zemin raycast'inden (süspansiyon). Hız her adımda fizikten geri okunur: korkuluk / kaya gibi statik engeller
-//    aracı gerçekten durdurur, ani hız düşüşü hasar sayılır. W/S gaz / fren-geri, A/D direksiyon, E (dururken) iniş, V kamera.
+//  - Driving: Rigidbody dinamik + yerçekimi; girdi tekerlek torku ve direksiyon açısına gider, hız fizikten okunur. Statik engel
+//    (korkuluk, kaya) gerçek temasla durdurur; yatay normalli çarpışma itkisi (Δv > impactSpeedThreshold) hasar yazar.
+//    W/S gaz / fren-geri, A/D direksiyon, E (dururken) iniş, V kamera. Dururken girdi yoksa el freni (yokuşta kaymaz).
 //  - Parked: Rigidbody kinematik, NavMeshObstacle oyar (hırsız ve bot yolu minibüsün GERÇEK yerine göre); yük bölümündeki
 //    ekipman serbest fizikte (bölümün geri kalanı park hâlindeki minibüsü bekler).
-//  - Shoved: trafik aracı çarptı (ILaneObstacle.Ram): dinamik, girdi yok, itme hızı söner; durunca yeniden Parked. İtilme yönü
-//    döngü başında deterministik seçilir (boş tarafa yoklama), toplam yol maxShoveDistance ile sınırlı, tekerlek altı zemin
-//    bitince durur (uçuruma gitmez). Yük bölümünde ayakta duran ekip minibüsle taşınır, durunca yere düşer (HoldRiders).
+//  - Shoved (betikli): trafik aracı çarptı (ILaneObstacle.Ram): dinamik, girdi yok, yatay hız betikle verilir ve söner (deterministik,
+//    tekerlek sürtünmesi düşürülür), düşey hareket süspansiyondan; durunca yeniden Parked. İtilme yönü döngü başında seçilir
+//    (boş tarafa yoklama), toplam yol maxShoveDistance ile sınırlı, tekerlek altı zemin bitince durur (uçuruma gitmez).
+//  - Shoved (fiziksel): park hâlindeyken gövdeye HAREKETLİ KİNEMATİK bir gövde (hırsız kamyoneti, MovePosition ile sürülen araç)
+//    girerse minibüs dinamik olur, el freniyle kayarak PhysX tarafından itilir; temas bitip durunca Parked. Hırsız kamyonetinin
+//    kötü park etmiş minibüsü vura vura yerine itmesi bu yoldan (ya da TrafficVehicle'ın betikli Ram'ıyla) olur.
+//    Yük bölümünde ayakta duran ekip minibüsle taşınır, durunca yere düşer (HoldRiders).
 // Yük: sürerken ve itilirken yük bölümündeki Rigidbody'ler (sedye, koni) ve dolaptaki kangal minibüse bağlanır, kinematik olur;
 // durunca eski ebeveyn ve fizik durumu geri gelir (düşmez, titremez).
 // Ekip: oturunca oyuncu ve bot koltuk objelerine bağlanır, hareket / etkileşim bileşenleri kapanır, Animator "Seated" parametresi
@@ -56,18 +68,41 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     [Header("Sürüş")]
     public float maxSpeed = 14f;
     public float maxReverseSpeed = 4f;
+    [Tooltip("Tam gazda hedef ivme (m/sn²): motor torku = kütle × ivme × tekerlek yarıçapı / 4.")]
     public float acceleration = 4.5f;
+    [Tooltip("Tam frende hedef yavaşlama (m/sn²): fren torku aynı formülle; dururken el freni de bu.")]
     public float brakeDecel = 9f;
+    [Tooltip("Gaz yokken motor freni (m/sn²).")]
     public float coastDecel = 1.5f;
-    [Tooltip("Tam direksiyonda dönüş hızı (°/sn, steerSpeedRef hızında).")]
-    public float maxSteerDegPerSec = 55f;
-    public float steerSpeedRef = 6f;
-    [Tooltip("Yanal kayma sönümü (m/sn²): sürerken lastik tutuşu, itilirken daha az.")]
-    public float lateralGripDecel = 8f, shovedLateralDecel = 2.5f, shovedForwardDecel = 3f;
-    [Tooltip("Zemin düzeltmesi: tekerlek noktası ile zemin farkının saniyede kapatılan oranı.")]
-    public float groundGain = 10f;
-    public float maxGroundVelocity = 3f;
-    public float maxTurnRate = 240f;
+    [Tooltip("Betikli itilmede (trafik çarpması) yanal / ileri hız sönümü (m/sn²).")]
+    public float shovedLateralDecel = 2.5f, shovedForwardDecel = 3f;
+
+    [Header("Tekerlek fiziği (Awake'te WheelCollider kurulur)")]
+    [Tooltip("Dururken tam direksiyon açısı (°); maxSpeed'de highSpeedSteerAngle'a iner (kolay kontrol). 40°: dingil 3.74 m → dönüş yarıçapı ≈ 4.5 m (park cebine girilebilsin; ölçüldü 32° ile cebe 1.1 m eksik yanaştı).")]
+    public float maxSteerAngle = 40f;
+    public float highSpeedSteerAngle = 12f;
+    [Tooltip("Direksiyonun dönme hızı (°/sn): klavye girdisi yumuşar.")]
+    public float steerRateDegPerSec = 150f;
+    [Tooltip("Süspansiyon yolu (m) ve 1 g ek yükte çökme (m): yay = tekerlek yükü / çökme (dinlenme noktası yolun %40'ında).")]
+    public float suspensionTravel = .30f, suspensionSag = .08f;
+    [Tooltip("Süspansiyon sönüm oranı (1 = kritik; 0.5 bir kez salınıp oturur).")]
+    public float suspensionDampingRatio = .5f;
+    [Tooltip("Lastik tutuşu (WheelFrictionCurve.stiffness): ileri / yanal; fiziksel itilmede (kayarak itilir) düşürülür.")]
+    public float forwardStiffness = 1.6f, sidewaysStiffness = 2.2f, shovedTireStiffness = .5f;
+    [Tooltip("Betikli itilmede (trafik Ram) lastik tutuşu ≈ 0: yatay hız betikten gelir, lastik sürtünmesi sönümü büyütmesin (ölçüldü 2026-11-05: 0.5 ile 4.4 m yerine 1.7 m itildi).")]
+    public float scriptedShoveTireStiffness = .05f;
+    [Tooltip("Ağırlık merkezi: gövde tabanının bu kadar üstünde (m) ve kök-yerel z'de (arkaya +).")]
+    public float centerOfMassHeight = .5f, centerOfMassZ = .2f;
+    [Tooltip("Dik tutma yardımı: zemin düzlemine göre eğim bu açıyı (°) aşınca düzeltici tork (rad/sn² per rad) ve yatay açısal hız sönümü (1/sn).")]
+    public float uprightDeadbandDeg = 5f, uprightSpring = 25f, uprightDamping = 4f;
+    [Tooltip("Lastik mesh'i bulunamazsa kullanılan yarıçap (m).")]
+    public float wheelRadiusFallback = .40f;
+    [Tooltip("Park hâlindeyken gövdeye giren hareketli kinematik gövde (hırsız kamyoneti) fiziksel itmeyi başlatır.")]
+    public bool physicalShoveEnabled = true;
+    [Tooltip("Fiziksel itmeyi başlatan kinematik gövdenin en düşük hızı (m/sn).")]
+    public float physicalShoveMinSpeed = .3f;
+    [Tooltip("Fiziksel itilirken el freni (tam frenin oranı): temas bitince kısa yolda durur.")]
+    public float shovedHandbrake = .5f;
 
     [Header("İtilme (trafik çarpması)")]
     [Tooltip("Bir çarpma döngüsünde minibüs en fazla bu kadar (m, yatay) itilir; sonra hız eklenmez ve durur.")]
@@ -78,8 +113,6 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public float riderKnockSpeed = 2.5f;
 
     [Header("Düşme (zemin bitince)")]
-    [Tooltip("Dört tekerleğin de altında zemin yokken uygulanan yerçekimi (m/sn²).")]
-    public float fallGravity = 20f;
     [Tooltip("Bu yüksekliğin altı boşluk (FallRespawnPlane); Awake'te oyuncunun PlayerFallRespawn.killBelowY değerinden alınır.")]
     public float fallBelowY = -60f;
 
@@ -94,8 +127,10 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public float doorSeconds = .6f;
     [Tooltip("Birinci şahısta sürerken kamera eğimi (°, + aşağı): ön panel yolu kapatmasın.")]
     public float driveFirstPersonPitch = 0f;
-    [Tooltip("Sürerken göz noktasına eklenen yükseklik (m).")]
-    public float driveEyeUp = .05f;
+    [Tooltip("Sürerken göz noktasına eklenen yükseklik (m). Baş merkezi 1.72, ön panel üstü 1.63: göz panelin biraz üstünde kalır.")]
+    public float driveEyeUp = .08f;
+    [Tooltip("Sürerken gözün baştan ileri uzaklığı (m; OrbitCamera.eyeForward yerine). Ölçüldü 2026-11-05: yürüyüşteki 0.16 gözü ön camın 7 cm ÖNÜNE (kabin dışına) çıkarıyordu.")]
+    public float driveEyeForward = .02f;
 
     [Header("Hasar")]
     [Tooltip("Kontrol hızından bu kadar (m/sn) ani sapma çarpma sayılır.")]
@@ -153,6 +188,23 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public bool RearDoorsClosed { get { return rearDoors.Count > 0 && doorOpenT <= 0.01f; } }
     public bool RearDoorsOpen { get { return rearDoors.Count == 0 || doorOpenT >= 0.99f; } }
     public Transform DriverDoor { get; private set; }
+    // Tekerlek fiziği (test ve HUD): collider'lar (ön sol, ön sağ, arka sol, arka sağ), görsel pivotlar, yarıçap, yerdeki tekerlek sayısı,
+    // süspansiyon sıkışması (0 tam açık … 1 tam kapalı; en az / en çok), zemin düzlemine göre eğim, yanal kayma açısı, direksiyon açısı
+    public WheelCollider[] Wheels { get { return wheels; } }
+    public Transform[] WheelPivots { get { return wheelPivots; } }
+    public float WheelRadius { get; private set; }
+    public int WheelsGrounded { get; private set; }
+    public float SuspensionMin { get; private set; }
+    public float SuspensionMax { get; private set; }
+    public float TiltDeg { get; private set; }
+    public float RollDeg { get; private set; }
+    public float SlipAngleDeg { get; private set; }
+    public float SteerAngle { get; private set; }
+    public float MotorTorque { get; private set; }
+    public float BrakeTorque { get; private set; }
+    public bool PhysicalShove { get; private set; }   // Shoved: fiziksel (kinematik gövde itiyor) mi, betikli (trafik Ram) mi
+    public int PhysicalShoves { get; private set; }
+    public Rigidbody LastPusher { get; private set; }
     // Şoför kapısının önündeki biniş noktası (dünya, taban yüksekliğinde)
     public Vector3 DriverDoorPoint { get { float seatZ = driverSeat != null ? driverSeat.localPosition.z : bodyMin.z + 1.6f; return transform.TransformPoint(new Vector3(bodyMax.x + 0.7f, bodyMin.y, seatZ)); } }
 
@@ -181,6 +233,13 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     }
 
     private Rigidbody rb;
+    private readonly WheelCollider[] wheels = new WheelCollider[4];
+    private readonly Transform[] wheelPivots = new Transform[4];
+    private float steerAngle;
+    private bool groundValid;                       // bu adımda dört tekerlek altında da zemin bulundu (groundUp güncel)
+    private float lastFallRespawn = -100f;        // plan altı ışınlamaları en çok saniyede bir (ölçüldü: test planı başlangıcın üstündeyken her adımda ışınlıyordu)
+    private float dynamicSince = -100f;             // son dinamikleşme (SetDriving / BeginShove): ilk 0.5 sn oturma, hasar sayılmaz
+    private readonly Collider[] overlaps = new Collider[96];
     private readonly List<HeldItem> held = new List<HeldItem>();
     private readonly List<SeatedCrew> seated = new List<SeatedCrew>();
     // İtilirken yük bölümünde ayakta duran ekip (oyuncu / bot): minibüse bağlı taşınır, durunca yere düşer
@@ -203,13 +262,12 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private float settleSince = -1f;
     private Quaternion wheelBaseRotation = Quaternion.identity;
     private float boardedAt = -100f;
-    private float fallSpeed;                       // zeminsizken düşey hız (m/sn, aşağı negatif)
     private Vector3 fallRespawnPosition;           // plan altına düşünce dönülen poz (DriveIntro yazar; yoksa sahne pozu)
     private Quaternion fallRespawnRotation;
     private readonly List<Transform> rearDoors = new List<Transform>();
     private readonly List<Quaternion> rearDoorOpenRotations = new List<Quaternion>();
     private float doorOpenT = 1f;
-    private float savedPitch, savedEyeUp;
+    private float savedPitch, savedEyeUp, savedEyeForward;
     private OrbitCamera.ViewMode lastCameraMode;
 
     private void Awake()
@@ -234,9 +292,10 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.linearDamping = 0f;
-        rb.angularDamping = 0f;
-        rb.centerOfMass = new Vector3(0f, 0.6f, 0.2f);
+        rb.angularDamping = .3f;
+        rb.centerOfMass = new Vector3(0f, bodyMin.y + centerOfMassHeight, centerOfMassZ);
         rb.isKinematic = true;
+        SetupWheels();
         if (navObstacle == null) navObstacle = GetComponent<NavMeshObstacle>();
         if (sound == null) sound = GetComponent<VehicleAudio>();
         if (steeringWheel != null) wheelBaseRotation = steeringWheel.localRotation;
@@ -253,6 +312,176 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         lookAction = new InputAction("VanLook", InputActionType.Value, "<Mouse>/delta");
         interactAction = new InputAction("VanExit", InputActionType.Button, "<Keyboard>/e");
         viewAction = new InputAction("VanView", InputActionType.Button, PlayerInputReader.ViewTogglePath);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Tekerlekler: lastik ("Araç lastiği | Ön Sol" …) ve jant ("Jant ve göbek | …") mesh'leri garaj görselinde kök uzayında
+    // (birim dönüşüm) durur; merkez ve yarıçap mesh bounds'undan okunur. Her köşe için kökün altında bir WheelCollider (Wheel_FL …)
+    // ve bir görsel pivot (WheelPivot_FL …, lastik + jant bunun altına taşınır). WheelCollider kendi GameObject'inin dönüşünü yok sayar
+    // ve Rigidbody'nin +Z'sini ileri alır (ölçüldü 2026-11-05: 180° çevrilmiş GO ile pozitif tork minibüsü GERİ sürdü); kökte +Z arka
+    // olduğundan motor torku ters işaretle verilir, direksiyon açısı +: sağ (ölçülür), GetWorldPose dönüşü doğrudan uygulanır.
+    // Sıra wheelPointsLocal ile aynı: ön sol (+x), ön sağ (−x), arka sol, arka sağ. Mesh bulunamazsa tekerlek noktası + yarıçap.
+    // ---------------------------------------------------------------------------------------------
+    private static readonly string[][] WheelCornerKeys = { new[] { "Ön", "Sol" }, new[] { "Ön", "Sa" }, new[] { "Arka", "Sol" }, new[] { "Arka", "Sa" } };
+    public static readonly string[] WheelNames = { "Wheel_FL", "Wheel_FR", "Wheel_RL", "Wheel_RR" };
+    public static readonly string[] WheelPivotNames = { "WheelPivot_FL", "WheelPivot_FR", "WheelPivot_RL", "WheelPivot_RR" };
+    public const string TireKey = "lasti", RimKey = "Jant";
+
+    private void SetupWheels()
+    {
+        var renderers = GetComponentsInChildren<MeshFilter>(true);
+        float radius = wheelRadiusFallback;
+        var centers = new Vector3[4];
+        var found = new bool[4];
+        var parts = new List<Transform>[4];
+        for (int i = 0; i < 4; i++)
+        {
+            parts[i] = new List<Transform>();
+            centers[i] = (wheelPointsLocal != null && wheelPointsLocal.Length == 4 ? wheelPointsLocal[i] : Vector3.zero) + Vector3.up * wheelRadiusFallback;
+            foreach (var mf in renderers)
+            {
+                string n = mf.name;
+                if (!n.Contains(WheelCornerKeys[i][0]) || !n.Contains(WheelCornerKeys[i][1])) continue;
+                bool tire = n.Contains(TireKey), rim = n.Contains(RimKey);
+                if (!tire && !rim) continue;
+                parts[i].Add(mf.transform);
+                if (tire && mf.sharedMesh != null)
+                {
+                    var b = mf.sharedMesh.bounds;
+                    centers[i] = transform.InverseTransformPoint(mf.transform.TransformPoint(b.center));
+                    radius = Mathf.Max(.15f, b.extents.y * Mathf.Abs(mf.transform.lossyScale.y / Mathf.Max(1e-4f, transform.lossyScale.y)));
+                    found[i] = true;
+                }
+            }
+        }
+        WheelRadius = radius;
+        float load = rb.mass * Physics.gravity.magnitude / 4f;
+        float spring = load / Mathf.Max(.01f, suspensionSag);
+        float damper = 2f * suspensionDampingRatio * Mathf.Sqrt(spring * rb.mass / 4f);
+        // Dinlenme: targetPosition = dinlenmede sıkışma oranı (0 tam açık, 1 tam kapalı); PhysX taşınan kütlenin ağırlığını bu noktada
+        // kendiliğinden dengeler (ölçüldü 2026-11-05: 0.93 ile tekerlek tepeye 2 cm kala durdu, gövde şasiyle yola oturup kilitlendi).
+        // %40 sıkışmış dinlenme: tümseğe %60, sarkmaya %40 yol. Yay sertliği yalnız dinamik tepkiyi belirler (1 g'de suspensionSag çökme).
+        const float targetPosition = .4f;
+        float restExtension = (1f - targetPosition) * suspensionTravel;
+        var localRot = Quaternion.identity;
+        for (int i = 0; i < 4; i++)
+        {
+            var pivot = new GameObject(WheelPivotNames[i]).transform;
+            pivot.SetParent(transform, false);
+            pivot.localPosition = centers[i];
+            pivot.localRotation = localRot;
+            foreach (var p in parts[i]) p.SetParent(pivot, true);
+            wheelPivots[i] = pivot;
+
+            var go = new GameObject(WheelNames[i]);
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = centers[i] + Vector3.up * restExtension;
+            go.transform.localRotation = localRot;
+            var wc = go.AddComponent<WheelCollider>();
+            wc.radius = radius;
+            wc.mass = 30f;
+            wc.wheelDampingRate = .25f;
+            wc.suspensionDistance = suspensionTravel;
+            wc.forceAppPointDistance = 0f;
+            wc.center = Vector3.zero;
+            wc.suspensionSpring = new JointSpring { spring = spring, damper = damper, targetPosition = targetPosition };
+            wheels[i] = wc;
+        }
+        ApplyTireStiffness(forwardStiffness, sidewaysStiffness);
+        SetWheelTorques(0f, 0f, 0f);
+    }
+
+    private void ApplyTireStiffness(float forward, float sideways)
+    {
+        foreach (var wc in wheels)
+        {
+            if (wc == null) continue;
+            wc.forwardFriction = new WheelFrictionCurve { extremumSlip = .4f, extremumValue = 1f, asymptoteSlip = .8f, asymptoteValue = .6f, stiffness = forward };
+            wc.sidewaysFriction = new WheelFrictionCurve { extremumSlip = .2f, extremumValue = 1f, asymptoteSlip = .5f, asymptoteValue = .8f, stiffness = sideways };
+        }
+    }
+
+    // motor: minibüsün ÖNÜNE doğru (+); WheelCollider'ın ilerisi kök +Z (arka) olduğundan işaret çevrilir
+    private void SetWheelTorques(float motor, float brake, float steer)
+    {
+        MotorTorque = motor; BrakeTorque = brake; SteerAngle = steer;
+        for (int i = 0; i < 4; i++)
+        {
+            var wc = wheels[i];
+            if (wc == null) continue;
+            wc.motorTorque = -motor;
+            wc.brakeTorque = brake;
+            if (i < 2) wc.steerAngle = steer;
+        }
+    }
+
+    // Tanı (test raporu): her tekerlek için yerde mi, çarptığı collider, dönüş hızı, süspansiyon kuvveti
+    public string WheelReport()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < 4; i++)
+        {
+            var wc = wheels[i];
+            if (wc == null) { sb.Append(WheelNames[i] + ":YOK "); continue; }
+            bool hit = wc.GetGroundHit(out WheelHit h);
+            wc.GetWorldPose(out Vector3 wp, out _);
+            Vector3 wpLocal = transform.InverseTransformPoint(wp);
+            float roadY = GroundBelow(wp, out RaycastHit g) ? g.point.y : float.NaN;
+            sb.Append(WheelNames[i] + ":" + (hit ? h.collider.name + " F" + h.force.ToString("F0") + " slip" + h.forwardSlip.ToString("F2") + "/" + h.sidewaysSlip.ToString("F2") + " temasY" + h.point.y.ToString("F2") + " n" + h.normal.ToString("F2") : "havada") + " rpm" + wc.rpm.ToString("F0") + " M" + wc.motorTorque.ToString("F0") + " B" + wc.brakeTorque.ToString("F0") + " S" + wc.steerAngle.ToString("F0")
+                + " tepe" + transform.InverseTransformPoint(wc.transform.position).ToString("F2") + " merkez(yerel)" + wpLocal.ToString("F2") + " merkezY" + wp.y.ToString("F2") + " yolY" + roadY.ToString("F2") + " | ");
+        }
+        // Gövde: şasi kutusu dünyada; kesişen collider'lar (zemin dahil) ve şasi altı–yol açıklığı
+        Vector3 chassisCenter = transform.TransformPoint(new Vector3(0f, bodyMin.y + .22f + .15f, (bodyMin.z + bodyMax.z) * .5f));
+        Vector3 chassisHalf = new Vector3(.95f, .15f, (bodyMax.z - bodyMin.z - .8f) * .5f);
+        var names = new List<string>();
+        foreach (var c in Physics.OverlapBox(chassisCenter, chassisHalf, transform.rotation, ~0, QueryTriggerInteraction.Ignore))
+            if (c != null && !c.transform.IsChildOf(transform)) names.Add(c.name + (c.attachedRigidbody != null ? "(rb)" : ""));
+        Vector3 bottom = transform.TransformPoint(new Vector3(0f, bodyMin.y + .22f, (bodyMin.z + bodyMax.z) * .5f));
+        float clear = Physics.Raycast(bottom, Vector3.down, out RaycastHit ch, 3f, ~0, QueryTriggerInteraction.Ignore) ? ch.distance : float.NaN;
+        var all = new List<string>();
+        foreach (var c in Physics.OverlapBox(transform.TransformPoint(new Vector3(0f, (bodyMin.y + bodyMax.y) * .5f, (bodyMin.z + bodyMax.z) * .5f)), new Vector3((bodyMax.x - bodyMin.x) * .5f, (bodyMax.y - bodyMin.y) * .5f, (bodyMax.z - bodyMin.z) * .5f), transform.rotation, ~0, QueryTriggerInteraction.Ignore))
+            if (c != null && !c.transform.IsChildOf(transform)) all.Add(c.name + (c.attachedRigidbody != null ? (c.attachedRigidbody.isKinematic ? "(krb)" : "(rb)") : ""));
+        sb.Append(" şasi kesişen [" + string.Join(",", names) + "] şasi altı açıklık " + clear.ToString("F2") + " m (" + (float.IsNaN(clear) ? "-" : ch.collider.name) + "), gövde kutusu kesişen [" + string.Join(",", all) + "], kök y " + transform.position.y.ToString("F2") + " ağırlık merkezi " + rb.centerOfMass.ToString("F2") + " kütle " + rb.mass.ToString("F0") + " hız " + rb.linearVelocity.ToString("F2") + " açısal " + rb.angularVelocity.ToString("F2") + " tekerlek nokta yolY " + string.Join("/", System.Array.ConvertAll(wheelPointsLocal, p => GroundBelow(transform.TransformPoint(p), out RaycastHit gg) ? gg.point.y.ToString("F2") : "-")));
+        return sb.ToString();
+    }
+
+    private float MaxMotorTorque { get { return rb.mass * acceleration * WheelRadius / 4f; } }
+    private float MaxBrakeTorque { get { return rb.mass * brakeDecel * WheelRadius / 4f; } }
+    private float CoastBrakeTorque { get { return rb.mass * coastDecel * WheelRadius / 4f; } }
+
+    // Tekerlek tanısı: yerdeki sayı, süspansiyon sıkışma aralığı (0 açık … 1 kapalı)
+    private void SampleWheels()
+    {
+        WheelsGrounded = 0; SuspensionMin = 1f; SuspensionMax = 0f;
+        foreach (var wc in wheels)
+        {
+            if (wc == null) continue;
+            if (wc.isGrounded) WheelsGrounded++;
+            wc.GetWorldPose(out Vector3 p, out _);
+            float ext = Vector3.Dot(wc.transform.position - p, wc.transform.up); // tepe noktasından aşağı uzanım
+            float comp = 1f - Mathf.Clamp01(ext / Mathf.Max(.01f, wc.suspensionDistance));
+            SuspensionMin = Mathf.Min(SuspensionMin, comp);
+            SuspensionMax = Mathf.Max(SuspensionMax, comp);
+        }
+        if (SuspensionMin > SuspensionMax) SuspensionMin = SuspensionMax = 0f;
+    }
+
+    // Dik tutma yardımı (arcade): zemin düzlemine (yoksa dünya yukarısına) göre eğim ölü bandı aşınca düzeltici açısal ivme;
+    // yatay açısal hız her zaman sönümlenir (süspansiyon salınımı yumuşar). Yaw'a dokunmaz.
+    private void UprightAssist()
+    {
+        Vector3 refUp = groundValid ? groundUp : Vector3.up;
+        Vector3 up = transform.up;
+        float tilt = Vector3.Angle(up, refUp);
+        Vector3 w = rb.angularVelocity;
+        Vector3 wHorizontal = w - refUp * Vector3.Dot(w, refUp);
+        Vector3 torque = -wHorizontal * uprightDamping;
+        if (tilt > uprightDeadbandDeg)
+        {
+            Vector3 axis = Vector3.Cross(up, refUp);
+            if (axis.sqrMagnitude > 1e-6f) torque += axis.normalized * ((tilt - uprightDeadbandDeg) * Mathf.Deg2Rad * uprightSpring);
+        }
+        rb.AddTorque(torque, ForceMode.Acceleration);
     }
 
     private void OnEnable() { LaneOccupancy.RegisterObstacle(this); if (Instance == null) Instance = this; }
@@ -323,12 +552,16 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         HoldCargo();
         if (navObstacle != null) navObstacle.enabled = false;
         rb.isKinematic = false;
+        rb.useGravity = true;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         State = VanState.Driving;
+        PhysicalShove = false;
         settleSince = -1f;
-        fallSpeed = 0f;
+        dynamicSince = Time.time;
         Falling = false;
+        ApplyTireStiffness(forwardStiffness, sidewaysStiffness);
+        SetWheelTorques(0f, MaxBrakeTorque, 0f);
         if (sound != null && sound.engine != null && !sound.engine.isPlaying) sound.engine.Play();
     }
 
@@ -339,8 +572,10 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
         rb.isKinematic = true;
         State = VanState.Parked;
-        fallSpeed = 0f;
+        PhysicalShove = false;
         Falling = false;
+        steerAngle = 0f;
+        SetWheelTorques(0f, MaxBrakeTorque, 0f);
         ReleaseCargo();
         ReleaseRiders();
         shoveOriginSet = false;
@@ -349,15 +584,55 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         Physics.SyncTransforms();
     }
 
-    private void BeginShove()
+    private void BeginShove(bool physical)
     {
         HoldCargo();
         HoldRiders();
         if (navObstacle != null) navObstacle.enabled = false;
         rb.isKinematic = false;
+        rb.useGravity = true;
         State = VanState.Shoved;
+        PhysicalShove = physical;
+        if (physical) PhysicalShoves++;
         settleSince = -1f;
+        dynamicSince = Time.time;
         lastShoveVelocity = Vector3.zero;
+        steerAngle = 0f;
+        // İtilirken lastikler kayar (betikli hızla savaşmasın, fiziksel itmede devrilme momenti küçük kalsın); fiziksel itmede el freni
+        float stiff = physical ? shovedTireStiffness : scriptedShoveTireStiffness;
+        ApplyTireStiffness(stiff, stiff);
+        SetWheelTorques(0f, physical ? MaxBrakeTorque * shovedHandbrake : 0f, 0f);
+    }
+
+    // Park hâlindeyken gövde kutusuna giren hareketli kinematik gövde (hırsız kamyoneti; MovePosition ile sürülen araç): fiziksel itme başlar.
+    // Dinamik gövdeler (koni, ragdoll), ekip / karakterler, kendi parçaları ve duran kinematik cisimler (sedye) sayılmaz.
+    private bool ScanForPusher()
+    {
+        Vector3 center = transform.TransformPoint(new Vector3((bodyMin.x + bodyMax.x) * .5f, (bodyMin.y + .2f + bodyMax.y) * .5f, (bodyMin.z + bodyMax.z) * .5f));
+        Vector3 half = new Vector3((bodyMax.x - bodyMin.x) * .5f, (bodyMax.y - bodyMin.y - .2f) * .5f, (bodyMax.z - bodyMin.z) * .5f);
+        int n = Physics.OverlapBoxNonAlloc(center, half, overlaps, transform.rotation, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+        {
+            var c = overlaps[i];
+            if (c == null || c.isTrigger || c.transform.IsChildOf(transform)) continue;
+            var other = c.attachedRigidbody;
+            if (other == null || !other.isKinematic || other.linearVelocity.magnitude < physicalShoveMinSpeed || IsCrewOrCharacter(c)) continue;
+            LastPusher = other;
+            BeginShove(true);
+            lastRamContact = Time.time;
+            return true;
+        }
+        return false;
+    }
+
+    // Dış API (hırsız kamyoneti vb.): park hâlindeki minibüsü fiziksel itmeye geçirir; itici dinamik gövdeyi PhysX iter.
+    public bool BeginPhysicalShove(Rigidbody by)
+    {
+        if (State != VanState.Parked) return false;
+        LastPusher = by;
+        BeginShove(true);
+        lastRamContact = Time.time;
+        return true;
     }
 
     // Işınlama (sürüş girişi başlangıcı ve testler): yük bağlı taşınır, zemine oturtulur, verilen durumda bırakılır.
@@ -373,8 +648,43 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         AlignToGroundNow();
         lateral = Vector3.zero;
         Speed = 0f;
+        steerAngle = 0f;
         rb.isKinematic = wasKinematic;
         if (parked) SetParked(); else SetDriving();
+    }
+
+    // Çarpışma itkisi hasarı: yatay normalli temas (korkuluk, kaya, araç) Δv = itki / kütle eşiği aşınca; alt / üst temas (gravel dudağı,
+    // zemin) ve dinamikleşmeden sonraki ilk oturma sayılmaz. Trafik aracının betikli çarpması ayrıca hasar yazar (Ram), 1 sn içinde tekrar yok.
+    private void OnCollisionEnter(Collision c)
+    {
+        if (rb == null || rb.isKinematic || c.collider == null || c.collider.transform.IsChildOf(transform)) return;
+        NoteKinematicContact(c);
+        if (Time.time - dynamicSince < .5f || Time.time - lastRamContact < 1f && !PhysicalShove) return;
+        if (c.contactCount == 0) return;
+        Vector3 n = c.GetContact(0).normal;
+        if (Mathf.Abs(n.y) > .7f) return;
+        float dv = c.impulse.magnitude / Mathf.Max(1f, rb.mass);
+        if (dv > impactSpeedThreshold)
+        {
+            Impacts++;
+            AddDamage((dv - impactSpeedThreshold) * damagePerImpactSpeed);
+        }
+    }
+
+    private void OnCollisionStay(Collision c)
+    {
+        if (rb == null || rb.isKinematic || c.collider == null || c.collider.transform.IsChildOf(transform)) return;
+        NoteKinematicContact(c);
+    }
+
+    // Kinematik gövdeyle (araç) temas: itilme bitişi (settle) temas kesilince sayılır
+    private void NoteKinematicContact(Collision c)
+    {
+        var other = c.rigidbody;
+        if (other == null || !other.isKinematic || IsCrewOrCharacter(c.collider)) return;
+        if (other.linearVelocity.magnitude < physicalShoveMinSpeed) return;
+        lastRamContact = Time.time;
+        LastPusher = other;
     }
 
     // Plan altına düşünce dönülecek poz (DriveIntro: sürüş girişinin başlangıç şeridi).
@@ -421,6 +731,10 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             for (int i = 0; i < rearDoors.Count; i++)
                 if (rearDoors[i] != null) rearDoors[i].localRotation = Quaternion.Slerp(Quaternion.identity, rearDoorOpenRotations[i], eased);
         }
+        // Görsel tekerlekler: dinamikken WheelCollider pozu (süspansiyon, dönüş, direksiyon); park hâlinde son poz kalır
+        if (!rb.isKinematic)
+            for (int i = 0; i < 4; i++)
+                if (wheels[i] != null && wheelPivots[i] != null) { wheels[i].GetWorldPose(out Vector3 p, out Quaternion q); wheelPivots[i].SetPositionAndRotation(p, q); }
         if (!CrewInside) return;
         // Sürerken birinci şahsa geçilirse eğim sıfırlanır (TP'nin 18° aşağı eğimi ön paneli ekranın yarısına çıkarıyordu)
         if (orbitCamera != null && orbitCamera.Mode != lastCameraMode)
@@ -464,93 +778,97 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private void FixedUpdate()
     {
         if (!firstStepDone) { firstStepDone = true; foreach (var crew in seated) DisableForSeat(crew); } // Start'ta açılanlar da kapanır
-        if (State == VanState.Parked) return;
+        if (State == VanState.Parked)
+        {
+            if (physicalShoveEnabled) ScanForPusher();
+            if (State == VanState.Parked) return;
+        }
         float dt = Time.fixedDeltaTime;
         Vector3 fwdFlat = Forward; fwdFlat.y = 0f; fwdFlat.Normalize();
         Vector3 hv = rb.linearVelocity; hv.y = 0f;
         float actual = Vector3.Dot(hv, fwdFlat);
-        Vector3 lateralActual = hv - fwdFlat * actual;
-
-        // Çarpma: kontrol hızından ani sapma (statik engel); trafik çarpması ayrıca hasar yazar (Ram)
-        float deviation = Mathf.Abs(actual - Speed);
-        if (State == VanState.Driving && deviation > impactSpeedThreshold && Time.time - lastRamContact > 1f)
-        {
-            Impacts++;
-            AddDamage((deviation - impactSpeedThreshold) * damagePerImpactSpeed);
-        }
         Speed = actual;
-        lateral = lateralActual;
+        lateral = hv - fwdFlat * actual;
+        SlipAngleDeg = hv.magnitude > 1f ? Vector3.Angle(hv, fwdFlat * Mathf.Sign(actual == 0f ? 1f : actual)) : 0f;
+        MaxSpeedReached = Mathf.Max(MaxSpeedReached, Mathf.Abs(Speed));
 
-        float yawRate = 0f;
+        // Zemin düzlemi (tekerlek noktası raycast'leri): dik tutma referansı, betikli itilmede eğim hedefi, kenar denetimi
+        groundValid = GroundPlane(out Vector3 up, out _, out int groundedPoints);
+        if (groundValid) groundUp = up;
+        SampleWheels();
+        Vector3 refUp = groundValid ? groundUp : Vector3.up;
+        TiltDeg = Vector3.Angle(transform.up, refUp);
+        RollDeg = Mathf.Abs(Vector3.SignedAngle(Vector3.ProjectOnPlane(refUp, Forward).normalized, Vector3.ProjectOnPlane(transform.up, Forward).normalized, Forward));
+
+        // Düşme: hiçbir tekerlek yerde değil ve tekerlek noktalarının altında zemin yok (yol bitti) → yerçekimi düşürür; plan altında ışınlama
+        Falling = WheelsGrounded == 0 && groundedPoints == 0 && Time.time - dynamicSince > .3f;
+        if (transform.position.y < fallBelowY && Time.time - lastFallRespawn > 1f)
+        {
+            lastFallRespawn = Time.time;
+            // Boşluğa düştü: ekip ve yükle sürüş girişinin başlangıç şeridine (ya da sahne pozuna) dön; ekip içerideyse sürüş sürer,
+            // değilse (itilip düşen park hâlindeki minibüs) park hâlinde durur (yeniden binilebilir)
+            FallRespawns++;
+            TeleportTo(fallRespawnPosition, fallRespawnRotation, !CrewInside);
+            GameNotice.Show("Minibüs uçuruma düştü: yolun başına dönüldü");
+            FallRespawned?.Invoke(this);
+            return;
+        }
+
         if (State == VanState.Driving)
         {
             float t = CrewInside ? Throttle : 0f;
             float s = CrewInside ? Steer : 0f;
-            if (t > 0.01f)
+            // Direksiyon: hız arttıkça açı daralır; girdi yumuşatılır. WheelCollider +steerAngle = sağa (collider +X sağ)
+            float steerMax = Mathf.Lerp(maxSteerAngle, highSpeedSteerAngle, Mathf.Clamp01(Mathf.Abs(Speed) / Mathf.Max(.1f, maxSpeed)));
+            steerAngle = Mathf.MoveTowards(steerAngle, s * steerMax, steerRateDegPerSec * dt);
+            float motor = 0f, brake;
+            if (t > .01f)
             {
-                if (Speed < -0.1f) Speed = Mathf.MoveTowards(Speed, 0f, brakeDecel * dt);
-                else Speed = Mathf.MoveTowards(Speed, maxSpeed * t, acceleration * dt);
+                if (Speed < -.3f) brake = MaxBrakeTorque;                                  // geri giderken gaz = fren
+                else { motor = Speed < maxSpeed ? t * MaxMotorTorque : 0f; brake = Speed > maxSpeed + .5f ? CoastBrakeTorque : 0f; }
             }
-            else if (t < -0.01f)
+            else if (t < -.01f)
             {
-                if (Speed > 0.1f) Speed = Mathf.MoveTowards(Speed, 0f, brakeDecel * dt);
-                else Speed = Mathf.MoveTowards(Speed, maxReverseSpeed * t, acceleration * 0.7f * dt);
+                if (Speed > .3f) brake = MaxBrakeTorque;                                    // ileri giderken S = fren
+                else { motor = Speed > -maxReverseSpeed ? t * MaxMotorTorque * .7f : 0f; brake = 0f; }
             }
-            else Speed = Mathf.MoveTowards(Speed, 0f, coastDecel * dt);
-            float speedFactor = Mathf.Clamp(Mathf.Abs(Speed) / Mathf.Max(0.1f, steerSpeedRef), 0.3f, 1f);
-            yawRate = Mathf.Abs(Speed) < 0.05f ? 0f : s * maxSteerDegPerSec * speedFactor * Mathf.Sign(Speed);
-            lateral = Vector3.MoveTowards(lateral, Vector3.zero, lateralGripDecel * dt);
+            else
+            {
+                // Gaz yok: motor freni; durmaya yakın el freni (yokuşta kaymaz, iniş için tam durur)
+                float hold = Mathf.Clamp01(1f - Mathf.Abs(Speed) / .5f);
+                brake = Mathf.Lerp(CoastBrakeTorque, MaxBrakeTorque, hold);
+            }
+            SetWheelTorques(motor, brake, steerAngle);
+            UprightAssist();
+        }
+        else if (PhysicalShove)
+        {
+            // Fiziksel itilme: kinematik gövde PhysX ile iter; el freni + düşük lastik tutuşuyla kayar, dik tutma yardımı devrilmeyi önler
+            SetWheelTorques(0f, MaxBrakeTorque * shovedHandbrake, 0f);
+            UprightAssist();
         }
         else
         {
+            // Betikli itilme (trafik Ram): yatay hız betikle verilir ve söner, düşey hız fizikten; eğim zemin düzlemine kilitli
             Speed = Mathf.MoveTowards(Speed, 0f, shovedForwardDecel * dt);
             lateral = Vector3.MoveTowards(lateral, Vector3.zero, shovedLateralDecel * dt);
-        }
-        MaxSpeedReached = Mathf.Max(MaxSpeedReached, Mathf.Abs(Speed));
-
-        // Zemin: tekerlek noktalarından düzlem; sürerken dört tekerlek de boştaysa yerçekimi (yol bitti), bir kısmı boştaysa
-        // son eğim ve yükseklik korunur (kenar / mesh dikişi titretmesin)
-        float liftVel = 0f;
-        Falling = false;
-        if (GroundPlane(out Vector3 up, out float lift, out int grounded))
-        {
-            groundUp = up;
-            liftVel = Mathf.Clamp(lift * groundGain, -maxGroundVelocity, maxGroundVelocity);
-            fallSpeed = 0f;
-        }
-        else if (State == VanState.Driving && grounded == 0)
-        {
-            Falling = true;
-            fallSpeed -= fallGravity * dt;
-            liftVel = fallSpeed;
-            if (transform.position.y < fallBelowY)
+            if (!groundValid && groundedPoints < 4)
             {
-                // Boşluğa düştü: ekip ve yükle sürüş girişinin başlangıç şeridine (ya da sahne pozuna) dön, sürüş sürsün
-                FallRespawns++;
-                TeleportTo(fallRespawnPosition, fallRespawnRotation, false);
-                GameNotice.Show("Minibüs uçuruma düştü: yolun başına dönüldü");
-                FallRespawned?.Invoke(this);
-                return;
+                // Bir tekerleğin altında zemin yok (yol / banket kenarı): itilme burada biter, minibüs uçuruma gitmez.
+                Speed = 0f;
+                lateral = Vector3.zero;
+                if (!LastShoveReason.EndsWith("zemin yok, durdu")) LastShoveReason += " | kenar: zemin yok, durdu";
             }
+            Vector3 headingOnGround = Vector3.ProjectOnPlane(fwdFlat, groundUp).normalized;
+            Quaternion targetRot = Quaternion.LookRotation(-headingOnGround, groundUp);
+            rb.linearVelocity = headingOnGround * Speed + lateral + Vector3.up * rb.linearVelocity.y;
+            Quaternion delta = targetRot * Quaternion.Inverse(rb.rotation);
+            delta.ToAngleAxis(out float angle, out Vector3 axis);
+            if (angle > 180f) angle -= 360f;
+            if (float.IsNaN(axis.x) || axis.sqrMagnitude < 1e-6f) rb.angularVelocity = Vector3.zero;
+            else rb.angularVelocity = axis.normalized * Mathf.Clamp(angle / dt, -240f, 240f) * Mathf.Deg2Rad;
+            SetWheelTorques(0f, 0f, 0f);
         }
-        else if (State == VanState.Shoved)
-        {
-            // Bir tekerleğin altında zemin yok (yol / banket kenarı): itilme burada biter, minibüs uçuruma gitmez.
-            Speed = 0f;
-            lateral = Vector3.zero;
-            if (!LastShoveReason.EndsWith("zemin yok, durdu")) LastShoveReason += " | kenar: zemin yok, durdu";
-        }
-        Vector3 heading = Quaternion.AngleAxis(yawRate * dt, Vector3.up) * fwdFlat;
-        Vector3 headingOnGround = Vector3.ProjectOnPlane(heading, groundUp).normalized;
-        Vector3 rear = -headingOnGround;
-        Quaternion targetRot = Quaternion.LookRotation(rear, groundUp);
-
-        rb.linearVelocity = headingOnGround * Speed + lateral + Vector3.up * liftVel;
-        Quaternion delta = targetRot * Quaternion.Inverse(rb.rotation);
-        delta.ToAngleAxis(out float angle, out Vector3 axis);
-        if (angle > 180f) angle -= 360f;
-        if (float.IsNaN(axis.x) || axis.sqrMagnitude < 1e-6f) rb.angularVelocity = Vector3.zero;
-        else rb.angularVelocity = axis.normalized * Mathf.Clamp(angle / dt, -maxTurnRate, maxTurnRate) * Mathf.Deg2Rad;
 
         if (sound != null) sound.SetSpeed(Mathf.Abs(Speed));
 
@@ -707,7 +1025,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         bool touch = false;
         foreach (var p in LaneSamples()) if (by.Touches(p, 0.45f)) { touch = true; break; }
         if (!touch) return; // temas yokken Parked'ta kal (review P2-2: temas öncesi Shoved↔Parked titremesi yük / NavMesh'i boşa açıp kapatıyordu)
-        if (State == VanState.Parked) BeginShove();
+        if (State == VanState.Parked) BeginShove(false);
+        else if (PhysicalShove) { PhysicalShove = false; ApplyTireStiffness(scriptedShoveTireStiffness, scriptedShoveTireStiffness); } // trafik çarpması betikli yolu alır
         lastRamContact = Time.time;
         settleSince = -1f;
         Vector3 carFwd = by.transform.forward; carFwd.y = 0f; carFwd.Normalize();
@@ -968,6 +1287,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             savedPivot = orbitCamera.pivotHeight;
             savedPitch = orbitCamera.Pitch;
             savedEyeUp = orbitCamera.eyeUp;
+            savedEyeForward = orbitCamera.eyeForward;
+            orbitCamera.eyeForward = driveEyeForward;
             orbitCamera.distance = driveCameraDistance;
             orbitCamera.pivotHeight = driveCameraPivotHeight;
             orbitCamera.obstructionIgnoreRoot = transform;
@@ -1132,6 +1453,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             orbitCamera.distance = savedDistance;
             orbitCamera.pivotHeight = savedPivot;
             orbitCamera.eyeUp = savedEyeUp;
+            orbitCamera.eyeForward = savedEyeForward;
             if (orbitCamera.Mode == OrbitCamera.ViewMode.FirstPerson) orbitCamera.Pitch = savedPitch;
             orbitCamera.obstructionIgnoreRoot = null;
         }

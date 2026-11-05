@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-// Prosedürel animasyon klipleri (Assets/Animations/Procedural, 24 FBX; r3 ile 13 yeni) için README'deki import önerileri.
+// Prosedürel animasyon klipleri (Assets/Animations/Procedural; r3 ile 13 yeni, r6 ile Punch_Jab + Crouch_Idle/Walk) için README'deki import önerileri.
 // Kaynak: sanat reposu Export/Animations/Procedural/README.md (kopyası aynı klasörde).
 //  - Humanoid, Avatar = Copy From Other (SK_RescueCrew_Blue'nun Avatar'ı; aynı 31 kemikli iskelet).
 //  - Scale 1, Convert Units açık, Bake Axis Conversion kapalı.
@@ -34,6 +34,8 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         "Thief_Sneak_Walk", "Thief_Run", "Thief_Run_Carry", "Thief_Grab", "Thief_Punch", "Thief_Stunned", "Thief_ThrowInVan",
         // Sürüş girişi (r5): minibüste oturma döngüleri (şoför direksiyonda, yolcu)
         "Drive_Seated", "Passenger_Seated",
+        // r6: oyuncu yumruğu (sol tık) ve eğilme (Ctrl)
+        "Punch_Jab", "Crouch_Idle", "Crouch_Walk",
     };
 
     public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan",
@@ -42,7 +44,9 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         // U4 (README r4b): yalnız bunlar döngü
         "Throw_Aim", "Thief_Sneak_Walk", "Thief_Run", "Thief_Run_Carry", "Thief_Stunned",
         // Sürüş girişi (r5): oturma döngüleri
-        "Drive_Seated", "Passenger_Seated" };
+        "Drive_Seated", "Passenger_Seated",
+        // r6: eğilme döngüleri (Punch_Jab tek seferlik)
+        "Crouch_Idle", "Crouch_Walk" };
 
     public static string ClipPath(string clip) { return Folder + clip + ".fbx"; }
     public static bool IsLoop(string clip) { return LoopClips.Contains(clip); }

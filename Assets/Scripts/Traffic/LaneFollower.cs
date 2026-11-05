@@ -23,6 +23,14 @@ public class LaneFollower : MonoBehaviour
     public Transform[] wheels = new Transform[0];
     [Tooltip("Tekerlek yarıçapı (m).")]
     public float wheelRadius = 0.38f;
+    [Tooltip("Ön tekerleklerin en büyük direksiyon açısı (derece).")]
+    public float maxSteerAngle = 35f;
+    [Tooltip("Direksiyonun üstel yumuşatma süresi (sn). <= 0 ise anında döner.")]
+    public float steerSmoothTime = 0.2f;
+    [Tooltip("Gövde yönünün üstel yumuşatma süresi (sn). <= 0 ise şerit yönüne anında döner.")]
+    public float headingSmoothTime = 0.15f;
+    [Tooltip("Gövde yönünün hedef yönden en büyük sapması (derece). 6 m'den uzun araçlarda uzunlukla ters orantılı azalır.")]
+    public float maxHeadingLagDeg = 1.0f;
 
     [Tooltip("Kökten ön tampona / arka tampona uzaklık (m). Şerit doluluk servisi (araç takibi) kullanır.")]
     public float frontOverhang = 2.5f;
@@ -38,6 +46,8 @@ public class LaneFollower : MonoBehaviour
 
     public float Distance { get; private set; }
     public float Speed { get; private set; }
+    public float CurrentSteerAngle { get; private set; } // sağa pozitif, derece
+    public int FrontWheelCount { get; private set; }
     public bool HasStop { get { return !float.IsPositiveInfinity(stopDistance); } }
     public float StopDistance { get { return stopDistance; } }
     // Durak noktasına varıp tamamen durdu mu?
@@ -47,7 +57,12 @@ public class LaneFollower : MonoBehaviour
 
     private float stopDistance = float.PositiveInfinity;
     private Rigidbody body;
-    private Vector3[] wheelAxes; // her tekerleğin kendi yerel uzayında aks ekseni
+    private Vector3[] wheelAxes; // başlangıç tekerlek uzayında aks ekseni
+    private Vector3[] wheelUpAxes;
+    private Quaternion[] baseLocalRotations;
+    private bool[] frontWheels;
+    private float spinDegrees;
+    private float frontAxleOffset;
 
     private void Awake()
     {
@@ -62,11 +77,53 @@ public class LaneFollower : MonoBehaviour
 
     private void CacheWheelAxes()
     {
-        // Aks ekseni = aracın sağ yönü; tekerleğin kendi uzayına çevrilir (FBX'te tekerlek eksenleri Blender'a göre olabilir).
         wheelAxes = new Vector3[wheels.Length];
+        wheelUpAxes = new Vector3[wheels.Length];
+        baseLocalRotations = new Quaternion[wheels.Length];
+        frontWheels = new bool[wheels.Length];
+        FrontWheelCount = 0;
+        frontAxleOffset = 0f;
+        float meanZ = 0f;
+        int count = 0;
         for (int i = 0; i < wheels.Length; i++)
             if (wheels[i] != null)
-                wheelAxes[i] = Quaternion.Inverse(wheels[i].rotation) * transform.right;
+            {
+                meanZ += transform.InverseTransformPoint(wheels[i].position).z;
+                count++;
+            }
+        if (count > 0) meanZ /= count;
+
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            Transform wheel = wheels[i];
+            if (wheel == null) continue;
+            baseLocalRotations[i] = wheel.localRotation;
+            // FBX ara ebeveynlerini de içeren kök-göreli dönüş: dünya yönüne bağımlı değil.
+            // Böylece Awake eğimli/dönmüş araçta çalışsa da eksenler başlangıç tekerlek uzayında kalır.
+            Quaternion rootRelative = wheel.localRotation;
+            for (Transform parent = wheel.parent; parent != null && parent != transform; parent = parent.parent)
+                rootRelative = parent.localRotation * rootRelative;
+            Quaternion toWheel = Quaternion.Inverse(rootRelative);
+            wheelAxes[i] = toWheel * Vector3.right;
+            wheelUpAxes[i] = toWheel * Vector3.up;
+            float z = transform.InverseTransformPoint(wheel.position).z;
+            frontWheels[i] = z > meanZ;
+            if (frontWheels[i])
+            {
+                FrontWheelCount++;
+                frontAxleOffset += z;
+            }
+        }
+        if (FrontWheelCount > 0) frontAxleOffset = Mathf.Max(0f, frontAxleOffset / FrontWheelCount);
+    }
+
+    private void ApplyWheelRotations()
+    {
+        for (int i = 0; i < wheels.Length; i++)
+            if (wheels[i] != null)
+                wheels[i].localRotation = baseLocalRotations[i]
+                    * Quaternion.AngleAxis(frontWheels[i] ? CurrentSteerAngle : 0f, wheelUpAxes[i])
+                    * Quaternion.AngleAxis(spinDegrees, wheelAxes[i]);
     }
 
     // Aracı şeridin s noktasına koyar (ışınlama) ve başlangıç hızını verir.
@@ -80,6 +137,9 @@ public class LaneFollower : MonoBehaviour
         transform.SetPositionAndRotation(p, r);
         body.position = p;
         body.rotation = r;
+        if (wheelAxes == null || wheelAxes.Length != wheels.Length) CacheWheelAxes();
+        CurrentSteerAngle = 0f;
+        ApplyWheelRotations();
     }
 
     public void StopAt(float s) { stopDistance = s; }
@@ -152,14 +212,36 @@ public class LaneFollower : MonoBehaviour
         Speed = v;
 
         Pose(s, out Vector3 p, out Quaternion r);
+        if (headingSmoothTime > 0f)
+        {
+            Quaternion smoothed = Quaternion.Slerp(body.rotation, r, 1f - Mathf.Exp(-dt / headingSmoothTime));
+            float length = frontOverhang + rearOverhang;
+            float lagLimit = Mathf.Max(0f, maxHeadingLagDeg);
+            // Uzun gövdenin uçları virajda daha geniş alan süpürür; 6 m üstünde sapmayı
+            // uzunlukla ters orantılı azaltarak karşı şeride taşma riskini sınırlarız.
+            if (length > 6f) lagLimit *= 6f / length;
+            r = Quaternion.RotateTowards(r, smoothed, lagLimit);
+        }
         body.MovePosition(p);
         body.MoveRotation(r);
 
         // Tekerlekler: kat edilen yol / yarıçap (radyan → derece).
         float degrees = (s - old) / Mathf.Max(0.05f, wheelRadius) * Mathf.Rad2Deg;
         if (wheelAxes == null || wheelAxes.Length != wheels.Length) CacheWheelAxes();
-        for (int i = 0; i < wheels.Length; i++)
-            if (wheels[i] != null)
-                wheels[i].localRotation = wheels[i].localRotation * Quaternion.AngleAxis(degrees, wheelAxes[i]);
+        if (s > old)
+        {
+            // Ön aks teğeti ile uygulanacak gövde yönünün yatay açısı: yumuşatılan gövdenin
+            // virajda geride kalan yönünü de karşılar; dingil bilgisi olmayan ambulansta görsel aks kullanılır.
+            float ahead = axleHalfSpan > 0f ? axleHalfSpan : frontAxleOffset;
+            Vector3 forward = Vector3.ProjectOnPlane(r * Vector3.forward, Vector3.up);
+            Vector3 tangent = Vector3.ProjectOnPlane(lane.TangentAt(s + ahead), Vector3.up);
+            float limit = Mathf.Abs(maxSteerAngle);
+            float target = Mathf.Clamp(Vector3.SignedAngle(forward, tangent, Vector3.up), -limit, limit);
+            float blend = steerSmoothTime > 0f ? 1f - Mathf.Exp(-dt / steerSmoothTime) : 1f;
+            CurrentSteerAngle = Mathf.Lerp(CurrentSteerAngle, target, blend);
+        }
+        // Dururken direksiyon korunur; spin her seferinde başlangıç pozundan kurulduğu için eksen kaymaz.
+        spinDegrees = Mathf.Repeat(spinDegrees + degrees, 360f);
+        ApplyWheelRotations();
     }
 }

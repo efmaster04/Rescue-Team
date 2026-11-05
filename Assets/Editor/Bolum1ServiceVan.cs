@@ -66,6 +66,7 @@ public static class Bolum1ServiceVan
         var van = new GameObject(Bolum1SceneBuilder.ServiceVanName);
         CopyGarageVisual(van.transform);
 
+        ApplyGlass(van);
         var art = Part(van, VisualName);
         Bounds body = LocalBounds(art, van.transform);
         var rear = new GameObject(RearReferenceName).transform;
@@ -91,6 +92,60 @@ public static class Bolum1ServiceVan
         Debug.Log("Servis minibüsü: konum " + van.transform.position.ToString("F2") + ", ileri (dünya) " + Forward(van).ToString("F2")
             + ", Euler " + van.transform.eulerAngles.ToString("F1") + ", arka uç " + RearEnd(van).ToString("F2"));
         return van;
+    }
+
+    // Camlar (kullanıcı şikâyeti 2026-11-05, FP sürüş): garaj görselinde ön / yan cam materyali "13_Dark_smoky_glass" OPAK; içeriden
+    // bakınca ön cam koyu bir duvardı. Ön cam, yan kapı camları ve içe bakan kopyaları (CabinInnerFace_3/4/5) saydam VanGlass.mat alır
+    // (URP Lit, Transparent / Alpha, koyu dumanlı ton, α 0.22). Cull Back kalır: dışarıdan orijinal, içeriden kopya görünür, çakışma yok.
+    public const string GlassMaterialPath = AssetFolder + "/VanGlass.mat";
+    public const string GarageGlassMaterialName = "13_Dark_smoky_glass";
+
+    public static int ApplyGlass(GameObject van)
+    {
+        var glass = GlassMaterial();
+        int replaced = 0;
+        foreach (var r in van.GetComponentsInChildren<MeshRenderer>(true))
+        {
+            var mats = r.sharedMaterials;
+            bool changed = false;
+            for (int i = 0; i < mats.Length; i++)
+                if (mats[i] != null && (mats[i].name == GarageGlassMaterialName || mats[i] == glass)) { if (mats[i] != glass) { mats[i] = glass; changed = true; } replaced++; }
+            if (changed) r.sharedMaterials = mats;
+        }
+        return replaced;
+    }
+
+    public static Material GlassMaterial()
+    {
+        EnsureFolder();
+        var m = AssetDatabase.LoadAssetAtPath<Material>(GlassMaterialPath);
+        if (m == null) { m = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(m, GlassMaterialPath); }
+        // URP Lit saydam / alfa karışımı (BaseShaderGUI.SetupMaterialBlendMode ile aynı ayarlar)
+        m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", 0f); m.SetFloat("_Cull", 2f);
+        m.SetOverrideTag("RenderType", "Transparent");
+        m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha); m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One); m.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        m.SetFloat("_ZWrite", 0f); m.SetFloat("_AlphaToMask", 0f);
+        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.DisableKeyword("_ALPHATEST_ON"); m.DisableKeyword("_ALPHAPREMULTIPLY_ON"); m.DisableKeyword("_ALPHAMODULATE_ON");
+        m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        m.SetShaderPassEnabled("ShadowCaster", false); m.SetShaderPassEnabled("DepthOnly", false);
+        m.SetColor("_BaseColor", new Color(.32f, .40f, .46f, .22f)); m.SetFloat("_Smoothness", .92f); m.SetFloat("_Metallic", 0f);
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    // Sahne yaması (batchmode / menü): mevcut sahnedeki minibüse cam materyalini uygular ve sahneyi kaydeder (tam kurulum gerekmez).
+    [MenuItem("Rescue Team/Bölüm 1/Minibüs: Cam Materyalini Uygula")]
+    public static void ApplyGlassToScene()
+    {
+        EditorSceneManager.OpenScene(Bolum1SceneBuilder.ScenePath, OpenSceneMode.Single);
+        var van = GameObject.Find(Bolum1SceneBuilder.ServiceVanName);
+        int n = van != null ? ApplyGlass(van) : -1;
+        AssetDatabase.SaveAssets();
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+        Debug.Log("VAN GLASS OK " + n + " materyal yuvası: " + GlassMaterialPath);
+        if (Application.isBatchMode) EditorApplication.Exit(n > 0 ? 0 : 1);
     }
 
     // Garaj sahnesini önizleme sahnesi olarak açar, aracın görselini kopyalar, kapatır.

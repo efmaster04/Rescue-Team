@@ -9,8 +9,9 @@ using UnityEngine.InputSystem.LowLevel;
 
 // U4b (kullanıcı kararları 2026-10-20, brief u4b_hirsiz_dovus.txt) Play modu kontrolleri (U4-5 savunmadan sonra):
 //  (U4b-0) giriş yolu teşhisi: PlayerInputReader bağlamaları (<Mouse>/leftButton, rightButton, <Keyboard>/q, leftShift) etkin;
-//          sanal fare/klavye olaylarıyla sol tık → PlayerCombat.Attack (itme), sağ tık basılı → nişan, bırak → atış, Q → düdük,
-//          Shift+W+sol tık → tackle. Yüz düzeltmesi: kamera hırsıza bakarken gövde başka yöne dönükken tık → gövde hırsıza döner, itme isabet.
+//          sanal fare/klavye olaylarıyla sol tık → PlayerCombat.Attack (yumruk; 2026-11-05), eli boşken sağ tık → itme, elde eşyayla sağ tık
+//          basılı → nişan, bırak → atış, Q → düdük, Shift+W+sol tık → tackle. Yüz düzeltmesi: kamera hırsıza bakarken gövde başka yöne
+//          dönükken tık → gövde hırsıza döner, yumruk isabet.
 //  (U4b-1) hırsız canı: başının üstünde can barı (dolu); itme 25 → 75, fırlatma isabeti 35 → 40, tackle 50 → 0 → pes: elindekini düşürür,
 //          sersemlik bitince ön (yolcu) kapıya yürür, kapı açılır, biner, gizlenir; vurulamaz, hedef seçmez. Hepsi pes edince son hırsız
 //          şoför kapısından biner ve kamyonet hemen kalkar. Taşıma pozu: eşya avuçların ortasında, gövdenin önünde, kafanın altında.
@@ -113,20 +114,33 @@ public static partial class Bolum1AnimVerify
         bool bindOk = reader.AttackAction != null && reader.AttackAction.enabled && reader.AttackAction.bindings[0].effectivePath == PlayerInputReader.AttackPath && reader.AttackAction.controls.Count > 0
             && reader.ThrowAction.enabled && reader.ThrowAction.bindings[0].effectivePath == PlayerInputReader.ThrowPath
             && reader.WhistleAction.enabled && reader.WhistleAction.bindings[0].effectivePath == PlayerInputReader.WhistlePath
-            && reader.RunAction.enabled && reader.RunAction.bindings[0].effectivePath == PlayerInputReader.RunPath;
+            && reader.RunAction.enabled && reader.RunAction.bindings[0].effectivePath == PlayerInputReader.RunPath
+            && reader.CrouchAction.enabled && reader.CrouchAction.bindings[0].effectivePath == PlayerInputReader.CrouchPath;
         Note("bağlamalar", bindOk, bindings + "; gerçek fare " + realMouse + " klavye " + realKeyboard + "; editör davranışı " + savedBehavior);
         try
         {
-            // Sol tık → itme (hırsız yok: boş itiş)
-            int presses0 = reader.AttackPresses, pushes0 = combat.Pushes, acc0 = reader.AttackAccepted;
+            // Sol tık → yumruk (hırsız yok: boş vuruş)
+            int presses0 = reader.AttackPresses, punches0 = combat.Punches, pushes0 = combat.Pushes, acc0 = reader.AttackAccepted;
             yield return Until(() => Player.HasControl && !combat.Busy, 3f, "oyuncu hazır");
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left, true));
             yield return null;
             InputSystem.QueueStateEvent(mouse, new MouseState());
             yield return null; yield return null;
+            bool punchAnim = PlayerAnim.InState(PlayerCombat.StatePunchJab);
+            Note("sol tık → yumruk", reader.AttackPresses == presses0 + 1 && reader.AttackAccepted == acc0 + 1 && combat.Punches == punches0 + 1 && combat.Pushes == pushes0 && combat.LastAction == "punch" && punchAnim,
+                "basış " + (reader.AttackPresses - presses0) + ", kabul " + (reader.AttackAccepted - acc0) + ", yumruk " + (combat.Punches - punches0) + " (" + combat.LastAction + ", Punch_Jab " + punchAnim + ", ret: " + combat.LastRejectReason + ")");
+            yield return Until(() => !combat.Busy && Player.HasControl, 3f, "yumruk bitti");
+            // Eli boşken sağ tık → itme (basılı tutmak tekrar itmez, nişan yok)
+            int sp0 = reader.SecondaryPresses; pushes0 = combat.Pushes; int punches1 = combat.Punches;
+            InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right, true));
+            yield return null; yield return null;
             bool pushAnim = PlayerAnim.InState(CrewAnimation.StatePushShove);
-            Note("sol tık → itme", reader.AttackPresses == presses0 + 1 && reader.AttackAccepted == acc0 + 1 && combat.Pushes == pushes0 + 1 && combat.LastAction == "push" && pushAnim,
-                "basış " + (reader.AttackPresses - presses0) + ", kabul " + (reader.AttackAccepted - acc0) + ", itme " + (combat.Pushes - pushes0) + " (" + combat.LastAction + ", Push_Shove " + pushAnim + ", ret: " + combat.LastRejectReason + ")");
+            yield return Seconds(1.0f); // basılı tutuluyor: itme beklemesi (0.8 sn) dolsa da ikinci itme yok
+            bool noAimEmpty = !combat.Aiming;
+            InputSystem.QueueStateEvent(mouse, new MouseState());
+            yield return null;
+            Note("eli boşken sağ tık → itme (basılı tutmak tekrarlamaz, nişan yok)", reader.SecondaryPresses == sp0 + 1 && combat.Pushes == pushes0 + 1 && combat.Punches == punches1 && pushAnim && noAimEmpty,
+                "basış " + (reader.SecondaryPresses - sp0) + ", itme " + (combat.Pushes - pushes0) + " (Push_Shove " + pushAnim + "), yumruk +" + (combat.Punches - punches1) + ", nişan " + combat.Aiming + (combat.Pushes == pushes0 ? ", ret: " + combat.LastRejectReason : ""));
             yield return Until(() => !combat.Busy && Player.HasControl, 3f, "itme bitti");
             // Yüz düzeltmesi: hırsız oyuncunun SAĞINDA 1.1 m (gövde ileri bakıyor), kamera hırsıza bakıyor → tık → gövde döner, isabet
             A.ResetForTest();
@@ -138,7 +152,7 @@ public static partial class Bolum1AnimVerify
             cam.rotation = Quaternion.LookRotation(vr, Vector3.up);
             Player.cameraTransform = cam;
             yield return null;
-            yield return Until(() => Time.time >= combat.PushReadyAt, 2f, "itme beklemesi");
+            yield return Until(() => Time.time >= combat.PunchReadyAt, 2f, "yumruk beklemesi");
             float angleBefore = Vector3.Angle(Flat(Player.transform.forward), vr);
             int hits0 = A.Hits; float hp0 = A.Health;
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left, true));
@@ -148,13 +162,13 @@ public static partial class Bolum1AnimVerify
             float angleAfter = Vector3.Angle(Flat(Player.transform.forward), Flat(A.transform.position - Player.transform.position));
             Player.cameraTransform = null;
             UnityEngine.Object.Destroy(cam.gameObject);
-            Note("yüz düzeltmesi (gövde yana dönükken tık → hırsıza döner, itme isabet 25)", angleBefore > 80f && angleAfter < 15f && A.Hits == hits0 + 1 && Mathf.Abs(hp0 - A.Health - combat.settings.pushDamage) < 0.01f && A.LastHitReason == "itme",
+            Note("yüz düzeltmesi (gövde yana dönükken sol tık → hırsıza döner, yumruk isabet " + combat.punchDamage.ToString(Inv) + ")", angleBefore > 80f && angleAfter < 15f && A.Hits == hits0 + 1 && Mathf.Abs(hp0 - A.Health - combat.punchDamage) < 0.01f && A.LastHitReason == "yumruk",
                 "önce " + angleBefore.ToString("F0", Inv) + "° → sonra " + angleAfter.ToString("F0", Inv) + "° (" + combat.LastFacing + "), isabet " + (A.Hits - hits0) + ", can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv));
-            yield return Until(() => !combat.Busy && Player.HasControl, 3f, "itme bitti");
+            yield return Until(() => !combat.Busy && Player.HasControl, 3f, "yumruk bitti");
             A.ResetForTest();
             A.TeleportForTest(LanePoint(dir, 20f, 0.5f), Quaternion.LookRotation(-vf));
             A.Stun(60f, Vector3.zero, "test-bekleme");
-            // Sağ tık basılı → nişan; bırak → atış
+            // Elde valizle sağ tık basılı → nişan; bırak → atış
             item.gameObject.SetActive(true);
             item.Drop(U3Ground(arena + vf * 1.0f, arena.y), 0f);
             Player.Teleport(arena, Quaternion.LookRotation(vf)); // yüz düzeltmesi gövdeyi yana çevirmişti
@@ -224,7 +238,7 @@ public static partial class Bolum1AnimVerify
             Player.cameraTransform = null;
         }
         if (Player.HeldValuable != null) { var v = Player.HeldValuable; Player.HeldValuable = null; v.Drop(U3Ground(Player.transform.position + Player.transform.forward * 0.7f, Player.transform.position.y), 0f); }
-        Check("(U4b-0) giriş yolu teşhisi: PlayerInputReader kodla bağlar (sol tık / sağ tık / Q / Shift), sanal fare-klavye olayları PlayerCombat'a ulaşır (itme, nişan→atış, düdük, koşarken tackle); OYUNDAKİ sorun: gövde yürüyüş yönüne bakıyor, kamera hırsıza dönükken itme konisi boşa gidiyordu → saldırıda gövde kameraya / yakın hırsıza döner",
+        Check("(U4b-0) giriş yolu teşhisi: PlayerInputReader kodla bağlar (sol tık / sağ tık / Q / Shift / sol Ctrl), sanal fare-klavye olayları PlayerCombat'a ulaşır (sol tık yumruk, eli boşken sağ tık itme, elde eşyayla sağ tık nişan→atış, düdük, koşarken tackle); OYUNDAKİ sorun: gövde yürüyüş yönüne bakıyor, kamera hırsıza dönükken itme konisi boşa gidiyordu → saldırıda gövde kameraya / yakın hırsıza döner",
             ok, string.Join("; ", parts));
     }
 
@@ -273,7 +287,7 @@ public static partial class Bolum1AnimVerify
         yield return null;
         yield return Until(() => Time.time >= combat.PushReadyAt && !combat.Busy && Player.HasControl, 3f, "itme hazır");
         float hp0 = A.Health;
-        bool pushed = combat.Attack();
+        bool pushed = combat.Push();
         yield return Seconds(0.4f);
         float fillAfterPush = label != null ? label.HealthFill.fillAmount : -1f;
         Note("itme 25", pushed && Mathf.Abs(hp0 - A.Health - s.pushDamage) < 0.01f && Mathf.Abs(A.Health - 75f) < 0.01f && A.LastHitReason == "itme" && A.IsStunned && Mathf.Abs(fillAfterPush - 0.75f) < 0.02f,
