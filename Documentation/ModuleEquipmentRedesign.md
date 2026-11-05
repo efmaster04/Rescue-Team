@@ -1,5 +1,7 @@
 # Ekipmanların ikinci tasarımı
 
+> 5 Kasım 2026: beş modül ve ortak kaide Blender'da yeniden modellendi; bu sayfa önceki tasarımın kaydıdır. [Güncel modeller](ServiceModuleArt.md).
+
 31 Ekim 2026. Önceki ekipman görünümünün yetersiz bulunması üzerine çekici, pompa, teknik servis ünitesi ve nakliye kasasının ana biçimleri değiştirildi. Yangın makarası ile ortak taşıyıcı da yenilendi. Bunlar Unity prefablarının gerçek meshleridir; önizlemeler ayrı bir PreviewScene içinde aynı varlıklardan alınır.
 
 | Ekipman | Değişiklik | Mekanizma üçgeni |

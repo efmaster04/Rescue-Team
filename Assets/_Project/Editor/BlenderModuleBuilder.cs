@@ -14,7 +14,7 @@ namespace CompanySimEditor
     public static class BlenderModuleBuilder
     {
         internal const string Folder="Assets/_Project/Art/BlenderModules";
-        internal static readonly string[] Ids={"towing","water"};
+        internal static readonly string[] Ids={"towing","water","fire","tech","cargo"};
         [Serializable] sealed class Manifest {public int version;public Model[] models;}
         [Serializable] sealed class Model {public string id,blend;public Level[] lods;}
         [Serializable] sealed class Level {public string name;public int triangles;public string[] materials;}
@@ -56,7 +56,7 @@ namespace CompanySimEditor
             if(!Ids.Contains(id))return;
             var manifest=JsonUtility.FromJson<Manifest>(File.ReadAllText(Folder+"/module_manifest.json"));
             if(manifest.version!=1||manifest.models==null||manifest.models.Length!=Ids.Length||Ids.Any(key=>manifest.models.Count(m=>m.id==key)!=1))
-                throw new Exception("Generate both editable Blender modules before import.");
+                throw new Exception("Generate all editable Blender modules (Art/Blender/Scripts/gen_service_modules.py) before import.");
             var model=manifest.models.Single(m=>m.id==id);
             if(!File.Exists(model.blend)||model.lods==null||model.lods.Length!=3)throw new Exception("Missing Blender source/LOD set: "+id);
             var source=AssetDatabase.LoadAssetAtPath<GameObject>(Folder+"/Models/"+id+".fbx");

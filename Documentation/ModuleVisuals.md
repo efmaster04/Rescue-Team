@@ -1,5 +1,7 @@
 # Dış modül görselleri ve montaj ayrıntıları
 
+> 5 Kasım 2026: beş modül ve ortak kaide Blender'da yeniden modellendi; bu sayfa önceki tasarımın kaydıdır. [Güncel modeller](ServiceModuleArt.md).
+
 31 Ekim ikinci tasarım turunda ekipmanların ana biçimleri, ortak kaide ve yüzeyleri yeniden düzenlendi. Araç modeli değiştirilmedi. [Güncel modeller ve kapsam](ModuleEquipmentRedesign.md).
 
 Beş taşınabilir servis birimi ekipman için ayrı üretilen geometri kullanır. Modüller aracın arka dış yüzeyinde, arka kapıyla birlikte hareket eden taşıyıcıdadır. Kaynak ofis, araç geometrisi/malzemeleri ve park konumu korundu. Önceki modül prefabları ve kod `Backups/ModuleEquipmentPass` içindedir.

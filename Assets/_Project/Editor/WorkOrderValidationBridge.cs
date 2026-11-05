@@ -51,6 +51,8 @@ namespace CompanySimEditor
             else if(mode=="blender-equipment") BlenderEquipmentBuilder.ApplyAndValidate();
             else if(mode=="blender-modules-preview") BlenderModuleBuilder.Apply();
             else if(mode=="blender-modules") BlenderModuleBuilder.ApplyAndValidate();
+            else if(mode=="service-modules-preview") ServiceModuleArtImporter.Apply();
+            else if(mode=="service-modules") ServiceModuleArtImporter.ApplyAndValidate();
             else if(mode=="rear-garage") GarageSystemsBuilder.ApplyAndValidate();
             else if(mode=="rear-manual") GarageSystemsBuilder.ApplyAndValidateManual();
             else if(mode=="ui") ProjectValidation.RunUIOnly();
