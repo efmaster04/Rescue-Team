@@ -60,6 +60,8 @@ public sealed class CarryHandIK : MonoBehaviour
     public float firstPersonDrop = 0.10f;
     [Tooltip("Tutuş durumu değişince (döngü, yumruk, nişan, dalış) eşyanın eski yerinden yeni yerine kayma süresi (sn).")]
     public float modeBlendSeconds = 0.15f;
+    [Tooltip("Nişana girip çıkarken eşyanın kayma süresi (sn): yol daha uzun.")]
+    public float aimBlendSeconds = 0.28f;
     [Tooltip("Eşya elden çıkınca kolların son tutuştan klibe dönme süresi (sn).")]
     public float releaseBlendSeconds = 0.15f;
     [Tooltip("Klip dışı varsayılan avuç yüksekliği (kök üstü, m): orta / ağır; yumruk eşyayı alır almaz gelirse ev konumu buradan türer.")]
@@ -90,6 +92,7 @@ public sealed class CarryHandIK : MonoBehaviour
     private Vector3 placedLocal;              // son konan merkez (kök uzayında): durum değişiminde sıçrama olmasın
     private Quaternion placedRotationLocal = Quaternion.identity;
     private float modeBlend = 1f;
+    private float modeBlendDuration = 0.15f;
     private Vector3 fromLocal;
     private Quaternion fromRotationLocal = Quaternion.identity;
     private float leftWeight;                 // ev dalında sol el ağırlığı (0 → 1 yumuşak)
@@ -373,12 +376,13 @@ public sealed class CarryHandIK : MonoBehaviour
                 fromLocal = placedLocal;
                 fromRotationLocal = placedRotationLocal;
                 modeBlend = 0f;
+                modeBlendDuration = mode == HoldMode.Aim || newMode == HoldMode.Aim ? aimBlendSeconds : modeBlendSeconds;
             }
             mode = newMode;
         }
         if (modeBlend < 1f)
         {
-            modeBlend = Mathf.MoveTowards(modeBlend, 1f, Time.deltaTime / Mathf.Max(0.01f, modeBlendSeconds));
+            modeBlend = Mathf.MoveTowards(modeBlend, 1f, Time.deltaTime / Mathf.Max(0.01f, modeBlendDuration));
             float s = Mathf.SmoothStep(0f, 1f, modeBlend);
             center = Vector3.Lerp(transform.TransformPoint(fromLocal), center, s);
             rot = Quaternion.Slerp(transform.rotation * fromRotationLocal, rot, s);

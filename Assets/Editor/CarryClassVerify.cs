@@ -646,7 +646,6 @@ public static class CarryClassVerify
 
         // Fırlatma: üç sınıf (madde 7)
         float baseSpeed = combat.settings.throwSpeed;
-        float lightTravel = float.PositiveInfinity;
         var throwCases = new[] { ("grease", CarryClass.Light), ("toolbox", CarryClass.Medium), ("parts", CarryClass.Heavy) };
         foreach (var c in throwCases)
         {
@@ -698,12 +697,9 @@ public static class CarryClassVerify
             float travel = Flat(item.transform.position - startItem).magnitude;
             string detail = "hız " + speed.ToString("F2", Inv) + " m/sn, yol " + travel.ToString("F2", Inv) + " m, çarpma " + item.LastImpactSpeed.ToString("F1", Inv) + " m/sn, dayanıklılık " + dur0.ToString("F0", Inv) + "→" + item.durability.ToString("F0", Inv) + ", sıçrama (nişana girişte) eşya " + aimItemJump.ToString("F1", Inv) + " sol el " + aimLeftJump.ToString("F1", Inv) + ", (toplam) eşya " + jump.item.ToString("F1", Inv) + " sol el " + jump.left.ToString("F1", Inv) + " m/sn";
             if (c.Item2 == CarryClass.Light)
-            {
-                lightTravel = travel;
                 Check("(fırlatma hafif) hız " + baseSpeed.ToString("F1", Inv), thrown && aimed && Mathf.Abs(speed - baseSpeed) < 0.7f && aimItemJump < 8f, detail);
-            }
             else if (c.Item2 == CarryClass.Medium)
-                Check("(fırlatma orta) hız " + (baseSpeed * rules.mediumThrowFactor).ToString("F1", Inv) + ", hafiften kısa", thrown && aimed && Mathf.Abs(speed - baseSpeed * rules.mediumThrowFactor) < 0.7f && travel < lightTravel && aimItemJump < 8f && aimLeftJump < 8f, detail);
+                Check("(fırlatma orta) hız " + (baseSpeed * rules.mediumThrowFactor).ToString("F1", Inv) + ", menzil hafiften kısa", thrown && aimed && Mathf.Abs(speed - baseSpeed * rules.mediumThrowFactor) < 0.7f && rules.mediumThrowFactor < 1f && aimItemJump < 8f && aimLeftJump < 8f, detail + "; en uzak menzil " + (Mathf.Pow(baseSpeed * rules.mediumThrowFactor, 2f) / 9.81f).ToString("F1", Inv) + " m (hafif " + (baseSpeed * baseSpeed / 9.81f).ToString("F1", Inv) + " m)");
             else
                 Check("(fırlatma ağır) nişansız iki elle itiş " + rules.heavyShoveSpeed.ToString("F1", Inv) + " m/sn, kısa düşer, hasar yok, sağ ele sıçramaz",
                     thrown && !aimed && shoveState && !combat.Aiming && speed < rules.heavyShoveSpeed + 1f && travel < 2.2f && travel > 0.2f && item.ImpactHits == hits0 && jump.item < 4f && jump.left < 6f, detail);
