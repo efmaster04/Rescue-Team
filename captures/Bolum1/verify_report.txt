@@ -1,0 +1,86 @@
+BOLUM1 VERIFY 2026-11-03 04:07:55
+[OK]   (a) FBX import + ayarlar (importer'dan geri okundu) — 25/25 (beklenen 25: 24 mekân + minibüs; servis minibüsü _Project altında)
+[OK]   (a2) materyal renkleri (minibüs + mekân + karakter 4 varyant, ΔE76 < 2) ve şeffaf cam — minibüs 12 materyal, en büyük ΔE76 0.00 (M_Minivan_Trim); mekân 10 materyal, en büyük ΔE76 0.01 (M_Grass); karakter 72 materyal, en büyük ΔE76 0.00 (M_RadioScreen Orange); sorun 0; boya #9AC4D2; cam Transparent a=0.35 kuyruk 3000
+[OK]   (g) minibüs VehicleHold, holdOnStart açık — VehicleHold var
+[OK]   (b) sahne açıldı, beklenen objeler — 37 obje, eksik: yok; backdrop collider yok=True; modül collider kuralı (Ground/Road/Guardrail convex olmayan MeshCollider, diğerleri yok)=True; minibüs Rigidbody 2200 kg, box=6 sphere=6
+  modül kökü (Ground): konum (0.00, 0.00, 0.00), dönüş (270.02, 0.00, 0.00), ölçek (1.00, 1.00, 1.00)
+[OK]   dönüşüm Blender(x,y,z)→Unity(-x,z,-y) raycast — patika 19 nokta en büyük sapma 0.0 cm, yol kesitleri en büyük sapma 0.0 cm
+[OK]   (c1) yol genişliği 8 ± 0.2 m — 34/34 kesit, ort 8.010 m (min 8.010 m, max 8.010 m)
+[OK]   (c2) patika yoldan 9 ± 0.6 m aşağıda — x=-4.8: 8.783 m, x=0.5: 8.968 m, x=3.5: 8.968 m, x=7.8: 9.167 m
+[OK]   (d) arka tekerlek tabanları patikada ± 5 cm — Wheel_RL taban-zemin 0.0 cm (SM_B1_Ground), Wheel_RR taban-zemin 0.0 cm (SM_B1_Ground)
+[OK]   minibüs yerleşimi (TowTruckPlacement, eski çekicinin yönü, ölçek 1) — Unity konum (-15.00, 0.46, 8.91); Euler (2.38, 90.00, 0.00); XZ sapma 0.0 cm, yaw sapma 0.00°
+[OK]   minibüs hiyerarşi / collider (görsel kopya, CassetteSocket'te modül, tavan lambası, 108° açık arka kapılar, betik yok) — görsel True, modül True, lamba True, kapılar True, betiksiz True, kök kutu 6, PH yok=True
+  minibüs tekerlek noktası (1.18, 0.00, -2.08) taban-banket 0.0 cm; yüzey M_Gravel
+  minibüs tekerlek noktası (-1.18, 0.00, -2.08) taban-banket 0.0 cm; yüzey M_Gravel
+  minibüs tekerlek noktası (1.18, 0.00, 2.79) taban-banket -0.1 cm; yüzey M_Gravel
+  minibüs tekerlek noktası (-1.18, 0.00, 2.79) taban-banket -0.1 cm; yüzey M_Gravel
+[OK]   minibüs 4 teker tabanı bankette ±8 cm — gövde tabanı → Ground/M_Gravel raycast; kapalı gövde (3.28, 2.71, 6.77)
+[OK]   minibüs yola / korkuluğa taşmıyor — XZ görsel zarf / üçgen kesişimi: yol=0, korkuluk=0
+[OK]   ekipman yük bölümünde: 4 koni × 3 kg (raflarda), 2 sedye (zeminde), halat kangalı dolapta — koniler True, sedyeler True ((0.40, 0.69, 1.55), (-0.40, 0.68, 1.55)), kangal True kök-yerel (0.62, 1.35, 2.30)
+[OK]   (e) karakter boyu 1.50 ± 0.05 m (bağ pozu) — 1.500 m; Play'de Idle + IK (açık, 2 sn sonra): boy 1.496 m, taban-zemin -0.4 cm (bağ pozunda 0.0 cm)
+[OK]   oynanış düzeltmeleri Play'de kurulu — koşu 3,2, düşüş eşiği 3, NPC bedenleri 4 (katı: Patient_Elder True, Patient_Civilian False, StretcherHelperBot True, Patient_Tourist False; D2: koltuktaki hastalar katı değil)
+  görüntü: Captures/Bolum1/overview.png
+  görüntü: Captures/Bolum1/closeup_minivan_character.png
+  görüntü: Captures/Bolum1/minibus_sahne.png
+  görüntü: Captures/Bolum1/minibus_notr.png
+  görüntü: Captures/Bolum1/minibus_arka.png
+FİZİK TESTİ (minibüs, 2200 kg, adım 0.02 sn): 5 sn sabit (VehicleHold), sonra ReleaseHold() ve 2 sn serbest
+  başlangıç gömülmesi BoxCollider @SM_Minivan: 0.0 cm (-)
+  başlangıç gömülmesi BoxCollider @SM_Minivan: 0.0 cm (-)
+  başlangıç gömülmesi SphereCollider @SM_Minivan_Wheel_FL: 0.0 cm (-)
+  başlangıç gömülmesi SphereCollider @SM_Minivan_Wheel_FR: 0.0 cm (-)
+  başlangıç gömülmesi SphereCollider @SM_Minivan_Wheel_RL: 0.4 cm (SM_B1_Ground)
+  başlangıç gömülmesi SphereCollider @SM_Minivan_Wheel_RR: 0.4 cm (SM_B1_Ground)
+  başlangıç gömülmesi BoxCollider @mixamorig:Hips: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftUpLeg: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftLeg: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightUpLeg: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightLeg: 0.0 cm (-)
+  başlangıç gömülmesi BoxCollider @mixamorig:Spine2: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftArm: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftForeArm: 0.0 cm (-)
+  başlangıç gömülmesi SphereCollider @mixamorig:Head: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightArm: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightForeArm: 0.0 cm (-)
+  başlangıç gömülmesi BoxCollider @BodyContact: 0.0 cm (-)
+  başlangıç gömülmesi BoxCollider @mixamorig:Hips: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftUpLeg: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftLeg: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightUpLeg: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightLeg: 0.0 cm (-)
+  başlangıç gömülmesi BoxCollider @mixamorig:Spine2: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftArm: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:LeftForeArm: 0.0 cm (-)
+  başlangıç gömülmesi SphereCollider @mixamorig:Head: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightArm: 0.0 cm (-)
+  başlangıç gömülmesi CapsuleCollider @mixamorig:RightForeArm: 0.0 cm (-)
+  başlangıç gömülmesi BoxCollider @BodyContact: 0.0 cm (-)
+  t(s)  kök(x,y,z)                 yer değiştirme  eğim(°)  yuvarlanma(°)  en düşük y   hız(m/s)
+  görüntü: Captures/Bolum1/physics_t0.png
+   0.0  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   0.5  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   1.0  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   1.5  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   2.0  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   2.5  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+  ServiceVan_Cone_01 maksimum hareket=0.502 cm; maksimum eğim=2.481°
+  ServiceVan_Cone_02 maksimum hareket=0.503 cm; maksimum eğim=2.532°
+  ServiceVan_Cone_03 maksimum hareket=0.502 cm; maksimum eğim=2.481°
+  ServiceVan_Cone_04 maksimum hareket=0.503 cm; maksimum eğim=2.532°
+[OK]   minibüs koni fiziği (Play, 3.00 sn / 150 × 0.02 sn) — maksimum hareket=0.503 cm; eğim=2.532°; koniler arası giriş=0.000 mm
+   3.0  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   3.5  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   4.0  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   4.5  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+  görüntü: Captures/Bolum1/physics_t5.png
+  >>> ReleaseHold() çağrıldı (IsHeld=False)
+   5.0  (-4.00, -9.71, 19.03)         0.000 m       28.0        0.0       -10.502     0.00
+   5.5  (-4.00, -10.12, 18.65)        0.558 m       52.2       -0.2       -11.795     2.61
+   6.0  (-3.86, -10.59, 18.59)        0.992 m       86.3       -2.7       -13.101     3.61
+   6.5  (-3.63, -11.11, 19.59)        1.551 m       73.3        2.1       -13.806     1.95
+   7.0  (-3.07, -10.89, 20.63)        2.193 m       52.7        0.0       -13.506     2.34
+  görüntü: Captures/Bolum1/physics_t7.png
+[OK]   (h) 5 sn sonra minibüs sabit (konum < 1 cm, eğim < 0.5°) — konum farkı 0.0 cm, dönme farkı 0.000°
+[OK]   (i) ReleaseHold sonrası 2 sn içinde minibüs hareket ediyor (> 0.5 m) — yer değiştirme 2.19 m (bilgi: serbest kalınca öne devrilip düşmesi bilinen durum)
+[OK]   (f) log'da C# derleme hatası yok — log: C:/Users/W11/AppData/Local/Temp/claude/C--Users-W11-Desktop-Center/f4866956-97fc-49d9-8789-cc6a2aaed403/scratchpad/suite/Bolum1Verify-Run.log
+BOLUM1 VERIFY OK

@@ -1,0 +1,65 @@
+AMBULANCE VERIFY 2026-11-03 04:11:25
+[OK]   sahne: oyun objeleri, prefab'lar ve ayar asset'leri — eksik obje: yok; prefab'lar True; takvim 120/15/120; requiredCarriers 2; oyuncu bileşenleri True
+  sedyeler: Stretcher_01 (-13.42, 1.08, 8.51), Stretcher_02 (-13.42, 1.08, 9.31) (çekici kökü (-15.00, 0.46, 8.91))
+  hasta Tourist (Turist): kalça (-4.43, -8.13, 18.13)
+  hasta Civilian (Sivil): kalça (-3.57, -8.13, 18.13)
+  hasta Elder (Yaşlı): kalça (-1.20, -13.86, 19.14)
+  AmbulanceStop (27.74, -0.85, 2.60)
+[OK]   (i) ses: siren/motor/kapı/korna RMS > 0.01; siren ve motor spatialBlend 1, Doppler > 0 — RMS siren 0.412, motor 0.168, kapı 0.147, korna 0.169; siren 1/1, motor 1/1; siren klibi 1.20 sn (435/580 Hz × 0.6 sn)
+[OK]   (k) importer SM_Ambulance.fbx — scale=1, units=True, bakeAxis=False, rig=None, animation=False
+[OK]   (k) importer SM_Stretcher.fbx — scale=1, units=True, bakeAxis=False, rig=None, animation=False
+[OK]   (k) importer SK_Patient_Tourist.fbx — scale=1, units=True, bakeAxis=False, rig=Human, animation=False
+[OK]   (k) importer SK_Patient_Civilian.fbx — scale=1, units=True, bakeAxis=False, rig=Human, animation=False
+[OK]   (k) importer SK_Patient_Elder.fbx — scale=1, units=True, bakeAxis=False, rig=Human, animation=False
+[OK]   (k) importer Patient_LiePose.fbx — scale=1, units=True, bakeAxis=False, rig=Human, animation=True
+[OK]   (m) humanoid döngü klibi Patient_LiePose.fbx — source=SK_Patient_CivilianAvatar (UnityEngine.Avatar), clips=1, humanoid/loop=True/True
+[OK]   (k) importer Patient_LiePose_ArmSling.fbx — scale=1, units=True, bakeAxis=False, rig=Human, animation=True
+[OK]   (m) humanoid döngü klibi Patient_LiePose_ArmSling.fbx — source=SK_Patient_CivilianAvatar (UnityEngine.Avatar), clips=1, humanoid/loop=True/True
+[OK]   (k) gerçek FBX Ambulance — mesh=13, kaynak=Assets/Models/Vehicles/Ambulance/SM_Ambulance.fbx
+[OK]   (k) gerçek FBX Stretcher — mesh=1, kaynak=Assets/Models/Props/Stretcher/SM_Stretcher.fbx
+[OK]   (k) gerçek FBX Patient_Tourist — mesh=5, kaynak=Assets/Models/Characters/Patient/SK_Patient_Tourist.fbx
+[OK]   (m) Avatar/ragdoll Tourist — valid=True, human=True, ragdoll=11, hipsToBack=0,1390 m
+[OK]   (k) gerçek FBX Patient_Civilian — mesh=6, kaynak=Assets/Models/Characters/Patient/SK_Patient_Civilian.fbx
+[OK]   (m) Avatar/ragdoll Civilian — valid=True, human=True, ragdoll=11, hipsToBack=0,1410 m
+[OK]   (k) gerçek FBX Patient_Elder — mesh=5, kaynak=Assets/Models/Characters/Patient/SK_Patient_Elder.fbx
+[OK]   (m) Avatar/ragdoll Elder — valid=True, human=True, ragdoll=11, hipsToBack=0,1390 m
+[OK]   (l) renk M_Ambulance_Paint — beklenen=#DCDBDC, gerçek=#DCDBDC, ΔE76=0,00004
+[OK]   (l) renk M_Ambulance_Red — beklenen=#CF3533, gerçek=#CF3533, ΔE76=0,00001
+[OK]   (l) renk M_Stretcher_Canvas — beklenen=#D97836, gerçek=#D97836, ΔE76=0,00001
+[OK]   (k) ambulans camı şeffaf — alpha=0,30, queue=3000
+[OK]   (D2-f) ekipli ambulans: şoför ve hemşire Interior mesh'inde, 10348 üçgen (meta 10.348), koyu yeşil tulum — Interior malzemeleri 16, eksik: yok; tulum #1F4D3A (ΔE76 0,000)
+[OK]   Build Settings: Bölüm 1 etkin — Assets/Scenes/Bolum1_Ucurum.unity
+[OK]   (m) yatma çerçeveleri gerçek yatak/kanvas yüzeyinde — yatak=0,980 m, hata=0,00000 m; kanvas=0,112 m, hata=0,00000 m
+[OK]   (n) dışa açılma SM_Ambulance_Door_RL — açı=100,0°, dışa=0,4651 m, bounds giriş=0,0000 m, yükseklik=1,8560 m
+[OK]   (n) dışa açılma SM_Ambulance_Door_RR — açı=100,0°, dışa=0,4651 m, bounds giriş=0,0000 m, yükseklik=1,8560 m
+[OK]   (n) dışa açılma SM_Ambulance_Step_Rear — açı=90,0°, dışa=0,1300 m, bounds giriş=0,0000 m, yükseklik=0,0380 m
+PLAY: trafik kapalı (TrafficDirector.SuppressedForTests), hırsızlar kapalı (ThiefDirector.SuppressedForTests)
+  görüntü: Captures/Bolum1/hastalar_yakin.png
+[OK]   (m) LiePose Tourist / PatientAnchor — kalça=0,1387 m, hedef=0,1390 m, sırt-yüzey=-0,0045 m, baş dot=0,99995
+[OK]   (m) LiePose Tourist / PatientSlot_01 — kalça=0,1387 m, hedef=0,1390 m, sırt-yüzey=-0,0044 m, baş dot=0,99994
+[OK]   (m) LiePose Tourist / PatientSlot_02 — kalça=0,1387 m, hedef=0,1390 m, sırt-yüzey=-0,0043 m, baş dot=0,99994
+[OK]   (m) LiePose Civilian / PatientAnchor — kalça=0,1382 m, hedef=0,1410 m, sırt-yüzey=-0,0057 m, baş dot=1,00000
+[OK]   (m) LiePose Civilian / PatientSlot_01 — kalça=0,1381 m, hedef=0,1410 m, sırt-yüzey=-0,0057 m, baş dot=1,00000
+[OK]   (m) LiePose Civilian / PatientSlot_02 — kalça=0,1381 m, hedef=0,1410 m, sırt-yüzey=-0,0057 m, baş dot=1,00000
+[OK]   (m) LiePose Elder / PatientAnchor — kalça=0,1387 m, hedef=0,1390 m, sırt-yüzey=-0,0053 m, baş dot=1,00000
+[OK]   (m) LiePose Elder / PatientSlot_01 — kalça=0,1387 m, hedef=0,1390 m, sırt-yüzey=-0,0053 m, baş dot=1,00000
+[OK]   (m) LiePose Elder / PatientSlot_02 — kalça=0,1387 m, hedef=0,1390 m, sırt-yüzey=-0,0053 m, baş dot=1,00000
+[OK]   (c) gerçek tekerlek dönüş ekseni — yarıçap=0,4300 m, dönüş=10,660°, hata=0,00000°
+[OK]   (düzeltme 7) gerçek takvim 120/240 sn, bekleme 15 sn — 120,0119/240,0145 sn
+PLAY: takvim interval 30, wait 15, firstArrival 20 (geçici kopya; asset değişmedi), yolculuk süresi 7.02 sn, durak s 75.4 m
+  görüntü: Captures/Bolum1/ambulans_tasima.png
+[OK]   (e1) oyuncu + bot sedyeyi kaldırıyor; tek taşıyıcıyla kalkmıyor; hasta sedyeye alınıyor — sedyeye alma True; bot kapalı: kalktı mı False, uyarı "İki kişi gerekli", ipuçları "E: Sedyeyi tut" / "E: Bırak"; bot açık: kalktı True, taşıyıcı arası 2.320 m, PatientAnchor oyuncu tabanından 0.647 m yukarıda; 2.5 sn yürüyüş sonrası el arası 1.940 m (sap aralığı 1.940 m)
+[OK]   (g) düşme: tek uç bırakılınca hasta 1 sn içinde Ragdoll ve PatientAnchor'dan ≥ 0.3 m; iki uç birlikte bırakılınca OnStretcher — tek uç: 1.00 sn sonra durum Ragdoll, anchor uzaklığı 0.544 m, sedye eğik (bir uç yerde); ragdoll'dan tekrar sedyeye True; birlikte bırakma: kalkmıştı True, sonra OnStretcher
+  görüntü: Captures/Bolum1/ambulans_durak.png
+  görüntü: Captures/Bolum1/d2_ambulans_ekip.png
+[OK]   (e2) LoadPoint'te hasta PatientSlot_01'e, ikinci PatientSlot_02'ye geçiyor; 3. hasta reddediliyor ("Ambulans dolu") — Turist → PatientSlot_01, Sivil → PatientSlot_02, Yaşlı → OnStretcher (uyarı "Ambulans dolu", ambulansta 2)
+  HUD: sayaç "Ambulans: 0:13", telsiz "Telsiz: Ambulans rampa başına yaklaşıyor!", ipucu ""; göstergeler Turist gizli 0/3, Sivil gizli 0/3, Yaşlı görünür 1/3
+  görüntü: Captures/Bolum1/ambulans_hud.png
+[OK]   (b) zamanlama: ilk iki varış ±0.5 sn, durma noktası AmbulanceStop'a ≤ 0.3 m, bekleme 15 ± 0.2 sn, TrafficDespawn_East'te kayboluyor — varış 1 20.00 sn (plan 20), varış 2 50.00 sn (plan 50); durak hatası 2.9 cm / 2.8 cm; bekleme 15.00 sn / 15.00 sn; yaklaşırken yavaşlama kare 0/0; kaybolma noktası TrafficDespawn_East'e 0.213 m, içindeki hastalar Rescued True
+[OK]   (c) şerit takibi: yanal sapma ≤ 0.05 m; duraktayken 4 tekerlek altı yol yüzeyine ±5 cm — en büyük yanal sapma 0.7 cm; tekerlek tabanı − yol: FL -0.1 cm, FR 0.0 cm, RL 0.0 cm, RR -0.1 cm
+[OK]   (d) duraktayken kapılar 100° ± 2°, basamak 90° ± 2°; kalkıştan önce kapalı — RL 100.0°, RR 100.0°, basamak 90.0°; son 0.15 sn'de en büyük açı 0.0°
+[OK]   (h) öncelik: koni itiliyor, hız durak dışında hiç 0 olmuyor; şeritteki oyuncu için hız ≤ %40 ama > 0, korna çalıyor — koni itilip uçurumdan düştü (yok oldu); durak dışı en düşük hız 1.92 m/sn (0 olan kare 0); oyuncu önündeyken 3220 kare, en düşük hız 4.80 m/sn (sınır 4.80), korna isPlaying 2064 kare, PlayHorn 2 kez; temas: kontrol kaybı True, itildikten sonra şerit merkezine 2.535 m (şerit yarı genişliği 2.000 m)
+[OK]   (f1) kaçırma: dolu olduğu için binemeyen hastanın sayacı artıyor; 3 ambulans ayrılınca MissionFailed — Yaşlı sayacı 1. kalkış sonrası 1, 2. sonrası 2, 3. sonrası 3; diğerleri 0 kaldı True; MissionFailed(Yaşlı); HUD "Görev başarısız: Yaşlı 3 ambulansı kaçırdı | R: Yeniden başlat"
+[OK]   (f2 / D2-d) R yeniden başlatıyor (hastalar minibüste ve kayada); gerçek akışla (çekme, halat, sırtta taşıma, sedye) 3 hasta yüklenince MissionSucceeded — yeniden başlatma sonrası başlangıç yerleşimi ve sayaçlar True; minibüsten çekildi True, ambulans 1'e yüklendi True; Yaşlı halatla yukarıda True (sayaç 1); MissionSucceeded True; HUD "Hastaların hepsi ambulansta! | R: Yeniden başlat"
+[OK]   (a) log'da C# derleme hatası yok — log: C:/Users/W11/AppData/Local/Temp/claude/C--Users-W11-Desktop-Center/f4866956-97fc-49d9-8789-cc6a2aaed403/scratchpad/suite/Bolum1AmbulanceVerify-Run.log
+AMBULANCE VERIFY OK

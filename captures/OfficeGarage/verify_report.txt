@@ -1,0 +1,26 @@
+OFFICEGARAGE VERIFY 2026-11-03 04:14:19
+[OK]   (a) sahne: tek ThirdPersonPlayer, tek PlayerInteractor ve o CompanyPlayerBridge (aynı nesnede), arkadaşın FPS oyuncusu yok — ThirdPersonPlayer 1, PlayerInteractor 1 (CompanyPlayerBridge), köprü 1
+[OK]   (b) ana kamerada OrbitCamera hedefi oyuncu; ComputerUI.player köprü — OrbitCamera True, ComputerUI.player CompanyPlayerBridge
+[OK]   (c) oyuncu kurulumu Bölüm 1 ile aynı (bileşenler tam, ölçek 1, CharacterController 1.5 m, fırlatma ayarı var) — eksik: yok, ölçek (1.00, 1.00, 1.00), CC boy 1.50, ThiefSettings True
+[OK]   (1) çalışma zamanı: tek oyuncu (ThirdPersonPlayer), PlayerInteractor olarak yalnız köprü, Humanoid Animator, üçüncü şahıs başlangıç, kontrol var — PlayerInteractor 1, mod ThirdPerson, kilit False, konum (-2.80, -0.01, -1.35)
+  görüntü: Captures/OfficeGarage/og_ucuncu_sahis.png (kamera (-2.80, 1.90, -4.83))
+  görüntü: Captures/OfficeGarage/og_birinci_sahis.png (kamera (-2.79, 1.09, -1.22))
+[OK]   (2) V ile görünüm: FP'de baş gizli ve gövde kameraya dönük, tekrar V ile TP (baş görünür) — FP True, mod değişimi 2, son mod ThirdPerson
+[OK]   (3a) bilgisayara E: hedef OfficeComputer, UI açıldı, girdi kilidi (köprü + okuyucu); W basılıyken hareket yok, fare kamerayı döndürmez, sol tık saldırı yapmaz — hedef True, etkileşim 1, açık True, kilit True/True, hareket 0.00 m, yaw 0.00°, saldırı 0, imleç batchmode (ayarlanmaz)
+[OK]   (3b) Esc ile kapanınca hareket ve kamera geri gelir (S ile ≥ 0.3 m, fare ile ≥ 2°) — kapalı True, hareket 0.42 m, yaw 4.8°
+[OK]   (4a) alet çantası: hedeflenir, E ile ele alınır (köprü HeldItem, oyuncu HeldProp, eşya karakterin altında), tek el taşıma pozu (Carry 2) — hedef True, elde True, Carry 2, yer (1.08, 0.78, 2.56)
+  hedef uyuşmadı: ModuleConnector istendi, ModuleBolt_1 bulundu (konum (4.90, 0.00, 3.70), hedef merkezi (4.74, 2.16, 3.11), boyut (0.12, 0.12, 0.10), eğim -54.3°); ışın: köken (4.90, 1.30, 3.70) → ExteriorModuleCarrier 0.83; ModuleConnector 0.98
+  hedef uyuşmadı: ModuleConnector istendi, ModuleBolt_1 bulundu (konum (4.90, 0.01, 3.70), hedef merkezi (4.74, 2.16, 3.11), boyut (0.12, 0.12, 0.10), eğim -54.3°); ışın: köken (4.90, 1.31, 3.70) → ExteriorModuleCarrier 0.83; ModuleConnector 0.98
+[OK]   (4b) modül cıvatası: bağlantıyı E ile ayır, cıvata 1'i E basılı tutarak sök ve tekrar sık (kısa basış sıkmaz), bağlantıyı tak → modül yine sabit — başta sabit True, çalışılabilir True , bağlantı hedefi True, cıvata hedefi True, ayrıldı True, cıvata 15→14→14→15, sonda sabit True
+[OK]   (5) minibüs yük yuvası: arka kapılar açık, araç hedeflenir ("E — Ekipmanı araca sabitle"), E ile alet çantası yuvaya yüklenir (Loaded, yuva ≥ 0, el boş), E ile geri alınır — kapılar True, hedef True, yüklendi True, geri alındı True, Carry 2
+[OK]   (6) fırlatma: sağ tık nişan (Throw_Aim, Carry 2), bırakınca eşya elden çıkıp uçar (kinematik değil, ebeveynsiz), sert çarpmada (≥ 4.0 m/sn) dayanıklılık 4 düşer, eşya durur — nişan True, uçuş True, hız 12.0 m/sn, çarpma hızı 12.0, dayanıklılık 100.0→96.0, yay alçak, son yer (6.47, 0.00, -5.94)
+[OK]   (7) E al / bırak: eşya tekrar alınır, F ve R bir şey yapmaz, hedef yokken E bırakır — alındı True, F/R yok sayıldı True, hedef yok, bırakıldı True
+  ölçek: CharacterController boy 1.50 m, baş kemiği zeminden 1.03 m, kamera pivotu 1.30 m (arkadaşın FPS gözü 1.57 m, kapsül 1.72 m)
+  ölçek: ofis kapısı OfficeDoor_A11 kanat 2.08 m yüksek, 0.88 m geniş (kapsül çapı 0.50)
+  ölçek: ofis kapısı OfficeDoor_A13 kanat 2.13 m yüksek, 0.92 m geniş (kapsül çapı 0.50)
+  ölçek: bilgisayar collider merkezi zeminden 1.10 m (etkileşim ışını pivot 1.30 m'den)
+  ölçek: tezgâh Garage_RepairWorkbench_01 üst yüzey 1.75 m
+  ölçek: lift düğmesi LiftLowerTarget yükseklik 1.42 m
+  ölçek: lift düğmesi LiftRaiseTarget yükseklik 1.56 m
+  test kaydı silindi (önceden kayıt yoktu)
+OFFICEGARAGE VERIFY OK

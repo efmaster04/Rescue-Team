@@ -1,0 +1,621 @@
+VBCSCompilerPreWarmer: watching VBCSCompiler (PID 35464)
+VBCSCompilerPreWarmer: pre-warm launched (dotnet PID 16628)
+VBCSCompiler prewarm took 13.54 ms
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.6/staging' branch; Version is '6000.6.3f1 (45d8eee7de74) revision 4577518'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Professional' Language: 'tr' Physical Memory: 31801 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+[Licensing::IpcConnector] Channel LicenseClient-W11 doesn't exist
+Process architecture: x64
+Date: 2026-10-13T02:01:47Z
+[Licensing::Module] Successfully launched the LicensingClient (PId: 11624)
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Unity.exe
+-batchmode
+-projectPath
+C:/Users/W11/Desktop/RescueTeam
+-executeMethod
+Bolum1ColorProbe.Run
+-renkTag
+sonra
+-logFile
+C:/Users/W11/Desktop/RescueTeam/Captures/Bolum1/log_renk_sonra.txt
+Successfully changed project path to: C:/Users/W11/Desktop/RescueTeam
+C:/Users/W11/Desktop/RescueTeam
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-main-allocator-mimalloc-enabled=1"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Logging is directed to a specific file, skipping project log.
+Player connection [15464]  Target information:
+
+Player connection [15464]  * "[IP] 100.76.124.122 [Port] 55504 [Flags] 2 [Guid] 665654006 [EditorId] 665654006 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-MFHRDIK) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [15464]  * "[IP] 192.168.1.31 [Port] 55504 [Flags] 2 [Guid] 665654006 [EditorId] 665654006 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-MFHRDIK) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [15464] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [15464] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Starting IPC server.
+Waiting for clients to connect on \\.\pipe\Unity-LicenseClient-W11, press Ctrl-C to exit.
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-W11" at "2026-10-13T02:01:47.985044Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 11624, path: "C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              09baa2366de8462db7071172b1e3d719
+  Correlation Id:          c183767086b6be48c756840577a954b6
+  External correlation Id: 5268319605271047348
+  Machine Id:              PJ3K0TBBM8hEnCGCl4Z8/w1zl10=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-W11" (connect: 0.24s, validation: 0.04s, handshake: 0.03s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-W11-notifications" at "2026-10-13T02:01:48.0476795Z"
+[Licensing::Module] Connected to LicensingClient (PId: 11624, launch time: 0.00, total connection time: 0.31s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Package Manager] Connected to IPC stream "Upm-36776" after 0.2 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 18968021863883-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.33s
+[Licensing::Module] Licensing is initialized (took 0.02s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+Initialising UDS system complete:
+  - System type: Client
+  - Resource namespace: 9bee4929ffdf81fa5f8a06360afc94f1
+  - Shared memory size: 1073741824
+  - Command buffer id: 1052576
+  - Command buffer size: 8192
+  - Hashmap size: 4194304
+  - Service connected: false
+Launching Unity Data Store - C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Tools/Unity.DataStore.exe 
+Unity Data Store artifact dir = Library/DataStore, working dir = C:/Users/W11/Desktop/RescueTeamUnity Data Store running and initialised
+[Physics::Module] Selected backend (deferred post-plugins).
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Initialize engine version: 6000.6.3f1 (45d8eee7de74)
+[EntityIdStore] init: VM path (explicit commit), pageSize=4096, blockCount=1048576, entitiesPerBlock=256, slots reserved=4294967296 bytes
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/W11/Desktop/RescueTeam/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 5080 (ID=0x2c02)
+    Vendor:   NVIDIA
+    VRAM:     15977 MB
+    Driver:   32.0.15.9186
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/BCLExtensions/runtime/netstandard2.1'
+Mono path[2] = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56776
+CodeReloadManager initialized
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001241 seconds.
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Scripting: successfully reloaded assembly
+- Finished resetting the current domain, in  0.499 seconds
+Domain Reload Profiling: 928ms
+	BeginReloadAssembly (113ms)
+		CreateAndSetChildDomain (18ms)
+	RebuildCommonClasses (5ms)
+	RebuildNativeTypeToScriptingClass (19ms)
+	initialDomainReloadingComplete (51ms)
+	LoadAllAssembliesAndSetupDomain (240ms)
+		LoadAssemblies (94ms)
+		TypeCache.Refresh (162ms)
+			TypeCache.ScanAssembly (152ms)
+		AnalyzeDomain (0ms)
+	FinalizeReload (501ms)
+		SetupLoadedEditorAssemblies (0ms)
+			BeforeProcessingInitializeOnLoad (76ms)
+			ProcessInitializeOnLoadAttributes (99ms)
+			ProcessInitializeOnLoadMethodAttributes (159ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 69 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.assistant@2.20.0-pre.2 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ai.assistant@1b11b9bfd84a)
+    com.unity.ai.inference@2.6.1 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ai.inference@9a123aee5df7)
+    com.unity.ai.navigation@2.0.14 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.cloud.gltfast@6.14.1 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.cloud.gltfast@0847aee0f6da)
+    com.unity.collab-proxy@2.13.6 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.38 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ide.rider@1f60b3138684)
+    com.unity.ide.visualstudio@2.0.26 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.20.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.inputsystem@7a4e1a2a8194)
+    com.unity.probuilder@6.1.2 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.probuilder@8be9724b2335)
+    com.unity.visualscripting@1.9.12 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.visualscripting@4edfcc09512f)
+    com.unity.settings-manager@2.1.1 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.settings-manager@0b8638c5ce86)
+    com.unity.dt.app-ui@2.1.11 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.dt.app-ui@cd5609b130ce)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.searcher@4.9.5 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.searcher@a463122f2c00)
+    com.unity.profiling.core@1.0.3 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.profiling.core@8a49f7027d06)
+  Built-in packages:
+    com.unity.render-pipelines.universal@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.render-pipelines.universal@327d93d1cbc8)
+    com.unity.test-framework@1.8.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.test-framework@80f691d4262b)
+    com.unity.timeline@6.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.timeline@c56d56b0070b)
+    com.unity.ugui@2.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ugui@0727b404f3a0)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.physicscore2d@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.physicscore2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tetgen@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.tetgen)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.timelinefoundation@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.timelinefoundation)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.1.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ext.nunit@0198eae3b53e)
+    com.unity.render-pipelines.core@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.render-pipelines.core@02d75770e4b3)
+    com.unity.shadergraph@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.shadergraph@1dd0fd24b57e)
+    com.unity.render-pipelines.universal-config@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.render-pipelines.universal-config@561422b74439)
+    com.unity.burst@2.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.burst@626e66ab421b)
+    com.unity.collections@6.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.collections@10fff0607388)
+    com.unity.mathematics@1.4.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.mathematics@8306a64d0cd6)
+    com.unity.2d.sprite@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.2d.sprite@26bcb5e737a2)
+    com.unity.graph-authoring@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.graph-authoring@cfd2588851ee)
+    com.unity.test-framework.performance@6.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.test-framework.performance@b6023decb532)
+  Git packages:
+    com.coplaydev.unity-mcp@https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.3.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.coplaydev.unity-mcp@da7b9ae4aeeb)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+[ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
+Refreshing native plugins compatible for Editor in 2.10 ms, found 5 plugins.
+Starting: C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/W11/Desktop/RescueTeam
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\Facades\System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\NetStandard\Extensions\2.0.0\System.Runtime.InteropServices.WindowsRuntime.dll"
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\System.ComponentModel.Composition.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.ComponentModel.Composition.dll"
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 1s90ms
+[1345/1785  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1781/1785  0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+[1782/1785  0s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 148 defines and 412 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+1 processor(s) skipped this assembly
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+[1783/1785  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[1784/1785  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (1.07 seconds), 5 items updated, 1785 evaluated
+AssetDatabase: script compilation time: 1.592919s
+Total cache size 268095936
+Begin MonoManager ReloadAssembly
+Total cache size after purge 268095936, took 00:00:00.1817954
+Symbol file LoadedFromMemory is not a mono symbol file
+Symbol file LoadedFromMemory is not a mono symbol file
+'Packages/com.unity.render-pipelines.core/Editor/Deprecated.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+'Packages/com.unity.render-pipelines.core/Editor/Deprecated.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+Refreshing native plugins compatible for Editor in 2.54 ms, found 5 plugins.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 2.28 ms, found 5 plugins.
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-RescueTeam
+[Licensing::Client] Error: Code 404 while processing request (status: Found 0 entitlement groups and 0 free entitlements matching requested entitlement ids)
+[Licensing::Client] Error: Code 404 while processing request (status: Found 0 entitlement groups and 0 free entitlements matching requested entitlement ids)
+[Licensing::Client] Error: Code 404 while processing request (status: Found 0 entitlement groups and 0 free entitlements matching requested entitlement ids)
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Scripting: successfully reloaded assembly
+- Finished resetting the current domain, in  1.734 seconds
+Domain Reload Profiling: 2789ms
+	BeginReloadAssembly (189ms)
+		DisableScriptedObjects (19ms)
+		CreateAndSetChildDomain (41ms)
+	RebuildCommonClasses (12ms)
+	RebuildNativeTypeToScriptingClass (15ms)
+	initialDomainReloadingComplete (71ms)
+	LoadAllAssembliesAndSetupDomain (768ms)
+		LoadAssemblies (332ms)
+		TypeCache.Refresh (288ms)
+			TypeCache.ScanAssembly (272ms)
+		AnalyzeDomain (90ms)
+			BuildScriptInfoCaches (82ms)
+			ResolveRequiredComponents (7ms)
+	FinalizeReload (1735ms)
+		SetupLoadedEditorAssemblies (0ms)
+			BeforeProcessingInitializeOnLoad (112ms)
+			ProcessInitializeOnLoadAttributes (857ms)
+			ProcessInitializeOnLoadMethodAttributes (413ms)
+			AfterProcessingInitializeOnLoad (5ms)
+		AwakeInstancesAfterBackupRestoration (23ms)
+Starting new worker id: 0 with log in C:/Users/W11/Desktop/RescueTeam/Logs/AssetImportWorkerHW0.log
+Importing 'GUID: 20be25aac4e22ee49a7db76fb3df6de2 - Path: Packages/com.unity.render-pipelines.core/Runtime/Debug/ProbeSamplingDebugMesh.fbx' with importer (FBXImporter)
+Imported 'GUID: 20be25aac4e22ee49a7db76fb3df6de2' -> (Import Result ID: 'da7bede32a20dd682bc0cc1ab0ec83a0') in 0.023 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=ea25454d5293d18b923e9d5bc85f0255 DependenciesID=6d2608f8e44f15b97a9fa1d1acd8db97 StaticDependenciesID=b9a87ea97665cf2465371e1453f38905 
+Importing 'GUID: b048fa4ca6297e84e9923ade2c8b316b - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Chevron_East_2.fbx' with importer (FBXImporter)
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Imported 'GUID: b048fa4ca6297e84e9923ade2c8b316b' -> (Import Result ID: '36585a700d383838cb109c5705c6eeeb') in 0.054 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=7c8606383f60be2d570fe799fe97a737 DependenciesID=5d9021728d7bd15df31f194066b25bbe StaticDependenciesID=2c8cd6ecbd0635b1480fb44dfc6d7dc6 
+Importing 'GUID: d047a1dff7642144b951985479e5e71e - Path: Assets/Models/Characters/RescueCrew/SK_RescueCrew_Blue.fbx' with importer (FBXImporter)
+Rig Error:  Avatar Rig Configuration mis-match. Bone length in configuration does not match position in animation file:
+	'mixamorig:LeftFoot' : position error = 91.126770 mm
+	'mixamorig:LeftToeBase' : position error = 90.672462 mm
+	'mixamorig:RightFoot' : position error = 91.126770 mm
+	'mixamorig:RightToeBase' : position error = 90.672462 mm
+Imported 'GUID: d047a1dff7642144b951985479e5e71e' -> (Import Result ID: '6f2c048047d0b03ae11d635320c4ebc0') in 0.048 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=28d9bf208fbe0bebee3bdd1c72b9f214 DependenciesID=1b546c5754274f30ed97c226e3a32300 StaticDependenciesID=9c607ba7f7d4abc58ea416b957809cc9 
+Importing 'GUID: f0b91c158e287824893d66b98f1cc62f - Path: Assets/Animations/RescueCrew/Candidates/Run_GoofyRunning.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 59.000000%;
+Imported 'GUID: f0b91c158e287824893d66b98f1cc62f' -> (Import Result ID: 'ccdcc4d7deb22391283d2405b55a70ff') in 0.033 seconds [static dependencies only]. Details - ImportResultOutputID=90b734f5bb2e160f0906457da72cdf1b DependenciesID=84d7ccba835b4e10315007ddab20343b StaticDependenciesID=2f38f0ca1faa806018b37b055195625c 
+Importing 'GUID: 21cffc3b6b097c14b97a2aadbd57ee34 - Path: Assets/Models/Characters/RescueCrew/SK_RescueCrew_Yellow.fbx' with importer (FBXImporter)
+Rig Error:  Avatar Rig Configuration mis-match. Bone length in configuration does not match position in animation file:
+	'mixamorig:LeftFoot' : position error = 91.126770 mm
+	'mixamorig:LeftToeBase' : position error = 90.672462 mm
+	'mixamorig:RightFoot' : position error = 91.126770 mm
+	'mixamorig:RightToeBase' : position error = 90.672462 mm
+Imported 'GUID: 21cffc3b6b097c14b97a2aadbd57ee34' -> (Import Result ID: 'cdb1a4c93026ae9e0b5c2787a47255a9') in 0.049 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=812e6cf8cc0262435339c9b1bc0349db DependenciesID=74b6db1b78047f54bcb3bba310d31bb7 StaticDependenciesID=5b26319edab14cb241bdfca8afbe4951 
+Importing 'GUID: 41dc3940a9ddb624abd6b5544656e454 - Path: Assets/Models/Environment/Bolum1/SM_B1_Backdrop.fbx' with importer (FBXImporter)
+Imported 'GUID: 41dc3940a9ddb624abd6b5544656e454' -> (Import Result ID: 'dd6042d433fee44ea9cd732877c7e7d7') in 0.030 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=f2c6738801cf2a0de8210f282ef6213d DependenciesID=835598ec3169d427d1e187f2a02eee10 StaticDependenciesID=9bca947bab35af7c85552035fea8967b 
+Importing 'GUID: 02bea6b48aa8b5945a652c6a4fb490b8 - Path: Assets/Animations/RescueCrew/Mixamo_Walking.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 55.477856%;
+Imported 'GUID: 02bea6b48aa8b5945a652c6a4fb490b8' -> (Import Result ID: '0f0bb1df3c397aa7eace2f8ce395e9af') in 0.039 seconds [static dependencies only]. Details - ImportResultOutputID=5f6b989dd1bafeb59ac3f2cd5cef116f DependenciesID=c3324de8449ae32d6475d360008c734a StaticDependenciesID=d9a5861f8c7dc2b04c83a95bf072627d 
+Importing 'GUID: b28fa67a0ff82c5478f27368dc627683 - Path: Packages/com.unity.render-pipelines.core/Runtime/RenderPipelineResources/Mesh/SamplesFixture.fbx' with importer (FBXImporter)
+Imported 'GUID: b28fa67a0ff82c5478f27368dc627683' -> (Import Result ID: '199d6b598c8254d376950f79806e8f5e') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=35045d50a88bec301b8f5cbe27ef03f7 DependenciesID=02588bc65b44beb3419ae16844e566fa StaticDependenciesID=09bc8fa26c613e1fcd2bb75bf3cd4b5c 
+Importing 'GUID: 03363ac0b708efe4680c3ebe0a509376 - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Chevron_West_2.fbx' with importer (FBXImporter)
+Imported 'GUID: 03363ac0b708efe4680c3ebe0a509376' -> (Import Result ID: '6ae39687af8054a5d616863c2031b43b') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b25f59e7e0f9705bb559c771cef3fd57 DependenciesID=475b4e75e2450d20cf0fa198a322785c StaticDependenciesID=4a9ebbcdefb0eae3803753b26649f663 
+Importing 'GUID: 335e45d36efbe9b47bef267ad4352648 - Path: Assets/Models/Environment/Bolum1/SM_B1_Guardrail.fbx' with importer (FBXImporter)
+Imported 'GUID: 335e45d36efbe9b47bef267ad4352648' -> (Import Result ID: '08e9f2cae44f4fb06c265656d6b3c0ef') in 0.016 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=10aa585dc07f89790b723b031ea218e7 DependenciesID=7d69992a7fa88bad3af75b99836c1c2b StaticDependenciesID=c9f9bf31e14b764c6b173bc4bb661bc9 
+Importing 'GUID: 8338b6723e3e08749aba60d843128ce4 - Path: Assets/Animations/RescueCrew/Mixamo_Waving.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 46.470585%;
+Imported 'GUID: 8338b6723e3e08749aba60d843128ce4' -> (Import Result ID: 'd2c2cbbb76be705623f98207f38a4561') in 0.032 seconds [static dependencies only]. Details - ImportResultOutputID=113f450cbc5b8c5bc6d5e316b1271f58 DependenciesID=2bf8689de1e7924adf48b929d039472a StaticDependenciesID=6aea2120a55ff0dbae17d39b93c8e155 
+Importing 'GUID: b3580a1917374b3da576c45252319e0c - Path: Packages/com.unity.ai.assistant/Modules/Unity.AI.Animate/Motion/Runtime/Prefabs/Actors/biped_v1/Biped_Humanoid.fbx' with importer (FBXImporter)
+Imported 'GUID: b3580a1917374b3da576c45252319e0c' -> (Import Result ID: '03695ab29f8e6695a62ab45e8a7e91ce') in 0.095 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=3b059a15d8c098a4c31035f3ba79ed64 DependenciesID=a15426c52d0a91cbfc7a50814dac33e7 StaticDependenciesID=35fe555ded28f1d463f52fdc57350b75 
+Importing 'GUID: c3f8bba2c6186ec4f908bffef48ad304 - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Bag_04.fbx' with importer (FBXImporter)
+Imported 'GUID: c3f8bba2c6186ec4f908bffef48ad304' -> (Import Result ID: 'efeb43544da5b5c713eff3d5e255007c') in 0.017 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=d2cc5e03acc0ca242409a6b87129ad9e DependenciesID=4d4422e69653085b605ae1eea6376aa9 StaticDependenciesID=f66e6a29b7fc93cea5762e2a9f21abc9 
+Importing 'GUID: 74afbdbd6a4d48845baeb3e052cf53fb - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_08.fbx' with importer (FBXImporter)
+Imported 'GUID: 74afbdbd6a4d48845baeb3e052cf53fb' -> (Import Result ID: '92a6b16a84acf08c3bdc6b2ef538b3fe') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=46a4c7bb8b66f3dc68a26675ae86924c DependenciesID=dd60aa91ed3c26cdf1f6a06bff98cd72 StaticDependenciesID=cc882487c1ef88af5e523790d134fefe 
+Importing 'GUID: 847377fb391d20c4e85f731624511fc4 - Path: Assets/Models/Vehicles/Minivan/SM_Minivan.fbx' with importer (FBXImporter)
+Imported 'GUID: 847377fb391d20c4e85f731624511fc4' -> (Import Result ID: 'fccb39cdf6e81d9655050f167529aff2') in 0.022 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=43d2f88b09e6abe86ebfff3e2fc8d14c DependenciesID=74f2ff01e10870a3fd4da21e931ab7f4 StaticDependenciesID=c39f99c5e8b47c853020c788373017e1 
+Importing 'GUID: e49be4a254967eb4397d084d835d48bd - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_03.fbx' with importer (FBXImporter)
+Imported 'GUID: e49be4a254967eb4397d084d835d48bd' -> (Import Result ID: '045e7ac91aa3c6426f6352125a392ca3') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b9d8dd749b2efcd4756ae21731faa61c DependenciesID=d0612920709aef55aefb83df60a4335a StaticDependenciesID=c7bb2f9e257d8f6232bd13a41ef66b75 
+Importing 'GUID: 65a75f2b030a37f44a328ebc2496fbce - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_02.fbx' with importer (FBXImporter)
+Imported 'GUID: 65a75f2b030a37f44a328ebc2496fbce' -> (Import Result ID: '96884f85a936a95972e5da324477bb68') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=7b8dbea26769835a4630127d375baf3d DependenciesID=9933f7d798578a9d9456a22bf688815d StaticDependenciesID=eca4e2779043090baf377994ef34db23 
+Importing 'GUID: 95f0641aa8286b349b7968482f7ef49d - Path: Assets/Animations/RescueCrew/Candidates/Walk_SneakWalk.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 36.510990%;
+Imported 'GUID: 95f0641aa8286b349b7968482f7ef49d' -> (Import Result ID: 'aa41596907d0c1db44936a34ba5b4fb6') in 0.034 seconds [static dependencies only]. Details - ImportResultOutputID=d50a959cc10b619da78ea2efefaef7bc DependenciesID=d9ec80e4510952510b50710da22c4588 StaticDependenciesID=d95d2294fd97432d0074d04e8585d4e5 
+Importing 'GUID: b5f16261e73b725489408af6a85cebe6 - Path: Assets/Animations/RescueCrew/Candidates/Walk_StrutWalking.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 31.066431%;
+Imported 'GUID: b5f16261e73b725489408af6a85cebe6' -> (Import Result ID: 'afc993cbb8e212af252facf08a6b8f66') in 0.040 seconds [static dependencies only]. Details - ImportResultOutputID=d502717ccea11d4c496e1ced8383d011 DependenciesID=a6ab7d5f234225707a73db779785989f StaticDependenciesID=1b8bef17f88e6400e49e2ba888ec4537 
+Importing 'GUID: f5214abfd79104941abd08c94ea1d8fe - Path: Assets/Animations/RescueCrew/Candidates/Run_SlowRun.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 66.220741%;
+Imported 'GUID: f5214abfd79104941abd08c94ea1d8fe' -> (Import Result ID: '55394b2f20e32cfe4694968a271803b5') in 0.034 seconds [static dependencies only]. Details - ImportResultOutputID=8a96cb52b08e89a2581d1c4da96d19c7 DependenciesID=93a11ff3e93f7e8283676475541c29bc StaticDependenciesID=6804ad346d6dd29bce708bd19cf6a31a 
+Importing 'GUID: 36870ad100ff4eaabccec1d39dafbe63 - Path: Packages/com.unity.ai.assistant/Modules/Unity.AI.Animate/Motion/Runtime/Prefabs/Actors/biped_v0/Biped_Humanoid.fbx' with importer (FBXImporter)
+Imported 'GUID: 36870ad100ff4eaabccec1d39dafbe63' -> (Import Result ID: 'b1646345a14b04dec1b5f397c38f4693') in 0.032 seconds [static dependencies only]. Details - ImportResultOutputID=8c4c48e36d93c8310010c47f215eb8c8 DependenciesID=20e26e72b773c3d1588b86fc41707e5b StaticDependenciesID=77c22890d5b9901d6531882ab813f177 
+Importing 'GUID: 367de73dc205366439c21cd2fbff7ace - Path: Assets/Models/Characters/RescueCrew/SK_RescueCrew_Green.fbx' with importer (FBXImporter)
+Rig Error:  Avatar Rig Configuration mis-match. Bone length in configuration does not match position in animation file:
+	'mixamorig:LeftFoot' : position error = 91.126770 mm
+	'mixamorig:LeftToeBase' : position error = 90.672462 mm
+	'mixamorig:RightFoot' : position error = 91.126770 mm
+	'mixamorig:RightToeBase' : position error = 90.672462 mm
+Imported 'GUID: 367de73dc205366439c21cd2fbff7ace' -> (Import Result ID: '16cc20c6c421e11eba60ddc99d1505c8') in 0.042 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=c4a623df108e5d8249d9bde11c83f156 DependenciesID=87ca45892d058b17557d31b04dbbcc5a StaticDependenciesID=2282a4a36676704e6f78946aeab99e94 
+Importing 'GUID: 078d04f169948814eb5afaa4fce767ac - Path: Assets/Models/Environment/Bolum1/SM_B1_Ground.fbx' with importer (FBXImporter)
+Imported 'GUID: 078d04f169948814eb5afaa4fce767ac' -> (Import Result ID: '5080175d04eff697f039b50683fcb855') in 0.029 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=1aad2672ac12e2f60ea431f62183c203 DependenciesID=cd7fadcd963ae81152392407fe904903 StaticDependenciesID=a0e58bffbcaac945c1a43951beac7ab8 
+Importing 'GUID: 171d81fc0865e40459887ea3c04c168e - Path: Assets/Animations/RescueCrew/Mixamo_Running.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 74.000000%;
+Imported 'GUID: 171d81fc0865e40459887ea3c04c168e' -> (Import Result ID: '4e5099128b1d71e95c0cce7407db876c') in 0.033 seconds [static dependencies only]. Details - ImportResultOutputID=53c15ae93f43c46fdc07ee59b1ce9eea DependenciesID=d7d54b5190bb6c662559ff363e423ace StaticDependenciesID=1488ade7ef08e5d30de1a815235d971e 
+Importing 'GUID: a7c5efcd4325ad7409c102dc27b46990 - Path: Assets/Animations/RescueCrew/Candidates/Walk_Walking_MaleHappyWalk.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 37.119862%;
+Imported 'GUID: a7c5efcd4325ad7409c102dc27b46990' -> (Import Result ID: 'a53c6ca1b40815c1b5edeb0273b892e7') in 0.035 seconds [static dependencies only]. Details - ImportResultOutputID=71799267419f1a87c8526b653c0768d5 DependenciesID=ed453e3d675f204eb341b560b8a424a2 StaticDependenciesID=32e9af83336f12c66e6083351c3e3d97 
+Importing 'GUID: f7a7f5e913f8081449a1c1a0dc8c070d - Path: Assets/Animations/RescueCrew/Candidates/Run_DrunkRunForward.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 56.950550%;
+Imported 'GUID: f7a7f5e913f8081449a1c1a0dc8c070d' -> (Import Result ID: '474f481220d59f09a92ed77a1bde9776') in 0.038 seconds [static dependencies only]. Details - ImportResultOutputID=e13f66dc41616558e00f3537e46f2704 DependenciesID=4ed8db4df1d3fa9c26b7f95aef6c2f21 StaticDependenciesID=4b9d3c5a0acfe641ed9177b6b9137d8e 
+Importing 'GUID: 18c8f54c92d9ee043ba5edbb26aec093 - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Suitcase_01.fbx' with importer (FBXImporter)
+Imported 'GUID: 18c8f54c92d9ee043ba5edbb26aec093' -> (Import Result ID: 'cd603bf7df7f261f6a0483a44ae2c3aa') in 0.011 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=1441894e322c3af4ac86ba053465e8ea DependenciesID=2b9abd45547a6454ca3ce93f04c2027d StaticDependenciesID=f7106d8de4908367e5c431124f054267 
+Importing 'GUID: 586c5dd4d4a07464d949e4d3569d5b36 - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Chevron_West_1.fbx' with importer (FBXImporter)
+Imported 'GUID: 586c5dd4d4a07464d949e4d3569d5b36' -> (Import Result ID: 'ce420db777609de42b5bdad8cc655549') in 0.011 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=436ab9dc7d7f205db1d0537ed558b688 DependenciesID=58bd7b0f4fb6aa0b844026bb60680652 StaticDependenciesID=6b7ddf93ef28dc676ec18961332a681a 
+Importing 'GUID: b85e5c0bfa912ad43a4eb561e8f59322 - Path: Assets/Models/Characters/RescueCrew/SK_RescueCrew_Orange.fbx' with importer (FBXImporter)
+Rig Error:  Avatar Rig Configuration mis-match. Bone length in configuration does not match position in animation file:
+	'mixamorig:LeftFoot' : position error = 91.126770 mm
+	'mixamorig:LeftToeBase' : position error = 90.672462 mm
+	'mixamorig:RightFoot' : position error = 91.126770 mm
+	'mixamorig:RightToeBase' : position error = 90.672462 mm
+Imported 'GUID: b85e5c0bfa912ad43a4eb561e8f59322' -> (Import Result ID: '0ba64c333722aac4942c863595fba325') in 0.038 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=6a5baf47ef2fc7fba31624bda2a1df93 DependenciesID=139f2d5a34dca1e2aa2561296b1b5fb3 StaticDependenciesID=3388989ff847fa21bde41c0fb5bb73ea 
+Importing 'GUID: 0944ad7d32e75854d9c6d51b962353b1 - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_01.fbx' with importer (FBXImporter)
+Imported 'GUID: 0944ad7d32e75854d9c6d51b962353b1' -> (Import Result ID: '32bb17844eae12a9f219cb537e6be266') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=74e21b6a9cba3d72fab3a238b155ed8d DependenciesID=fa87a7e023ec545e2213a647b55e9df7 StaticDependenciesID=bbdee274fffaa985993e8fded1a08c8a 
+Importing 'GUID: 19c677c08d6de44498e567dc6b084874 - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_FallingRock.fbx' with importer (FBXImporter)
+Imported 'GUID: 19c677c08d6de44498e567dc6b084874' -> (Import Result ID: '3d33b5bb4202e0f1a8ebdf7629b50748') in 0.011 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=b545b167f4e10e49cd462caf85692c0e DependenciesID=ef7df9ec9101a4deb81cff50ae12a62f StaticDependenciesID=69afc427836a978cf6b968e8388ff6ab 
+Importing 'GUID: 29e2fe185c7bc3e42805225bb1385780 - Path: Assets/Animations/RescueCrew/Candidates/Walk_Walking_WalkingWithASwagger.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 55.477852%;
+Imported 'GUID: 29e2fe185c7bc3e42805225bb1385780' -> (Import Result ID: 'e292b984bfe5d25e98d6a43181259430') in 0.031 seconds [static dependencies only]. Details - ImportResultOutputID=15a2394cddeeebcd112813be5a6869b2 DependenciesID=8216f797f9b24b6399e8a38281b5791d StaticDependenciesID=af6ce996c585deb2fa86541beaa47a9d 
+Importing 'GUID: 39857cfad1651644682ff5b772e6e697 - Path: Packages/com.unity.render-pipelines.core/Runtime/RenderPipelineResources/Mesh/UnityMaterialBall.fbx' with importer (FBXImporter)
+Imported 'GUID: 39857cfad1651644682ff5b772e6e697' -> (Import Result ID: '14c4e1de382afbe0ae27566e0241633f') in 0.041 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=551ae812988ee15024c5f68c3cd25dfe DependenciesID=1f3c232454cd192340ee4fd593bfdf78 StaticDependenciesID=15d918525298e75638b014ccecf6c960 
+Importing 'GUID: b9ae429aca254fa41966db24b9e53232 - Path: Packages/com.unity.render-pipelines.core/Runtime/RenderPipelineResources/Mesh/BackgroundMesh.fbx' with importer (FBXImporter)
+Imported 'GUID: b9ae429aca254fa41966db24b9e53232' -> (Import Result ID: '9f61f729599994b362eb6f04181c1bd7') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=8140e85dc9db723bab507f87f7d36ed5 DependenciesID=1bf110a1f0b8715c8855bd2f68a509bb StaticDependenciesID=195df77e4cfbd02fc3d75c47ecd8c81d 
+Importing 'GUID: 1b0763410b6bf824ba0028bf3f5e2f48 - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_07.fbx' with importer (FBXImporter)
+Imported 'GUID: 1b0763410b6bf824ba0028bf3f5e2f48' -> (Import Result ID: '674c31643b188afcf7e0b7fabea6da20') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=5d6ece5ac1af5cf82ea0de6f49e2fc31 DependenciesID=d9bdb23136ec924415fa843c79f314fa StaticDependenciesID=39499c50e387674eda046219e62edba8 
+Importing 'GUID: 2bbc461142d58784395dae365c404497 - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_06.fbx' with importer (FBXImporter)
+Imported 'GUID: 2bbc461142d58784395dae365c404497' -> (Import Result ID: '993198195985ac51128911962e733342') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=1f1802aa6737181e4180fefac68c4011 DependenciesID=392b4f0f26543fc24d762f3c6b824730 StaticDependenciesID=5fa548dd7f268180250cadcf0e560c65 
+Importing 'GUID: 6b850526f78a90044b365a9e019f955b - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Bag_05.fbx' with importer (FBXImporter)
+Imported 'GUID: 6b850526f78a90044b365a9e019f955b' -> (Import Result ID: 'c5bf8514726b26057241f713ca831b03') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=522db53a5449af22f01c532d018e3ca3 DependenciesID=83da5d9290065437f38250674ee2c898 StaticDependenciesID=fc78b8533eac758eed45f6e13ea1efe9 
+Importing 'GUID: 7b5f2fd0ffae5d14ca3563278e596f3b - Path: Assets/Models/Characters/XBot/XBot_TPose.fbx' with importer (FBXImporter)
+Imported 'GUID: 7b5f2fd0ffae5d14ca3563278e596f3b' -> (Import Result ID: '24df8492080515c0e6060e90d91b7d7f') in 0.076 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=70ce204d31b0344e4dc5a42fcefa2f03 DependenciesID=eaa226168fe8bcff715b9a98faee78d9 StaticDependenciesID=d2bb5f29c3a341187876717c61b44a57 
+Importing 'GUID: 0c11d9d0c1eae2d4dab42ce01ed211cc - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Chevron_East_1.fbx' with importer (FBXImporter)
+Imported 'GUID: 0c11d9d0c1eae2d4dab42ce01ed211cc' -> (Import Result ID: '101a48fdbd6873abebed697cc2df1d9c') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=06bb376034ffe0691286499e2004e18e DependenciesID=9a49e513fe12399bee9b913549d2219f StaticDependenciesID=d84c2d0352be0b58ddf890031882f53e 
+Importing 'GUID: 2c1ea1d723d3f584b94102d4c4d3fbff - Path: Assets/Animations/RescueCrew/Mixamo_Idle.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 7.070181%;
+Imported 'GUID: 2c1ea1d723d3f584b94102d4c4d3fbff' -> (Import Result ID: '4910b4f891482da8c0f4ca04a8d06024') in 0.047 seconds [static dependencies only]. Details - ImportResultOutputID=c59e02b6180c137eb5d50e727d5cae52 DependenciesID=4e1bcd2f36cb2af3f48d4945d6a2018e StaticDependenciesID=a24152709153c4f3d671e63d53da635a 
+Importing 'GUID: 2c2fb95c133756a40b244954aa212868 - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_04.fbx' with importer (FBXImporter)
+Imported 'GUID: 2c2fb95c133756a40b244954aa212868' -> (Import Result ID: '95727f25b9c9a8c7f1f1e4a28e2f0278') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=225a022b64d465bd359a1f802f3d49e9 DependenciesID=61ad0b2a987e31a249c10a7296c78006 StaticDependenciesID=54daddcfd16c48a506087c6b1fdc562f 
+Importing 'GUID: 8c437090f48f1e54abf8142e847e7e41 - Path: Assets/Models/Environment/Bolum1/SM_B1_Road.fbx' with importer (FBXImporter)
+Imported 'GUID: 8c437090f48f1e54abf8142e847e7e41' -> (Import Result ID: 'ad24fca6d780d07e3c95592eefc49d10') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=a5335f9e6a10d1ba05a550ffafd85e18 DependenciesID=e66ba8e7d22a5e040a0324e7b0e4cae3 StaticDependenciesID=c2e1cb41119ea5064f0166069cc1f43c 
+Importing 'GUID: cc9e175b8ada9e24592b90f6ce888e6f - Path: Assets/Animations/RescueCrew/Candidates/Run_RunForward_HappyRunForward.fbx' with importer (FBXImporter)
+Keyframe reduction: Ratio: 63.928577%;
+Imported 'GUID: cc9e175b8ada9e24592b90f6ce888e6f' -> (Import Result ID: '7f04491d004a30eb44424fd2296b4999') in 0.032 seconds [static dependencies only]. Details - ImportResultOutputID=cf86a382fa61aeb1534318da7d040213 DependenciesID=dee9f4a617464d461b1f036d2411eb21 StaticDependenciesID=7cd3b0bbec2cf6a7558cd0afb045d3e9 
+Importing 'GUID: 1dbf28c1bb322474d981b2dc555e28b0 - Path: Packages/com.unity.render-pipelines.core/Runtime/RenderPipelineResources/Mesh/SamplesFloorSpotlight.fbx' with importer (FBXImporter)
+Imported 'GUID: 1dbf28c1bb322474d981b2dc555e28b0' -> (Import Result ID: '8f73bf5b0e87f2d944a0f68486514a65') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=0ca0e8d146dbf7dabd1d756cf8af531e DependenciesID=4b3657c2786ed4152db93ea459088b1d StaticDependenciesID=fab5ee9e5fc7dba3ddbfa6cd430492d8 
+Importing 'GUID: 2dd194f23700a674aa70807a5902d716 - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Suitcase_02.fbx' with importer (FBXImporter)
+Imported 'GUID: 2dd194f23700a674aa70807a5902d716' -> (Import Result ID: 'ca6a551c39826090b188aafb291a169b') in 0.010 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=3de354d122b11ae387a628379f0a0948 DependenciesID=eed88e6c0bf8bccc07a1d70e25268f1a StaticDependenciesID=fc01bd447e6b80c0f8a632317cf0fd68 
+Importing 'GUID: 3e09c8b7dd8906c428ff3740197fd8ba - Path: Assets/Models/Environment/Bolum1/SM_B1_Prop_Bag_03.fbx' with importer (FBXImporter)
+Imported 'GUID: 3e09c8b7dd8906c428ff3740197fd8ba' -> (Import Result ID: '544cd085cd7d43cf56c11c14ad615350') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=2138944ac7af022eab9cd58192133fb4 DependenciesID=ed158631cb08d1d4b32d3af9f570fcf2 StaticDependenciesID=4ffbadb98fd4242ce1a0617b087a21c4 
+Importing 'GUID: 4e8732d4875cc0647b52b55a218072b6 - Path: Packages/com.unity.render-pipelines.core/Runtime/RenderPipelineResources/Mesh/SamplesSpotlightModel.fbx' with importer (FBXImporter)
+Imported 'GUID: 4e8732d4875cc0647b52b55a218072b6' -> (Import Result ID: 'a7dff6c26fe84ecf5242435fc3adfeed') in 0.016 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=5b2d2eee420df1c62839b7204b0bbf27 DependenciesID=66a43b71a8dc3cff99bb30d6f0e60d8e StaticDependenciesID=f9757952817df5d72992e490a1c601b0 
+Importing 'GUID: 8ed81281e0eb2ce4cabb6f62c578b018 - Path: Assets/Models/Environment/Bolum1/SM_B1_Vegetation.fbx' with importer (FBXImporter)
+Imported 'GUID: 8ed81281e0eb2ce4cabb6f62c578b018' -> (Import Result ID: '9177da4395aa8f6b85507fc51f4d6073') in 0.013 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=6b9c9ba0a941393790f96ebf93db525b DependenciesID=5359bf78980865ea05cb6e87a28e14e5 StaticDependenciesID=17c19934ec16c7320c44606125e2da7e 
+Importing 'GUID: 9ea3987059e993844b2ecae8e874c2e0 - Path: Assets/Models/Environment/Bolum1/SM_B1_RoadMarkings.fbx' with importer (FBXImporter)
+Imported 'GUID: 9ea3987059e993844b2ecae8e874c2e0' -> (Import Result ID: '26ef9d4ff170340e30f2e10b7a1317da') in 0.011 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=eda808484a12106472aeda92e40b6447 DependenciesID=c5e8ee72e8a732f378b72bac7409b9b9 StaticDependenciesID=9478c470efa01fd5e62f772c18370d9b 
+Importing 'GUID: 9e1c97fc44f9a8744b61b58f72c56de4 - Path: Packages/com.unity.render-pipelines.core/Editor/Resources/DebugProbe.fbx' with importer (FBXImporter)
+Imported 'GUID: 9e1c97fc44f9a8744b61b58f72c56de4' -> (Import Result ID: 'f67c8d3f143a2afca4b840cd7a3a6722') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=eda7b0eaa8127f84fde5af4c9b75308e DependenciesID=8d2cc4e3cdffb50f47dc94fac9b8ec41 StaticDependenciesID=c44ce97a26b060f99a4665d93ab3d1a4 
+Importing 'GUID: aedc9d144e09eb94fac8d64cd0c8d970 - Path: Assets/Models/Environment/Bolum1/SM_B1_LooseRock_05.fbx' with importer (FBXImporter)
+Imported 'GUID: aedc9d144e09eb94fac8d64cd0c8d970' -> (Import Result ID: 'd5c6e34a6d3dec3fa111161a7903e750') in 0.009 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=e54a9560788f8307f478d211e647ac8b DependenciesID=00cfdc2aa48019a2b95541923af6686d StaticDependenciesID=efc706ecc321aa8f1c4b7b59f61fb89a 
+Importing 'GUID: 4f53dfcf20632794fbd1451aca666aea - Path: Packages/com.unity.ai.assistant/Modules/Unity.AI.Mesh/Meshes/cube.fbx' with importer (FBXImporter)
+Imported 'GUID: 4f53dfcf20632794fbd1451aca666aea' -> (Import Result ID: 'dcaa4a76d907559a20d3cc085b9fcd32') in 0.008 seconds [static and dynamic dependencies]. Details - ImportResultOutputID=13dd476f2e1a336e4f65693260e5964a DependenciesID=b0ea8adba30ba05381ea71135a06a7fa StaticDependenciesID=dca736648c3dc75a7075acb4acffea9a 
+Refreshing native plugins compatible for Editor in 2.03 ms, found 5 plugins.
+
+Asset Pipeline Refresh (id=07fe01c822f6f864ba34f84e591b1c8a): Total: 6.732 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	(Values over 0.05ms)
+	Summary:
+		Imports: total=54 (actual=52, local cache=2, cache server=0)
+		Asset DB Process Time: managed=82 ms, native=3547 ms
+		Asset DB Callback time: managed=285 ms, native=37 ms
+		Scripting: domain reloads=1, domain reload time=1107 ms, compile time=1594 ms, other=76 ms
+		Project Asset Count: scripts=2352, non-scripts=5976
+		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 18.049ms
+	ApplyChangesToAssetFolders: 0.564ms
+	Scan: 146.309ms
+	Collect global state as custom dependencies: 14.607ms
+	OnSourceAssetsModified: 0.490ms
+	CategorizeScriptCompilationAssets: 51.951ms
+	ProcessAssetsWithTransientArtifactChanges: 96.923ms
+	CategorizeAssets: 92.480ms
+	CompileScripts: 1594.487ms
+	ImportOutOfDateAssets: 3064.953ms (1747.704ms without children)
+		ImportManagerImport: 1305.722ms (3.005ms without children)
+			UpdateCategorizedAssets: 0.284ms
+		UnloadImportedAssets: 1.382ms
+		ReloadImportedAssets: 0.176ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.734ms
+		ImportSchedulerStart: 9.369ms
+	PostProcessAllAssets: 301.707ms
+		VCAutoAddAssetPostprocess 0.602ms
+		XRBuildSystem.XRAssetImported 0.507ms
+		PostProcessCallbackCreateDeferredMaterials 0.116ms
+		RaytracingShaderImportPostprocess 0.056ms
+		MonoPostProcessAllAssets: 284.677ms
+			AssetPostprocessor.OnPostprocessAllAssets 73.587ms
+			StyleCatalogPostProcessor.OnPostprocessAllAssets 21.259ms
+			AssetReferenceReimportMonitor.OnPostprocessAllAssets 20.273ms
+			UniversalRenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 11.175ms
+			BuilderAssetPostprocessor.OnPostprocessAllAssets 4.624ms
+			ShaderGraphAssetPostProcessor.OnPostprocessAllAssets 2.225ms
+			SpriteSlicePostprocessor.OnPostprocessAllAssets 1.867ms
+			GraphRefreshPostprocessor.OnPostprocessAllAssets 1.497ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 1.235ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 1.138ms
+			AssetChangedListener.OnPostprocessAllAssets 1.121ms
+			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 0.889ms
+			EditModeScopePostprocessor.OnPostprocessAllAssets 0.752ms
+			MaterialPostprocessor.OnPostprocessAllAssets 0.722ms
+			AssetChangeDetector.OnPostprocessAllAssets 0.694ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.609ms
+			PostProcessor.OnPostprocessAllAssets 0.546ms
+			ShaderReflectionAssetPostProcessor.OnPostprocessAllAssets 0.509ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.449ms
+			TextAssetPostProcessor.OnPostprocessAllAssets 0.393ms
+			InputActionJsonNameModifierAssetProcessor.OnPostprocessAllAssets 0.385ms
+			SpriteEditorTexturePostprocessor.OnPostprocessAllAssets 0.383ms
+			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.356ms
+			SkillsProjectAssetPostprocessor.OnPostprocessAllAssets 0.317ms
+			UVCSAssetPostprocessor.OnPostprocessAllAssets 0.316ms
+			ModelAssetProcessor.OnPostprocessAllAssets 0.270ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.213ms
+			AudioMixerPostprocessor.OnPostprocessAllAssets 0.209ms
+			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.191ms
+			AssetEvents.OnPostprocessAllAssets 0.170ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.169ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.146ms
+			RescueCrewClipFixesWatcher.OnPostprocessAllAssets 0.139ms
+			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.132ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.130ms
+			ConfigAssetsTracker.OnPostprocessAllAssets 0.123ms
+			SamplePostprocessor.OnPostprocessAllAssets 0.122ms
+			SpeedTreePostProcessor.OnPostprocessAllAssets 0.112ms
+			ThemePostprocessor.OnPostprocessAllAssets 0.109ms
+			SyncVS.PostprocessSyncProject 0.101ms
+			AssetReloadNotifier.OnPostprocessAllAssets 0.086ms
+			AudioContainerPostProcessor.OnPostprocessAllAssets 0.061ms
+	PostAssetChangesProfiler: 3.537ms
+	UnloadStreamsBegin: 1.249ms
+	PersistCurrentRevisions: 0.398ms
+	GenerateScriptTypeHashes: 1.472ms
+	GenerateScriptTypeSerializationHashes: 2.635ms
+	Untracked: 1325.967ms
+
+Application.AssetDatabase Initial Refresh End
+Worker ready: AssetImportWorkerHW0 0
+Scanning for USB devices : 7.870ms
+Initializing Unity extensions:
+Unloading 191 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 11368 unused Assets / (33.6 MB). Loaded Objects now: 12240.
+Memory consumption went from 0.61 GB to 0.58 GB.
+Total: 29.380100 ms (FindLiveObjects: 0.598700 ms CreateObjectMapping: 0.535000 ms MarkObjects: 13.539600 ms  DeleteObjects: 14.491700 ms)
+
+Opening scene 'Assets/Scenes/Bolum1_Ucurum.unity'
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/Scenes/Bolum1_Ucurum.unity'
+	Deserialize:            1.852 ms
+	Integration:            36.318 ms
+	Integration of assets:  0.002 ms
+	Thread Wait Time:       0.009 ms
+	Total Operation Time:   38.180 ms
+Unloading 31 unused Assets / (167.6 KB). Loaded Objects now: 12957.
+Memory consumption went from 0.59 GB to 0.59 GB.
+Total: 13.089700 ms (FindLiveObjects: 0.430100 ms CreateObjectMapping: 0.122800 ms MarkObjects: 12.284800 ms  DeleteObjects: 0.030100 ms)
+
+GPU Resident Drawer created.
+BOLUM1 RENK OLCUMU (sonra) 2026-10-13 05:01:56
+renk uzayı: Linear, render pipeline: PC_RPAsset
+  M_Minivan_Damage: shader Universal Render Pipeline/Lit, renk #171716 a=1.00 (lineer 0.009, 0.009, 0.008), yüzey Opaque, kuyruk 2000
+  M_Minivan_Glass: shader Universal Render Pipeline/Lit, renk #D7D7DB a=0.35 (lineer 0.680, 0.680, 0.708), yüzey Transparent, kuyruk 3000
+  M_Minivan_Headlight: shader Universal Render Pipeline/Lit, renk #CAC8CC a=1.00 (lineer 0.591, 0.578, 0.604), yüzey Opaque, kuyruk 2000
+  M_Minivan_Interior: shader Universal Render Pipeline/Lit, renk #686270 a=1.00 (lineer 0.138, 0.122, 0.162), yüzey Opaque, kuyruk 2000
+  M_Minivan_Paint: shader Universal Render Pipeline/Lit, renk #9AC4D2 a=1.00 (lineer 0.323, 0.552, 0.644), yüzey Opaque, kuyruk 2000, beklenen #9AC4D2 ile ΔE76 0.0
+  M_Minivan_Rim: shader Universal Render Pipeline/Lit, renk #4D494D a=1.00 (lineer 0.074, 0.067, 0.074), yüzey Opaque, kuyruk 2000
+  M_Minivan_Strap: shader Universal Render Pipeline/Lit, renk #86A1B8 a=1.00 (lineer 0.238, 0.356, 0.479), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_A: shader Universal Render Pipeline/Lit, renk #A87958 a=1.00 (lineer 0.392, 0.191, 0.098), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_B: shader Universal Render Pipeline/Lit, renk #566A82 a=1.00 (lineer 0.093, 0.144, 0.223), yüzey Opaque, kuyruk 2000
+  M_Minivan_Taillight: shader Universal Render Pipeline/Lit, renk #CB4136 a=1.00 (lineer 0.597, 0.053, 0.037), yüzey Opaque, kuyruk 2000
+  M_Minivan_Tire: shader Universal Render Pipeline/Lit, renk #1E2129 a=1.00 (lineer 0.013, 0.015, 0.022), yüzey Opaque, kuyruk 2000
+  M_Minivan_Trim: shader Universal Render Pipeline/Lit, renk #93909B a=1.00 (lineer 0.292, 0.279, 0.328), yüzey Opaque, kuyruk 2000
+GÖRÜNTÜ sahne: Captures/Bolum1\renk_sonra_sahne.png
+  boya pikselleri (tümü, 15171): medyan #242123, ΔE76 65.7
+  boya pikselleri (ışığa dik, N·L>0.9, 547): medyan #3A3433, ΔE76 57.5
+  cam pikselleri (3737): medyan #8D7165
+GÖRÜNTÜ notr: Captures/Bolum1\renk_sonra_notr.png
+  boya pikselleri (tümü, 15171): medyan #8EB3C0, ΔE76 6.1
+  boya pikselleri (ışığa dik, N·L>0.9, 28): medyan #96BDCA, ΔE76 2.6
+  cam pikselleri (3737): medyan #8A8D94
+BOLUM1 RENK OLCUMU OK
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+Bolum1ColorProbe:Run () (at Assets/Editor/Bolum1ColorProbe.cs:69)
+
+(Filename: Assets/Editor/Bolum1ColorProbe.cs Line: 69)
+
+MonoPathRemapper: Attempts to remap: 23178; Successful remaps: 12
+Serialized file version minimum: 23, current 23
+Importing 'GUID: 00000000000000009000000000000000 - Path: ProjectSettings/QualitySettings.asset' with importer (LibraryAssetImporter)
+Imported 'GUID: 00000000000000009000000000000000' -> (Import Result ID: '8151b601d05d3e12de314c2aa1f82962') in 0.002 seconds [static dependencies only]. Details - ImportResultOutputID=2a108b3da874f726c62fbe5f12be4a8a DependenciesID=6180c49ef29638684367d2893c04e070 StaticDependenciesID=5b19720d9149525484b40148944c8e26 
+Importing 'GUID: 0000000000000000b000000000000000 - Path: ProjectSettings/EditorBuildSettings.asset' with importer (LibraryAssetImporter)
+Imported 'GUID: 0000000000000000b000000000000000' -> (Import Result ID: 'd4b59cb060f81ea6461d9015f1520027') in 0.000 seconds [static dependencies only]. Details - ImportResultOutputID=0a89a5c5f492143e0fa186859e17ba6f DependenciesID=c4e1b377361211f441812e41ca991afd StaticDependenciesID=88d454026c6611450154ab0790329a42 
+Asset Pipeline Refresh (id=8c0df7b548291274495a245d9f466d1e): Total: 0.080 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+GPU Resident Drawer disposed.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-W11-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-W11 channel disconnected successfully.
+Shut down.
+Lingering sessions upon destruction of worker manager
+Unity Data Store service was successfully shut down
+UDS shutting down local client system
+Shut down UDS service system complete
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+abort_threads: Failed aborting id: 00000000000031BC, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 00000000000073CC, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 00000000000031BC, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 00000000000073CC, mono_thread_manage will ignore it
+
+debugger-agent: Unable to listen on 4052
+VBCSCompilerPreWarmer: requested VBCSCompiler shutdown
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791856920875,"processId":36776,"allocatedMemory":21219305,"memoryLabels":[{"Default":217691},{"Permanent":15516},{"NewDelete":69463},{"Thread":4198224},{"Manager":826173},{"VertexData":728},{"Geometry":816},{"Texture":24},{"Shader":852041},{"Material":68},{"GfxDevice":56400},{"Animation":1200},{"Audio":984},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":17056},{"Input":42840},{"JobScheduler":256},{"TextLib":336},{"Mono":48},{"MonoCode":64},{"ScriptingNativeRuntime":1326592},{"BaseObject":48720},{"Resource":1252},{"Renderer":2384},{"Transform":4685},{"File":7393},{"WebCam":616},{"Culling":32},{"Terrain":11442},{"Wind":24},{"STL":40},{"String":610210},{"StaticString":3808},{"Utility":2674806},{"Curl":2559},{"PoolAlloc":3224},{"AI":80},{"TypeTree":14869},{"ScriptManager":12656},{"CodeReload":448},{"RuntimeInitializeOnLoadManager":64},{"Sprites":102},{"SpriteAtlas":120},{"GI":7816},{"Director":8048},{"CloudService":7296},{"WebRequest":829},{"VR":49650},{"SceneManager":608},{"Video":64},{"LazyScriptCache":32},{"Camera":729},{"Secure":2377},{"SerializationCache":9256},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":592},{"Hierarchy":1188},{"UIElements":40},{"CoreStats":14456},{"Identifiers":7152},{"Gui":128},{"EditorUtility":128616},{"VersionControl":8},{"Undo":931},{"AssetDatabase":9545401},{"AssetImporter":40},{"EditorGi":328},{"UnityConnect":40441},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":96},{"DrivenProperties":72},{"LocalIPC":209},{"ProfilerEditor":9746},{"CoreBusinessMetrics":3596},{"Windowing":456},{"Licensing":1264},{"AssetReference":32},{"IPCStream":32}]}

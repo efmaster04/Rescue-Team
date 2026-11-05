@@ -1,0 +1,14 @@
+TRAFFIC BUILD 2026-11-03 03:52:53
+Araç Sedan: Assets/Models/Vehicles/Traffic/SM_Sedan.fbx, gövde kutusu merkez (0.00, 0.80, 0.00) boyut (1.80, 1.30, 4.50), ön/arka çıkıntı 2.25/2.25 m, tekerlek 4 × r 0.31, motor 55 Hz, korna 420/530 Hz, renk varyantı 4 (Assets/Models/Vehicles/Traffic/sedan_meta.json paint_variants (M_Sedan_Paint_Surface, yuva 0, 1 renderer))
+Araç Hatchback: Assets/Models/Vehicles/Traffic/SM_Hatchback.fbx, gövde kutusu merkez (0.00, 0.83, 0.00) boyut (1.75, 1.35, 4.00), ön/arka çıkıntı 2.00/2.00 m, tekerlek 4 × r 0.31, motor 60 Hz, korna 470/590 Hz, renk varyantı 4 (Assets/Models/Vehicles/Traffic/hatchback_meta.json paint_variants (M_Hatchback_Paint_Surface, yuva 0, 1 renderer))
+  Pikap balyaları: SM_Pickup_Hay_01 (0.00, 0.86, -0.93), SM_Pickup_Hay_02 (0.00, 0.86, -1.96), 25 kg, ömür 60 sn
+Araç Pickup: Assets/Models/Vehicles/Traffic/SM_Pickup.fbx, gövde kutusu merkez (0.00, 1.00, 0.00) boyut (1.90, 1.70, 5.30), ön/arka çıkıntı 2.65/2.65 m, tekerlek 4 × r 0.37, motor 48 Hz, korna 380/480 Hz
+Araç PanelVan: Assets/Models/Vehicles/Traffic/SM_PanelVan.fbx, gövde kutusu merkez (0.00, 1.28, 0.00) boyut (2.00, 2.25, 5.40), ön/arka çıkıntı 2.70/2.70 m, tekerlek 4 × r 0.43, motor 44 Hz, korna 350/440 Hz
+Araç BoxTruck: Assets/Models/Vehicles/Traffic/SM_BoxTruck.fbx, gövde kutusu merkez (0.00, 1.88, 0.00) boyut (2.50, 3.45, 9.50), ön/arka çıkıntı 4.75/4.75 m, tekerlek 6 × r 0.57, motor 32 Hz, korna 220/277 Hz
+Şerit TrafficLane_WestBound: 193 nokta, 191.0 m; EastBound 204.7 m
+Trafik yönetmeni: Bolum1_Traffic, ayarlar Assets/Settings/Bolum1/TrafficSettings.asset (sakin (20.00, 40.00), dalga (3, 4), aralık (2.00, 4.00))
+Koni ServiceVan_Cone_01: yukarı ekseni (yerel) (0.00, 1.00, 0.00), pivot tabandan 0.000 m, taban yarıçapı 0.160 m, boy 0.550 m, kaybolma y < -60.0
+Koni ServiceVan_Cone_02: yukarı ekseni (yerel) (0.00, 1.00, 0.00), pivot tabandan 0.000 m, taban yarıçapı 0.160 m, boy 0.550 m, kaybolma y < -60.0
+Koni ServiceVan_Cone_03: yukarı ekseni (yerel) (0.00, 1.00, 0.00), pivot tabandan 0.000 m, taban yarıçapı 0.160 m, boy 0.550 m, kaybolma y < -60.0
+Koni ServiceVan_Cone_04: yukarı ekseni (yerel) (0.00, 1.00, 0.00), pivot tabandan 0.000 m, taban yarıçapı 0.160 m, boy 0.550 m, kaybolma y < -60.0
+Oyuncu ragdoll'u: 11 gövde, 11 collider (Patient ile aynı kurulum, 70 kg); kaldırma 2 sn, menzil 1.5 m

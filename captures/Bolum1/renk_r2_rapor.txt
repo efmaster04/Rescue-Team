@@ -1,0 +1,125 @@
+BOLUM1 RENK OLCUMU (r2) 2026-10-13 05:20:16
+renk uzayı: Linear, render pipeline: PC_RPAsset
+  M_Minivan_Damage: shader Universal Render Pipeline/Lit, renk #171716 a=1.00 (lineer 0.009, 0.009, 0.008), yüzey Opaque, kuyruk 2000
+  M_Minivan_Glass: shader Universal Render Pipeline/Lit, renk #D7D7DB a=0.35 (lineer 0.680, 0.680, 0.708), yüzey Transparent, kuyruk 3000
+  M_Minivan_Headlight: shader Universal Render Pipeline/Lit, renk #CAC8CC a=1.00 (lineer 0.591, 0.578, 0.604), yüzey Opaque, kuyruk 2000
+  M_Minivan_Interior: shader Universal Render Pipeline/Lit, renk #686270 a=1.00 (lineer 0.138, 0.122, 0.162), yüzey Opaque, kuyruk 2000
+  M_Minivan_Paint: shader Universal Render Pipeline/Lit, renk #9AC4D2 a=1.00 (lineer 0.323, 0.552, 0.644), yüzey Opaque, kuyruk 2000, beklenen #9AC4D2 ile ΔE76 0.0
+  M_Minivan_Rim: shader Universal Render Pipeline/Lit, renk #4D494D a=1.00 (lineer 0.074, 0.067, 0.074), yüzey Opaque, kuyruk 2000
+  M_Minivan_Strap: shader Universal Render Pipeline/Lit, renk #86A1B8 a=1.00 (lineer 0.238, 0.356, 0.479), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_A: shader Universal Render Pipeline/Lit, renk #A87958 a=1.00 (lineer 0.392, 0.191, 0.098), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_B: shader Universal Render Pipeline/Lit, renk #566A82 a=1.00 (lineer 0.093, 0.144, 0.223), yüzey Opaque, kuyruk 2000
+  M_Minivan_Taillight: shader Universal Render Pipeline/Lit, renk #CB4136 a=1.00 (lineer 0.597, 0.053, 0.037), yüzey Opaque, kuyruk 2000
+  M_Minivan_Tire: shader Universal Render Pipeline/Lit, renk #1E2129 a=1.00 (lineer 0.013, 0.015, 0.022), yüzey Opaque, kuyruk 2000
+  M_Minivan_Trim: shader Universal Render Pipeline/Lit, renk #93909B a=1.00 (lineer 0.292, 0.279, 0.328), yüzey Opaque, kuyruk 2000
+RENK TABLOSU (Material.color sRGB, beklenen, ΔE76; eşik < 2)
+  [OK]   minibüs M_Minivan_Suitcase_A: #A87958 beklenen #A87958 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Damage: #171716 beklenen #171716 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Headlight: #CAC8CC beklenen #CAC8CC ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Interior: #686270 beklenen #686270 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Paint: #9AC4D2 beklenen #9AC4D2 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Trim: #93909B beklenen #93909B ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Suitcase_B: #566A82 beklenen #566A82 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Taillight: #CB4136 beklenen #CB4136 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Strap: #86A1B8 beklenen #86A1B8 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Tire: #1E2129 beklenen #1E2129 ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Rim: #4D494D beklenen #4D494D ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   minibüs M_Minivan_Glass: #D7D7DB beklenen #D7D7DB ΔE76 0.00 (1 FBX, en kötü SM_Minivan.fbx)
+  [OK]   mekân M_Rock: #A4825B beklenen #A4825B ΔE76 0.01 (10 FBX, en kötü SM_B1_Backdrop.fbx)
+  [OK]   mekân M_Backdrop: #8C8096 beklenen #8C8096 ΔE76 0.00 (1 FBX, en kötü SM_B1_Backdrop.fbx)
+  [OK]   mekân M_Gravel: #7D6F57 beklenen #7D6F57 ΔE76 0.00 (2 FBX, en kötü SM_B1_Backdrop.fbx)
+  [OK]   mekân M_Dirt: #815434 beklenen #815434 ΔE76 0.00 (4 FBX, en kötü SM_B1_Ground.fbx)
+  [OK]   mekân M_Metal: #7A7A75 beklenen #7A7A75 ΔE76 0.00 (11 FBX, en kötü SM_B1_Guardrail.fbx)
+  [OK]   mekân M_Asphalt: #333337 beklenen #333337 ΔE76 0.00 (8 FBX, en kötü SM_B1_Prop_Bag_03.fbx)
+  [OK]   mekân M_Grass: #5D621E beklenen #5D621E ΔE76 0.01 (3 FBX, en kötü SM_B1_Prop_Bag_04.fbx)
+  [OK]   mekân M_Sign: #C71412 beklenen #C71412 ΔE76 0.00 (5 FBX, en kötü SM_B1_Prop_Chevron_East_1.fbx)
+  [OK]   mekân M_LineWhite: #DBD6BA beklenen #DBD6BA ΔE76 0.00 (6 FBX, en kötü SM_B1_Prop_Chevron_East_1.fbx)
+  [OK]   mekân M_LineYellow: #E8A640 beklenen #E8A640 ΔE76 0.00 (1 FBX, en kötü SM_B1_RoadMarkings.fbx)
+  [OK]   karakter Orange M_Radio: #30373A beklenen #30373A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_EyeWhite: #DDD9CE beklenen #DDD9CE ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Gloves: #252627 beklenen #252627 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_RadioScreen: #829C64 beklenen #829C64 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Helmet: #D94310 beklenen #D94310 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Pants: #2D3650 beklenen #2D3650 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Sole: #282421 beklenen #282421 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Pupil: #111211 beklenen #111211 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Mouth: #3E211B beklenen #3E211B ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Skin: #BD865A beklenen #BD865A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Jacket: #252E46 beklenen #252E46 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Belt: #654636 beklenen #654636 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Hair: #302823 beklenen #302823 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Lamp: #FFF0CA beklenen #FFF0CA ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Reflective_Orange: #F47727 beklenen #F47727 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Boots: #584034 beklenen #584034 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_Reflective_Silver: #C7C9BF beklenen #C7C9BF ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Orange M_HelmetStrap: #777A7E beklenen #777A7E ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Orange.fbx)
+  [OK]   karakter Yellow M_Radio: #30373A beklenen #30373A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_EyeWhite: #DDD9CE beklenen #DDD9CE ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Gloves: #252627 beklenen #252627 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_RadioScreen: #829C64 beklenen #829C64 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Pants: #2D3650 beklenen #2D3650 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Sole: #282421 beklenen #282421 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Pupil: #111211 beklenen #111211 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Mouth: #3E211B beklenen #3E211B ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Skin: #BD865A beklenen #BD865A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Jacket: #252E46 beklenen #252E46 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Belt: #654636 beklenen #654636 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Hair: #302823 beklenen #302823 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Lamp: #FFF0CA beklenen #FFF0CA ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Boots: #584034 beklenen #584034 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Reflective_Silver: #C7C9BF beklenen #C7C9BF ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Helmet_Yellow: #F1C52D beklenen #F1C52D ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_HelmetStrap: #777A7E beklenen #777A7E ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Yellow M_Reflective_Yellow: #F1C52D beklenen #F1C52D ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Yellow.fbx)
+  [OK]   karakter Blue M_Radio: #30373A beklenen #30373A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_EyeWhite: #DDD9CE beklenen #DDD9CE ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Gloves: #252627 beklenen #252627 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_RadioScreen: #829C64 beklenen #829C64 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Pants: #2D3650 beklenen #2D3650 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Sole: #282421 beklenen #282421 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Pupil: #111211 beklenen #111211 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Mouth: #3E211B beklenen #3E211B ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Skin: #BD865A beklenen #BD865A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Jacket: #252E46 beklenen #252E46 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Helmet_Blue: #376BE0 beklenen #376BE0 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Belt: #654636 beklenen #654636 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Hair: #302823 beklenen #302823 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Lamp: #FFF0CA beklenen #FFF0CA ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Boots: #584034 beklenen #584034 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Reflective_Silver: #C7C9BF beklenen #C7C9BF ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_Reflective_Blue: #376BE0 beklenen #376BE0 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Blue M_HelmetStrap: #777A7E beklenen #777A7E ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Blue.fbx)
+  [OK]   karakter Green M_Radio: #30373A beklenen #30373A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_EyeWhite: #DDD9CE beklenen #DDD9CE ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Gloves: #252627 beklenen #252627 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_RadioScreen: #829C64 beklenen #829C64 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Pants: #2D3650 beklenen #2D3650 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Sole: #282421 beklenen #282421 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Pupil: #111211 beklenen #111211 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Mouth: #3E211B beklenen #3E211B ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Skin: #BD865A beklenen #BD865A ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Jacket: #252E46 beklenen #252E46 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Belt: #654636 beklenen #654636 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Helmet_Green: #53A855 beklenen #53A855 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Hair: #302823 beklenen #302823 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Lamp: #FFF0CA beklenen #FFF0CA ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Boots: #584034 beklenen #584034 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Reflective_Silver: #C7C9BF beklenen #C7C9BF ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_HelmetStrap: #777A7E beklenen #777A7E ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  [OK]   karakter Green M_Reflective_Green: #53A855 beklenen #53A855 ΔE76 0.00 (1 FBX, en kötü SK_RescueCrew_Green.fbx)
+  toplam 135 ölçüm, en kötü ΔE76 0.01 (mekân M_Grass)
+KARAKTER AVATARI
+  Orange: userData RescueCrewDefaults:v3, tip Human, blendShapes True, avatar geçerli humanoid, kemik eşlemesi 30/15 zorunlu (toplam insan kemiği 55)
+  Yellow: userData RescueCrewDefaults:v3, tip Human, blendShapes True, avatar geçerli humanoid, kemik eşlemesi 30/15 zorunlu (toplam insan kemiği 55)
+  Blue: userData RescueCrewDefaults:v3, tip Human, blendShapes True, avatar geçerli humanoid, kemik eşlemesi 30/15 zorunlu (toplam insan kemiği 55)
+  Green: userData RescueCrewDefaults:v3, tip Human, blendShapes True, avatar geçerli humanoid, kemik eşlemesi 30/15 zorunlu (toplam insan kemiği 55)
+GÖRÜNTÜ sahne: Captures/Bolum1\renk_r2_sahne.png
+  boya pikselleri (tümü, 15171): medyan #242123, ΔE76 65.7
+  boya pikselleri (ışığa dik, N·L>0.9, 547): medyan #3A3433, ΔE76 57.5
+  cam pikselleri (3737): medyan #8D7165
+GÖRÜNTÜ karakter: Captures/Bolum1\renk_r2_karakter.png (kamera -2.82, -8.07, 17.23 → -1.50, -8.27, 15.22)
+GÖRÜNTÜ notr: Captures/Bolum1\renk_r2_notr.png
+  boya pikselleri (tümü, 15171): medyan #8EB3C0, ΔE76 6.1
+  boya pikselleri (ışığa dik, N·L>0.9, 28): medyan #96BDCA, ΔE76 2.6
+  cam pikselleri (3737): medyan #8A8D93
+BOLUM1 RENK OLCUMU OK

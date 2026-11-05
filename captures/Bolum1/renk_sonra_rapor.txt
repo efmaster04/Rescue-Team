@@ -1,0 +1,23 @@
+BOLUM1 RENK OLCUMU (sonra) 2026-10-13 05:01:56
+renk uzayı: Linear, render pipeline: PC_RPAsset
+  M_Minivan_Damage: shader Universal Render Pipeline/Lit, renk #171716 a=1.00 (lineer 0.009, 0.009, 0.008), yüzey Opaque, kuyruk 2000
+  M_Minivan_Glass: shader Universal Render Pipeline/Lit, renk #D7D7DB a=0.35 (lineer 0.680, 0.680, 0.708), yüzey Transparent, kuyruk 3000
+  M_Minivan_Headlight: shader Universal Render Pipeline/Lit, renk #CAC8CC a=1.00 (lineer 0.591, 0.578, 0.604), yüzey Opaque, kuyruk 2000
+  M_Minivan_Interior: shader Universal Render Pipeline/Lit, renk #686270 a=1.00 (lineer 0.138, 0.122, 0.162), yüzey Opaque, kuyruk 2000
+  M_Minivan_Paint: shader Universal Render Pipeline/Lit, renk #9AC4D2 a=1.00 (lineer 0.323, 0.552, 0.644), yüzey Opaque, kuyruk 2000, beklenen #9AC4D2 ile ΔE76 0.0
+  M_Minivan_Rim: shader Universal Render Pipeline/Lit, renk #4D494D a=1.00 (lineer 0.074, 0.067, 0.074), yüzey Opaque, kuyruk 2000
+  M_Minivan_Strap: shader Universal Render Pipeline/Lit, renk #86A1B8 a=1.00 (lineer 0.238, 0.356, 0.479), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_A: shader Universal Render Pipeline/Lit, renk #A87958 a=1.00 (lineer 0.392, 0.191, 0.098), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_B: shader Universal Render Pipeline/Lit, renk #566A82 a=1.00 (lineer 0.093, 0.144, 0.223), yüzey Opaque, kuyruk 2000
+  M_Minivan_Taillight: shader Universal Render Pipeline/Lit, renk #CB4136 a=1.00 (lineer 0.597, 0.053, 0.037), yüzey Opaque, kuyruk 2000
+  M_Minivan_Tire: shader Universal Render Pipeline/Lit, renk #1E2129 a=1.00 (lineer 0.013, 0.015, 0.022), yüzey Opaque, kuyruk 2000
+  M_Minivan_Trim: shader Universal Render Pipeline/Lit, renk #93909B a=1.00 (lineer 0.292, 0.279, 0.328), yüzey Opaque, kuyruk 2000
+GÖRÜNTÜ sahne: Captures/Bolum1\renk_sonra_sahne.png
+  boya pikselleri (tümü, 15171): medyan #242123, ΔE76 65.7
+  boya pikselleri (ışığa dik, N·L>0.9, 547): medyan #3A3433, ΔE76 57.5
+  cam pikselleri (3737): medyan #8D7165
+GÖRÜNTÜ notr: Captures/Bolum1\renk_sonra_notr.png
+  boya pikselleri (tümü, 15171): medyan #8EB3C0, ΔE76 6.1
+  boya pikselleri (ışığa dik, N·L>0.9, 28): medyan #96BDCA, ΔE76 2.6
+  cam pikselleri (3737): medyan #8A8D94
+BOLUM1 RENK OLCUMU OK

@@ -1,0 +1,77 @@
+00:00.422  blend            | Read blend: "C:\Users\W11\Projects\RescueTeam-orkestra\bolum1-ucurum-r4\Export\Bolum1_Ucurum\B1_Ucurum.blend"
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+FBX version: 7400
+{
+  "passed": true,
+  "errors": [],
+  "measured": {
+    "unique_loose_rock_meshes": 8,
+    "r2_playable_target_met": true,
+    "r2_backdrop_target_met": true,
+    "road_width_min_m": 7.999997138977051,
+    "road_width_max_m": 8.000006675720215,
+    "traffic_occlusion_rays_passed": 16,
+    "traffic_occlusion_rays_total": 16,
+    "path_z_range_m": [
+      -9.000030517578125,
+      -8.999969482421875
+    ],
+    "ramp_max_slope_degrees": 18.8773553107363,
+    "slope_mean_degrees": 48.23300673223039
+  },
+  "reimported_object_triangles": {
+    "SM_B1_Backdrop": 17698,
+    "SM_B1_Ground": 22538,
+    "SM_B1_Guardrail": 8624,
+    "SM_B1_LooseRock_01": 46,
+    "SM_B1_LooseRock_02": 44,
+    "SM_B1_LooseRock_03": 80,
+    "SM_B1_LooseRock_04": 60,
+    "SM_B1_LooseRock_05": 68,
+    "SM_B1_LooseRock_06": 96,
+    "SM_B1_LooseRock_07": 84,
+    "SM_B1_LooseRock_08": 140,
+    "SM_B1_Prop_Bag_03": 120,
+    "SM_B1_Prop_Bag_04": 120,
+    "SM_B1_Prop_Bag_05": 120,
+    "SM_B1_Prop_Chevron_East_1": 24,
+    "SM_B1_Prop_Chevron_East_2": 24,
+    "SM_B1_Prop_Chevron_West_1": 24,
+    "SM_B1_Prop_Chevron_West_2": 24,
+    "SM_B1_Prop_FallingRock": 22,
+    "SM_B1_Prop_Suitcase_01": 120,
+    "SM_B1_Prop_Suitcase_02": 120,
+    "SM_B1_Road": 792,
+    "SM_B1_RoadMarkings": 2164,
+    "SM_B1_Vegetation": 4916
+  },
+  "reimported_playable_triangles": 39034,
+  "reimported_backdrop_triangles": 17698,
+  "reimported_prop_triangles": 1336
+}
+VERIFY OK
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:37:04)
+
+Blender quit

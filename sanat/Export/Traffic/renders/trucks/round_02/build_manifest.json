@@ -1,0 +1,35 @@
+{
+  "geometry_sha256": "76f891e9baa023418d057c8dd31b48281a81c9936a3ba693734dcf1c31805a2e",
+  "canonical_geometry_sha256": "cb31327f72fc65fa5977b35da77f31069dffda056535ddd61ef79386a23ab47b",
+  "source_sha256": "e8d4c05bfe7e88fa39c39cc6bb78197388eded0fe8b2cedb56f1a216cbc3713f",
+  "round": 2,
+  "triangles": {
+    "PanelVan": 4832,
+    "BoxTruck": 7084
+  },
+  "render_seconds": 182.698,
+  "camera_render_seconds": {
+    "panelvan_threequarter_front": 33.361,
+    "panelvan_left": 20.716,
+    "panelvan_rear": 17.379,
+    "boxtruck_threequarter_front": 32.073,
+    "boxtruck_left": 19.213,
+    "boxtruck_rear": 16.172,
+    "two_vehicles": 32.792,
+    "scale_with_minivan": 10.992
+  },
+  "total_build_seconds": 183.815,
+  "images_sha256": {
+    "boxtruck_left.png": "9789728fbddc3661207a3e63f55df560a0fca03475cba814de42c2a9ace9e1b9",
+    "boxtruck_rear.png": "0950e29777f6ed38021016f88da88a2d3a960a9ebab68e40ca2273543cdb2c53",
+    "boxtruck_threequarter_front.png": "e66978947dba45f90a40a89916c7bef873146217631fc4526de8230e03e6a7bf",
+    "compare_boxtruck.png": "b5972002aaaf3266f07b305ea738fff86e90f91798298d07cb9bb6fcb59bb0c7",
+    "compare_lineup.png": "9fbff4df7b768a88726e5a99140be811ea100a4071646af4b8e1f9b646d40209",
+    "compare_panelvan.png": "91a546c44b0aa2ae707102c1f65313fd3425bb127905e740db89bfd9589918c9",
+    "panelvan_left.png": "40a716416b0b93e5ca341de73a06eca3e62c87e1d4ff615afdc219a8b5a1d458",
+    "panelvan_rear.png": "b2f3cbb40ced9b4ef36c32d1eacef62a8f69372a6178c18c9651769de9689ddf",
+    "panelvan_threequarter_front.png": "b2a5a0ba94183b97e23318c929823f8744a5bbf35941daee4f908343d8460671",
+    "scale_with_minivan.png": "5f5ad680d1c6ef877bd08fef6a3601b03be10ac33ad41cf30c03bc01d1caaf3d",
+    "two_vehicles.png": "805238e0bdcc2d1cc9bc1525b53e983b9b1806b77cb3c52625f1e84ddcb00336"
+  }
+}

@@ -1,0 +1,26 @@
+AMBULANCE BUILD 2026-11-03 03:52:52
+Animator: Assets/Prefabs/Bolum1/Animation/AC_Crew_Locomotion.controller (Speed: Mixamo_Idle 0, Mixamo_Walking 1.2, Mixamo_Running_ArmFix 3 m/sn)
+Ambulans modeli: Assets/Models/Vehicles/Ambulance/SM_Ambulance.fbx
+Ambulans: gövde kutusu merkez (0.00, 1.40, 0.01) boyut (2.49, 2.50, 5.99), tekerlek yarıçapı 0.430, açılar RL 100° RR 100° basamak 90° (meta)
+Sedye modeli: Assets/Models/Props/Stretcher/SM_Stretcher.fbx
+Sedye: collider (0.00, 0.08, 0.00) / (0.63, 0.15, 2.10), sap aralığı 1.94 m
+Hasta Tourist (Turist): Assets/Models/Characters/Patient/SK_Patient_Tourist.fbx, yatma klibi Patient_LiePose, hipsToBack 0.139 m (patient_meta.json), ragdoll 11 gövde
+Hasta Civilian (Sivil): Assets/Models/Characters/Patient/SK_Patient_Civilian.fbx, yatma klibi Patient_LiePose_ArmSling, hipsToBack 0.141 m (patient_meta.json), ragdoll 11 gövde
+Hasta Elder (Yaşlı): Assets/Models/Characters/Patient/SK_Patient_Elder.fbx, yatma klibi Patient_LiePose, hipsToBack 0.139 m (patient_meta.json), ragdoll 11 gövde
+Şerit TrafficLane_EastBound: 206 nokta, 204.7 m
+Korkuluk boşluğu (rampa ağzı): s 67.3–69.5 m, Blender X -35.4…-33.2 (2.3 m)
+AmbulanceStop: Unity (27.74, -0.85, 2.60) (s 75.4), arka tampon s 72.4 = ağız ortası + 4.0 m, boşluğun doğu ucundan 2.9 m doğuda
+Minibüs bagaj kapısı: eksen kök (1.00, 0.00, 0.00), açık açı 85° (meta 85), arka nokta (-4.00, -9.00, 17.06), açma menzili 2 m, çekme menzili 2 m
+Hasta Patient_Tourist: Seat_05 (InVehicle, kök (-4.43, -8.53, 17.91), minibüs eğimi 28°)
+Hasta Patient_Civilian: Seat_06 (InVehicle, kök (-3.57, -8.53, 17.91), minibüs eğimi 28°)
+Halat kazığı (0.00, -9.00, 16.98) (Blender X 0.0), patika yüzeyi y -9.00, uçurum kenarı z 17.48; 0.6 m içinde engel: yok; minibüse en yakın 2.90 m
+Tırmanış hattı: dip (0.00, -14.00, 18.54) (kaya, LedgeZone y -14.00), tepe (0.00, -10.10, 17.94), boy 3.90 m; kökten duvara (dipten tepeye) 0.34 / 0.34 / 0.34 / 0.34 / 0.34 / 0.34 / 0.34 / 0.34 / 0.34 / 0.34 / 0.34 m (klip duvar düzlemi 0.36)
+Yaşlı: kaya çıkıntısında (-1.20, -14.00, 19.14), halat dibine 1.34 m, vadi kenarına en az 2.10 m; LedgeZone sınırı Blender (-4.00, -23.43, -14.10)…(10.00, -16.85, -13.90)
+Bağlanma/çıkış (0.00, -8.98, 14.18), çeken (0.00, -9.00, 16.08); hızlar: iniş 0.6, tırmanış 0.3, çekme 0.25 m/sn
+Sedye Stretcher_01: minibüs yük zemininde (-13.42, 1.08, 8.51) (kök-yerel (0.40, 0.69, 1.55))
+Sedye Stretcher_02: minibüs yük zemininde (-13.42, 1.08, 9.31) (kök-yerel (-0.40, 0.69, 1.55))
+Halat kangalı: RopeCoil dolap ServiceVan_RopeLockerDoor slotunda, dünya (-12.65, 1.71, 8.29) (kök-yerel (0.62, 1.35, 2.30)), dış yön (1.00, 0.00, 0.00); kangal sınırları (0.11, 0.43, 0.43), disk normali·dış yön 1.00; tutuş aralığı 0.408 m
+Dolap kapağı ServiceVan_RopeLockerDoor: menteşe kök-yerel (0.87, 1.35, 2.47), eksen kök (0.00, 1.00, 0.00), açık açı 90° (meta 90), 0.4 sn; kapak merkezi (-12.48, 1.70, 8.29)
+Halat zinciri: kazık SM_RopeAnchor_Bare.fbx, başlangıç durumu Stowed (çizgi yok, bağlanılamaz); atış 0.9 sn, menzil 1.5 m
+Oyuncu (TestCharacter_RescueCrew): PlayerSpawn Unity (45.00, -1.23, -1.23), hız 2.4 m/sn (sedyeyle 1.4), CharacterController 1.5 m, eğim sınırı 45°
+Test botu: Assets/Models/Characters/RescueCrew/SK_RescueCrew_Green.fbx Unity (43.96, -1.23, -2.32), varsayılan AÇIK

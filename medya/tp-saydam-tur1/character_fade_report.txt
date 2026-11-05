@@ -1,0 +1,41 @@
+CHARACTERFADE VERIFY 2026-11-05 11:59:53
+[OK]   (0) shader bulunur, destekli, Resources altında (build'e girer); gerekli geçişler var — Assets/Shaders/Resources/RescueTeam_CameraFadeLit.shader, desteklenir True
+  malzeme (Ofis-Garaj): Universal Render Pipeline/Lit kuyruk=2000 [] ×18 ör. M_Skin
+  malzeme (Ofis-Garaj): Universal Render Pipeline/Lit kuyruk=2000 [_METALLICSPECGLOSSMAP _NORMALMAP] ×2 ör. CastAlloy
+  malzeme (Ofis-Garaj): Universal Render Pipeline/Lit kuyruk=2000 [_NORMALMAP] ×15 ör. SlateBlue
+[OK]   (1) bileşen çalışma zamanında yalnız kameranın hedefine eklendi — adet 1
+[OK]   (2) eşik eğrisi: başlangıçta 0, bitişte 1, arası yumuşak ve tek yönlü — başlangıç 1.40 m → 0.00, bitiş 0.70 m → 1.00, orta 0.50, en az görünürlük 0.12
+  TP ana_ofis_orta: uzaklık 2.14 m, saydamlık 0.00, görünürlük 1.00, kaynak malzeme True
+  TP ana_ofis_kose: uzaklık 0.60 m, saydamlık 1.00, görünürlük 0.12, kaynak malzeme False
+  TP mutfak_orta: uzaklık 2.86 m, saydamlık 0.00, görünürlük 1.00, kaynak malzeme True
+  TP mutfak_kose: uzaklık 0.60 m, saydamlık 1.00, görünürlük 0.12, kaynak malzeme False
+  TP depo_orta: uzaklık 4.48 m, saydamlık 0.00, görünürlük 1.00, kaynak malzeme True
+  TP depo_kose: uzaklık 0.60 m, saydamlık 1.00, görünürlük 0.12, kaynak malzeme False
+  TP soyunma_orta: uzaklık 1.32 m, saydamlık 0.04, görünürlük 0.97, kaynak malzeme False
+  TP soyunma_kose: uzaklık 4.50 m, saydamlık 0.00, görünürlük 1.00, kaynak malzeme True
+  TP ring_orta: uzaklık 0.75 m, saydamlık 0.98, görünürlük 0.13, kaynak malzeme False
+  TP ring_kose: uzaklık 0.60 m, saydamlık 1.00, görünürlük 0.12, kaynak malzeme False
+  TP garaj_raf_dibi: uzaklık 0.60 m, saydamlık 1.00, görünürlük 0.12, kaynak malzeme False
+  TP garaj_minibus_arasi: uzaklık 0.60 m, saydamlık 1.00, görünürlük 0.12, kaynak malzeme False
+  TP garaj_orta_a: uzaklık 4.48 m, saydamlık 0.00, görünürlük 1.00, kaynak malzeme True
+  TP garaj_orta_b: uzaklık 4.50 m, saydamlık 0.00, görünürlük 1.00, kaynak malzeme True
+[OK]   (3) ofis ve garajda saydamlık uzaklığa uyar, uzakta kaynak malzemeler — yakın 8, uzak 6
+[OK]   (4) uzakta görüntü bileşenle ve bileşensiz birebir aynı — uzaklık 2.14 m, farklı piksel 0
+[OK]   (4b) tekerlekle en yakın serbest uzaklıkta opak — uzaklık 2.14 m
+[OK]   (5) rampa: saydamlık hız sınırını aşmaz, görünen pay (opak alana oran) uzaklıkla azalır — en büyük hız 6.00/sn (11586 kare), uzaklık:saydamlık/oran 1.60m:0.00/1.00 1.40m:0.00/1.00 1.20m:0.20/0.98 1.05m:0.50/0.93 0.90m:0.80/0.55 0.70m:1.00/0.21 0.60m:1.00/0.20
+[OK]   (6) köşede karakter neredeyse görünmez: görüş açılır, opak hâlin alanına oran küçük — uzaklık 0.60 m, opak alan 0.35, saydam alan 0.06, görünürlük 0.12
+[OK]   (7) FP: saydamlık etkisiz (kaynak malzemeler), geçişte artmaz; baş gizli, gölge vekili açık — saydamlık 0.00, baş gizli True, vekil True, geçişte en büyük artış 0.00
+[OK]   (7b) TP'ye dönüş: saydamlık geri gelir, baş ölçeği ve gölge vekili eski hâlinde — saydamlık 1.00, baş gizli False
+[OK]   (8) elde eşya saydamlaşır, bırakınca malzeme ve gölge modu eski — Equipment_toolbox_01: 3/3 saydam, elde gizli False, bırakıldı True, döndü True
+[OK]   (9) başka karakter saydamlaşmaz; kamera hedefi değişince eski hedef kaynak malzemeye döner — öbürü temiz True, hedef değişimi temiz True, geri dönünce saydamlık 1.00
+[OK]   (10) geçiş öncesi kopyalar var — kopya 22
+[OK]   (10b) Ofis → Bölüm 1: kopya malzeme kalmadı, yeni oyuncuda bileşen var — kopya 0, saydamlık 0.00, uzaklık 4.50
+  malzeme (Bölüm 1): Universal Render Pipeline/Lit kuyruk=2000 [] ×79 ör. M_Skin
+[OK]   (11) Bölüm 1: duvar dibinde saydam ve gölge düşmeye devam eder — saydamlık 1.00, uzaklık 0.60 m, gölgenin değiştirdiği piksel 783 (yön 90.00)
+[OK]   (11c) elde kangal saydamlaşır, elden çıkınca kaynak malzeme — 1/1 saydam, karakter saydamlığı 1.00, döndü True
+[OK]   (11c) elde koni saydamlaşır, elden çıkınca kaynak malzeme — 1/1 saydam, karakter saydamlığı 1.00, döndü True
+[OK]   (11c) elde valiz saydamlaşır, elden çıkınca kaynak malzeme — 1/1 saydam, karakter saydamlığı 1.00, döndü True
+[OK]   (11b) Bölüm 1: duvar kalkınca opak ve kaynak malzeme — uzaklık 4.48 m
+[OK]   (12) Bölüm 1 → Ofis: saydamken sahne değişti, kopya kalmadı — önce 24, sonra 0, saydamlık 0.00
+[OK]   (13) malzeme asset'leri değişmedi (18), diskte dither'lı malzeme yok — değişen , dither kullanan asset 0
+CHARACTERFADE VERIFY OK

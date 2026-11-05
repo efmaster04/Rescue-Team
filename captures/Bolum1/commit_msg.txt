@@ -1,0 +1,10 @@
+Bölüm 1 uçurum mekânı ve minibüs oyun projesine aktarıldı
+
+- Mekân FBX'leri + markers.json ve SM_Minivan + minivan_meta.json kopyalandı
+- Bolum1ImportSettings: Scale 1, Convert Units açık, Bake Axis kapalı
+- Bolum1Coordinates: Blender (x,y,z) -> Unity (-x,z,-y), raycast ile doğrulandı
+- Bolum1SceneBuilder: Bolum1_Ucurum sahnesi (collider, minibüs Rigidbody,
+  işaretler, test karakteri, gün batımı ışığı)
+- Bolum1Verify: kabul testi, fizik ölçümü ve ekran görüntüleri
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

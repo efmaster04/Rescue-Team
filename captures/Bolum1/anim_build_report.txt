@@ -1,0 +1,9 @@
+D2/U2 durumları: ExtractPull (Extract_Pull x1.000), PiggybackPickUp (Piggyback_PickUp x1.000), PiggybackPutDown (Piggyback_PutDown x1.000), RopeHang (Rope_Hang_Idle x1.000), RopeClimb (Rope_Climb x1.000), RopeDescend (Rope_Descend x1.000), RopePiggybackClimb (Piggyback_Rope_Climb x1.000), RopePull (Rope_Pull x0.980), CabinetTakeCoil (Cabinet_TakeCoil x1.000), RopeTieStake (Rope_TieStake x1.000), RopeThrow (Rope_Throw x1.000); sırtta yürüyüş 1.2 m/sn, çekme 0.25 m/sn
+Ekip Animator'ı: Assets/Prefabs/Bolum1/Animation/AC_Crew_Locomotion.controller → Locomotion, CarryStretcher, CarryCone, CarryPiggyback, CarryStretcherFront, CarryCoil, PickUp, PutDown, Jump, Startled, Celebrate, HitReact, PushShove, TackleDive, TackleGetUp, WhistleBlow, ThrowAim, ThrowRelease, GetUp, ReviveHelper, ExtractPull, PiggybackPickUp, PiggybackPutDown, RopeHang, RopeClimb, RopeDescend, RopePiggybackClimb, RopePull, CabinetTakeCoil, RopeTieStake, RopeThrow; taşıma döngüleri sedye 1.4 m/sn, koni 2.4 m/sn'de ×1, beklemede ×0.25
+Hasta Animator'ı: Assets/Prefabs/Bolum1/Animation/AC_Patient_Lying.controller (Groan varsayılan ↔ HelpWave, Wave)
+Hasta Tourist: Assets/Prefabs/Bolum1/Animation/AC_Patient_Lying.controller
+Hasta Civilian: Assets/Prefabs/Bolum1/Animation/AC_Patient_Lying_ArmSling.controller (taban: Patient_LiePose_ArmSling, üst katman Lying_Groan, maske: kollar hariç)
+Hasta Elder: Assets/Prefabs/Bolum1/Animation/AC_Patient_Lying.controller
+Oyuncu sırt soketi: mixamorig:Spine1/PiggybackSocket kökten (0.00, 0.29, -0.31) (bağ pozu)
+Oyuncu: CrewAnimation (irkilme 6 m, kalkış 1.60 sn, ayak IK'sı kalkışta kapalı), yeniden doğma: FallRespawnPlane y < -60.0 → PlayerSpawn (45.00, -1.10, -1.23)
+Bot: CrewAnimation, ragdoll 11 gövde (70 kg), çarpılınca 3 sn sonra kendi kalkar

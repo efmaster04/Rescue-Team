@@ -1,0 +1,94 @@
+CARRY VERIFY garaj 2026-11-05 11:11:51
+[OK]   (0) kurulum: CarryHandIK ThirdPersonPlayer'a eklendi, LowerBody katmanı Crouch'un altında — katmanlar 3
+[OK]   (grease) sınıf Light, durum CarryCone — sınıf Light, durum True, IK 1.00, boyut (0.22, 0.22, 0.22), alt tutuş
+[OK]   (grease) hız: yürüme 2.4, koşu 3.2 — yürüme 2.40, koşu 3.20, koşu klibi True
+[OK]   (grease) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; erişime çekilen el 34 kare
+[OK]   (grease) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (grease) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %2, 45° %46, merkez False
+[OK]   (cone) sınıf Light, durum CarryCone — sınıf Light, durum True, IK 1.00, boyut (0.43, 0.72, 0.40), alt tutuş
+[OK]   (cone) hız: yürüme 2.4, koşu 3.2 — yürüme 2.40, koşu 3.20, koşu klibi True
+[OK]   (cone) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; erişime çekilen el 0 kare
+[OK]   (cone) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (cone) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %100, merkez False
+[OK]   (bin) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.8 cm
+[OK]   (bin) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.51, 0.30, 0.39), yan tutuş
+[OK]   (bin) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (bin) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.6 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 30 kare
+[OK]   (bin) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.4 cm, eğilme True
+[OK]   (bin) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %2, 45° %70, merkez False
+[OK]   (absorbent) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 2.3 cm
+[OK]   (absorbent) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.37, 0.38, 0.35), yan tutuş
+[OK]   (absorbent) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (absorbent) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.6 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 1.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 36 kare
+[OK]   (absorbent) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.6 cm, eğilme True
+[OK]   (absorbent) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %1, 45° %77, merkez False
+[OK]   (case) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.5 cm
+[OK]   (case) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.54, 0.29, 0.34), yan tutuş
+[OK]   (case) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (case) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 35 kare
+[OK]   (case) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.4 cm, eğilme True
+[OK]   (case) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %1, 45° %69, merkez False
+[OK]   (fuel) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 4.1 cm
+[OK]   (fuel) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.30, 0.47, 0.24), yan tutuş
+[OK]   (fuel) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (fuel) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 3.6 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 4.1 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 58 kare
+[OK]   (fuel) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 3.6 cm, eğilme True
+[OK]   (fuel) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %70, merkez False
+[OK]   (toolbox) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 1.1 cm
+[OK]   (toolbox) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.45, 0.31, 0.32), yan tutuş
+[OK]   (toolbox) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (toolbox) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.6 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 31 kare
+[OK]   (toolbox) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.5 cm, eğilme True
+[OK]   (toolbox) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %74, merkez False
+[OK]   (rope) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 1.9 cm
+[OK]   (rope) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.43, 0.11, 0.43), yan tutuş
+[OK]   (rope) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (rope) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 30 kare
+[OK]   (rope) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.5 cm, eğilme True
+[OK]   (rope) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %4, 45° %78, merkez False
+[OK]   (parts) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 1.2 cm
+[OK]   (parts) sınıf Heavy, durum CarryHeavy — sınıf Heavy, durum True, IK 1.00, boyut (0.49, 0.43, 0.49), yan tutuş
+[OK]   (parts) hız: yürüme 1.4, koşu 1.4 — yürüme 1.40, koşu 1.40, koşu klibi True
+[OK]   (parts) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.4 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 108 kare
+[OK]   (parts) zıplama ve eğilme kuralı — yükselme 0.00 m, döngüde kaldı True, havada tutuş 0.2 cm, eğilme True
+[OK]   (parts) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %3, 45° %69, merkez False
+[OK]   (tire) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.0 cm
+[OK]   (tire) sınıf Heavy, durum CarryHeavy — sınıf Heavy, durum True, IK 1.00, boyut (0.76, 0.19, 0.76), alt tutuş
+[OK]   (tire) hız: yürüme 1.4, koşu 1.4 — yürüme 1.40, koşu 1.40, koşu klibi True
+[OK]   (tire) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 1.0 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 109 kare
+[OK]   (tire) zıplama ve eğilme kuralı — yükselme 0.00 m, döngüde kaldı True, havada tutuş 1.0 cm, eğilme True
+[OK]   (tire) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %21, 45° %59, merkez False
+[OK]   (jack) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.0 cm
+[OK]   (jack) sınıf Heavy, durum CarryHeavy — sınıf Heavy, durum True, IK 1.00, boyut (0.87, 0.28, 0.64), alt tutuş
+[OK]   (jack) hız: yürüme 1.4, koşu 1.4 — yürüme 1.40, koşu 1.40, koşu klibi True
+[OK]   (jack) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 1.0 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 109 kare
+[OK]   (jack) zıplama ve eğilme kuralı — yükselme 0.00 m, döngüde kaldı True, havada tutuş 1.0 cm, eğilme True
+[OK]   (jack) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %13, 45° %57, merkez False
+[OK]   (stretcher) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.0 cm
+[OK]   (stretcher) sınıf Heavy, durum CarryHeavy — sınıf Heavy, durum True, IK 1.00, boyut (2.10, 0.15, 0.63), alt tutuş
+[OK]   (stretcher) hız: yürüme 1.4, koşu 1.4 — yürüme 1.40, koşu 1.40, koşu klibi True
+[OK]   (stretcher) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 1.0 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 109 kare
+[OK]   (stretcher) zıplama ve eğilme kuralı — yükselme 0.00 m, döngüde kaldı True, havada tutuş 1.0 cm, eğilme True
+[OK]   (stretcher) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %22, 45° %30, merkez False
+  modül: paket sahnede ModulePackage_cargo, katalog cargo 1150 kg
+[OK]   (modul) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.0 cm
+[OK]   (modul) sınıf Heavy, durum CarryHeavy — sınıf Heavy, durum True, IK 1.00, boyut (0.63, 0.42, 0.41), yan tutuş
+[OK]   (modul) hız: yürüme 1.4, koşu 1.4 — yürüme 1.40, koşu 1.40, koşu klibi True
+[OK]   (modul) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 108 kare
+[OK]   (modul) zıplama ve eğilme kuralı — yükselme 0.00 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (modul) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %77, merkez False
+TABLO (eşya | sınıf | boyut (elde) kg | yürüme | koşu):
+  grease | Light | (0.22, 0.22, 0.22) | 2.4 | 3.2
+  cone | Light | (0.43, 0.72, 0.40) | 2.4 | 3.2
+  bin | Medium | (0.51, 0.30, 0.39) | 2.0 | 2.6
+  absorbent | Medium | (0.37, 0.38, 0.35) | 2.0 | 2.6
+  case | Medium | (0.54, 0.29, 0.34) | 2.0 | 2.6
+  fuel | Medium | (0.30, 0.47, 0.24) | 2.0 | 2.6
+  toolbox | Medium | (0.45, 0.31, 0.32) | 2.0 | 2.6
+  rope | Medium | (0.43, 0.11, 0.43) | 2.0 | 2.6
+  parts | Heavy | (0.49, 0.43, 0.49) | 1.4 | yok
+  tire | Heavy | (0.76, 0.19, 0.76) | 1.4 | yok
+  jack | Heavy | (0.87, 0.28, 0.64) | 1.4 | yok
+  stretcher | Heavy | (2.10, 0.15, 0.63) | 1.4 | yok
+  modul | Heavy | (0.63, 0.42, 0.41) | 1.4 | yok
+CARRY VERIFY OK

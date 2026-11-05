@@ -1,0 +1,34 @@
+TRAFFIC VERIFY 2026-11-03 04:08:09
+[OK]   sahne: şeritler, trafik yönetmeni, 5 araç prefab'ı, ayar asset'i, koniler, oyuncu ragdoll'u — eksik obje: yok; prefab'lar True; yönetmen True; koniler True; oyuncu ragdoll 11 gövde; ayarlar sakin 20–40, dalga 3–4, aralık 2–4, tipler Sedan:27.5/13m/sn Hatchback:27.5/13m/sn Pickup:15/12m/sn PanelVan:15/11.5m/sn BoxTruck:15/10m/sn
+  Sedan: gövde (1.80, 1.30, 4.50), tekerlek 4, renk varyantı 4, model Assets/Models/Vehicles/Traffic/SM_Sedan.fbx
+  Hatchback: gövde (1.75, 1.35, 4.00), tekerlek 4, renk varyantı 4, model Assets/Models/Vehicles/Traffic/SM_Hatchback.fbx
+  Pickup: gövde (1.90, 1.70, 5.30), tekerlek 4, renk varyantı 0, model Assets/Models/Vehicles/Traffic/SM_Pickup.fbx
+  PanelVan: gövde (2.00, 2.25, 5.40), tekerlek 4, renk varyantı 0, model Assets/Models/Vehicles/Traffic/SM_PanelVan.fbx
+  BoxTruck: gövde (2.50, 3.45, 9.50), tekerlek 6, renk varyantı 0, model Assets/Models/Vehicles/Traffic/SM_BoxTruck.fbx
+[OK]   (i) ses: motor, korna, koni çarpma RMS > 0.01; kaynaklar spatialBlend 1, dopplerLevel > 0 — Sedan motor 55 Hz RMS 0.168, korna 420/530 Hz RMS 0.192, kaynak 3D/Doppler True; Hatchback motor 60 Hz RMS 0.168, korna 470/590 Hz RMS 0.192, kaynak 3D/Doppler True; Pickup motor 48 Hz RMS 0.168, korna 380/480 Hz RMS 0.192, kaynak 3D/Doppler True; PanelVan motor 44 Hz RMS 0.168, korna 350/440 Hz RMS 0.192, kaynak 3D/Doppler True; BoxTruck motor 32 Hz RMS 0.168, korna 220/277 Hz RMS 0.192, kaynak 3D/Doppler True; koni çarpma RMS 0.125, koni kaynakları 3D/Doppler True
+[OK]   (düzeltme 3) seyir hızı Sedan — 13 m/sn
+[OK]   (düzeltme 3) seyir hızı Hatchback — 13 m/sn
+[OK]   (düzeltme 3) seyir hızı Pickup — 12 m/sn
+[OK]   (düzeltme 3) seyir hızı PanelVan — 11,5 m/sn
+[OK]   (düzeltme 3) seyir hızı BoxTruck — 10 m/sn
+PLAY (b): sabit seed 20261015, 300 sn; ambulans takvimi ilk varış 40, aralık 60, bekleme 15 (geçici kopya), yolculuk 7.02 sn
+  görüntü: Captures/Bolum1/trafik_genel.png
+[OK]   (b) 5 dk sabit seed: her iki yönde dalgalar; sakin 20–40 sn, dalga 3–4 araç, aralık ≥ 2 sn (2–4 + yer bekleme), sakinde en çok 1 araç; 5 tip görüldü — EastBound: 22 araç, 5 dalga (planlanan boy 3,3,4,3,4; gerçekleşen 3,3,4,3,4), sakin planlanan 23.8–39.8 (ort 30.9, n 6) sn, ölçülen (dalga sonu → sonraki dalga) 27.9–53.5 (ort 36.5, n 4) sn, dalga içi aralık 2.2–23.5 (ort 8.1, n 12) sn, sakin aralıktaki tek araç 5 (aralık başına en çok 1), tipler Sedan:9 Hatchback:6 Pickup:2 PanelVan:2 BoxTruck:3 | WestBound: 34 araç, 8 dalga (planlanan boy 3,4,4,3,4,4,3,4; gerçekleşen 3,4,4,3,4,4,3,4), sakin planlanan 20.4–38.2 (ort 26.4, n 9) sn, ölçülen (dalga sonu → sonraki dalga) 20.5–38.2 (ort 26.1, n 7) sn, dalga içi aralık 2.2–4.0 (ort 3.2, n 21) sn, sakin aralıktaki tek araç 5 (aralık başına en çok 1), tipler Sedan:6 Hatchback:9 Pickup:3 PanelVan:6 BoxTruck:10; 5 tip True, binek renk varyantı 4/4; genel görüntü alındı
+[OK]   (h1) ambulans doğmadan önceki 20 sn içinde EastBound spawn yok; varışlar trafikle planlanan zamana ±0.5 sn — ambulans doğuşları 33.0, 93.0, 153.0, 213.0, 273.0; ihlal yok; doğuştan önceki en yakın EastBound spawn 20.17 sn önce; varışlar 40.00, 100.02, 160.02, 220.01, 280.00 (en büyük sapma 0.017 sn)
+[OK]   (b2) deterministik test modu: aynı seed ile ilk 60 sn'nin spawn dizisi aynı — 1. koşu 9 spawn, 2. koşu 9 spawn; ilk 4: E11.00PanelVan-1 E33.82Sedan3 W34.30BoxTruck-1 E36.78PanelVan-1
+  görüntü: Captures/Bolum1/trafik_ambulans_kuyruk.png
+[OK]   (h2) ambulans duraktayken EastBound kuyruğu ambulansa girmiyor ve ambulans gidince çözülüyor — ilk aracın lideri Ambulance_1, boşluklar Vehicle_Sedan_1 4.00 m, Vehicle_BoxTruck_2 4.00 m, Vehicle_PanelVan_3 4.01 m; ambulans varışı 25.00 sn (plan 25); kalkıştan 2.90 sn sonra son araç da ≥ 5 m ilerledi
+  görüntü: Captures/Bolum1/trafik_koni.png
+[OK]   (d1) şeride konan dik koni aracı durduruyor; araç ~20 ± 1 sn sonra koniye çarpıp devam ediyor, koni ≥ 1 m savruluyor — koni şeridi kapatıyor True (s 95.5); ön tampon koniye 1.20 m kala durdu; duruştan çarpmaya 20.88 sn (bekleme sayacı 20.00 sn); koni 4.18 m savruldu (eğim 105°, yolda True); araç devam etti True
+[OK]   (d2) devrik koni şeridi kapatmıyor — eğim 107°, kapatıyor False; geçen aracın en düşük hızı 13.00 m/sn, koniyi engel gördü False
+[OK]   (e1) koni E ile alınıyor ve baktığı yere dik konuyor; elde 1 koni (ikinci koni alınmıyor) — ipucu "E: Koniyi al", alındı True; ikinci koni yanında ipucu "E: Koniyi koy", E sonrası elde yok; konan koni hedefe 0.00 m, eğim 1.4°, zeminde True
+[OK]   (e2) koni tutan sedye tutamıyor, sedye tutan koni alamıyor — koni elde, sap yanında ipucu "E: Koniyi koy" → E: sedye tutuldu mu False; sedye elde, koni yanında ipucu "E: Bırak" → E: koni alındı mı False
+  görüntü: Captures/Bolum1/trafik_dusme.png
+[OK]   (f1) şeritteki oyuncu: korna, hız ≤ %40 ve > 0; temasla oyuncu Ragdoll — korna 2 kez; yavaşlama 1371 kare, en düşük hız 5.20 m/sn (sınır 5.20); temas: düştü True, ragdoll gövdeleri dinamik True; kalça (-12.27, 0.43, 2.91)
+[OK]   (f2) arkadaş (ikinci test taşıyıcısı) E basılı 2 sn ile kaldırıyor; oyuncu ayağa kalkıp kontrolü geri alıyor — arkadaş ipucu "E (basılı tut): Arkadaşını kaldır"; 1 sn'de ilerleme %50; kalkma 2.00 sn (beklenen 2); ayakta, kontrol True
+[OK]   (f3) bot 3 sn sonra yanına ışınlanıp 2 sn'de kaldırıyor (toplam ~5 sn) — kaldırma başlangıcı düşmeden 3.00 sn sonra, bot kalçaya 0.82 m; kalkma düşmeden 5.00 sn sonra
+[OK]   (f4) kimse kaldırmazsa (bot kapalı) 15 sn sonra hâlâ yerde — 15 sn sonra yerde True, ilerleme %0
+[OK]   (g) sedye taşırken çarpılan taşıyıcı sedyeyi bırakıyor; hasta Ragdoll ve itkiyle ≥ 0.5 m savruluyor — taşıyıcı düştü True, sedyeyi bıraktı True (çarpma anında True); hasta Ragdoll, 1.5 sn'de 7.91 m savruldu
+[OK]   (c) hiçbir karede iki aracın collider'ları kesişmiyor; en küçük takip mesafesi ≥ 3.8 m — 289234 kare örneklendi, kesişen kare 0; en küçük takip mesafesi (ön tampon → öndeki arka tampon) 4.00 m Vehicle_Sedan_2 → Ambulance_1 (hız 0.0)
+[OK]   (a) log'da C# derleme hatası yok — log: C:/Users/W11/AppData/Local/Temp/claude/C--Users-W11-Desktop-Center/f4866956-97fc-49d9-8789-cc6a2aaed403/scratchpad/suite/Bolum1TrafficVerify-Run.log
+TRAFFIC VERIFY OK

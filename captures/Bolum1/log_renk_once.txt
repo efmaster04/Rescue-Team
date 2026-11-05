@@ -1,0 +1,495 @@
+VBCSCompilerPreWarmer: watching VBCSCompiler (PID 35068)
+VBCSCompilerPreWarmer: pre-warm launched (dotnet PID 15404)
+VBCSCompiler prewarm took 12.87 ms
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.6/staging' branch; Version is '6000.6.3f1 (45d8eee7de74) revision 4577518'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Channel LicenseClient-W11 doesn't exist
+OS: 'Windows 11  (10.0.26200) Professional' Language: 'tr' Physical Memory: 31801 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-10-13T01:58:48Z
+[Licensing::Module] Successfully launched the LicensingClient (PId: 10224)
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Unity.exe
+-batchmode
+-projectPath
+C:/Users/W11/Desktop/RescueTeam
+-executeMethod
+Bolum1ColorProbe.Run
+-renkTag
+once
+-logFile
+C:/Users/W11/Desktop/RescueTeam/Captures/Bolum1/log_renk_once.txt
+Successfully changed project path to: C:/Users/W11/Desktop/RescueTeam
+C:/Users/W11/Desktop/RescueTeam
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-main-allocator-mimalloc-enabled=1"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Logging is directed to a specific file, skipping project log.
+Player connection [18740]  Target information:
+
+Player connection [18740]  * "[IP] 100.76.124.122 [Port] 55504 [Flags] 2 [Guid] 1111354244 [EditorId] 1111354244 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-MFHRDIK) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [18740]  * "[IP] 192.168.1.31 [Port] 55504 [Flags] 2 [Guid] 1111354244 [EditorId] 1111354244 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-MFHRDIK) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [18740] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [18740] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Starting IPC server.
+Waiting for clients to connect on \\.\pipe\Unity-LicenseClient-W11, press Ctrl-C to exit.
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-W11" at "2026-10-13T01:58:48.9393803Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 10224, path: "C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Package Manager] Connected to IPC stream "Upm-22864" after 0.2 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              352c13ba5c6c47228edea7b7ca0eafd1
+  Correlation Id:          3ca598d02de1069fc6ad2ad2787a766d
+  External correlation Id: 1405283247366759912
+  Machine Id:              PJ3K0TBBM8hEnCGCl4Z8/w1zl10=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-W11" (connect: 0.24s, validation: 0.10s, handshake: 0.03s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-W11-notifications" at "2026-10-13T01:58:49.0675532Z"
+[Licensing::Module] Connected to LicensingClient (PId: 10224, launch time: 0.00, total connection time: 0.37s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 18968021863883-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.41s
+[Licensing::Module] Licensing is initialized (took 0.08s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+Initialising UDS system complete:
+  - System type: Client
+  - Resource namespace: 9bee4929ffdf81fa5f8a06360afc94f1
+  - Shared memory size: 1073741824
+  - Command buffer id: 1052576
+  - Command buffer size: 8192
+  - Hashmap size: 4194304
+  - Service connected: false
+Launching Unity Data Store - C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Tools/Unity.DataStore.exe 
+Unity Data Store artifact dir = Library/DataStore, working dir = C:/Users/W11/Desktop/RescueTeamUnity Data Store running and initialised
+[Physics::Module] Selected backend (deferred post-plugins).
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Initialize engine version: 6000.6.3f1 (45d8eee7de74)
+[EntityIdStore] init: VM path (explicit commit), pageSize=4096, blockCount=1048576, entitiesPerBlock=256, slots reserved=4294967296 bytes
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/W11/Desktop/RescueTeam/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 5080 (ID=0x2c02)
+    Vendor:   NVIDIA
+    VRAM:     15977 MB
+    Driver:   32.0.15.9186
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/BCLExtensions/runtime/netstandard2.1'
+Mono path[2] = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56864
+CodeReloadManager initialized
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.000916 seconds.
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Scripting: successfully reloaded assembly
+- Finished resetting the current domain, in  0.512 seconds
+Domain Reload Profiling: 915ms
+	BeginReloadAssembly (104ms)
+		CreateAndSetChildDomain (5ms)
+	RebuildCommonClasses (4ms)
+	RebuildNativeTypeToScriptingClass (14ms)
+	initialDomainReloadingComplete (44ms)
+	LoadAllAssembliesAndSetupDomain (235ms)
+		LoadAssemblies (98ms)
+		TypeCache.Refresh (157ms)
+			TypeCache.ScanAssembly (147ms)
+		AnalyzeDomain (0ms)
+	FinalizeReload (513ms)
+		SetupLoadedEditorAssemblies (0ms)
+			BeforeProcessingInitializeOnLoad (77ms)
+			ProcessInitializeOnLoadAttributes (95ms)
+			ProcessInitializeOnLoadMethodAttributes (171ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 69 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.assistant@2.20.0-pre.2 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ai.assistant@1b11b9bfd84a)
+    com.unity.ai.inference@2.6.1 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ai.inference@9a123aee5df7)
+    com.unity.ai.navigation@2.0.14 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.cloud.gltfast@6.14.1 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.cloud.gltfast@0847aee0f6da)
+    com.unity.collab-proxy@2.13.6 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.38 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ide.rider@1f60b3138684)
+    com.unity.ide.visualstudio@2.0.26 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.20.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.inputsystem@7a4e1a2a8194)
+    com.unity.probuilder@6.1.2 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.probuilder@8be9724b2335)
+    com.unity.visualscripting@1.9.12 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.visualscripting@4edfcc09512f)
+    com.unity.settings-manager@2.1.1 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.settings-manager@0b8638c5ce86)
+    com.unity.dt.app-ui@2.1.11 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.dt.app-ui@cd5609b130ce)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.searcher@4.9.5 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.searcher@a463122f2c00)
+    com.unity.profiling.core@1.0.3 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.profiling.core@8a49f7027d06)
+  Built-in packages:
+    com.unity.render-pipelines.universal@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.render-pipelines.universal@327d93d1cbc8)
+    com.unity.test-framework@1.8.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.test-framework@80f691d4262b)
+    com.unity.timeline@6.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.timeline@c56d56b0070b)
+    com.unity.ugui@2.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ugui@0727b404f3a0)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.physicscore2d@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.physicscore2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tetgen@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.tetgen)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.timelinefoundation@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.timelinefoundation)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.1.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.ext.nunit@0198eae3b53e)
+    com.unity.render-pipelines.core@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.render-pipelines.core@02d75770e4b3)
+    com.unity.shadergraph@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.shadergraph@1dd0fd24b57e)
+    com.unity.render-pipelines.universal-config@17.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.render-pipelines.universal-config@561422b74439)
+    com.unity.burst@2.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.burst@626e66ab421b)
+    com.unity.collections@6.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.collections@10fff0607388)
+    com.unity.mathematics@1.4.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.mathematics@8306a64d0cd6)
+    com.unity.2d.sprite@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.2d.sprite@26bcb5e737a2)
+    com.unity.graph-authoring@1.0.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.graph-authoring@cfd2588851ee)
+    com.unity.test-framework.performance@6.6.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.unity.test-framework.performance@b6023decb532)
+  Git packages:
+    com.coplaydev.unity-mcp@https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.3.0 (location: C:\Users\W11\Desktop\RescueTeam\Library\PackageCache\com.coplaydev.unity-mcp@da7b9ae4aeeb)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.02 seconds
+[ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
+Refreshing native plugins compatible for Editor in 2.39 ms, found 5 plugins.
+Starting: C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/W11/Desktop/RescueTeam
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\Facades\System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\NetStandard\Extensions\2.0.0\System.Runtime.InteropServices.WindowsRuntime.dll"
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\System.ComponentModel.Composition.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.ComponentModel.Composition.dll"
+DisplayProgressbar: Compiling Scripts
+Starting: C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\DotNetSdk\dotnet.exe "C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aE.dag.json" "Library/Bee/1900b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+WorkingDir: C:/Users/W11/Desktop/RescueTeam
+ExitCode: 4 Duration: 0s756ms
+[1345/1785  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
+[1781/1785  0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+*** Tundra requires additional run (0.73 seconds), 2 items updated, 1780 evaluated
+ExitCode: 0 Duration: 1s661ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.6.3f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/W11/Desktop/RescueTeam
+ExitCode: 0 Duration: 1s200ms
+Finished compiling graph: 1789 nodes, 39823 flattened edges (32687 ToBuild, 298 ToUse), maximum node priority 2028
+[ 912/1785  0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.rsp
+[1345/1785  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1781/1785  0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+[1782/1785  0s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 148 defines and 412 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+1 processor(s) skipped this assembly
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+[1783/1785  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[1784/1785  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (1.18 seconds), 6 items updated, 1785 evaluated
+AssetDatabase: script compilation time: 4.118776s
+Total cache size 268095936
+Begin MonoManager ReloadAssembly
+Total cache size after purge 268095936, took 00:00:00.1859242
+Symbol file LoadedFromMemory is not a mono symbol file
+Symbol file LoadedFromMemory is not a mono symbol file
+'Packages/com.unity.render-pipelines.core/Editor/Deprecated.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+'Packages/com.unity.render-pipelines.core/Editor/Deprecated.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+Refreshing native plugins compatible for Editor in 2.31 ms, found 5 plugins.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 2.31 ms, found 5 plugins.
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-RescueTeam
+[Licensing::Client] Error: Code 404 while processing request (status: Found 0 entitlement groups and 0 free entitlements matching requested entitlement ids)
+[Licensing::Client] Error: Code 404 while processing request (status: Found 0 entitlement groups and 0 free entitlements matching requested entitlement ids)
+[Licensing::Client] Error: Code 404 while processing request (status: Found 0 entitlement groups and 0 free entitlements matching requested entitlement ids)
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Scripting: successfully reloaded assembly
+- Finished resetting the current domain, in  1.724 seconds
+Domain Reload Profiling: 2766ms
+	BeginReloadAssembly (180ms)
+		DisableScriptedObjects (19ms)
+		CreateAndSetChildDomain (32ms)
+	RebuildCommonClasses (7ms)
+	RebuildNativeTypeToScriptingClass (14ms)
+	initialDomainReloadingComplete (65ms)
+	LoadAllAssembliesAndSetupDomain (776ms)
+		LoadAssemblies (320ms)
+		TypeCache.Refresh (297ms)
+			TypeCache.ScanAssembly (280ms)
+		AnalyzeDomain (96ms)
+			BuildScriptInfoCaches (88ms)
+			ResolveRequiredComponents (7ms)
+	FinalizeReload (1725ms)
+		SetupLoadedEditorAssemblies (0ms)
+			BeforeProcessingInitializeOnLoad (120ms)
+			ProcessInitializeOnLoadAttributes (872ms)
+			ProcessInitializeOnLoadMethodAttributes (390ms)
+			AfterProcessingInitializeOnLoad (4ms)
+		AwakeInstancesAfterBackupRestoration (21ms)
+Starting new worker id: 0 with log in C:/Users/W11/Desktop/RescueTeam/Logs/AssetImportWorkerHW0.log
+Refreshing native plugins compatible for Editor in 2.79 ms, found 5 plugins.
+
+Asset Pipeline Refresh (id=1e97df19f3df67f4e8786df6d508119a): Total: 7.993 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	(Values over 0.05ms)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=2332 ms
+		Asset DB Callback time: managed=339 ms, native=25 ms
+		Scripting: domain reloads=1, domain reload time=1098 ms, compile time=4120 ms, other=77 ms
+		Project Asset Count: scripts=2352, non-scripts=5976
+		Asset File Changes: new=1, changed=1, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 19.229ms
+	ApplyChangesToAssetFolders: 0.537ms
+	Scan: 151.466ms
+	Collect global state as custom dependencies: 14.799ms
+	OnSourceAssetsModified: 0.487ms
+	CategorizeScriptCompilationAssets: 52.729ms
+	ProcessAssetsWithTransientArtifactChanges: 98.804ms
+	CategorizeAssets: 87.769ms
+	CompileScripts: 4120.349ms
+	ImportOutOfDateAssets: 1748.979ms (1735.481ms without children)
+		UnloadImportedAssets: 0.885ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.920ms
+		ImportSchedulerStart: 11.655ms
+	PostProcessAllAssets: 339.471ms
+		VCAutoAddAssetPostprocess 0.676ms
+		XRBuildSystem.XRAssetImported 0.533ms
+		VersionControlSettings.HiddenFilePostprocess 0.063ms
+		MonoPostProcessAllAssets: 337.759ms
+			AssetPostprocessor.OnPostprocessAllAssets 86.445ms
+			StyleCatalogPostProcessor.OnPostprocessAllAssets 25.838ms
+			AssetReferenceReimportMonitor.OnPostprocessAllAssets 20.002ms
+			UniversalRenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 18.035ms
+			BuilderAssetPostprocessor.OnPostprocessAllAssets 5.051ms
+			SpriteSlicePostprocessor.OnPostprocessAllAssets 2.697ms
+			GraphRefreshPostprocessor.OnPostprocessAllAssets 2.168ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 1.819ms
+			ShaderGraphAssetPostProcessor.OnPostprocessAllAssets 1.559ms
+			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 1.157ms
+			AssetChangedListener.OnPostprocessAllAssets 1.141ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 1.085ms
+			MaterialPostprocessor.OnPostprocessAllAssets 1.031ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.883ms
+			AssetChangeDetector.OnPostprocessAllAssets 0.872ms
+			EditModeScopePostprocessor.OnPostprocessAllAssets 0.786ms
+			SpriteEditorTexturePostprocessor.OnPostprocessAllAssets 0.539ms
+			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.523ms
+			ShaderReflectionAssetPostProcessor.OnPostprocessAllAssets 0.506ms
+			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.439ms
+			TextAssetPostProcessor.OnPostprocessAllAssets 0.427ms
+			SkillsProjectAssetPostprocessor.OnPostprocessAllAssets 0.414ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.387ms
+			AudioMixerPostprocessor.OnPostprocessAllAssets 0.307ms
+			PostProcessor.OnPostprocessAllAssets 0.305ms
+			InputActionJsonNameModifierAssetProcessor.OnPostprocessAllAssets 0.295ms
+			UVCSAssetPostprocessor.OnPostprocessAllAssets 0.284ms
+			ModelAssetProcessor.OnPostprocessAllAssets 0.262ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.216ms
+			SamplePostprocessor.OnPostprocessAllAssets 0.210ms
+			AssetEvents.OnPostprocessAllAssets 0.182ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.168ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.159ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.157ms
+			RescueCrewClipFixesWatcher.OnPostprocessAllAssets 0.144ms
+			SyncVS.PostprocessSyncProject 0.143ms
+			ThemePostprocessor.OnPostprocessAllAssets 0.141ms
+			SpeedTreePostProcessor.OnPostprocessAllAssets 0.131ms
+			ConfigAssetsTracker.OnPostprocessAllAssets 0.119ms
+			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.095ms
+			AssetReloadNotifier.OnPostprocessAllAssets 0.087ms
+			AudioContainerPostProcessor.OnPostprocessAllAssets 0.086ms
+			TrackSelectedAssetsProcessor.OnPostprocessAllAssets 0.065ms
+	PostAssetChangesProfiler: 6.636ms
+	UnloadStreamsBegin: 1.228ms
+	PersistCurrentRevisions: 0.192ms
+	GenerateScriptTypeHashes: 1.428ms
+	GenerateScriptTypeSerializationHashes: 2.609ms
+	Untracked: 1331.672ms
+
+Application.AssetDatabase Initial Refresh End
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Scanning for USB devices : 7.727ms
+Initializing Unity extensions:
+Unloading 139 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 11315 unused Assets / (31.5 MB). Loaded Objects now: 12238.
+Memory consumption went from 0.59 GB to 0.56 GB.
+Total: 31.098800 ms (FindLiveObjects: 0.811900 ms CreateObjectMapping: 0.997100 ms MarkObjects: 20.197000 ms  DeleteObjects: 8.837300 ms)
+
+Opening scene 'Assets/Scenes/Bolum1_Ucurum.unity'
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/Scenes/Bolum1_Ucurum.unity'
+	Deserialize:            2.358 ms
+	Integration:            49.085 ms
+	Integration of assets:  0.002 ms
+	Thread Wait Time:       0.012 ms
+	Total Operation Time:   51.457 ms
+Unloading 31 unused Assets / (155.5 KB). Loaded Objects now: 12957.
+Memory consumption went from 0.57 GB to 0.57 GB.
+Total: 15.036800 ms (FindLiveObjects: 0.489000 ms CreateObjectMapping: 0.122800 ms MarkObjects: 14.159300 ms  DeleteObjects: 0.036000 ms)
+
+GPU Resident Drawer created.
+Worker ready: AssetImportWorkerHW0 0
+BOLUM1 RENK OLCUMU (once) 2026-10-13 04:58:59
+renk uzayı: Linear, render pipeline: PC_RPAsset
+  M_Minivan_Damage: shader Universal Render Pipeline/Lit, renk #555553 a=1.00 (lineer 0.090, 0.090, 0.086), yüzey Opaque, kuyruk 2000
+  M_Minivan_Glass: shader Universal Render Pipeline/Lit, renk #EDEDEE a=0.34 (lineer 0.843, 0.843, 0.859), yüzey Transparent, kuyruk 3000
+  M_Minivan_Headlight: shader Universal Render Pipeline/Lit, renk #E6E5E7 a=1.00 (lineer 0.792, 0.784, 0.800), yüzey Opaque, kuyruk 2000
+  M_Minivan_Interior: shader Universal Render Pipeline/Lit, renk #ABA7B1 a=1.00 (lineer 0.408, 0.384, 0.439), yüzey Opaque, kuyruk 2000
+  M_Minivan_Paint: shader Universal Render Pipeline/Lit, renk #CCE3EA a=1.00 (lineer 0.604, 0.769, 0.824), yüzey Opaque, kuyruk 2000, beklenen #9AC4D2 ile ΔE76 14.1
+  M_Minivan_Rim: shader Universal Render Pipeline/Lit, renk #959295 a=1.00 (lineer 0.302, 0.286, 0.302), yüzey Opaque, kuyruk 2000
+  M_Minivan_Strap: shader Universal Render Pipeline/Lit, renk #C0D0DD a=1.00 (lineer 0.525, 0.631, 0.722), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_A: shader Universal Render Pipeline/Lit, renk #D4B79F a=1.00 (lineer 0.659, 0.475, 0.345), yüzey Opaque, kuyruk 2000
+  M_Minivan_Suitcase_B: shader Universal Render Pipeline/Lit, renk #9DADBD a=1.00 (lineer 0.337, 0.416, 0.510), yüzey Opaque, kuyruk 2000
+  M_Minivan_Taillight: shader Universal Render Pipeline/Lit, renk #E78A7F a=1.00 (lineer 0.796, 0.255, 0.212), yüzey Opaque, kuyruk 2000
+  M_Minivan_Tire: shader Universal Render Pipeline/Lit, renk #606570 a=1.00 (lineer 0.118, 0.129, 0.161), yüzey Opaque, kuyruk 2000
+  M_Minivan_Trim: shader Universal Render Pipeline/Lit, renk #C8C6CD a=1.00 (lineer 0.576, 0.565, 0.608), yüzey Opaque, kuyruk 2000
+GÖRÜNTÜ sahne: Captures/Bolum1\renk_once_sahne.png
+  boya pikselleri (tümü, 15171): medyan #544139, ΔE76 54.2
+  boya pikselleri (ışığa dik, N·L>0.9, 547): medyan #785C4B, ΔE76 47.8
+  cam pikselleri (3737): medyan #9F7E6F
+GÖRÜNTÜ notr: Captures/Bolum1\renk_once_notr.png
+  boya pikselleri (tümü, 15171): medyan #BACED5, ΔE76 9.2
+  boya pikselleri (ışığa dik, N·L>0.9, 28): medyan #C4DAE1, ΔE76 11.6
+  cam pikselleri (3737): medyan #9DA3A7
+BOLUM1 RENK OLCUMU OK
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+Bolum1ColorProbe:Run () (at Assets/Editor/Bolum1ColorProbe.cs:69)
+
+(Filename: Assets/Editor/Bolum1ColorProbe.cs Line: 69)
+
+MonoPathRemapper: Attempts to remap: 23214; Successful remaps: 12
+Serialized file version minimum: 23, current 23
+Importing 'GUID: 00000000000000009000000000000000 - Path: ProjectSettings/QualitySettings.asset' with importer (LibraryAssetImporter)
+Imported 'GUID: 00000000000000009000000000000000' -> (Import Result ID: '8151b601d05d3e12de314c2aa1f82962') in 0.004 seconds [static dependencies only]. Details - ImportResultOutputID=2a108b3da874f726c62fbe5f12be4a8a DependenciesID=6180c49ef29638684367d2893c04e070 StaticDependenciesID=5b19720d9149525484b40148944c8e26 
+Importing 'GUID: 0000000000000000b000000000000000 - Path: ProjectSettings/EditorBuildSettings.asset' with importer (LibraryAssetImporter)
+Imported 'GUID: 0000000000000000b000000000000000' -> (Import Result ID: 'd4b59cb060f81ea6461d9015f1520027') in 0.001 seconds [static dependencies only]. Details - ImportResultOutputID=0a89a5c5f492143e0fa186859e17ba6f DependenciesID=c4e1b377361211f441812e41ca991afd StaticDependenciesID=88d454026c6611450154ab0790329a42 
+Refreshing native plugins compatible for Editor in 2.20 ms, found 5 plugins.
+Asset Pipeline Refresh (id=3bcbbc2dd487c254ebee738c7ca1f037): Total: 0.082 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+GPU Resident Drawer disposed.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-W11-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-W11 channel disconnected successfully.
+Shut down.
+Lingering sessions upon destruction of worker manager
+Unity Data Store service was successfully shut down
+UDS shutting down local client system
+Shut down UDS service system complete
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+abort_threads: Failed aborting id: 00000000000025B0, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000006DD8, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 00000000000025B0, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000006DD8, mono_thread_manage will ignore it
+
+debugger-agent: Unable to listen on 4056
+VBCSCompilerPreWarmer: requested VBCSCompiler shutdown
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1791856744489,"processId":22864,"allocatedMemory":21584720,"memoryLabels":[{"Default":210171},{"Permanent":15516},{"NewDelete":69415},{"Thread":4198064},{"Manager":826173},{"VertexData":728},{"Geometry":816},{"Texture":24},{"Shader":852041},{"Material":68},{"GfxDevice":56400},{"Animation":1200},{"Audio":984},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":17056},{"Input":42840},{"JobScheduler":256},{"TextLib":336},{"Mono":48},{"MonoCode":64},{"ScriptingNativeRuntime":1326592},{"BaseObject":48720},{"Resource":1252},{"Renderer":2384},{"Transform":4685},{"File":7393},{"WebCam":616},{"Culling":32},{"Terrain":11442},{"Wind":24},{"STL":40},{"String":978531},{"StaticString":3808},{"Utility":2674806},{"Curl":2559},{"PoolAlloc":3224},{"AI":80},{"TypeTree":14869},{"ScriptManager":12656},{"CodeReload":448},{"RuntimeInitializeOnLoadManager":64},{"Sprites":102},{"SpriteAtlas":120},{"GI":7816},{"Director":8048},{"CloudService":7296},{"WebRequest":12387},{"VR":49650},{"SceneManager":608},{"Video":64},{"LazyScriptCache":32},{"Camera":729},{"Secure":2377},{"SerializationCache":9256},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":592},{"Hierarchy":1188},{"UIElements":40},{"CoreStats":14456},{"Identifiers":7152},{"Gui":128},{"EditorUtility":127592},{"VersionControl":8},{"Undo":931},{"AssetDatabase":9539689},{"AssetImporter":40},{"EditorGi":328},{"UnityConnect":40441},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":96},{"DrivenProperties":72},{"LocalIPC":209},{"ProfilerEditor":9746},{"CoreBusinessMetrics":3596},{"Windowing":456},{"Licensing":1264},{"AssetReference":32},{"IPCStream":32}]}

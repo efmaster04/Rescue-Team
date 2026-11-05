@@ -1,0 +1,55 @@
+CARRY VERIFY saha 2026-11-05 11:10:25
+[OK]   (0) kurulum: CarryHandIK ThirdPersonPlayer'a eklendi, LowerBody katmanı Crouch'un altında — katmanlar 3
+[OK]   (koni) sınıf Light, durum CarryCone — sınıf Light, durum True, IK 1.00, boyut (0.32, 0.55, 0.32), alt tutuş
+[OK]   (koni) hız: yürüme 2.4, koşu 3.2 — yürüme 2.40, koşu 3.20, koşu klibi True
+[OK]   (koni) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; erişime çekilen el 0 kare
+[OK]   (koni) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (koni) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %9, 45° %46, merkez False
+[OK]   (Bag_03) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.4 cm
+[OK]   (Bag_03) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.55, 0.50, 0.33), yan tutuş
+[OK]   (Bag_03) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (Bag_03) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.7 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 101 kare
+[OK]   (Bag_03) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 1.1 cm, eğilme True
+[OK]   (Bag_03) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %73, merkez False
+[OK]   (Bag_04) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.4 cm
+[OK]   (Bag_04) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.55, 0.51, 0.33), yan tutuş
+[OK]   (Bag_04) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (Bag_04) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.7 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 99 kare
+[OK]   (Bag_04) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 1.4 cm, eğilme True
+[OK]   (Bag_04) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %73, merkez False
+[OK]   (Bag_05) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.4 cm
+[OK]   (Bag_05) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.55, 0.51, 0.33), yan tutuş
+[OK]   (Bag_05) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (Bag_05) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.5 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.7 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 102 kare
+[OK]   (Bag_05) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 1.2 cm, eğilme True
+[OK]   (Bag_05) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %70, merkez False
+[OK]   (Suitcase_01) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.0 cm
+[OK]   (Suitcase_01) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.75, 0.36, 0.66), yan tutuş
+[OK]   (Suitcase_01) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (Suitcase_01) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 51 kare
+[OK]   (Suitcase_01) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (Suitcase_01) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %10, 45° %71, merkez False
+[OK]   (Suitcase_02) yumruk: eşya yerinde, sol el üstünde — durum True, kayma 0.0 cm, sol el 0.0 cm
+[OK]   (Suitcase_02) sınıf Medium, durum CarryTwoHand — sınıf Medium, durum True, IK 1.00, boyut (0.75, 0.36, 0.66), yan tutuş
+[OK]   (Suitcase_02) hız: yürüme 2.0, koşu 2.6 — yürüme 2.00, koşu 2.60, koşu klibi True
+[OK]   (Suitcase_02) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 2.0 cm, baş 0.0 cm; erişime çekilen el 52 kare
+[OK]   (Suitcase_02) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (Suitcase_02) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %10, 45° %71, merkez False
+  atlandı (alınamaz): Valuable_Civilian
+[OK]   (Valuable_Elder) sınıf Light, durum CarryCone — sınıf Light, durum True, IK 1.00, boyut (0.16, 0.05, 0.11), yan tutuş
+[OK]   (Valuable_Elder) hız: yürüme 2.4, koşu 3.2 — yürüme 2.40, koşu 3.20, koşu klibi True
+[OK]   (Valuable_Elder) avuç → eşya < 5.0 cm, gövdeye < 3.0 cm, başa < 3.0 cm — TP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; FP tutuş 0.0 cm, gövde 0.0 cm, baş 0.0 cm; erişime çekilen el 33 kare
+[OK]   (Valuable_Elder) zıplama ve eğilme kuralı — yükselme 0.75 m, döngüde kaldı True, havada tutuş 0.0 cm, eğilme True
+[OK]   (Valuable_Elder) FP: 45° aşağı bakınca eşya görünür; düz bakışta ekran merkezini kapatmaz — görünür oran 0° %0, 45° %35, merkez False
+  atlandı (alınamaz): Valuable_Tourist
+[OK]   (kangal) Shift ile koşu 2.8 m/sn, yürüyüş 2.4, zıplama yok, eller kangalda (≤ 3 cm) — koşu 2.80, yürüyüş 2.40, zıpladı False, tutuş 0.0 cm, durum True
+[OK]   (yana adım) FP'de D → Strafe_Right, S → Walk_Back (ağırlık ~1); durunca ve TP'de öne yürürken 0 — D ağırlık 1.00 Strafe_Right, hız 2.40; S 1.00 Walk_Back; dur 0.00, TP 0.00
+TABLO (eşya | sınıf | boyut (elde) kg | yürüme | koşu):
+  koni | Light | (0.32, 0.55, 0.32) | 2.4 | 3.2
+  Bag_03 | Medium | (0.55, 0.50, 0.33) | 2.0 | 2.6
+  Bag_04 | Medium | (0.55, 0.51, 0.33) | 2.0 | 2.6
+  Bag_05 | Medium | (0.55, 0.51, 0.33) | 2.0 | 2.6
+  Suitcase_01 | Medium | (0.75, 0.36, 0.66) | 2.0 | 2.6
+  Suitcase_02 | Medium | (0.75, 0.36, 0.66) | 2.0 | 2.6
+  Valuable_Elder | Light | (0.16, 0.05, 0.11) | 2.4 | 3.2
+CARRY VERIFY OK

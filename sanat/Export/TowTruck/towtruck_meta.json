@@ -1,0 +1,836 @@
+{
+  "schema_version": 1,
+  "units": "metres",
+  "coordinates": {
+    "up": "+Z",
+    "forward": "-Y",
+    "left": "+X",
+    "right": "-X",
+    "note": "Blender coordinates; FBX exported with axis_forward=-Z, axis_up=Y, FBX_SCALE_ALL."
+  },
+  "field_descriptions": {
+    "parts": "Object-name map. All pivots/axes are in root (Blender world) coordinates in the REST pose; no part has rest rotation.",
+    "pivot_m": "XYZ object origin in metres.",
+    "parent": "Direct FBX parent object name.",
+    "motion": "null = static. Values are applied in the parent's local frame (equal to root frame at rest).",
+    "motion.type": "hinge (limited rotation) / rotate_continuous / slide / hang / free_rigid_body.",
+    "motion.axis": "Unit rotation or translation axis; positive values follow the right-hand rule / axis direction.",
+    "motion.range_deg": "[min, max] hinge angle in degrees; 0 = rest. null = unrestricted rotation.",
+    "motion.range_m": "[min, max] slide distance in metres along axis; 0 = rest.",
+    "motion.work_pose_deg / work_pose_m": "Value used for the work-pose render and the verify collision test.",
+    "motion.rest_offset_below_cable_tip_m": "Hook pivot distance below CableTip in the rest pose.",
+    "markers": "Empties. CableStart = rope leaves the drum (child of turntable). CableTip = tip sheave centre (child of BoomExt_2).",
+    "boom": "Boom hinge to CableTip distance: closed and fully telescoped.",
+    "cones": "Cone pivots = base-bottom centres standing in the holder on the deck.",
+    "measurement": "Envelope excludes mirrors; height excludes the light bar.",
+    "palette_samples": "sRGB hex + top-left pixel coordinates (5x5 median) in the cited concept."
+  },
+  "parts": {
+    "SM_TowTruck_Body": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_TowTruck",
+      "motion": null
+    },
+    "SM_TowTruck_Glass": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_TowTruck",
+      "motion": null
+    },
+    "SM_TowTruck_Interior": {
+      "pivot_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "SM_TowTruck",
+      "motion": null
+    },
+    "SM_TowTruck_Door_FL": {
+      "pivot_m": [
+        1.17,
+        -2.55,
+        1.12
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_deg": [
+          0,
+          70
+        ],
+        "work_pose_deg": 70,
+        "note": "Front vertical hinge on outer face; positive angle swings the rear edge outward."
+      }
+    },
+    "SM_TowTruck_Door_FR": {
+      "pivot_m": [
+        -1.17,
+        -2.55,
+        1.12
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range_deg": [
+          0,
+          70
+        ],
+        "work_pose_deg": 70,
+        "note": "Front vertical hinge on outer face; positive angle swings the rear edge outward."
+      }
+    },
+    "SM_TowTruck_Wheel_F_L": {
+      "pivot_m": [
+        1.02,
+        -2.6,
+        0.5
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Axle; rotation unrestricted."
+      }
+    },
+    "SM_TowTruck_Wheel_F_R": {
+      "pivot_m": [
+        -1.02,
+        -2.6,
+        0.5
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Axle; rotation unrestricted."
+      }
+    },
+    "SM_TowTruck_Wheel_R1_L": {
+      "pivot_m": [
+        1.02,
+        1.5,
+        0.5
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Axle; rotation unrestricted."
+      }
+    },
+    "SM_TowTruck_Wheel_R1_R": {
+      "pivot_m": [
+        -1.02,
+        1.5,
+        0.5
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Axle; rotation unrestricted."
+      }
+    },
+    "SM_TowTruck_Wheel_R2_L": {
+      "pivot_m": [
+        1.02,
+        2.6,
+        0.5
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Axle; rotation unrestricted."
+      }
+    },
+    "SM_TowTruck_Wheel_R2_R": {
+      "pivot_m": [
+        -1.02,
+        2.6,
+        0.5
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Axle; rotation unrestricted."
+      }
+    },
+    "SM_TowTruck_LightBar": {
+      "pivot_m": [
+        0.0,
+        -2.74,
+        2.45
+      ],
+      "parent": "SM_TowTruck",
+      "motion": null
+    },
+    "SM_TowTruck_LockerDoor_L1": {
+      "pivot_m": [
+        1.23,
+        -0.565,
+        0.455
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_deg": [
+          0,
+          90
+        ],
+        "work_pose_deg": 90,
+        "note": "Front vertical hinge on outer face; positive angle swings the rear edge outward."
+      }
+    },
+    "SM_TowTruck_LockerDoor_L2": {
+      "pivot_m": [
+        1.23,
+        1.71,
+        1.64
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          -1,
+          0
+        ],
+        "range_deg": [
+          0,
+          90
+        ],
+        "work_pose_deg": 90,
+        "note": "Top horizontal hinge on outer face; positive angle lifts the lower edge outward."
+      }
+    },
+    "SM_TowTruck_LockerDoor_R1": {
+      "pivot_m": [
+        -1.23,
+        -0.565,
+        0.455
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range_deg": [
+          0,
+          90
+        ],
+        "work_pose_deg": 90,
+        "note": "Front vertical hinge on outer face; positive angle swings the rear edge outward."
+      }
+    },
+    "SM_TowTruck_LockerDoor_R2": {
+      "pivot_m": [
+        -1.23,
+        1.71,
+        1.64
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "range_deg": [
+          0,
+          90
+        ],
+        "work_pose_deg": 90,
+        "note": "Top horizontal hinge on outer face; positive angle lifts the lower edge outward."
+      }
+    },
+    "SM_TowTruck_Outrigger_ML_Beam": {
+      "pivot_m": [
+        1.1,
+        -0.78,
+        0.47
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_m": [
+          0,
+          0.9
+        ],
+        "work_pose_m": 0.9,
+        "note": "Beam slides sideways out of the chassis sleeve."
+      }
+    },
+    "SM_TowTruck_Outrigger_ML_Jack": {
+      "pivot_m": [
+        1.1,
+        -0.78,
+        0.3
+      ],
+      "parent": "SM_TowTruck_Outrigger_ML_Beam",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_m": [
+          0,
+          0.3
+        ],
+        "work_pose_m": 0.3,
+        "note": "Jack lowers until the pad bottom touches Z=0."
+      }
+    },
+    "SM_TowTruck_Outrigger_MR_Beam": {
+      "pivot_m": [
+        -1.1,
+        -0.92,
+        0.47
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          -1,
+          0,
+          0
+        ],
+        "range_m": [
+          0,
+          0.9
+        ],
+        "work_pose_m": 0.9,
+        "note": "Beam slides sideways out of the chassis sleeve."
+      }
+    },
+    "SM_TowTruck_Outrigger_MR_Jack": {
+      "pivot_m": [
+        -1.1,
+        -0.92,
+        0.3
+      ],
+      "parent": "SM_TowTruck_Outrigger_MR_Beam",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_m": [
+          0,
+          0.3
+        ],
+        "work_pose_m": 0.3,
+        "note": "Jack lowers until the pad bottom touches Z=0."
+      }
+    },
+    "SM_TowTruck_Outrigger_RL_Beam": {
+      "pivot_m": [
+        1.1,
+        3.52,
+        0.47
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_m": [
+          0,
+          0.9
+        ],
+        "work_pose_m": 0.9,
+        "note": "Beam slides sideways out of the chassis sleeve."
+      }
+    },
+    "SM_TowTruck_Outrigger_RL_Jack": {
+      "pivot_m": [
+        1.1,
+        3.52,
+        0.3
+      ],
+      "parent": "SM_TowTruck_Outrigger_RL_Beam",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_m": [
+          0,
+          0.3
+        ],
+        "work_pose_m": 0.3,
+        "note": "Jack lowers until the pad bottom touches Z=0."
+      }
+    },
+    "SM_TowTruck_Outrigger_RR_Beam": {
+      "pivot_m": [
+        -1.1,
+        3.38,
+        0.47
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          -1,
+          0,
+          0
+        ],
+        "range_m": [
+          0,
+          0.9
+        ],
+        "work_pose_m": 0.9,
+        "note": "Beam slides sideways out of the chassis sleeve."
+      }
+    },
+    "SM_TowTruck_Outrigger_RR_Jack": {
+      "pivot_m": [
+        -1.1,
+        3.38,
+        0.3
+      ],
+      "parent": "SM_TowTruck_Outrigger_RR_Beam",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range_m": [
+          0,
+          0.3
+        ],
+        "work_pose_m": 0.3,
+        "note": "Jack lowers until the pad bottom touches Z=0."
+      }
+    },
+    "SM_TowTruck_Crane_Turntable": {
+      "pivot_m": [
+        0.0,
+        3.1,
+        1.75
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range_deg": null,
+        "work_pose_deg": -90,
+        "note": "Turntable; full turn. Work pose -90 turns the boom to vehicle right (-X)."
+      }
+    },
+    "SM_TowTruck_Crane_Drum": {
+      "pivot_m": [
+        -0.47,
+        3.05,
+        2.22
+      ],
+      "parent": "SM_TowTruck_Crane_Turntable",
+      "motion": {
+        "type": "rotate_continuous",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range_deg": null,
+        "work_pose_deg": 0,
+        "note": "Cable drum spins about its own axis."
+      }
+    },
+    "SM_TowTruck_Crane_Boom": {
+      "pivot_m": [
+        0.0,
+        3.6,
+        3.02
+      ],
+      "parent": "SM_TowTruck_Crane_Turntable",
+      "motion": {
+        "type": "hinge",
+        "axis": [
+          -1,
+          0,
+          0
+        ],
+        "range_deg": [
+          0,
+          70
+        ],
+        "work_pose_deg": 35,
+        "note": "Horizontal hinge; positive angle raises the boom tip."
+      }
+    },
+    "SM_TowTruck_Crane_BoomExt_1": {
+      "pivot_m": [
+        0.0,
+        2.3,
+        3.02
+      ],
+      "parent": "SM_TowTruck_Crane_Boom",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          0,
+          -1,
+          0
+        ],
+        "range_m": [
+          0,
+          2.0
+        ],
+        "work_pose_m": 2.0,
+        "note": "Slides along the boom axis (rest-pose -Y), stage 1."
+      }
+    },
+    "SM_TowTruck_Crane_BoomExt_2": {
+      "pivot_m": [
+        0.0,
+        2.0,
+        3.02
+      ],
+      "parent": "SM_TowTruck_Crane_BoomExt_1",
+      "motion": {
+        "type": "slide",
+        "axis": [
+          0,
+          -1,
+          0
+        ],
+        "range_m": [
+          0,
+          2.0
+        ],
+        "work_pose_m": 2.0,
+        "note": "Slides along the boom axis (rest-pose -Y), stage 2."
+      }
+    },
+    "SM_TowTruck_Crane_Hook": {
+      "pivot_m": [
+        0.0,
+        -2.4,
+        2.8
+      ],
+      "parent": "CableTip",
+      "motion": {
+        "type": "hang",
+        "rest_offset_below_cable_tip_m": 0.22,
+        "work_pose_offset_below_cable_tip_m": 2.0,
+        "note": "Hook hangs world-vertical below CableTip; rope length is driven in Unity (rope drawn by code)."
+      }
+    },
+    "SM_TowTruck_Cone_01": {
+      "pivot_m": [
+        0.85,
+        0.4,
+        1.75
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true,
+        "note": "Standing upright in the holder; gameplay may release it."
+      }
+    },
+    "SM_TowTruck_Cone_02": {
+      "pivot_m": [
+        0.85,
+        0.88,
+        1.75
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true,
+        "note": "Standing upright in the holder; gameplay may release it."
+      }
+    },
+    "SM_TowTruck_Cone_03": {
+      "pivot_m": [
+        0.85,
+        1.36,
+        1.75
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true,
+        "note": "Standing upright in the holder; gameplay may release it."
+      }
+    },
+    "SM_TowTruck_Cone_04": {
+      "pivot_m": [
+        0.85,
+        1.84,
+        1.75
+      ],
+      "parent": "SM_TowTruck",
+      "motion": {
+        "type": "free_rigid_body",
+        "attached_initially": true,
+        "note": "Standing upright in the holder; gameplay may release it."
+      }
+    }
+  },
+  "markers": {
+    "CableStart": [
+      -0.47,
+      3.05,
+      2.39
+    ],
+    "CableTip": [
+      0.0,
+      -2.4,
+      3.02
+    ]
+  },
+  "boom": {
+    "hinge_m": [
+      0.0,
+      3.5999999046325684,
+      3.0199999809265137
+    ],
+    "closed_length_m": 6.0,
+    "extended_length_m": 10.0,
+    "stages": [
+      "SM_TowTruck_Crane_BoomExt_1",
+      "SM_TowTruck_Crane_BoomExt_2"
+    ],
+    "stage_stroke_m": 2.0,
+    "raise_range_deg": [
+      0,
+      70
+    ]
+  },
+  "cones": {
+    "SM_TowTruck_Cone_01": [
+      0.85,
+      0.4,
+      1.75
+    ],
+    "SM_TowTruck_Cone_02": [
+      0.85,
+      0.88,
+      1.75
+    ],
+    "SM_TowTruck_Cone_03": [
+      0.85,
+      1.36,
+      1.75
+    ],
+    "SM_TowTruck_Cone_04": [
+      0.85,
+      1.84,
+      1.75
+    ]
+  },
+  "measurement": {
+    "length_m": 8.0,
+    "width_m": 2.5,
+    "height_m": 3.2,
+    "lightbar_top_max_m": 3.4,
+    "tolerance_m": 0.05,
+    "wheel_diameter_m": 1.0,
+    "axle_y_m": {
+      "F": -2.6,
+      "R1": 1.5,
+      "R2": 2.6
+    },
+    "wheel_x_m": 1.02
+  },
+  "materials": {
+    "M_TowTruck_Paint": "#D6924D",
+    "M_TowTruck_Trim": "#8E8B91",
+    "M_TowTruck_Tire": "#21232B",
+    "M_TowTruck_Rim": "#776F76",
+    "M_TowTruck_Glass": "#DEDDDD",
+    "M_TowTruck_Interior": "#69656D",
+    "M_TowTruck_Headlight": "#C6C3C6",
+    "M_TowTruck_Taillight": "#BB4336",
+    "M_TowTruck_Beacon": "#DB7F33",
+    "M_TowTruck_ConeOrange": "#CE7646",
+    "M_TowTruck_ConeWhite": "#CFC0BB"
+  },
+  "palette_reference": "ArtSource/TowTruck/references/01_turnaround_orange.jpg",
+  "palette_samples": {
+    "Paint": {
+      "hex": "#D6924D",
+      "source_pixel_xy_top_left": [
+        880,
+        270
+      ],
+      "median_patch_px": 5
+    },
+    "Trim": {
+      "hex": "#8E8B91",
+      "source_pixel_xy_top_left": [
+        225,
+        328
+      ],
+      "median_patch_px": 5
+    },
+    "Tire": {
+      "hex": "#21232B",
+      "source_pixel_xy_top_left": [
+        130,
+        365
+      ],
+      "median_patch_px": 5
+    },
+    "Rim": {
+      "hex": "#776F76",
+      "source_pixel_xy_top_left": [
+        840,
+        338
+      ],
+      "median_patch_px": 5
+    },
+    "Glass": {
+      "hex": "#DEDDDD",
+      "source_pixel_xy_top_left": [
+        870,
+        175
+      ],
+      "median_patch_px": 5
+    },
+    "Interior": {
+      "hex": "#69656D",
+      "source_pixel_xy_top_left": [
+        180,
+        185
+      ],
+      "median_patch_px": 5
+    },
+    "Headlight": {
+      "hex": "#C6C3C6",
+      "source_pixel_xy_top_left": [
+        157,
+        284
+      ],
+      "median_patch_px": 5
+    },
+    "Taillight": {
+      "hex": "#BB4336",
+      "source_pixel_xy_top_left": [
+        457,
+        280
+      ],
+      "median_patch_px": 5
+    },
+    "Beacon": {
+      "hex": "#DB7F33",
+      "source_pixel_xy_top_left": [
+        180,
+        105
+      ],
+      "median_patch_px": 5
+    },
+    "ConeOrange": {
+      "hex": "#CE7646",
+      "source_pixel_xy_top_left": [
+        481,
+        193
+      ],
+      "median_patch_px": 5
+    },
+    "ConeWhite": {
+      "hex": "#CFC0BB",
+      "source_pixel_xy_top_left": [
+        482,
+        184
+      ],
+      "median_patch_px": 5
+    }
+  },
+  "glass_alpha": 0.34,
+  "unity_import": {
+    "scale_factor": 1,
+    "bake_axis_conversion": false,
+    "color_note": "FBX DiffuseColor is linear (Blender default) for the Linear URP project.",
+    "glass_note": "FBX stores alpha; choose a transparent shader in URP.",
+    "lightbar_note": "SM_TowTruck_LightBar is static; blink it in Unity (emission)."
+  }
+}

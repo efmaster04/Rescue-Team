@@ -1,0 +1,19 @@
+FIRSTPERSON VERIFY 2026-11-03 04:14:04
+[OK]   (a) sahne: ana kamerada OrbitCamera, oyuncuda PlayerInputReader (FirstPersonBody sahnede yoksa OrbitCamera çalışma zamanında ekler) — OrbitCamera True, oyuncu True, FirstPersonBody sahnede True
+  PlayerPrefs Camera.ViewMode önceki değer: 0 (silindi; ilk açılış senaryosu)
+[OK]   (1) ilk açılış (PlayerPrefs yok): üçüncü şahıs, Blend 0, baş görünür, kamera baştan ≥ 1 m, FirstPersonBody çalışma zamanında var — mod ThirdPerson, Blend 0.00, baş ölçeği 1.000, kamera–baş 4.56 m, FirstPersonBody True, FaceCameraYaw False
+[OK]   (2) V bağlaması: ViewToggle [<Keyboard>/v] etkin ve sanal klavyeye bağlı — ViewToggle etkin True, kontrol /FpTestKeyboard/v
+[OK]   (3) V → birinci şahıs: basış sayıldı, mod hemen değişti, Blend 0→1 geçişi 0.2–0.35 sn ve en az 3 ara kare (yumuşak) — basış 1, mod FirstPerson, ölçülen 0.250 sn (OrbitCamera 0.249 sn, hedef 0.25), ara kare 400
+[OK]   (4) birinci şahıs: kamera baş kemiğinin ≤ 0.25 m yakınında (göz noktasında), baş gizli (ölçek < 0.01), gölge vekili açık, yakın kırpma ≤ 0.05, PlayerPrefs = 1 — kamera–baş 0.17 m, kamera–göz 0.00 m, gizli True (ölçek 0.0001), gölge vekili True, yakın kırpma 0.030, PlayerPrefs 1
+[OK]   (5) birinci şahıs: kamera 90° dönünce gövde yaw'ı kamerayla eşleşir (≤ 2°) — FaceCameraYaw True, gövde–kamera 0.00°, kamera–Yaw 0.00°
+[OK]   (6) birinci şahıs: D basılı → yana adım (hız kameranın sağına ≤ 20°, ≥ 0.5 m/sn), gövde kameraya dönük kalır (≤ 3°) — hız 2.40 m/sn, sağa göre 0.0°, gövde–kamera 0.00°
+[OK]   (7) birinci şahıs: AimPoint kameranın merkez ışını üzerinde (≤ 1°), ≥ 1 m ileride, kendi gövdesine çarpmaz — açı 0.00°, uzaklık 2.60 m, çarpan: Bolum1_Environment/SM_B1_Guardrail 2,6 m
+  görüntü: Captures/Bolum1/fp_birinci_sahis.png (kamera (46.31, -0.16, -2.31), eğim 0°)
+  görüntü: Captures/Bolum1/fp_birinci_sahis_asagi.png (kamera (46.31, -0.16, -2.31), eğim 80°)
+[OK]   (8) birinci şahıs eğim sınırı: 89° istenince 80°'ye kırpılır; baş hâlâ gizli — eğim 80.0°, gizli True
+[OK]   (9) V → üçüncü şahıs: geçiş 0.2–0.35 sn (≥ 3 ara kare), baş görünür (ölçek 1), kamera baştan ≥ 1 m, FaceCameraYaw kapalı, yakın kırpma eski değer, PlayerPrefs = 0 — mod ThirdPerson, ölçülen 0.250 sn, ara kare 317, baş ölçeği 1.000, gizli False, kamera–baş 4.53 m, FaceCameraYaw False, yakın kırpma 0.30, PlayerPrefs 0
+  görüntü: Captures/Bolum1/fp_ucuncu_sahis.png (kamera (43.14, 0.82, -5.59), eğim 10°)
+[OK]   (10) üçüncü şahıs değişmedi: A basılı → gövde yürüme yönüne (kameranın soluna) döner (≤ 15°), hız o yöne — gövde–sol 0.0°, hız–sol 0.0°
+[OK]   (11) son seçim hatırlanır: FP kayıtlıyken yeni OrbitCamera FP (Blend 1, geçişsiz) başlar, TP kayıtlıyken TP — FP kayıtlı → FirstPerson (Blend 1.00), TP kayıtlı → ThirdPerson, FaceCameraYaw False
+[OK]   (12) her karede baş gizliliği kameranın baştaki konumuyla tutarlı (6363 kare) — uyumsuz kare 0
+FIRSTPERSON VERIFY OK

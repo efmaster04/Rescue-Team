@@ -1,0 +1,15 @@
+LOOT BUILD 2026-11-03 03:52:58
+Teslim noktası (SafeDrop): (-10.00, 0.26, 10.81), arka tampon (-11.60, 0.32, 8.91), yan +sağ (sağ: zemin True, yolda False, y -1.62; sol: zemin True, yolda True, y 0.26), halka Ø 1.3 m, menzil 1.5 m
+Yeniden doğma noktası: (-9.10, -1.62, 11.91), yolda False, minibüs köküne 6.93 m
+Oyuncu canı: 100, kaldırılınca %50, yeniden doğma 15 sn, dolma 6 sn sonra 5/sn, sendeleme 0.35 sn
+Valiz SM_B1_Prop_Suitcase_01: (0.00, -3.15, 7.14), Valiz 20 + Kolye 200, Kulaklık 90 = 310 ₺
+Valiz SM_B1_Prop_Suitcase_02: (-1.00, -5.51, 9.34), Valiz 20 + Kamera 150, Kolye 200 = 370 ₺
+Valiz SM_B1_Prop_Bag_03: (-2.00, -7.98, 12.00), Çanta 20 + Saat 80, Laptop 300 = 400 ₺
+Valiz SM_B1_Prop_Bag_04: (1.00, -8.99, 14.42), Çanta 20 + Kulaklık 90, Parfüm 60 = 170 ₺
+Valiz SM_B1_Prop_Bag_05: (-5.50, -8.99, 16.05), Çanta 20 + Kulaklık 90, Kolye 200 = 310 ₺
+Tavan bagajı valizleri (2: SM_Minivan_RackSuitcase_01, SM_Minivan_RackSuitcase_02) minibüs parçası, 1.98 m yukarıda: sayılmadı (yalnız yerdekiler)
+Hasta eşyası Patient_Tourist: Kamera 150 ₺, kök-yerel (0.10, 0.46, 0.14)
+Hasta eşyası Patient_Civilian: Cüzdan 100 ₺, kök-yerel (0.10, 0.46, 0.14)
+Hasta eşyası Patient_Elder: Cüzdan 100 ₺, kök-yerel (0.10, 0.46, 0.14)
+Ekipman: sedye 2×300, halat 1×150, koni 4×20; sağlık çantası sahnede yok (120 ₺ kaydedilmedi)
+Toplam değer 2740 ₺ (valiz 5 adet 1560, hasta eşyası 350, ekipman 830); başarısızlık eşiği %50 = 1370 ₺
