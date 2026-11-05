@@ -36,6 +36,8 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         "Drive_Seated", "Passenger_Seated",
         // r6: oyuncu yumruğu (sol tık) ve eğilme (Ctrl)
         "Punch_Jab", "Crouch_Idle", "Crouch_Walk",
+        // r7: taşıma sınıfları — hafif (tek el) bekleme/koşu, orta (iki el), ağır (kucakta)
+        "Carry_OneHand_Idle", "Carry_OneHand_Run", "Carry_TwoHand_Idle", "Carry_TwoHand_Walk", "Carry_TwoHand_Run", "Carry_Heavy_Idle", "Carry_Heavy_Walk",
     };
 
     public static readonly string[] LoopClips = { "Carry_Stretcher_Walk", "Carry_OneHand_Walk", "Revive_Helper", "Lying_HelpWave", "Lying_Groan",
@@ -46,7 +48,9 @@ internal class ProceduralAnimImportSettings : AssetPostprocessor
         // Sürüş girişi (r5): oturma döngüleri
         "Drive_Seated", "Passenger_Seated",
         // r6: eğilme döngüleri (Punch_Jab tek seferlik)
-        "Crouch_Idle", "Crouch_Walk" };
+        "Crouch_Idle", "Crouch_Walk",
+        // r7: taşıma döngüleri (hepsi döngü)
+        "Carry_OneHand_Idle", "Carry_OneHand_Run", "Carry_TwoHand_Idle", "Carry_TwoHand_Walk", "Carry_TwoHand_Run", "Carry_Heavy_Idle", "Carry_Heavy_Walk" };
 
     public static string ClipPath(string clip) { return Folder + clip + ".fbx"; }
     public static bool IsLoop(string clip) { return LoopClips.Contains(clip); }
