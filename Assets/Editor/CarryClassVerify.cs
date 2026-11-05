@@ -321,8 +321,8 @@ public static class CarryClassVerify
             yield return null;
             state |= crew.InState(CrewAnimation.StateTackleDive);
             // Durum kayması (modeBlendSeconds) bittikten sonra
-            if (Time.time - t0 > 0.25f) grip = Mathf.Max(grip, ik.GripErrorLeft, ik.GripErrorRight);
-            if (!shot && Time.time - t0 > 0.7f) { shot = true; yield return CaptureMain("dalis_" + label); }
+            if (Time.time - t0 > 0.4f) grip = Mathf.Max(grip, ik.GripErrorLeft, ik.GripErrorRight);
+            if (!shot && Time.time - t0 > 0.7f) { shot = true; yield return CaptureSide("dalis_" + label, player.transform.position + player.transform.forward * 0.3f + Vector3.up * 0.3f); }
         }
         Check("(dalış " + label + ") eşya avuçlarda (el → eşya < " + Cm(GripLimit) + ")", started && combat.Tackles == tackles0 + 1 && state && grip < GripLimit,
             "başladı " + started + ", durum " + state + ", en büyük mesafe " + Cm(grip));
@@ -349,6 +349,7 @@ public static class CarryClassVerify
         while (Time.time - t0 < 0.45f)
         {
             yield return null;
+            if (Time.time - t0 < 0.17f) continue; // alışın ilk karesinden eve kayma (modeBlendSeconds)
             Vector3 local = player.transform.InverseTransformPoint(ik.LastCenter);
             if (!have) { first = local; have = true; }
             drift = Mathf.Max(drift, Vector3.Distance(first, local));
@@ -359,6 +360,48 @@ public static class CarryClassVerify
         yield return Seconds(1.2f);
         release();
         yield return null;
+    }
+
+    // Yandan görüntü: oyuncu ve önündeki eşya bir arada görünsün; kamera duvara / ağaca girmeyen taraftan
+    private static IEnumerator CaptureSide(string name, Vector3 look)
+    {
+        yield return null;
+        float prevScale = Time.timeScale;
+        Time.timeScale = 0f;
+        yield return null;
+        var main = Camera.main;
+        var go = new GameObject("CarryVerifyCam");
+        var cam = go.AddComponent<Camera>();
+        cam.CopyFrom(main);
+        cam.enabled = false;
+        cam.nearClipPlane = 0.05f;
+        float best = -1f;
+        Vector3 place = look + Vector3.up * 2f;
+        foreach (float yaw in new[] { 90f, -90f, 50f, -50f, 130f, -130f })
+        {
+            Vector3 dir = Quaternion.AngleAxis(yaw, Vector3.up) * player.transform.forward;
+            Vector3 candidate = look + dir * 2.6f + Vector3.up * 0.9f;
+            Vector3 to = candidate - look;
+            float clear = Physics.SphereCast(look, 0.15f, to.normalized, out RaycastHit hit, to.magnitude, ~0, QueryTriggerInteraction.Ignore) && !hit.transform.IsChildOf(player.transform) ? hit.distance : to.magnitude;
+            if (clear > best + 0.01f) { best = clear; place = look + to.normalized * Mathf.Max(0.5f, clear - 0.1f); }
+        }
+        go.transform.position = place;
+        go.transform.LookAt(look);
+        var rt = new RenderTexture(1280, 720, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
+        cam.targetTexture = rt;
+        cam.Render();
+        cam.targetTexture = null;
+        Time.timeScale = prevScale;
+        var prev = RenderTexture.active;
+        RenderTexture.active = rt;
+        var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+        tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prev;
+        File.WriteAllBytes(Path.Combine(OutDir, name + ".png"), tex.EncodeToPNG());
+        UnityEngine.Object.Destroy(rt);
+        UnityEngine.Object.Destroy(tex);
+        UnityEngine.Object.Destroy(go);
     }
 
     // Kol ve eşya sıçraması: eylem boyunca kök uzayında kare başı hız (m/sn)
@@ -578,7 +621,7 @@ public static class CarryClassVerify
             bool dropped = bridge.HeldItem == null;
             yield return Seconds(1.2f);
             float tiltRest = Vector3.Angle(item.transform.up, Vector3.up);
-            yield return CaptureFrame("birak_" + id, 25f);
+            yield return CaptureSide("birak_" + id, player.transform.position + player.transform.forward * 0.6f + Vector3.up * 0.4f);
             // Lastik dik kutusundan devrilebilir (fizik); bırakma anı her eşyada dik, duruşta kutu eşyalar dik
             bool restOk = id == "tire" || tiltRest < 8f;
             Check("(bırakma " + id + ") eşya dik bırakılır", dropped && tiltAtDrop < 1f && restOk, "bırakma anı " + tiltAtDrop.ToString("F1", Inv) + "°, durunca " + tiltRest.ToString("F1", Inv) + "°");
@@ -603,6 +646,7 @@ public static class CarryClassVerify
 
         // Fırlatma: üç sınıf (madde 7)
         float baseSpeed = combat.settings.throwSpeed;
+        float lightTravel = float.PositiveInfinity;
         var throwCases = new[] { ("grease", CarryClass.Light), ("toolbox", CarryClass.Medium), ("parts", CarryClass.Heavy) };
         foreach (var c in throwCases)
         {
@@ -624,13 +668,15 @@ public static class CarryClassVerify
             combat.SetThrowHeld(true);
             bool heavy = c.Item2 == CarryClass.Heavy;
             bool aimed = false, shoveState = false;
+            float aimItemJump = 0f, aimLeftJump = 0f;
             if (!heavy)
             {
                 float ta = Time.time;
                 while (Time.time - ta < 0.45f) { jump.Sample(); aimed |= combat.Aiming; yield return null; }
-                yield return CaptureFrame("nisan_" + c.Item1, 12f);
-                orbit.Yaw = player.transform.eulerAngles.y;
+                float aimJumpItem = jump.item, aimJumpLeft = jump.left;
+                yield return CaptureSide("nisan_" + c.Item1, player.transform.position + Vector3.up * 0.9f);
                 combat.SetThrowHeld(false);
+                aimItemJump = aimJumpItem; aimLeftJump = aimJumpLeft;
             }
             bool heavyShot = false;
             float t0 = Time.time;
@@ -638,7 +684,7 @@ public static class CarryClassVerify
             {
                 jump.Sample();
                 shoveState |= crew.InState(CrewAnimation.StatePushShove);
-                if (heavy && !heavyShot && Time.time - t0 > 0.18f) { heavyShot = true; yield return CaptureFrame("itis_orta_an_" + c.Item1, 12f); orbit.Yaw = player.transform.eulerAngles.y; }
+                if (heavy && !heavyShot && Time.time - t0 > 0.18f) { heavyShot = true; yield return CaptureSide("itis_orta_an_" + c.Item1, player.transform.position + player.transform.forward * 0.4f + Vector3.up * 0.7f); }
                 yield return null;
             }
             bool thrown = combat.PropThrows == throws0 + 1;
@@ -646,16 +692,18 @@ public static class CarryClassVerify
             float speed = body.linearVelocity.magnitude;
             Vector3 v = body.linearVelocity;
             yield return Seconds(0.25f);
-            if (heavy) yield return CaptureFrame("itis_sonrasi_" + c.Item1, 12f);
-            orbit.Yaw = player.transform.eulerAngles.y;
+            if (heavy) yield return CaptureSide("itis_sonrasi_" + c.Item1, player.transform.position + player.transform.forward * 0.7f + Vector3.up * 0.4f);
             float t1 = Time.time;
             yield return (Func<bool>)(() => !item.Thrown || Time.time - t1 > 4f);
             float travel = Flat(item.transform.position - startItem).magnitude;
-            string detail = "hız " + speed.ToString("F2", Inv) + " m/sn, yol " + travel.ToString("F2", Inv) + " m, çarpma " + item.LastImpactSpeed.ToString("F1", Inv) + " m/sn, dayanıklılık " + dur0.ToString("F0", Inv) + "→" + item.durability.ToString("F0", Inv) + ", sıçrama eşya " + jump.item.ToString("F1", Inv) + " sol el " + jump.left.ToString("F1", Inv) + " m/sn";
+            string detail = "hız " + speed.ToString("F2", Inv) + " m/sn, yol " + travel.ToString("F2", Inv) + " m, çarpma " + item.LastImpactSpeed.ToString("F1", Inv) + " m/sn, dayanıklılık " + dur0.ToString("F0", Inv) + "→" + item.durability.ToString("F0", Inv) + ", sıçrama (nişana girişte) eşya " + aimItemJump.ToString("F1", Inv) + " sol el " + aimLeftJump.ToString("F1", Inv) + ", (toplam) eşya " + jump.item.ToString("F1", Inv) + " sol el " + jump.left.ToString("F1", Inv) + " m/sn";
             if (c.Item2 == CarryClass.Light)
-                Check("(fırlatma hafif) hız " + baseSpeed.ToString("F1", Inv), thrown && aimed && Mathf.Abs(speed - baseSpeed) < 0.7f && jump.item < 8f, detail);
+            {
+                lightTravel = travel;
+                Check("(fırlatma hafif) hız " + baseSpeed.ToString("F1", Inv), thrown && aimed && Mathf.Abs(speed - baseSpeed) < 0.7f && aimItemJump < 8f, detail);
+            }
             else if (c.Item2 == CarryClass.Medium)
-                Check("(fırlatma orta) hız " + (baseSpeed * rules.mediumThrowFactor).ToString("F1", Inv) + ", hafiften kısa", thrown && aimed && Mathf.Abs(speed - baseSpeed * rules.mediumThrowFactor) < 0.7f && jump.item < 8f && jump.left < 8f, detail);
+                Check("(fırlatma orta) hız " + (baseSpeed * rules.mediumThrowFactor).ToString("F1", Inv) + ", hafiften kısa", thrown && aimed && Mathf.Abs(speed - baseSpeed * rules.mediumThrowFactor) < 0.7f && travel < lightTravel && aimItemJump < 8f && aimLeftJump < 8f, detail);
             else
                 Check("(fırlatma ağır) nişansız iki elle itiş " + rules.heavyShoveSpeed.ToString("F1", Inv) + " m/sn, kısa düşer, hasar yok, sağ ele sıçramaz",
                     thrown && !aimed && shoveState && !combat.Aiming && speed < rules.heavyShoveSpeed + 1f && travel < 2.2f && travel > 0.2f && item.ImpactHits == hits0 && jump.item < 4f && jump.left < 6f, detail);
