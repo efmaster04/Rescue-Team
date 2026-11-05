@@ -45,6 +45,12 @@ JOINT_DEG_LIMIT = 150.0
 EXPECTED.update(COMBAT_EXPECTED)
 SEATED_EXPECTED = {'Drive_Seated': (2.0, True), 'Passenger_Seated': (2.4, True)}
 EXPECTED.update(SEATED_EXPECTED)
+# r7: tasima siniflari (hafif tek el, orta iki el, agir kucakta)
+CARRY_EXPECTED = {'Carry_OneHand_Idle': (1.5, True), 'Carry_OneHand_Run': (0.4, True), 'Carry_TwoHand_Idle': (1.5, True),
+                  'Carry_TwoHand_Walk': (0.5, True), 'Carry_TwoHand_Run': (0.4, True), 'Carry_Heavy_Idle': (1.6, True), 'Carry_Heavy_Walk': (0.5, True)}
+CARRY_CLASS = {'Carry_OneHand_Idle': 'light', 'Carry_OneHand_Run': 'light', 'Carry_TwoHand_Idle': 'medium', 'Carry_TwoHand_Walk': 'medium',
+               'Carry_TwoHand_Run': 'medium', 'Carry_Heavy_Idle': 'heavy', 'Carry_Heavy_Walk': 'heavy'}
+EXPECTED.update(CARRY_EXPECTED)
 WHEEL_CLIPS = {'Drive_Seated'}
 WHEEL_LIMIT = 0.03
 TRANSITIONS = [('Tackle_Dive','Tackle_GetUp',2), ('Throw_Aim','Throw_Release',2),
@@ -76,7 +82,8 @@ LIMIT = 0.03
 TARGET_SPEED = {'Carry_Stretcher_Walk': 1.4, 'Carry_OneHand_Walk': 2.4, 'Piggyback_Walk': 1.2,
                 'Carry_Stretcher_Front_Walk': 1.4, 'Carry_Coil_Walk': 2.4,
                 'Thief_Sneak_Walk':1.6, 'Thief_Run_Carry':3.6, 'Thief_Run':3.6,
-                'Crouch_Walk':1.2}
+                'Crouch_Walk':1.2,
+                'Carry_OneHand_Run': 3.2, 'Carry_TwoHand_Walk': 2.0, 'Carry_TwoHand_Run': 2.6, 'Carry_Heavy_Walk': 1.4}
 FOOT_SLIDE_LIMIT = 0.03
 CONTACT_EPS = 0.015     # ayak bileği en alçak yüksekliğine bu kadar yakınsa yerde sayılır (kareler arası
                         # doğrusal dönüş karışımı basışta bileği ~7 mm oynatır; salınım bu bantta çok kısa kalır)
@@ -818,6 +825,23 @@ def main():
                 if gtxt[0] > worst_all['grip'][0]:
                     worst_all['grip'] = (gtxt[0], name)
                 fslide += gtxt[1]
+            if name in CARRY_CLASS:
+                # r7: avuç meta'sı sınıfla uyumlu; iki elde el aralığı ve avuç yüksekliği döngüde sabit (eşya ellere bağlı)
+                cg = m.get('carry_grip') or {}
+                if cg.get('carry_class') != CARRY_CLASS[name] or cg.get('palm_offset_hand_local_m') != [0, .05, 0]:
+                    errors.append(name + ': carry_grip meta hatali')
+                if CARRY_CLASS[name] != 'light':
+                    spacing = cg.get('hand_spacing_m', 0)
+                    if not 0.26 <= spacing <= 0.44:
+                        errors.append('%s: iki el araligi %.3f m (beklenen 0.26..0.44)' % (name, spacing))
+                    for side in ('Left', 'Right'):
+                        lo, hi = cg.get('palm_z_range_m', {}).get(side, (0, 9))
+                        if hi - lo > 0.06:
+                            errors.append('%s: %s avuc yuksekligi dongude %.3f m oynuyor (> 0.06)' % (name, side, hi - lo))
+                else:
+                    rz = cg.get('palm_root_local_m', {}).get('Right', [0, 0, 0])[2]
+                    if not 0.30 <= rz <= 0.62:
+                        errors.append('%s: sag avuc yuksekligi %.3f m (beklenen 0.30..0.62, yanda asili esya)' % (name, rz))
             if name in WHEEL_CLIPS:
                 werr, wtxt = check_wheel(rig, f0, f1, name, m.get('wheel'))
                 errors.extend(werr)

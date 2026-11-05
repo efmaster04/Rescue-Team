@@ -82,6 +82,14 @@ CLIPS = [
     ('Punch_Jab', 0.5, False, True, False, 'crew'),
     ('Crouch_Idle', 2.0, True, True, False, 'crew'),
     ('Crouch_Walk', 0.8, True, True, False, 'crew'),
+    # r7: taşıma sınıfları — hafif (tek el) bekleme/koşu, orta (iki el göğüs önünde), ağır (kucakta)
+    ('Carry_OneHand_Idle', 1.5, True, True, False, 'crew'),
+    ('Carry_OneHand_Run', 0.4, True, True, False, 'crew'),
+    ('Carry_TwoHand_Idle', 1.5, True, True, False, 'crew'),
+    ('Carry_TwoHand_Walk', 0.5, True, True, False, 'crew'),
+    ('Carry_TwoHand_Run', 0.4, True, True, False, 'crew'),
+    ('Carry_Heavy_Idle', 1.6, True, True, False, 'crew'),
+    ('Carry_Heavy_Walk', 0.5, True, True, False, 'crew'),
 ]
 # Taşıma döngüleri: oyundaki hedef hız (m/sn) ve yere basma oranı. Ayak yerdeyken yerel olarak tam bu hızla
 # geriye kayar (stride = hız × basma oranı × süre); oynatma hızı 1.0 iken dünyada ayak kaymaz.
@@ -95,6 +103,11 @@ WALK_SPEEDS = {
     'Piggyback_Walk': (1.2, 0.5),         # sırtta hasta: çömelmiş, öne eğik ağır yürüyüş
     'Carry_Stretcher_Front_Walk': (1.4, 0.5),   # arkadaki taşıyıcıyla aynı ritim ve adım
     'Crouch_Walk': (1.2, 0.5),            # dizler bükük, kalça alçak, öne eğik yürüyüş
+    # r7: taşıma sınıfları (CarryRules hızlarıyla aynı: hafif 2.4/3.2, orta 2.0/2.6, ağır 1.4)
+    'Carry_OneHand_Run': (3.2, 0.35),     # hafif eşyayla koşu: uçuş fazlı, sağ el eşyada
+    'Carry_TwoHand_Walk': (2.0, 0.5),     # orta: iki el göğüs önünde kutu, canlı yürüyüş
+    'Carry_TwoHand_Run': (2.6, 0.38),     # orta: kutuyla kısa adımlı koşu
+    'Carry_Heavy_Walk': (1.4, 0.5),       # ağır: kucakta yük, paytak sendeleme (sedye ritmi)
 }
 DESCRIPTIONS = {
     'Push_Shove': 'İki avuçla öne itiş; çömelip yüklenir, hızla toparlanır. Slapstick, temas koddan.',
@@ -149,6 +162,13 @@ DESCRIPTIONS = {
     'Punch_Jab': 'Kısa hazırlık, sağ kolla hızlı düz yumruk ve geri toparlanma; slapstick, kök ve ayaklar yerinde.',
     'Crouch_Idle': 'Dizler bükük, kalça alçak (ayakta kalça yüksekliğinin ~%66\'sı) eğik bekleme; hafif nefes salınımı.',
     'Crouch_Walk': 'Dizler bükük, kalça alçak ve gövde öne eğik yürüyüş; yerinde döngü (1.2 m/sn).',
+    'Carry_OneHand_Idle': 'Hafif eşya: sağ el yanda aşağıda eşyayı tutar (Carry_OneHand_Walk kolu), sol kol serbest; nefes, ağırlık aktarma, etrafa bakış.',
+    'Carry_OneHand_Run': 'Hafif eşyayla koşu (3.2 m/sn): sağ el eşyada sabit, sol kol pompalar, öne eğik uçuş fazlı koşu.',
+    'Carry_TwoHand_Idle': 'Orta eşya: iki avuç göğüs önünde kutunun altında (parmaklar ileri), gövde hafif geride; nefes ve ağırlık aktarma.',
+    'Carry_TwoHand_Walk': 'Orta eşyayla canlı yürüyüş (2.0 m/sn): kutu göğüs önünde iki elde, kalça salınımı, baş sallanır; eller gövdeye göre sabit.',
+    'Carry_TwoHand_Run': 'Orta eşyayla kısa adımlı koşu (2.6 m/sn): kutu göğse bastırılmış, öne eğik, uçuş fazı kısa.',
+    'Carry_Heavy_Idle': 'Ağır eşya kucakta: dizler kırık, sırt geriye kavisli, omuzlar kalkık, eller bel hizasında yükün altında; yük altında titreme.',
+    'Carry_Heavy_Walk': 'Ağır eşyayla paytak sendeleme (1.4 m/sn, sedye ritmi): kalça sağa sola yalpalar, dizler kırık, eller yükün altında sabit.',
 }
 PREVIEW = {'Patient_SitDazed_ArmSling': 'SK_Patient_Civilian'}
 
@@ -1774,7 +1794,169 @@ def clip_crouch_walk(P, t, T):
     walk_legs(P, ph, stride=stride, lift=0.085, width=0.045, toe_out=14, stance=stance)
 
 
+# ---------------------------------------------------------------- r7: taşıma sınıfları (hafif tek el, orta iki el, ağır kucakta)
+# Eşya Unity'de bir noktaya değil AVUÇLARA bağlanır (CarryHandIK): hafifte sağ avuca asılır, orta/ağırda iki avuç eşyanın altına
+# kaydırılır (±yarı genişlik, derinliğe göre ileri). Klipteki avuç konumu "ev" pozudur; IK oradan en çok chibi kol erişimi
+# (omuzdan ~0.30 m) kadar sapar. Hedef hızlar CarryRules ile aynı: hafif 2.4/3.2, orta 2.0/2.6, ağır 1.4 (koşu yok).
+TWOHAND_GRIP = (0.17, -0.30, 0.74)     # orta sınıf avuç evi (kök yerel +X sol, -Y ön, +Z yukarı): göğüs önü, kutunun altı
+HEAVY_GRIP = (0.18, -0.30, 0.60)       # ağır sınıf: daha alçak (bel), kollar gergin, yük kucakta
+CARRY_CLASS = {'Carry_OneHand_Idle': 'light', 'Carry_OneHand_Run': 'light', 'Carry_TwoHand_Idle': 'medium',
+               'Carry_TwoHand_Walk': 'medium', 'Carry_TwoHand_Run': 'medium', 'Carry_Heavy_Idle': 'heavy', 'Carry_Heavy_Walk': 'heavy'}
+_CARRY_SAMPLES = {}
+
+
+def onehand_arm(P, c2=0.0):
+    """Carry_OneHand_Walk ile aynı sağ kol: yanda aşağıda eşya tutar (eşya Unity'de avuca asılır)."""
+    P.shrug('Right', up=-6 + 3 * c2)
+    P.arm('Right', (-0.72, 0.1, -0.69), (-0.42, -0.34 + 0.07 * c2, -0.84), (-0.3, -0.3, -0.9))
+    P.fist('Right', 1.0)
+
+
+def two_hands(P, grip, bob=0.0, jitter=0.0):
+    """İki avuç göğüs önünde, eşyanın altında (parmaklar ileri-yukarı); grip kök yerel (x, y, z), x sol el için (sağ el -x)."""
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        d = Vector((-s * 0.12, -0.92, 0.36)).normalized()
+        target = Vector((s * grip[0], grip[1], grip[2] + bob + jitter * s))
+        P.arm_ik(side, target - d * GRIP_POINT, pole=(s * 0.95, 0.25, -0.55), hand_dir=d, hand_twist=0)
+        P.fist(side, 0.55)
+
+
+def clip_onehand_idle(P, t, T):
+    ph = 0.0 if abs(t - T) < 1e-6 else t / T
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    bob = 0.004 * (1 - c1)
+    P.hips((0, 0, STAND + bob), pitch=3 + 1.5 * (1 - c1), roll=-2.5 * s1, yaw=2 * s1)
+    P.spine(pitch=2 + 2 * (1 - c1), roll=4 * s1, yaw=-5 * s1)
+    P.neck_head(pitch=-4 + 2 * c1, roll=-4 * s1, yaw=14 * math.sin(TAU * ph + 0.9))
+    onehand_arm(P, c1)
+    P.shrug('Left', up=2 + 2 * (1 - c1))
+    P.arm('Left', (0.62, 0.04 + 0.05 * s1, -0.78), (0.5, -0.16 + 0.06 * s1, -0.85), (0.45, -0.2, -0.87))
+    P.fist('Left', 0.3)
+    stand_legs(P, dx=0.02, toe_out=8)
+
+
+def clip_onehand_run(P, t, T):
+    ph = t / T
+    stride, stance = walk_stride('Carry_OneHand_Run', T)
+    c2 = math.cos(2 * TAU * (ph - stance / 2))
+    s1 = math.sin(TAU * ph)
+    bob = -0.100 - 0.022 * c2
+    P.hips((0, 0, bob), pitch=18 + 3 * c2, roll=8 * s1, yaw=-7 * s1)
+    P.spine(pitch=10 + 3 * c2, roll=6 - 6 * s1, yaw=16 * math.sin(TAU * ph + 0.3))
+    P.neck_head(pitch=-16 + 6 * math.cos(2 * TAU * ph - 1.0), roll=-5, yaw=-8 * s1)
+    onehand_arm(P, c2)
+    sw = math.cos(TAU * ph)
+    P.arm('Left', (0.5, 0.95 * sw, -0.55 + 0.5 * max(0.0, -sw)), (0.4, 0.55 * sw - 0.5, -0.5), (0.35, 0.5 * sw - 0.55, -0.5))
+    P.fist('Left', 0.8)
+    walk_legs(P, ph, stride=stride, lift=0.14, width=0.0, toe_out=6, stance=stance)
+
+
+def clip_twohand_idle(P, t, T):
+    ph = 0.0 if abs(t - T) < 1e-6 else t / T
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    bob = 0.005 * (1 - c1)
+    P.hips((0, 0, STAND + bob), pitch=-3, roll=-3 * s1, yaw=2 * s1)
+    P.spine(pitch=-4 + 1.5 * (1 - c1), roll=4 * s1, yaw=-3 * s1)
+    P.neck_head(pitch=4 - 3 * c1, roll=-3 * s1, yaw=10 * math.sin(TAU * ph + 1.2))
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=4 + 2 * (1 - c1), fwd=10)
+    two_hands(P, TWOHAND_GRIP, bob=bob * 0.6)
+    stand_legs(P, dx=0.03, toe_out=10)
+
+
+def clip_twohand_walk(P, t, T):
+    ph = t / T
+    stride, stance = walk_stride('Carry_TwoHand_Walk', T)
+    c2 = math.cos(2 * TAU * ph)
+    s1 = math.sin(TAU * ph)
+    bob = -0.078 - 0.016 * c2
+    P.hips((0, 0, bob), pitch=2 + 3 * c2, roll=9 * s1, yaw=6 * math.sin(TAU * ph + 0.4))
+    P.spine(pitch=-5 + 3 * math.cos(2 * TAU * ph - 0.6), roll=-10 * math.sin(TAU * ph - 0.35), yaw=-7 * math.sin(TAU * ph + 0.4))
+    P.neck_head(pitch=2 + 6 * math.cos(2 * TAU * ph - 1.3), roll=6 * math.sin(TAU * ph - 1.1), yaw=3 * s1)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=6 + 3 * c2, fwd=10)
+    two_hands(P, TWOHAND_GRIP, bob=0.5 * (bob + 0.078))
+    walk_legs(P, ph, stride=stride, lift=0.09, width=0.03, toe_out=10, stance=stance)
+
+
+def clip_twohand_run(P, t, T):
+    ph = t / T
+    stride, stance = walk_stride('Carry_TwoHand_Run', T)
+    c2 = math.cos(2 * TAU * (ph - stance / 2))
+    s1 = math.sin(TAU * ph)
+    bob = -0.092 - 0.022 * c2
+    P.hips((0, 0, bob), pitch=12 + 3 * c2, roll=7 * s1, yaw=-5 * s1)
+    P.spine(pitch=6 + 3 * c2, roll=-6 * s1, yaw=5 * s1)
+    P.neck_head(pitch=-12 + 5 * math.cos(2 * TAU * ph - 1.0), roll=4 * s1, yaw=-3 * s1)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=8 + 3 * c2, fwd=12)
+    two_hands(P, (TWOHAND_GRIP[0], TWOHAND_GRIP[1] - 0.02, TWOHAND_GRIP[2] - 0.03), bob=0.5 * (bob + 0.092))
+    walk_legs(P, ph, stride=stride, lift=0.13, width=0.02, toe_out=8, stance=stance)
+
+
+def clip_heavy_idle(P, t, T):
+    ph = 0.0 if abs(t - T) < 1e-6 else t / T
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    tr = 0.003 * math.sin(TAU * 7 * ph)   # yük altında titreme (döngüde 7 tam dalga)
+    bob = -0.065 - 0.006 * (1 - c1)
+    P.hips((0, 0, bob + tr), pitch=-8, roll=4 * s1)
+    P.spine(pitch=-10 + 2 * (1 - c1), roll=-4 * s1, yaw=2 * s1)
+    P.neck_head(pitch=14 - 3 * c1, roll=-3 * s1, yaw=6 * math.sin(TAU * ph + 0.7))
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=12 + 2 * (1 - c1), fwd=14)
+    two_hands(P, HEAVY_GRIP, bob=0.5 * (bob + 0.065) + tr, jitter=0.002 * math.sin(TAU * 9 * ph))
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.leg(side, (s * (FOOT_X + 0.05), 0.0, ANKLE_Z), pole=(s * 0.45, -1, 0.05), yaw=s * 16)
+
+
+def clip_heavy_walk(P, t, T):
+    ph = t / T
+    stride, stance = walk_stride('Carry_Heavy_Walk', T)
+    c2 = math.cos(2 * TAU * ph)
+    s1 = math.sin(TAU * ph)
+    bob = -0.085 - 0.018 * c2
+    P.hips((0, 0, bob), pitch=-7 + 3 * c2, roll=14 * s1, yaw=7 * math.sin(TAU * ph + 0.4))
+    P.spine(pitch=-9 + 4 * math.cos(2 * TAU * ph - 0.6), roll=-14 * math.sin(TAU * ph - 0.35), yaw=-9 * math.sin(TAU * ph + 0.4))
+    P.neck_head(pitch=14 + 7 * math.cos(2 * TAU * ph - 1.3), roll=8 * math.sin(TAU * ph - 1.1), yaw=4 * s1)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=12 + 4 * c2, fwd=14)
+    two_hands(P, HEAVY_GRIP, bob=0.5 * (bob + 0.085))
+    walk_legs(P, ph, stride=stride, lift=0.07, width=0.05, toe_out=18, stance=stance)
+
+
+def sample_carry(P, name):
+    rec = _CARRY_SAMPLES.setdefault(name, {'Left': [], 'Right': []})
+    for side in ('Left', 'Right'):
+        pb = P.b(side + 'Hand')
+        rec[side].append(pb.head + pb.matrix.col[1].xyz.normalized() * GRIP_POINT)
+
+
+def carry_meta(name):
+    rec = _CARRY_SAMPLES[name]
+    cls = CARRY_CLASS[name]
+    r = lambda v: [round(x, 3) for x in v]
+    mean = {s: sum(rec[s], Vector()) / len(rec[s]) for s in rec}
+    m = {'carry_class': cls, 'bones': {s: PREFIX + s + 'Hand' for s in ('Left', 'Right')},
+         'palm_offset_hand_local_m': [0.0, GRIP_POINT, 0.0],
+         'palm_root_local_m': {s: r(mean[s]) for s in mean},
+         'palm_z_range_m': {s: [round(min(p.z for p in rec[s]), 3), round(max(p.z for p in rec[s]), 3)] for s in rec},
+         'note': ('Avuç = el kemiği başı + kemik yönünde %.2f m; kök yerel Blender (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)). '
+                  'Hafif: eşya sağ avuca asılır (tutma noktası eşyanın tepesi), yerden pay için Unity IK eli yukarı kaydırır. '
+                  'Orta / ağır: iki avuç eşyanın alt yüzünde, eşyanın arka yüzü gövdeye dayalı; IK avuçları ±yarı genişliğe ve '
+                  'derinliğe göre ileri kaydırır (omuzdan en çok ~0.30 m).' % GRIP_POINT)}
+    if cls != 'light':
+        m['hand_spacing_m'] = round(mean['Left'].x - mean['Right'].x, 3)
+    return {'carry_grip': m}
+
+
 CLIP_FUNCS = {
+    'Carry_OneHand_Idle': clip_onehand_idle,
+    'Carry_OneHand_Run': clip_onehand_run,
+    'Carry_TwoHand_Idle': clip_twohand_idle,
+    'Carry_TwoHand_Walk': clip_twohand_walk,
+    'Carry_TwoHand_Run': clip_twohand_run,
+    'Carry_Heavy_Idle': clip_heavy_idle,
+    'Carry_Heavy_Walk': clip_heavy_walk,
     'Push_Shove': clip_shove,
     'Tackle_Dive': clip_tackle,
     'Tackle_GetUp': clip_tackle_getup,
@@ -1866,6 +2048,8 @@ def make_action(P, name, duration):
             sample_coil(P, name, f)
         if name in GRIP_CLIPS or name in WHEEL_CLIPS:
             sample_grip(P, name)
+        if name in CARRY_CLASS:
+            sample_carry(P, name)
         for pb in rig.pose.bones:
             q = pb.rotation_quaternion.copy()
             if pb.name in prev and prev[pb.name].dot(q) < 0:
@@ -2371,6 +2555,8 @@ def main():
             meta['clips'][name].update(combat_meta(name))
         if name in WHEEL_CLIPS:
             meta['clips'][name].update(wheel_meta(name))
+        if name in CARRY_CLASS:
+            meta['clips'][name].update(carry_meta(name))
         print('CLIP', name, n, digest, flush=True)
         P.reset()
     if only:
