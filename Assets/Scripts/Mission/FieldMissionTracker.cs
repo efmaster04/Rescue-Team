@@ -90,6 +90,8 @@ public sealed class FieldMissionTracker : MonoBehaviour
         if (mission != null) foreach (var p in mission.patients) if (p != null) i.missedAmbulances += p.MissedAmbulances;
         // Sürüş girişi: minibüsün aldığı hasar araç aşınmasına eklenir (trafik çarpması, korkuluk / kaya teması)
         if (ServiceVanDriver.Instance != null) i.vanDamage = ServiceVanDriver.Instance.Damage;
+        // Kötü park: hırsız kamyonetinin minibüse vuruş cezaları (₺) ayrı gider kalemi
+        if (ThiefDirector.Instance != null) { i.thiefRamPenalty = ThiefDirector.Instance.RamPenaltyTotal; i.thiefRams = ThiefDirector.Instance.RamCount; }
         foreach (var m in MappedGear)
         {
             i.coneHits += m.coneHits;

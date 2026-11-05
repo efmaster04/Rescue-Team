@@ -542,7 +542,8 @@ public static class Bolum1DriveVerify
         yield return DriveTo(() => AxisAhead(4f), 3f, 0f, () => (Progress() >= 1.5f && YawErr() < 4f) || Progress() >= 3.2f, 40f, "alana giriş",
             () => Mathf.Max(0f, 3.2f - Progress()), false, 10f);
         Line("  otopilot: alana giriş sonrası " + Pose());
-        for (int attempt = 0; attempt < 5; attempt++)
+        // Her turda yanal +0.01 m, yaw −0.2° yakınsıyor; 5 turda alan sınırına çok yakın bitiyordu (0.46 m / 5.8° geçti, 0.47 m / 6.0° kaldı)
+        for (int attempt = 0; attempt < 8; attempt++)
         {
             // Geri: uzak hedefle yumuşak (neredeyse düz geri; kısa bakışla 17° dönüp yanal kaybediyordu), ileri: kısa bakışla sert yanal düzeltme
             yield return DriveTo(() => AxisAhead(-8f), 2.5f, 0f, () => Progress() <= -1.5f, 30f, "geri düzeltme",
@@ -793,6 +794,9 @@ public static class Bolum1DriveVerify
             "en çok eğim " + maxTilt2.ToString("F1", Inv) + "°, en az yerde " + minGrounded2 + ", son eğim " + Van.TiltDeg.ToString("F1", Inv) + "°, yerde " + Van.WheelsGrounded);
 
         // (p5) kinematik gövdeyle fiziksel itilme: park hâlindeki (kinematik) minibüsün sağ yanına 2 m/sn ile giren kinematik kamyon kutusu
+        // Fiziksel itme artık itme yönünde zemin arar (uçurum korkuluğu): pist bu faz boyunca zemin köküdür.
+        var savedGroundRoots = Van.groundRoots;
+        Van.groundRoots = Van.groundRoots.Concat(new[] { pad.transform }).ToArray();
         Van.TeleportTo(PadPose(Vector3.zero), Facing(Vector3.forward), true);
         yield return Seconds(.5f);
         bool parkedKinematic = Van.State == ServiceVanDriver.VanState.Parked && Van.Body.isKinematic;
@@ -833,6 +837,8 @@ public static class Bolum1DriveVerify
         Check("(p5) park hâlindeki minibüse 2 m/sn ile giren kinematik kamyon kutusu: fiziksel itilme başlar (dinamik), ≥ 1.5 m itilir, devrilmez (< 10°), itici durunca yeniden park (kinematik), yük bağlanıp serbest bırakılır", pushOk,
             "parkta kinematik " + parkedKinematic + ", fiziksel itilme " + sawPhysical + " (" + (shoveStartT >= 0f ? shoveStartT.ToString("F2", Inv) + " sn'de başladı" : "başlamadı") + ", sayı " + (Van.PhysicalShoves - shoves0) + ", yük " + cargoCount.ToString("F0", Inv) + " parça), 5 sn'de " + pushedMid.ToString("F2", Inv)
             + " m, toplam " + pushedTotal.ToString("F2", Inv) + " m, en çok eğim " + maxTiltP.ToString("F1", Inv) + "°, park " + settleT.ToString("F1", Inv) + " sn'de (durum " + Van.State + ", kinematik " + Van.Body.isKinematic + "), koniler yerinde " + conesBack + " (" + conesInside.Count + " koni), hasar %" + Van.Damage.ToString("F1", Inv) + ", darbe " + Van.Impacts);
+
+        Van.groundRoots = savedGroundRoots;
 
         // (p6) statik engele çarpma hasarı: 25 m ilerideki duvara tam gazla
         var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -1264,9 +1270,10 @@ public static class Bolum1DriveVerify
 }
 
 // (p5) Test iticisi: kinematik Rigidbody'yi fizik adımında MovePosition ile sabit hızla sürer (hırsız kamyoneti / trafik aracı gibi).
-public class DriveVerifyKinematicPusher : MonoBehaviour
+public class DriveVerifyKinematicPusher : MonoBehaviour, IMinibusPusher
 {
     public Vector3 velocity;
+    public bool MayPush(ServiceVanDriver minibus) { return true; }
     private Rigidbody rb;
     private void Awake() { rb = GetComponent<Rigidbody>(); }
     private void FixedUpdate() { if (rb != null) rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime); }

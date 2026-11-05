@@ -77,9 +77,15 @@ public class MissionHud : MonoBehaviour
     public readonly List<MissIndicator> Indicators = new List<MissIndicator>();
     public readonly List<HealthBarIndicator> HealthBars = new List<HealthBarIndicator>();
 
-    private sealed class Floating { public Text text; public float born; public Vector2 start; }
+    // world: dünya noktasına bağlı uçan yazı (kötü park cezası minibüsün üstünde "−₺X"); yoksa ekran köşesi (para yazısının altı)
+    private sealed class Floating { public Text text; public float born; public Vector2 start; public bool world; public Vector3 worldPos; }
     private readonly List<Floating> floats = new List<Floating>();
     private Vector2 floatOrigin;
+    // Kötü park cezası (kullanıcı kararı 2026-11-05): minibüsün üstünde uçan yazı sayısı ve son metni (testler okur)
+    public int PenaltyFloatingSpawned { get; private set; }
+    public string LastPenaltyLabel { get; private set; } = "";
+    public const string PenaltySuffix = " çarpma (kötü park)";
+    private ThiefDirector subscribedThieves;
 
     private string notice;
     private float noticeUntil = -1f;
@@ -110,6 +116,15 @@ public class MissionHud : MonoBehaviour
     {
         GameNotice.Raised -= OnNotice;
         if (loot != null) { loot.Credited -= OnCredited; loot.Stolen -= OnStolen; loot.PutInVan -= OnPutInVan; loot.Retrieved -= OnRetrieved; }
+        if (subscribedThieves != null) { subscribedThieves.VanRammedMinibus -= OnVanRammed; subscribedThieves = null; }
+    }
+
+    // Hırsız kamyoneti kötü park etmiş minibüse vurdu: minibüsün üstünde kırmızı "−₺X çarpma (kötü park)" yükselir
+    private void OnVanRammed(ThiefVan van, int fine, float speed, Vector3 at)
+    {
+        LastPenaltyLabel = "-" + LootRegistry.MoneySymbol + fine.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + PenaltySuffix;
+        SpawnWorldFloating(LastPenaltyLabel, at + Vector3.up * 3.2f, new Color(1f, 0.2f, 0.15f));
+        PenaltyFloatingSpawned++;
     }
 
     private void Subscribe()
@@ -278,6 +293,33 @@ public class MissionHud : MonoBehaviour
         FloatingSpawned++;
     }
 
+    // Dünya noktasına bağlı uçan yazı: kamera izdüşümünde durur, yükselir ve solar; kamera arkasındaysa gizlenir
+    private void SpawnWorldFloating(string label, Vector3 worldPos, Color color)
+    {
+        var t = MakeText("FloatWorld", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(800f, 64f), 46, TextAnchor.MiddleCenter);
+        t.fontStyle = FontStyle.Bold;
+        t.text = label;
+        t.color = color;
+        var f = new Floating { text = t, born = Time.time, world = true, worldPos = worldPos };
+        floats.Add(f);
+        FloatingSpawned++;
+        PlaceWorldFloating(f, 0f);
+    }
+
+    private void PlaceWorldFloating(Floating f, float u)
+    {
+        var cam = Camera.main;
+        var canvasRect = ScreenCanvas.transform as RectTransform;
+        if (cam == null || canvasRect == null) { f.text.enabled = false; return; }
+        Vector3 sp = cam.WorldToScreenPoint(f.worldPos + Vector3.up * (1.6f * u));
+        f.text.enabled = sp.z > 0f;
+        if (sp.z <= 0f) return;
+        // Overlay'de kamera verilmez; ScreenSpaceCamera (test görüntüsü) kanvasın kamerasıyla çevrilir
+        Camera uiCam = ScreenCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : ScreenCanvas.worldCamera;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, sp, uiCam, out Vector2 local);
+        f.text.rectTransform.anchoredPosition = local;
+    }
+
     private void UpdateFloating()
     {
         for (int i = floats.Count - 1; i >= 0; i--)
@@ -290,7 +332,8 @@ public class MissionHud : MonoBehaviour
                 floats.RemoveAt(i);
                 continue;
             }
-            f.text.rectTransform.anchoredPosition = f.start + Vector2.up * (floatRise * u);
+            if (f.world) PlaceWorldFloating(f, u);
+            else f.text.rectTransform.anchoredPosition = f.start + Vector2.up * (floatRise * u);
             var c = f.text.color;
             c.a = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((u - 0.5f) * 2f));
             f.text.color = c;
@@ -382,7 +425,10 @@ public class MissionHud : MonoBehaviour
         SetFill(HealthFill, hf);
         HealthFill.color = Color.Lerp(new Color(0.95f, 0.3f, 0.25f), new Color(0.3f, 0.9f, 0.4f), hf);
         HealthLabel.text = "Can " + (health != null ? Mathf.CeilToInt(health.Current).ToString() : "-");
-        MoneyText.text = LootRegistry.FormatMoney(loot != null ? loot.Money : 0);
+        // Bakiye: kurtarılan eşya kredisi − hırsız kamyoneti vuruş cezaları (kötü park; eksiye düşebilir)
+        var thiefDir = ThiefDirector.Instance;
+        if (thiefDir != null && thiefDir != subscribedThieves) { if (subscribedThieves != null) subscribedThieves.VanRammedMinibus -= OnVanRammed; subscribedThieves = thiefDir; thiefDir.VanRammedMinibus += OnVanRammed; }
+        MoneyText.text = LootRegistry.FormatMoney((loot != null ? loot.Money : 0) - (thiefDir != null ? thiefDir.RamPenaltyTotal : 0));
         float sf = loot != null ? loot.StolenFraction : 0f;
         float vf = loot != null ? loot.InVanFraction : 0f;
         SetFill(StolenFill, sf);
