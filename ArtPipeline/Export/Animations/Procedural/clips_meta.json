@@ -4707,7 +4707,7 @@
       "character": "crew",
       "preview_mesh": "SK_RescueCrew_Blue",
       "description": "Orta eşya: iki avuç göğüs önünde kutunun altında (parmaklar ileri), gövde hafif geride; nefes ve ağırlık aktarma.",
-      "action_sha256": "198703a5d43ee803d9a6ad0fa5cd888a51137826975d5b9e1e2ac4c69ef6d06d",
+      "action_sha256": "3011f8cb6c8d0d2d14e4f34e3a9e592eec2dcae4d5ce3599be22137811e76dd7",
       "carry_grip": {
         "carry_class": "medium",
         "bones": {
@@ -4721,12 +4721,12 @@
         ],
         "palm_root_local_m": {
           "Left": [
-            0.17,
+            0.215,
             -0.3,
             0.743
           ],
           "Right": [
-            -0.17,
+            -0.215,
             -0.3,
             0.743
           ]
@@ -4742,7 +4742,7 @@
           ]
         },
         "note": "Avuç = el kemiği başı + kemik yönünde 0.05 m; kök yerel Blender (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)). Hafif: eşya sağ avuca asılır (tutma noktası eşyanın tepesi), yerden pay için Unity IK eli yukarı kaydırır. Orta / ağır: iki avuç eşyanın alt yüzünde, eşyanın arka yüzü gövdeye dayalı; IK avuçları ±yarı genişliğe ve derinliğe göre ileri kaydırır (omuzdan en çok ~0.30 m).",
-        "hand_spacing_m": 0.34
+        "hand_spacing_m": 0.43
       }
     },
     "Carry_TwoHand_Walk": {
@@ -4755,7 +4755,7 @@
       "character": "crew",
       "preview_mesh": "SK_RescueCrew_Blue",
       "description": "Orta eşyayla canlı yürüyüş (2.0 m/sn): kutu göğüs önünde iki elde, kalça salınımı, baş sallanır; eller gövdeye göre sabit.",
-      "action_sha256": "6dfb60067f7dd0cd5d1bb056d952c9532a0fd244591f324dbe58195eb8897be4",
+      "action_sha256": "769b0959f1431d71ce2761f657346f46057f222f2b0896b6572a95feb2a1397e",
       "target_speed_mps": 2.0,
       "stance_ratio": 0.5,
       "step_length_m": 0.5,
@@ -4773,12 +4773,12 @@
         ],
         "palm_root_local_m": {
           "Left": [
-            0.17,
+            0.215,
             -0.3,
             0.74
           ],
           "Right": [
-            -0.17,
+            -0.215,
             -0.3,
             0.74
           ]
@@ -4794,7 +4794,7 @@
           ]
         },
         "note": "Avuç = el kemiği başı + kemik yönünde 0.05 m; kök yerel Blender (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)). Hafif: eşya sağ avuca asılır (tutma noktası eşyanın tepesi), yerden pay için Unity IK eli yukarı kaydırır. Orta / ağır: iki avuç eşyanın alt yüzünde, eşyanın arka yüzü gövdeye dayalı; IK avuçları ±yarı genişliğe ve derinliğe göre ileri kaydırır (omuzdan en çok ~0.30 m).",
-        "hand_spacing_m": 0.34
+        "hand_spacing_m": 0.43
       }
     },
     "Carry_TwoHand_Run": {
@@ -4807,7 +4807,7 @@
       "character": "crew",
       "preview_mesh": "SK_RescueCrew_Blue",
       "description": "Orta eşyayla kısa adımlı koşu (2.6 m/sn): kutu göğse bastırılmış, öne eğik, uçuş fazı kısa.",
-      "action_sha256": "2b8ab67178055e4682d89570511abaabd31b7718c26c150e0bb01ef857e2fa41",
+      "action_sha256": "294101bc628b770ec618a04ff942892deca0322e7850073b34a5601c2d1ed32e",
       "target_speed_mps": 2.6,
       "stance_ratio": 0.38,
       "step_length_m": 0.52,
@@ -4825,12 +4825,12 @@
         ],
         "palm_root_local_m": {
           "Left": [
-            0.17,
+            0.215,
             -0.32,
             0.711
           ],
           "Right": [
-            -0.17,
+            -0.215,
             -0.32,
             0.711
           ]
@@ -4846,7 +4846,7 @@
           ]
         },
         "note": "Avuç = el kemiği başı + kemik yönünde 0.05 m; kök yerel Blender (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)). Hafif: eşya sağ avuca asılır (tutma noktası eşyanın tepesi), yerden pay için Unity IK eli yukarı kaydırır. Orta / ağır: iki avuç eşyanın alt yüzünde, eşyanın arka yüzü gövdeye dayalı; IK avuçları ±yarı genişliğe ve derinliğe göre ileri kaydırır (omuzdan en çok ~0.30 m).",
-        "hand_spacing_m": 0.34
+        "hand_spacing_m": 0.43
       }
     },
     "Carry_Heavy_Idle": {
@@ -4859,7 +4859,7 @@
       "character": "crew",
       "preview_mesh": "SK_RescueCrew_Blue",
       "description": "Ağır eşya kucakta: dizler kırık, sırt geriye kavisli, omuzlar kalkık, eller bel hizasında yükün altında; yük altında titreme.",
-      "action_sha256": "2e52cfbb329f69a54b785b8429e8e26f38f2967e9d57231a0956b6fa2a3998cf",
+      "action_sha256": "16ce7c1155b48e0a88d35cf05d21e658a93ee98c73b68284b0bcf435256d2391",
       "carry_grip": {
         "carry_class": "heavy",
         "bones": {
@@ -4873,28 +4873,28 @@
         ],
         "palm_root_local_m": {
           "Left": [
-            0.187,
-            -0.227,
-            0.663
+            0.212,
+            -0.298,
+            0.659
           ],
           "Right": [
-            -0.187,
-            -0.227,
-            0.663
+            -0.212,
+            -0.298,
+            0.659
           ]
         },
         "palm_z_range_m": {
           "Left": [
-            0.656,
-            0.67
+            0.65,
+            0.667
           ],
           "Right": [
-            0.656,
-            0.67
+            0.651,
+            0.666
           ]
         },
         "note": "Avuç = el kemiği başı + kemik yönünde 0.05 m; kök yerel Blender (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)). Hafif: eşya sağ avuca asılır (tutma noktası eşyanın tepesi), yerden pay için Unity IK eli yukarı kaydırır. Orta / ağır: iki avuç eşyanın alt yüzünde, eşyanın arka yüzü gövdeye dayalı; IK avuçları ±yarı genişliğe ve derinliğe göre ileri kaydırır (omuzdan en çok ~0.30 m).",
-        "hand_spacing_m": 0.373
+        "hand_spacing_m": 0.424
       }
     },
     "Carry_Heavy_Walk": {
@@ -4907,7 +4907,7 @@
       "character": "crew",
       "preview_mesh": "SK_RescueCrew_Blue",
       "description": "Ağır eşyayla paytak sendeleme (1.4 m/sn, sedye ritmi): kalça sağa sola yalpalar, dizler kırık, eller yükün altında sabit.",
-      "action_sha256": "305dce2329e226a569a14a44140536961c268ffa3797926e2cdff48c9efd0056",
+      "action_sha256": "c4dfffc57021fd716355e93b18d0396ba5f14b721b46e06e2522de4acb2158a3",
       "target_speed_mps": 1.4,
       "stance_ratio": 0.5,
       "step_length_m": 0.35,
@@ -4925,31 +4925,95 @@
         ],
         "palm_root_local_m": {
           "Left": [
-            0.186,
-            -0.239,
-            0.65
+            0.212,
+            -0.298,
+            0.661
           ],
           "Right": [
-            -0.185,
-            -0.238,
-            0.651
+            -0.212,
+            -0.298,
+            0.661
           ]
         },
         "palm_z_range_m": {
           "Left": [
-            0.62,
-            0.674
+            0.651,
+            0.675
           ],
           "Right": [
-            0.622,
-            0.674
+            0.651,
+            0.675
           ]
         },
         "note": "Avuç = el kemiği başı + kemik yönünde 0.05 m; kök yerel Blender (+X sol, -Y ön, +Z yukarı; Unity yerel = (-x, z, -y)). Hafif: eşya sağ avuca asılır (tutma noktası eşyanın tepesi), yerden pay için Unity IK eli yukarı kaydırır. Orta / ağır: iki avuç eşyanın alt yüzünde, eşyanın arka yüzü gövdeye dayalı; IK avuçları ±yarı genişliğe ve derinliğe göre ileri kaydırır (omuzdan en çok ~0.30 m).",
-        "hand_spacing_m": 0.371
+        "hand_spacing_m": 0.424
       }
+    },
+    "Carry_Coil_Run": {
+      "file": "Carry_Coil_Run.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Kangal göğüste iki elde, öne eğik kısa adımlı koşu (2.8 m/sn); uçuş fazı kısa.",
+      "action_sha256": "fd00b1187000dc0b9cb0bd4f0c7f387d026373ff982426ecba3afaab449e6633",
+      "target_speed_mps": 2.8,
+      "stance_ratio": 0.36,
+      "step_length_m": 0.56,
+      "stance_travel_m": 0.4032
+    },
+    "Strafe_Left": {
+      "file": "Strafe_Left.fbx",
+      "duration_s": 0.3333,
+      "frames": 11,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sola yan adım (1.6 m/sn ×1): gövde hareket yönüne hafif yatar, ayaklar açılıp toplanır, kollar serbest (katmanda kollar maskeli).",
+      "action_sha256": "a4757ce33c926ccdb49970284d064e6cd26cf1a4e9bc7e60ba9a35cb05f28829",
+      "target_speed_mps": 1.6,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.2667,
+      "stance_travel_m": 0.2667
+    },
+    "Strafe_Right": {
+      "file": "Strafe_Right.fbx",
+      "duration_s": 0.3333,
+      "frames": 11,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Sağa yan adım (1.6 m/sn ×1): Strafe_Left aynası.",
+      "action_sha256": "7f98b681a53c03ed09fb0432aa9ba2a828cc5051e785a1063c7dcfb240956906",
+      "target_speed_mps": 1.6,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.2667,
+      "stance_travel_m": 0.2667
+    },
+    "Walk_Back": {
+      "file": "Walk_Back.fbx",
+      "duration_s": 0.4,
+      "frames": 13,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Geri geri yürüyüş (1.6 m/sn ×1): gövde hafif arkaya, topuktan yoklayan kısa adımlar.",
+      "action_sha256": "02394080e2428aac2d3528c7ae08a75d706336c22b5b8022c99515c660baeb2c",
+      "target_speed_mps": 1.6,
+      "stance_ratio": 0.5,
+      "step_length_m": 0.32,
+      "stance_travel_m": 0.32
     }
   },
-  "actions_sha256": "ef536e14d714d08b6f50adf4b168df117a95ee16cfada87a7ef3685bf32ea2a4",
-  "source_sha256": "92258a6c4c5431d45a7fb4f00ef0c41c2b443deccf7384d8313825751270ed8c"
+  "actions_sha256": "1b4ad95489708280925728c360a427eae6a274fabe7c5e4b3a05836de4df2804",
+  "source_sha256": "32094652d654b99069c675c805c8920d5c1ff0722a57e63688cce25476039105"
 }

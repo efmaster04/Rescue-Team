@@ -51,6 +51,8 @@ CARRY_EXPECTED = {'Carry_OneHand_Idle': (1.5, True), 'Carry_OneHand_Run': (0.4, 
 CARRY_CLASS = {'Carry_OneHand_Idle': 'light', 'Carry_OneHand_Run': 'light', 'Carry_TwoHand_Idle': 'medium', 'Carry_TwoHand_Walk': 'medium',
                'Carry_TwoHand_Run': 'medium', 'Carry_Heavy_Idle': 'heavy', 'Carry_Heavy_Walk': 'heavy'}
 EXPECTED.update(CARRY_EXPECTED)
+# r7b: kangalla koşu, yana ve geri adım
+EXPECTED.update({'Carry_Coil_Run': (0.4, True), 'Strafe_Left': (1 / 3, True), 'Strafe_Right': (1 / 3, True), 'Walk_Back': (0.4, True)})
 WHEEL_CLIPS = {'Drive_Seated'}
 WHEEL_LIMIT = 0.03
 TRANSITIONS = [('Tackle_Dive','Tackle_GetUp',2), ('Throw_Aim','Throw_Release',2),
@@ -83,7 +85,10 @@ TARGET_SPEED = {'Carry_Stretcher_Walk': 1.4, 'Carry_OneHand_Walk': 2.4, 'Piggyba
                 'Carry_Stretcher_Front_Walk': 1.4, 'Carry_Coil_Walk': 2.4,
                 'Thief_Sneak_Walk':1.6, 'Thief_Run_Carry':3.6, 'Thief_Run':3.6,
                 'Crouch_Walk':1.2,
-                'Carry_OneHand_Run': 3.2, 'Carry_TwoHand_Walk': 2.0, 'Carry_TwoHand_Run': 2.6, 'Carry_Heavy_Walk': 1.4}
+                'Carry_OneHand_Run': 3.2, 'Carry_TwoHand_Walk': 2.0, 'Carry_TwoHand_Run': 2.6, 'Carry_Heavy_Walk': 1.4,
+                'Carry_Coil_Run': 2.8, 'Strafe_Left': 1.6, 'Strafe_Right': 1.6, 'Walk_Back': 1.6}
+# Gidiş yönü (kök yerel, foot_slide için): yazılmayan ileri (-Y)
+TRAVEL_DIR = {'Strafe_Left': (1, 0), 'Strafe_Right': (-1, 0), 'Walk_Back': (0, 1)}
 FOOT_SLIDE_LIMIT = 0.03
 CONTACT_EPS = 0.015     # ayak bileği en alçak yüksekliğine bu kadar yakınsa yerde sayılır (kareler arası
                         # doğrusal dönüş karışımı basışta bileği ~7 mm oynatır; salınım bu bantta çok kısa kalır)
@@ -110,7 +115,7 @@ def fbx_frame_rate(path):
     return found.get('TimeMode'), found.get('CustomFrameRate')
 
 
-def foot_slide(rig, f0, f1, speed):
+def foot_slide(rig, f0, f1, speed, travel=(0, -1)):
     """Yerinde döngüyü hedef hızla ileri (-Y) taşınmış say; her yere basışta ayağın yatay kaymasının en büyüğü (m).
     Döngü periyodik kabul edilir: son kare ilk kareyle aynı olduğundan [f0, f1) örneklenir ve basış dilimleri sarılır."""
     scene = bpy.context.scene
@@ -141,7 +146,7 @@ def foot_slide(rig, f0, f1, speed):
                 t, pts = samples[j]
                 p = pts[side]
                 tt = t + (period if wrap else 0.0)
-                cur.append((p.x, p.y - speed * tt))
+                cur.append((p.x + travel[0] * speed * tt, p.y + travel[1] * speed * tt))
             elif cur:
                 segs.append(cur)
                 cur = []
@@ -804,7 +809,7 @@ def main():
                 v = TARGET_SPEED[name]
                 if abs(m.get('target_speed_mps', -1) - v) > 1e-6:
                     errors.append('%s: meta hedef hiz %s (beklenen %s)' % (name, m.get('target_speed_mps'), v))
-                fs = foot_slide(rig, f0, f1, v)
+                fs = foot_slide(rig, f0, f1, v, TRAVEL_DIR.get(name, (0, -1)))
                 parts = []
                 for side, val in fs.items():
                     if val == float('inf'):

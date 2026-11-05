@@ -90,6 +90,11 @@ CLIPS = [
     ('Carry_TwoHand_Run', 0.4, True, True, False, 'crew'),
     ('Carry_Heavy_Idle', 1.6, True, True, False, 'crew'),
     ('Carry_Heavy_Walk', 0.5, True, True, False, 'crew'),
+    # r7b: kangalla koşu ve yana / geri adım (Animator "LowerBody" katmanı: bacak + gövde, kollar taban katmandan)
+    ('Carry_Coil_Run', 0.4, True, True, False, 'crew'),
+    ('Strafe_Left', 1 / 3, True, True, False, 'crew'),
+    ('Strafe_Right', 1 / 3, True, True, False, 'crew'),
+    ('Walk_Back', 0.4, True, True, False, 'crew'),
 ]
 # Taşıma döngüleri: oyundaki hedef hız (m/sn) ve yere basma oranı. Ayak yerdeyken yerel olarak tam bu hızla
 # geriye kayar (stride = hız × basma oranı × süre); oynatma hızı 1.0 iken dünyada ayak kaymaz.
@@ -108,6 +113,11 @@ WALK_SPEEDS = {
     'Carry_TwoHand_Walk': (2.0, 0.5),     # orta: iki el göğüs önünde kutu, canlı yürüyüş
     'Carry_TwoHand_Run': (2.6, 0.38),     # orta: kutuyla kısa adımlı koşu
     'Carry_Heavy_Walk': (1.4, 0.5),       # ağır: kucakta yük, paytak sendeleme (sedye ritmi)
+    # r7b: Unity oynatma hızı = gerçek hız / 1.6 (StrafeRate parametresi); bu kliplerde adım yana ya da geriye
+    'Carry_Coil_Run': (2.8, 0.36),        # kangalla kısa adımlı koşu
+    'Strafe_Left': (1.6, 0.5),
+    'Strafe_Right': (1.6, 0.5),
+    'Walk_Back': (1.6, 0.5),
 }
 DESCRIPTIONS = {
     'Push_Shove': 'İki avuçla öne itiş; çömelip yüklenir, hızla toparlanır. Slapstick, temas koddan.',
@@ -169,6 +179,10 @@ DESCRIPTIONS = {
     'Carry_TwoHand_Run': 'Orta eşyayla kısa adımlı koşu (2.6 m/sn): kutu göğse bastırılmış, öne eğik, uçuş fazı kısa.',
     'Carry_Heavy_Idle': 'Ağır eşya kucakta: dizler kırık, sırt geriye kavisli, omuzlar kalkık, eller bel hizasında yükün altında; yük altında titreme.',
     'Carry_Heavy_Walk': 'Ağır eşyayla paytak sendeleme (1.4 m/sn, sedye ritmi): kalça sağa sola yalpalar, dizler kırık, eller yükün altında sabit.',
+    'Carry_Coil_Run': 'Kangal göğüste iki elde, öne eğik kısa adımlı koşu (2.8 m/sn); uçuş fazı kısa.',
+    'Strafe_Left': 'Sola yan adım (1.6 m/sn ×1): gövde hareket yönüne hafif yatar, ayaklar açılıp toplanır, kollar serbest (katmanda kollar maskeli).',
+    'Strafe_Right': 'Sağa yan adım (1.6 m/sn ×1): Strafe_Left aynası.',
+    'Walk_Back': 'Geri geri yürüyüş (1.6 m/sn ×1): gövde hafif arkaya, topuktan yoklayan kısa adımlar.',
 }
 PREVIEW = {'Patient_SitDazed_ArmSling': 'SK_Patient_Civilian'}
 
@@ -1798,8 +1812,9 @@ def clip_crouch_walk(P, t, T):
 # Eşya Unity'de bir noktaya değil AVUÇLARA bağlanır (CarryHandIK): hafifte sağ avuca asılır, orta/ağırda iki avuç eşyanın altına
 # kaydırılır (±yarı genişlik, derinliğe göre ileri). Klipteki avuç konumu "ev" pozudur; IK oradan en çok chibi kol erişimi
 # (omuzdan ~0.30 m) kadar sapar. Hedef hızlar CarryRules ile aynı: hafif 2.4/3.2, orta 2.0/2.6, ağır 1.4 (koşu yok).
-TWOHAND_GRIP = (0.17, -0.30, 0.74)     # orta sınıf avuç evi (kök yerel +X sol, -Y ön, +Z yukarı): göğüs önü, kutunun altı
-HEAVY_GRIP = (0.18, -0.30, 0.60)       # ağır sınıf: daha alçak (bel), kollar gergin, yük kucakta
+TWOHAND_GRIP = (0.215, -0.30, 0.74)    # orta sınıf avuç evi (kök yerel +X sol, -Y ön, +Z yukarı): göğüs önü, kutunun altı.
+                                       # ±0.17'de ön kol gövdeye 6-10 cm giriyordu; kangal kliplerindeki gibi omuz genişliğinde tutulur.
+HEAVY_GRIP = (0.212, -0.30, 0.66)      # ağır sınıf: daha alçak (bel), kollar gergin, yük kucakta
 CARRY_CLASS = {'Carry_OneHand_Idle': 'light', 'Carry_OneHand_Run': 'light', 'Carry_TwoHand_Idle': 'medium',
                'Carry_TwoHand_Walk': 'medium', 'Carry_TwoHand_Run': 'medium', 'Carry_Heavy_Idle': 'heavy', 'Carry_Heavy_Walk': 'heavy'}
 _CARRY_SAMPLES = {}
@@ -1815,7 +1830,7 @@ def onehand_arm(P, c2=0.0):
 def two_hands(P, grip, bob=0.0, jitter=0.0):
     """İki avuç göğüs önünde, eşyanın altında (parmaklar ileri-yukarı); grip kök yerel (x, y, z), x sol el için (sağ el -x)."""
     for s, side in ((1, 'Left'), (-1, 'Right')):
-        d = Vector((-s * 0.12, -0.92, 0.36)).normalized()
+        d = Vector((-s * 0.30, -0.88, 0.30)).normalized()
         target = Vector((s * grip[0], grip[1], grip[2] + bob + jitter * s))
         P.arm_ik(side, target - d * GRIP_POINT, pole=(s * 0.95, 0.25, -0.55), hand_dir=d, hand_twist=0)
         P.fist(side, 0.55)
@@ -1899,8 +1914,8 @@ def clip_heavy_idle(P, t, T):
     s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
     tr = 0.003 * math.sin(TAU * 7 * ph)   # yük altında titreme (döngüde 7 tam dalga)
     bob = -0.065 - 0.006 * (1 - c1)
-    P.hips((0, 0, bob + tr), pitch=-8, roll=4 * s1)
-    P.spine(pitch=-10 + 2 * (1 - c1), roll=-4 * s1, yaw=2 * s1)
+    P.hips((0, 0, bob + tr), pitch=-2, roll=4 * s1)
+    P.spine(pitch=-3 + 1.5 * (1 - c1), roll=-4 * s1, yaw=2 * s1)
     P.neck_head(pitch=14 - 3 * c1, roll=-3 * s1, yaw=6 * math.sin(TAU * ph + 0.7))
     for s, side in ((1, 'Left'), (-1, 'Right')):
         P.shrug(side, up=12 + 2 * (1 - c1), fwd=14)
@@ -1915,8 +1930,8 @@ def clip_heavy_walk(P, t, T):
     c2 = math.cos(2 * TAU * ph)
     s1 = math.sin(TAU * ph)
     bob = -0.085 - 0.018 * c2
-    P.hips((0, 0, bob), pitch=-7 + 3 * c2, roll=14 * s1, yaw=7 * math.sin(TAU * ph + 0.4))
-    P.spine(pitch=-9 + 4 * math.cos(2 * TAU * ph - 0.6), roll=-14 * math.sin(TAU * ph - 0.35), yaw=-9 * math.sin(TAU * ph + 0.4))
+    P.hips((0, 0, bob), pitch=-2 + 2 * c2, roll=10 * s1, yaw=3 * math.sin(TAU * ph + 0.4))
+    P.spine(pitch=-3 + 2 * math.cos(2 * TAU * ph - 0.6), roll=-9 * math.sin(TAU * ph), yaw=-3 * math.sin(TAU * ph + 0.4))
     P.neck_head(pitch=14 + 7 * math.cos(2 * TAU * ph - 1.3), roll=8 * math.sin(TAU * ph - 1.1), yaw=4 * s1)
     for s, side in ((1, 'Left'), (-1, 'Right')):
         P.shrug(side, up=12 + 4 * c2, fwd=14)
@@ -1949,7 +1964,66 @@ def carry_meta(name):
     return {'carry_grip': m}
 
 
+# ---------------------------------------------------------------- r7b: kangalla koşu, yana ve geri adım
+def clip_coil_run(P, t, T):
+    ph = t / T
+    stride, stance = walk_stride('Carry_Coil_Run', T)
+    c2 = math.cos(2 * TAU * (ph - stance / 2))
+    bob = -0.094 - 0.020 * c2
+    P.hips((0, 0, bob), pitch=8 + 2 * c2, roll=6 * math.sin(TAU * ph), yaw=-3 * math.sin(TAU * ph))
+    P.spine(pitch=3 + c2, roll=-5 * math.sin(TAU * ph))
+    P.neck_head(pitch=-14 + 5 * math.sin(2 * TAU * ph), roll=5 * math.sin(TAU * ph - 0.5))
+    coil_hands(P, (0, -0.33, 0.75 + 0.3 * (bob + 0.094)))
+    walk_legs(P, ph, stride, 0.12, width=0.01, toe_out=8, stance=stance)
+
+
+def side_legs(P, phase, stride, lift, direction, stance, width=0.055):
+    """Yana adım: direction +1 sola (+X), -1 sağa. Yerdeki ayak gidişin tersine kayar; iki ayak yarım faz arayla açılıp toplanır."""
+    for s, side, off in ((1, 'Left', 0.0), (-1, 'Right', 0.5)):
+        y, z, _ = walk_foot(phase + off, stride, lift, stance)
+        P.leg(side, (s * (FOOT_X + width) - direction * y, 0.0, ANKLE_Z + z), pole=(s * 0.25, -1, 0), yaw=s * 6)
+
+
+def clip_strafe(P, t, T, direction):
+    ph = t / T
+    name = 'Strafe_Left' if direction > 0 else 'Strafe_Right'
+    stride, stance = walk_stride(name, T)
+    c2 = math.cos(2 * TAU * ph)
+    bob = -0.060 - 0.012 * c2
+    P.hips((0, 0, bob), pitch=3, roll=direction * 3 + 3 * c2 * direction, yaw=direction * 5)
+    P.spine(pitch=3, roll=direction * 5 - 2 * c2 * direction, yaw=-direction * 3)
+    P.neck_head(pitch=-3, roll=-direction * 4, yaw=-direction * 2)
+    neutral_arms(P, sway=0.03 * c2)
+    side_legs(P, ph, stride, 0.075, direction, stance)
+
+
+def clip_strafe_left(P, t, T):
+    clip_strafe(P, t, T, 1)
+
+
+def clip_strafe_right(P, t, T):
+    clip_strafe(P, t, T, -1)
+
+
+def clip_walk_back(P, t, T):
+    ph = t / T
+    stride, stance = walk_stride('Walk_Back', T)
+    c2 = math.cos(2 * TAU * ph)
+    s1 = math.sin(TAU * ph)
+    bob = -0.064 - 0.012 * c2
+    P.hips((0, 0, bob), pitch=-4 + 2 * c2, roll=5 * s1, yaw=-3 * s1)
+    P.spine(pitch=-3 + 2 * c2, roll=-5 * s1, yaw=3 * s1)
+    P.neck_head(pitch=4, roll=2 * s1)
+    neutral_arms(P, sway=0.05 * s1)
+    # Faz ters: ayak arkada yere değip öne doğru kayar
+    walk_legs(P, 1.0 - ph, stride=stride, lift=0.075, width=0.02, toe_out=10, stance=stance)
+
+
 CLIP_FUNCS = {
+    'Carry_Coil_Run': clip_coil_run,
+    'Strafe_Left': clip_strafe_left,
+    'Strafe_Right': clip_strafe_right,
+    'Walk_Back': clip_walk_back,
     'Carry_OneHand_Idle': clip_onehand_idle,
     'Carry_OneHand_Run': clip_onehand_run,
     'Carry_TwoHand_Idle': clip_twohand_idle,
