@@ -275,10 +275,15 @@ public sealed class CarryHandIK : MonoBehaviour
         // Dalış ve kalkış: gövde yere uzanır, eşya avuçlara bağlı kalır (el kopmaz)
         if (IsAttachedAction())
         {
+            // Klipte kollar iki yana açılır: avuçlar eşyanın yanlarına çekilir, eşya avuçların ortasında
+            leftWeight = Mathf.MoveTowards(leftWeight, 1f, Time.deltaTime / Mathf.Max(0.01f, blendSeconds));
             Vector3 attached = mid0 + up * gripBelowCenter;
             Place(attached, flat, size, HoldMode.Attached);
-            GripErrorLeft = SurfaceDistance(l0, LastCenter, LastRotation, size);
-            GripErrorRight = SurfaceDistance(r0, LastCenter, LastRotation, size);
+            float hxAttached = Mathf.Clamp(halfW + 0.005f, minHandSpread, sideGripMaxSpread);
+            Solve(true, LastCenter - right * hxAttached - up * gripBelowCenter, leftWeight);
+            Solve(false, LastCenter + right * hxAttached - up * gripBelowCenter, leftWeight);
+            GripErrorLeft = SurfaceDistance(Palm(HumanBodyBones.LeftHand), LastCenter, LastRotation, size);
+            GripErrorRight = SurfaceDistance(Palm(HumanBodyBones.RightHand), LastCenter, LastRotation, size);
             return;
         }
 
