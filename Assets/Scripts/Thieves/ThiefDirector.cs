@@ -83,7 +83,8 @@ public class ThiefDirector : MonoBehaviour
     {
         var van = by != null ? by.GetComponent<ThiefVan>() : null;
         if (van == null || minibus == null) return;
-        ChargeRam(van, by.Follower != null ? by.Follower.Speed : 0f, minibus.transform.position, "şerit");
+        float speed = by.Follower != null ? by.Follower.Speed : 0f;
+        van.NoteLaneRam(ChargeRam(van, speed, minibus.transform.position, "şerit"), speed);
     }
 
     // Vuruş cezası: hıza göre ₺ (ThiefSettings.RamPenalty), toplam kasadan düşer (görev sonu: FieldPayout.thiefRamPenalty;

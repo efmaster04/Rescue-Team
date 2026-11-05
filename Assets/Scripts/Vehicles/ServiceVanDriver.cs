@@ -103,6 +103,14 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     public float physicalShoveMinSpeed = .3f;
     [Tooltip("Fiziksel itilirken el freni (tam frenin oranı): temas bitince kısa yolda durur.")]
     public float shovedHandbrake = .5f;
+    [Tooltip("Fiziksel itmede temas kesilince yatay hız bu ivmeyle (m/sn²) söner: tek vuruş minibüsü metrelerce kaydırmaz.")]
+    public float shoveBrakeDecel = 7f;
+    [Tooltip("Son temastan bu kadar sn sonra temas kesilmiş sayılır (fiziksel itme).")]
+    public float shoveContactGrace = .15f;
+    [Tooltip("Fiziksel itme başlamadan itme yönünde bu kadar (m) boşluk ve zemin aranır; yoksa minibüs kıpırdamaz.")]
+    public float shovePushProbe = .8f;
+    [Tooltip("Fiziksel itmede gövde hız sınırları (m/sn, rad/sn) ve PhysX ayırma hızı: kinematik gövdenin köşe teması minibüsü fırlatmaz (ölçüldü: 18 m/sn).")]
+    public float shoveMaxSpeed = 4f, shoveMaxAngularSpeed = 1f, shoveMaxDepenetration = 1.5f;
 
     [Header("İtilme (trafik çarpması)")]
     [Tooltip("Bir çarpma döngüsünde minibüs en fazla bu kadar (m, yatay) itilir; sonra hız eklenmez ve durur.")]
@@ -252,6 +260,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     private Vector3 lateral;
     private Vector3 groundUp = Vector3.up;
     private float lastRamContact = -100f, lastRamDamage = -100f;
+    private float savedDepenetration = -1f;
     private TrafficVehicle lastRammer;
     private float savedDistance, savedPivot;
     private float lastHeadingYaw;
@@ -573,6 +582,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         rb.isKinematic = true;
         State = VanState.Parked;
         PhysicalShove = false;
+        if (savedDepenetration >= 0f) rb.maxDepenetrationVelocity = savedDepenetration;
         Falling = false;
         steerAngle = 0f;
         SetWheelTorques(0f, MaxBrakeTorque, 0f);
@@ -593,7 +603,12 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         rb.useGravity = true;
         State = VanState.Shoved;
         PhysicalShove = physical;
-        if (physical) PhysicalShoves++;
+        if (physical)
+        {
+            PhysicalShoves++;
+            if (savedDepenetration < 0f) savedDepenetration = rb.maxDepenetrationVelocity;
+            rb.maxDepenetrationVelocity = shoveMaxDepenetration;
+        }
         settleSince = -1f;
         dynamicSince = Time.time;
         lastShoveVelocity = Vector3.zero;
@@ -619,6 +634,8 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             // Karakterler elenir, araçlar elenmez (Codex review P1: IsCrewOrCharacter LaneFollower'lı hırsız kamyonetini de eliyordu,
             // kamyonet fiziksel itmeyi hiç başlatamıyordu)
             if (other == null || !other.isKinematic || other.linearVelocity.magnitude < physicalShoveMinSpeed || IsCharacter(c)) continue;
+            // Arkası dolu / kenardaysa dinamikleşmez: kinematik gövde sıkışan minibüsü PhysX ile açık tarafa fırlatırdı (ölçüldü: 3 m)
+            if (!CanBePushed(other.linearVelocity, shovePushProbe, other)) continue;
             LastPusher = other;
             BeginShove(true);
             lastRamContact = Time.time;
@@ -628,9 +645,11 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
     }
 
     // Dış API (hırsız kamyoneti vb.): park hâlindeki minibüsü fiziksel itmeye geçirir; itici dinamik gövdeyi PhysX iter.
-    public bool BeginPhysicalShove(Rigidbody by)
+    public bool BeginPhysicalShove(Rigidbody by, Vector3 pushDirection)
     {
-        if (State != VanState.Parked) return false;
+        // Zaten fiziksel itiliyorsa yalnız temas tazelenir (itici temas sürerken frenlenmez, park hâline geçilmez)
+        if (State == VanState.Shoved && PhysicalShove) { LastPusher = by; lastRamContact = Time.time; settleSince = -1f; return true; }
+        if (State != VanState.Parked || !CanBePushed(pushDirection, shovePushProbe, by)) return false;
         LastPusher = by;
         BeginShove(true);
         lastRamContact = Time.time;
@@ -852,6 +871,20 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
             // Fiziksel itilme: kinematik gövde PhysX ile iter; el freni + düşük lastik tutuşuyla kayar, dik tutma yardımı devrilmeyi önler
             SetWheelTorques(0f, MaxBrakeTorque * shovedHandbrake, 0f);
             UprightAssist();
+            // Temas kesilince kısa yolda dur (ölçüldü: el freni + düşük tutuşla 1.5 m/sn'lik tek vuruş 4.7 m kaydırıyordu); bir tekerleğin
+            // altında zemin yoksa (yol / banket kenarı) yatay hız hemen kesilir: fiziksel itme de uçuruma götürmez.
+            bool edge = !groundValid && groundedPoints < 4;
+            if (edge || Time.time - lastRamContact > shoveContactGrace)
+            {
+                Vector3 v = rb.linearVelocity;
+                Vector3 h = edge ? Vector3.zero : Vector3.MoveTowards(new Vector3(v.x, 0f, v.z), Vector3.zero, shoveBrakeDecel * dt);
+                rb.linearVelocity = new Vector3(h.x, v.y, h.z);
+                if (edge && !LastShoveReason.EndsWith("zemin yok, durdu")) LastShoveReason += " | kenar: zemin yok, durdu";
+            }
+            Vector3 lv = rb.linearVelocity;
+            Vector3 lh = Vector3.ClampMagnitude(new Vector3(lv.x, 0f, lv.z), shoveMaxSpeed);
+            rb.linearVelocity = new Vector3(lh.x, lv.y, lh.z);
+            rb.angularVelocity = Vector3.ClampMagnitude(rb.angularVelocity, shoveMaxAngularSpeed);
         }
         else
         {
@@ -1127,9 +1160,18 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         return need;
     }
 
+    // Minibüs dir yönünde distance kadar itilebilir mi (statik engel yok, dört tekerleğin altında zemin sürüyor). Hırsız kamyoneti
+    // itmeden önce sorar: dayalı ya da uçurum kenarındaki minibüsü itmez.
+    public bool CanBePushed(Vector3 dir, float distance, Rigidbody pusher = null)
+    {
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 1e-6f) return false;
+        return FreeLateral(dir.normalized, distance, pusher) >= distance - 0.01f;
+    }
+
     // Gövde kutusu dir yönünde kaç metre gidebilir: statik collider (kendi parçaları, zemin, hareketli nesneler hariç) ve
     // dört tekerleğin altındaki zemin (0.5 m adımlarla) kesilince biter.
-    private float FreeLateral(Vector3 dir, float max)
+    private float FreeLateral(Vector3 dir, float max, Rigidbody ignore = null)
     {
         float free = max;
         Vector3 center = transform.TransformPoint(new Vector3((bodyMin.x + bodyMax.x) * .5f, (bodyMin.y + .25f + bodyMax.y) * .5f, (bodyMin.z + bodyMax.z) * .5f));
@@ -1137,6 +1179,7 @@ public class ServiceVanDriver : MonoBehaviour, ILaneObstacle
         foreach (var h in Physics.BoxCastAll(center, half, dir, transform.rotation, max, ~0, QueryTriggerInteraction.Ignore))
         {
             if (h.collider == null || h.collider.transform.IsChildOf(transform) || GroundProbe.IsMovingGameObject(h.collider)) continue;
+            if (ignore != null && h.collider.attachedRigidbody == ignore) continue; // itici gövdenin kendisi engel değil
             bool ground = false;
             foreach (var r in groundRoots) if (r != null && h.collider.transform.IsChildOf(r)) ground = true;
             if (ground) continue;

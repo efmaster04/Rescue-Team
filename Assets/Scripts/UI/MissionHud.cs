@@ -123,7 +123,7 @@ public class MissionHud : MonoBehaviour
     private void OnVanRammed(ThiefVan van, int fine, float speed, Vector3 at)
     {
         LastPenaltyLabel = "-" + LootRegistry.MoneySymbol + fine.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + PenaltySuffix;
-        SpawnWorldFloating(LastPenaltyLabel, at + Vector3.up * 3.2f, StolenColor);
+        SpawnWorldFloating(LastPenaltyLabel, at + Vector3.up * 3.2f, new Color(1f, 0.2f, 0.15f));
         PenaltyFloatingSpawned++;
     }
 
@@ -296,7 +296,8 @@ public class MissionHud : MonoBehaviour
     // Dünya noktasına bağlı uçan yazı: kamera izdüşümünde durur, yükselir ve solar; kamera arkasındaysa gizlenir
     private void SpawnWorldFloating(string label, Vector3 worldPos, Color color)
     {
-        var t = MakeText("FloatWorld", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(700f, 52f), 36, TextAnchor.MiddleCenter);
+        var t = MakeText("FloatWorld", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(800f, 64f), 46, TextAnchor.MiddleCenter);
+        t.fontStyle = FontStyle.Bold;
         t.text = label;
         t.color = color;
         var f = new Floating { text = t, born = Time.time, world = true, worldPos = worldPos };
@@ -313,7 +314,9 @@ public class MissionHud : MonoBehaviour
         Vector3 sp = cam.WorldToScreenPoint(f.worldPos + Vector3.up * (1.6f * u));
         f.text.enabled = sp.z > 0f;
         if (sp.z <= 0f) return;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, sp, null, out Vector2 local);
+        // Overlay'de kamera verilmez; ScreenSpaceCamera (test görüntüsü) kanvasın kamerasıyla çevrilir
+        Camera uiCam = ScreenCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : ScreenCanvas.worldCamera;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, sp, uiCam, out Vector2 local);
         f.text.rectTransform.anchoredPosition = local;
     }
 

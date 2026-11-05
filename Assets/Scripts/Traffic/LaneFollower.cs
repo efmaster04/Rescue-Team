@@ -170,12 +170,15 @@ public class LaneFollower : MonoBehaviour
         float limit = Mathf.Abs(maxSteerAngle);
         CurrentSteerAngle = Mathf.Clamp(steerDeg, -limit, limit);
         if (wheelAxes == null || wheelAxes.Length != wheels.Length) CacheWheelAxes();
-        spinDegrees = Mathf.Repeat(spinDegrees + travelled / Mathf.Max(0.05f, wheelRadius) * Mathf.Rad2Deg, 360f);
+        float spinStep = travelled / Mathf.Max(0.05f, wheelRadius) * Mathf.Rad2Deg;
+        ExternalWheelSpinTotal += Mathf.Abs(spinStep);
+        spinDegrees = Mathf.Repeat(spinDegrees + spinStep, 360f);
         ApplyWheelRotations();
     }
 
-    // Toplam tekerlek dönüşü (derece, 0–360; testler okur: manevrada tekerlek döndü mü)
+    // Tekerlek dönüşü (derece, 0–360) ve şerit dışı manevrada biriken toplam dönüş (derece; testler okur)
     public float WheelSpinDegrees { get { return spinDegrees; } }
+    public float ExternalWheelSpinTotal { get; private set; }
 
     // s'deki kök pozu. axleHalfSpan > 0: aks noktaları şeritte, kök aralarında, yön akstan aksa.
     public void Pose(float s, out Vector3 position, out Quaternion rotation)

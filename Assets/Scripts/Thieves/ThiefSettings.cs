@@ -40,6 +40,10 @@ public class ThiefSettings : ScriptableObject
     [Min(10f)] public float steerRateDegPerSec = 110f;
     [Tooltip("Rota takibinde ileriye bakış (m): küçük = sıkı viraj, büyük = yumuşak.")]
     [Min(1f)] public float lookAhead = 3.2f;
+    [Tooltip("Geri giderken arkadaki aracın ön tamponu ile kamyonet arka tamponu arasında (yanal olarak kesişiyorsa) bırakılan en az boşluk (m); altına düşerse kamyonet geri gitmeyi keser.")]
+    [Min(0.3f)] public float reverseRearClearance = 1.2f;
+    [Tooltip("Geri rotasında yanal geçişin bittiği oran (0–1): önce bankete doğru kırılır, kalan yol düz geri (arkada bekleyen aracın önünden geçer).")]
+    [Range(0.4f, 1f)] public float reverseSwingShare = 0.7f;
 
     [Header("Kötü park edilmiş minibüsü itme (kullanıcı kararı 2026-11-05)")]
     [Tooltip("Yer doluysa kamyonet minibüse arka arkaya vurur: ilk vuruş hızı ve her vuruşta artan hız (m/sn), en yüksek hız.")]
@@ -52,6 +56,8 @@ public class ThiefSettings : ScriptableObject
     [Tooltip("İtme bütçesi: en çok bu kadar vuruş / bu kadar sn; sonra yer boşalmadıysa kamyonet şeritte (durduğu yerde) park eder.")]
     [Range(1, 12)] public int maxRams = 8;
     [Min(5f)] public float maxRamSeconds = 40f;
+    [Tooltip("Minibüs üst üste bu kadar vuruşta yerinden oynamazsa (kayaya dayalı, kenarda) kamyonet vazgeçer.")]
+    [Range(1, 8)] public int maxBlockedRams = 3;
     [Tooltip("Her vuruşta şirket kasasından düşen ceza (₺): çarpma hızı ramPenaltySpeedLow → ramPenaltySpeedHigh arasında min → max.")]
     [Min(0)] public int ramPenaltyMin = 50;
     [Min(0)] public int ramPenaltyMax = 250;
