@@ -276,6 +276,39 @@ public static class OfficeExpansionSetup
         if (oc == null || oc.ui == null) Line("  UYARI: Office_Computer_Main'de OfficeComputer/ui eksik");
         Line("Bilgisayar: " + V(computer.transform.position) + ", kutu " + V(pc.size));
 
+        // 7b) x=0 duvarının garaj yüzü: ofis sıvası yerine garajın kendi sıva/bant kaplaması (GarageRefinementBuilder "Finish" deseni:
+        //     ince küp levhalar, ofis yüzü değişmez). Kasa dikmeleri z[1.535,1.6] / [3.6,3.665], başlık y[2.5,2.565] açık bırakılır.
+        //     Eski A02 duvarı gibi dünya ölçekli PlanarUV: küpün 0-1 UV'si 3 m'lik levhaya dokuyu gerer.
+        var garageFace = new GameObject("GarageFace").transform; garageFace.SetParent(root.transform, false);
+        var gPlaster = AssetDatabase.LoadAssetAtPath<Material>(GaragePlasterPath);
+        var gBand = AssetDatabase.LoadAssetAtPath<Material>(GarageBandPath);
+        if (gPlaster == null || gBand == null) Line("  UYARI: garaj sıva/bant materyali yok (" + GaragePlasterPath + ")");
+        else
+        {
+            const float faceX = 0.130f, thick = 0.006f, band = 0.96f, top = 4.0f, head = 2.565f;
+            foreach (var (side, z0, z1) in new[] { ("S", 1.40f, 1.535f), ("N", 3.665f, 5.20f) })
+            {
+                Finish(garageFace, "GarageFace_Band_" + side, new Vector3(faceX, band * .5f, (z0 + z1) * .5f), new Vector3(thick, band, z1 - z0), gBand);
+                Finish(garageFace, "GarageFace_Plaster_" + side, new Vector3(faceX, (band + top) * .5f, (z0 + z1) * .5f), new Vector3(thick, top - band, z1 - z0), gPlaster);
+            }
+            Finish(garageFace, "GarageFace_Lintel", new Vector3(faceX, (head + top) * .5f, (1.535f + 3.665f) * .5f), new Vector3(thick, top - head, 3.665f - 1.535f), gPlaster);
+            Line("Garaj yüzü kaplaması: " + garageFace.childCount + " levha (Garage_Plaster / Garage_ProtectionBand)");
+        }
+
+        // 7c) Upgrade_OperationsBoard (pasif yükseltme): ProjectBuilder.CloneParts kökün y'sini (1.6) parçaların dünya y'sine ekliyor,
+        //     pano y[3.35,3.84] ile ofis tavanının üstünde, yüzü de duvara dönük kalıyordu. Yüzü kaynaktaki gibi +x'e baktığından
+        //     batı duvarına (x=-4.72 yüzü) oturur; FilingCabinet_02 ve üstündeki kâğıtların (y≤1.61) üstünde, kapı kasasının güneyinde.
+        var board = FindRoot("Upgrade_OperationsBoard");
+        if (board != null)
+        {
+            var bb = InactiveWorldBounds(board.transform);
+            Vector3 target = new Vector3(-4.72f + bb.size.x * .5f + 0.003f, OperationsBoardCenterY, -3.9f);
+            board.transform.position += target - bb.center;
+            var after = InactiveWorldBounds(board.transform);
+            Line("Upgrade_OperationsBoard: " + B(bb) + " → " + B(after));
+        }
+        else Line("  UYARI: Upgrade_OperationsBoard yok");
+
         // 8) Oyuncu doğuşu: ana ofiste, zemine oturmuş ve engelsiz
         Physics.SyncTransforms();
         var spawn = GameObject.Find(OfficeGaragePlayerSetup.SpawnName);
@@ -396,6 +429,47 @@ public static class OfficeExpansionSetup
             var f = FindDeep(child, name, exact); if (f != null) return f;
         }
         return null;
+    }
+
+    public const string GaragePlasterPath = "Assets/_Project/Art/Garage/Materials/Garage_Plaster.mat";
+    public const string GarageBandPath = "Assets/_Project/Art/Garage/Materials/Garage_ProtectionBand.mat";
+    public const float OperationsBoardCenterY = 2.0f; // pano 0,49 m yüksek: y[1.755,2.245]
+
+    // GarageRefinementBuilder.Finish ile aynı: collider'sız ince küp levha. Adlar benzersiz olmalı, PlanarUV mesh'i ada göre saklar.
+    private static GameObject Finish(Transform parent, string name, Vector3 position, Vector3 size, Material material)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube); go.name = name;
+        go.transform.SetParent(parent, false); go.transform.position = position; go.transform.localScale = size;
+        UnityEngine.Object.DestroyImmediate(go.GetComponent<Collider>());
+        var renderer = go.GetComponent<MeshRenderer>();
+        renderer.sharedMaterial = material;
+        GarageRefinementBuilder.PlanarUV(renderer);
+        GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic | StaticEditorFlags.ReflectionProbeStatic);
+        return go;
+    }
+
+    // Pasif (inactive) kök nesneyi de bulur (GameObject.Find pasifleri görmez)
+    public static GameObject FindRoot(string name)
+    {
+        foreach (var go in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()) if (go.name == name) return go;
+        return null;
+    }
+
+    // Pasif nesnenin dünya sınırı: renderer.bounds pasifte güvenilmez, mesh sınırı dönüştürülür
+    public static Bounds InactiveWorldBounds(Transform root)
+    {
+        bool any = false; var result = new Bounds();
+        foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
+        {
+            if (mf.sharedMesh == null) continue;
+            var b = mf.sharedMesh.bounds; var m = mf.transform.localToWorldMatrix;
+            foreach (float x in new[] { -1f, 1f }) foreach (float y in new[] { -1f, 1f }) foreach (float z in new[] { -1f, 1f })
+            {
+                var p = m.MultiplyPoint3x4(b.center + Vector3.Scale(b.extents, new Vector3(x, y, z)));
+                if (!any) { result = new Bounds(p, Vector3.zero); any = true; } else result.Encapsulate(p);
+            }
+        }
+        return result;
     }
 
     // Prefab kökünün içe aktarmadan gelen dönüşü (tek nesneli FBX'te kökte −90° X olabilir) korunur, üstüne 180° yaw eklenir.

@@ -182,6 +182,24 @@ public static class OfficeExpansionVerify
         var monitor = FindDeep(items, "Monitor_01");
         Check("(k) Office_Computer_Main monitörün üstünde (≤ 0.3 m) ve OfficeComputer.ui bağlı", computer != null && monitor != null && Vector3.Distance(computer.transform.position, monitor.position) < 0.5f && computer.GetComponent<OfficeComputer>() != null && computer.GetComponent<OfficeComputer>().ui != null,
             "bilgisayar " + (computer != null ? V(computer.transform.position) : "yok") + ", monitör " + (monitor != null ? V(monitor.position) : "yok"));
+
+        // Pano yükseltmesi: açıldığında batı duvarına oturur, tavanın altında; poster, dolap ve üstündeki kâğıtla çakışmaz
+        var board = OfficeExpansionSetup.FindRoot("Upgrade_OperationsBoard");
+        bool boardOk = false; string boardDetail = "pano yok";
+        if (board != null)
+        {
+            var bb = OfficeExpansionSetup.InactiveWorldBounds(board.transform);
+            var clashes = new List<string>();
+            foreach (var n in new[] { "PosterA_01", "FilingCabinet_02", "PaperStack_03" })
+            {
+                var t = FindDeep(items, n);
+                if (t == null) clashes.Add(n + " yok");
+                else if (OfficeExpansionSetup.InactiveWorldBounds(t).Intersects(bb)) clashes.Add(n);
+            }
+            boardOk = Mathf.Abs(bb.min.x - (-4.72f)) < 0.01f && bb.max.y < 3.16f && bb.min.y > 1.61f && clashes.Count == 0 && bb.min.z > -5.2f && bb.max.z < -2.655f;
+            boardDetail = "x[" + bb.min.x.ToString("F3", Inv) + "," + bb.max.x.ToString("F3", Inv) + "] y[" + bb.min.y.ToString("F3", Inv) + "," + bb.max.y.ToString("F3", Inv) + "] z[" + bb.min.z.ToString("F3", Inv) + "," + bb.max.z.ToString("F3", Inv) + "]" + (clashes.Count > 0 ? ", çakışan " + string.Join(",", clashes) : "");
+        }
+        Check("(l) Upgrade_OperationsBoard batı duvarına oturur, poster/dolapla çakışmaz", boardOk, boardDetail);
     }
 
     // =====================================================================================
@@ -437,6 +455,29 @@ public static class OfficeExpansionVerify
             yield return CaptureFrom(new Vector3(-16f, 0f, -9f), new Vector3(-5f, 1.5f, 3f), "ofis_10_dis_guneybati");
             yield return CaptureFrom(new Vector3(-14f, 0f, 16f), new Vector3(-4f, 1.5f, 6f), "ofis_11_dis_kuzeybati");
             yield return CaptureFrom(new Vector3(-9.0f, 0f, 8.6f), new Vector3(-12f, 1.2f, 8.6f), "ofis_12_ring_penceresi");
+
+            // Geçişin kasaları ve x=0 duvarının garaj yüzü yakından
+            yield return CaptureFrom(new Vector3(1.05f, 0f, 3.0f), new Vector3(0f, 1.2f, 1.6f), "ofis_13_gecis_sol_kasa");
+            yield return CaptureFrom(new Vector3(1.05f, 0f, 2.2f), new Vector3(0f, 1.2f, 3.6f), "ofis_14_gecis_sag_kasa");
+            yield return CaptureFrom(new Vector3(3.4f, 0f, 2.2f), new Vector3(0f, 1.4f, 3.3f), "ofis_15_garaj_yuzu");
+            // Pano yükseltmesi açık hâliyle (test sonrası kapatılır)
+            var board = OfficeExpansionSetup.FindRoot("Upgrade_OperationsBoard");
+            bool boardWasActive = board != null && board.activeSelf;
+            if (board != null) board.SetActive(true);
+            yield return CaptureFrom(new Vector3(-2.2f, 0f, -3.4f), new Vector3(-4.7f, 1.6f, -3.9f), "ofis_16_pano_yukseltmesi");
+            if (board != null) board.SetActive(boardWasActive);
+
+            // Üçüncü şahıs kamera ölçümü: her odada önce oda ortası (yön odanın uzun ekseni), sonra sırtı duvara yakın en zor durum
+            yield return ThirdPersonSample(new Vector3(-2.4f, 0f, -2.6f), new Vector3(-2.4f, 1f, 1f), "tp_ana_ofis_orta");
+            yield return ThirdPersonSample(new Vector3(-3.9f, 0f, -4.6f), new Vector3(-1.1f, 0.8f, -0.1f), "tp_ana_ofis_kose");
+            yield return ThirdPersonSample(new Vector3(-7.3f, 0f, -1.9f), new Vector3(-7.3f, 1f, 1f), "tp_mutfak_orta");
+            yield return ThirdPersonSample(new Vector3(-5.3f, 0f, -0.3f), new Vector3(-8.2f, 0.7f, -3.0f), "tp_mutfak_kose");
+            yield return ThirdPersonSample(new Vector3(-2.4f, 0f, 3.2f), new Vector3(-4.6f, 1f, 3.2f), "tp_depo_orta");
+            yield return ThirdPersonSample(new Vector3(-1.0f, 0f, 1.7f), new Vector3(-3.3f, 0.8f, 4.0f), "tp_depo_kose");
+            yield return ThirdPersonSample(new Vector3(-7.3f, 0f, 3.2f), new Vector3(-9.6f, 1f, 3.2f), "tp_soyunma_orta");
+            yield return ThirdPersonSample(new Vector3(-7.3f, 0f, 1.7f), new Vector3(-7.6f, 0.8f, 4.2f), "tp_soyunma_kose");
+            yield return ThirdPersonSample(new Vector3(-8.6f, 0f, 8.6f), new Vector3(-4.0f, 1f, 8.6f), "tp_ring_orta");
+            yield return ThirdPersonSample(new Vector3(-8.6f, 0f, 6.0f), new Vector3(-4.6f, 0.9f, 8.8f), "tp_ring_kose");
         }
         finally
         {
@@ -545,6 +586,18 @@ public static class OfficeExpansionVerify
         yield return Press(Key.V);
         yield return Until(() => orbit.Mode == OrbitCamera.ViewMode.ThirdPerson && orbit.Blend <= 0f, 2f, "TP geçişi (görüntü)");
         yield return null;
+    }
+
+    // Üçüncü şahıs görüntüsü ve ölçümü (rapor satırı, başarı ölçütü değil): kameranın oturması beklenir, sonra pivot ve baş uzaklığı yazılır
+    private static IEnumerator ThirdPersonSample(Vector3 position, Vector3 lookAt, string name)
+    {
+        yield return Teleport(position, lookAt);
+        yield return Seconds(1.6f); // releaseDelay + geri açılma (OrbitCamera) sonrası
+        Transform cam = Camera.main.transform;
+        Vector3 pivot = player.transform.position + Vector3.up * orbit.CurrentPivotHeight;
+        float toHead = orbit.Head != null ? Vector3.Distance(cam.position, orbit.Head.position) : -1f;
+        Line("  TP " + name + ": oyuncu " + V(player.transform.position) + ", kamera " + V(cam.position) + ", pivot uzaklığı " + Vector3.Distance(cam.position, pivot).ToString("F2", Inv) + " m (serbest " + orbit.FreeDistance.ToString("F2", Inv) + "), başa " + toHead.ToString("F2", Inv) + " m, baş kamerada " + orbit.HeadInsideCamera);
+        yield return CaptureMain(name);
     }
 
     private static IEnumerator CaptureMain(string name)

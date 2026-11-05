@@ -443,20 +443,25 @@ def add_layered_wall_z(geo, x0, x1, z_min, z_max, y_top=3.24, openings=None, tri
                 geo.span_u(a, 3.16, z_min, b, y_top, z_max, 'M_PlasterLight', bevel=0.003)
 
 
+# Kasanın iç yüzü duvarın boşluk kenarından bu kadar (m) boşluğa taşar. Eşitken duvar ucu (M_WallBlue/M_Plaster) ile kasa
+# (M_TimberEdge) aynı düzlemde kalıyor, Unity'de üçgen kesimleriyle z-fighting veriyordu (depo-garaj geçişi, ofis_07).
+FRAME_REVEAL = 0.005
+
+
 def add_door_frame_x(geo, x_center, half_thick, z0, z1, height, frame_w=0.055, mat='M_TimberEdge'):
     """X-sabit bir duvardaki kapı boşluğuna kanatsız kasa (sol/sağ dikme + üst başlık) ekler."""
     xm, xp = x_center - half_thick - 0.015, x_center + half_thick + 0.015
-    geo.span_u(xm, 0.0, z0 - frame_w, xp, height + frame_w, z0, mat, bevel=0.006)
-    geo.span_u(xm, 0.0, z1, xp, height + frame_w, z1 + frame_w, mat, bevel=0.006)
-    geo.span_u(xm, height, z0, xp, height + frame_w, z1, mat, bevel=0.006)
+    geo.span_u(xm, 0.0, z0 - frame_w, xp, height + frame_w, z0 + FRAME_REVEAL, mat, bevel=0.006)
+    geo.span_u(xm, 0.0, z1 - FRAME_REVEAL, xp, height + frame_w, z1 + frame_w, mat, bevel=0.006)
+    geo.span_u(xm, height - FRAME_REVEAL, z0, xp, height + frame_w, z1, mat, bevel=0.006)
 
 
 def add_door_frame_z(geo, z_center, half_thick, x0, x1, height, frame_w=0.055, mat='M_TimberEdge'):
     """Z-sabit bir duvardaki kapı boşluğuna kanatsız kasa (sol/sağ dikme + üst başlık) ekler."""
     zm, zp = z_center - half_thick - 0.015, z_center + half_thick + 0.015
-    geo.span_u(x0 - frame_w, 0.0, zm, x0, height + frame_w, zp, mat, bevel=0.006)
-    geo.span_u(x1, 0.0, zm, x1 + frame_w, height + frame_w, zp, mat, bevel=0.006)
-    geo.span_u(x0, height, zm, x1, height + frame_w, zp, mat, bevel=0.006)
+    geo.span_u(x0 - frame_w, 0.0, zm, x0 + FRAME_REVEAL, height + frame_w, zp, mat, bevel=0.006)
+    geo.span_u(x1 - FRAME_REVEAL, 0.0, zm, x1 + frame_w, height + frame_w, zp, mat, bevel=0.006)
+    geo.span_u(x0, height - FRAME_REVEAL, zm, x1, height + frame_w, zp, mat, bevel=0.006)
 
 
 def add_window_frame_x(geo, x_min, x_max, z0, z1, y0=0.90, y1=2.10, inside_dir=1):
