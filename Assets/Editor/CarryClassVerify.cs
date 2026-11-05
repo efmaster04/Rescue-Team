@@ -803,7 +803,19 @@ public static class CarryClassVerify
                     punchState |= crew.InState(PlayerCombat.StatePunchJab);
                 }
                 Check("(" + label + ") yumruk: eşya yerinde, sol el üstünde", punchState && drift < 0.05f && leftGrip < GripLimit, "durum " + punchState + ", kayma " + Cm(drift) + ", sol el " + Cm(leftGrip));
-                yield return Seconds(0.5f);
+                // Dönüş: sağ el tek karede tutuşa atlamaz (Weight ile blend)
+                float rightJump = 0f;
+                var rightBone = player.animator.GetBoneTransform(HumanBodyBones.RightHand);
+                Vector3 lastRight = player.transform.InverseTransformPoint(rightBone.position);
+                t0 = Time.time;
+                while (Time.time - t0 < 0.55f)
+                {
+                    yield return null;
+                    Vector3 r = player.transform.InverseTransformPoint(rightBone.position);
+                    rightJump = Mathf.Max(rightJump, (r - lastRight).magnitude / Mathf.Max(0.001f, Time.deltaTime));
+                    lastRight = r;
+                }
+                Check("(" + label + ") yumruktan dönüş: sağ el sıçramaz (< 8 m/sn)", rightJump < 8f, "en yüksek " + rightJump.ToString("F1", Inv) + " m/sn");
             }
             else Line("  (" + label + ") yumruk atılamadı: " + combat.LastRejectReason);
         }
