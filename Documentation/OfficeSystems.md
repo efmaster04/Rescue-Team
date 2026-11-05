@@ -10,7 +10,7 @@
 
 Ofisin kaynak modeli ve yerleşimi değiştirilmedi. Kaynak `A15` kapı kolu parçaları ile ön kapı duyurusu hareket eden kapı kanadına bağlandı. Duvar, masa, dolap, raf, tezgâh, lift kolonu ve garaj dubalarının çarpışma hacimleri kaynak modelin ölçülerine göre ayrı olarak kuruldu. İnce dekoratif parçalar oyuncuyu takmıyor; yere bırakılan ekipmanın fizik ve etkileşim çarpışması korunurken oyuncu kapsülüyle teması yok sayılıyor. Bilgisayar ve diğer görünmez etkileşim hedefleri geçişi engellemeyen tetikleyici olarak ayarlandı.
 
-Saha sahnesi henüz yoktur. `Depart()` görevi `Deployed` durumuna geçirir; ilerideki görev sahnesi aynı iş kimliğini ve kayıtlı araç/ekipman durumunu kullanıp `ReturnFromField(FieldJobResult)` çağırmalıdır. Sonuç kimliği, iş kimliği, başarı, masraf, bonus, aşınma ve tüketilen ekipman kimlikleri içerir. Sonuç bir kez işlenir. Ofiste rapor onaylanınca ödeme tek kez yapılır. Geliştirme derlemesinde F9 kontrollü örnek saha sonucu üretir.
+Saha görevleri ayrı sahnelerde oynanır: Bölüm 1 kurtarma işi ve [Sel Vadisi saha görevi](SelVadisiSahaGorevi.md). `Depart()` görevi `Deployed` durumuna geçirir; ilerideki görev sahnesi aynı iş kimliğini ve kayıtlı araç/ekipman durumunu kullanıp `ReturnFromField(FieldJobResult)` çağırmalıdır. Sonuç kimliği, iş kimliği, başarı, masraf, bonus, aşınma ve tüketilen ekipman kimlikleri içerir. Sonuç bir kez işlenir. Ofiste rapor onaylanınca ödeme tek kez yapılır. Geliştirme derlemesinde F9 kontrollü örnek saha sonucu üretir.
 
 Şirket durumu `Application.persistentDataPath/office_garage_v1.json` dosyasına geçici dosya + atomik değiştirmeyle yazılır. Sürüm 5; para, sipariş, itibar, ekipman ve yüklerin yanında fiziksel modül konumunu, teslimatını, dört cıvata bit maskesini ve bağlantı durumunu saklar. Sürüm 1–4 yükseltilir. Yüklenemeyen bozuk kayıt için başlangıç durumu kullanılır.
 
@@ -27,6 +27,28 @@ Bilgisayar koyu masaüstünde iki sütuna yerleşen yedi uygulamayla açılır: 
 İşler ekranı ilan listesi ve seçili iş fişinden oluşur; tek kabul düğmesi ve isteğe bağlı sözleşme kutusu bulunur. Mağaza ürün önizlemesi, ağırlık, stok ve birim fiyatı gösterir; yetersiz bakiye veya dolu depoda sipariş engellenir. Depo her fiziksel ekipmanın konumunu/durumunu ve bekleyen teslimatları gösterir. Finans gerçek para hareketlerini listeler. Araç ekranından modül satın alınır; montaj garajda elle tamamlanır. Hazırlık gerçek modül, yük, kapı ve lift durumunu karşılaştırır. Rapor iş bedeli, bonuslar, masraflar ve tahsil edilecek toplamı gösterir. Sayılar, teslimatlar ve ödemeler `CompanyRuntime` durumundan okunur.
 
 Kaynak ofisin mobilya ölçüleri ve yerleşimi korunur. Yalnız `O08` monitör yüzeyinin Unity sahnesindeki malzemesi siyah olarak değiştirilir; kaynak model yeniden dışa aktarılmaz. Yaklaşık 2 m üretilmiş karakter görseli 1,72 m'ye normalize edildi; kapsül 1,72 m / 0,28 m yarıçap, göz hizası 1,57 m, kamera görüş açısı 62 derece olarak eşleştirildi. Yürüme/koşma hızları 3,2 / 5 m/sn, etkileşim mesafesi 2,4 m, elde taşıma uzaklığı 0,82 m'dir.
+
+## Ofis dekoru ve iç mekân ışığı
+
+`OfficeInteriorMood` çalışma anında, sahne dosyasına dokunmadan, OfficeGarage açılınca kurulur:
+
+- Kamera çok odalı ofisin içindeyken sıcak bir iç mekân renk ayarı devreye girer. Bu ayar ikinci global Volume'dur (öncelik 11): sıcak beyaz dengesi, hafif kontrast ve doygunluk, yumuşak bloom ve hafif kenar karartması. Ağırlık kameranın binaya uzaklığıyla yumuşakça değişir; garajda ve dışarıda eski görünüm aynen kalır.
+- Üçüncü şahıs kamera ofisin içinde 3 m'ye yaklaşır. Odalar 4,8–5 m genişliğindedir; 4,5 m kamerayı duvara yaslıyordu.
+- `Resources/OfficeDressing/OfisDekor` prefab'ı sahneye eklenir. Prefab, `GarageRuntimeOptimization` statik birleştirmeyi bitirdikten sonra eklenir. Üretilen meshler o gruba girince ofisin birleşik meshleri yanlış malzemelerle çiziliyordu.
+
+`OfficeDressingBuilder` (`Rescue Team > Ofis-Garaj > Ofis Dekorunu Kur`) dekoru üretir: 52 malzeme grubu, 11.530 köşe ve 5 küçük ışık.
+
+- Ana ofis: pencerede jaluzi, duvar rafları ve kitaplar, Sel Vadisi haritasından üretilmiş raptiyeli ve ipli çerçeveli harita, haritadan çekilmiş üç fotoğraf, ışıklı masa lambası, ekran parıltısı, dosya dolabında telsiz, köşede bitki, klima ve duman dedektörü.
+- Mutfak: iki ışıklı sarkıt lamba, perdeler, uzun kilim, kanepe minderleri ve battaniye, meyve kâsesi, kupalar ve su ısıtıcısı.
+- Depo: raflarda kutular ve malzemeler.
+- Soyunma odası: perde, can simidi ve halat.
+- Ring odası: iki spot, minder, flamalar ve perdeler.
+
+Dekorun çarpıştırıcısı yoktur. `CompanyPlayerBridge.FindTarget` en yakın çarpıştırıcıyı seçtiği için dekor bilgisayarı ve kapıları gölgelememelidir. Parça adlarında "Ceiling" geçmez; garaj tavanı (`GarageCeiling`) adla aranır.
+
+`OfficeImportSettings` (sürüm 2) ofis malzemelerine URP Lit ayrıntı dokuları ekler: sıva, boya, ahşap, kumaş, toz boya, çelik, karton, kauçuk, plastik ve beton. Dokular `Assets/_Project/Art/OfficeDetail/Textures` altındadır. Yakından bakınca yüzeyler düz renk görünmez; kaynak FBX değişmez.
+
+`OfficeExpansionVerify` ve `OfficeGarageVerify` dekor ve renk ayarı açıkken geçer; görüntüler `Captures/OfficeGarage` altına yazılır.
 
 ## Mimari
 
