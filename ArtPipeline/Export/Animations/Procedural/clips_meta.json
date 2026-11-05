@@ -4598,8 +4598,235 @@
       "stance_ratio": 0.5,
       "step_length_m": 0.48,
       "stance_travel_m": 0.48
+    },
+    "Tow_Pull": {
+      "file": "Tow_Pull.fbx",
+      "duration_s": 1.2,
+      "frames": 37,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "İki elle önde yatay halata asılıp geriye yaslanarak ritmik \"hey-hop\" çekiş ve öne küçük toparlanma; ayaklar yerinde sabit.",
+      "action_sha256": "8288662a1c34181f1e60d5bcb6c3f00406e70052ef0bc10ab51ce25ade2e603c",
+      "heave_frame": 19,
+      "hold_grip": {
+        "bones": {
+          "Left": "mixamorig:LeftHand",
+          "Right": "mixamorig:RightHand"
+        },
+        "palm_offset_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.089,
+            -0.402,
+            0.724
+          ],
+          "Right": [
+            -0.089,
+            -0.352,
+            0.714
+          ]
+        },
+        "grip_heave_root_local_m": {
+          "Left": [
+            0.099,
+            -0.182,
+            0.704
+          ],
+          "Right": [
+            -0.099,
+            -0.132,
+            0.694
+          ]
+        },
+        "grip_mean_root_local_m": {
+          "Left": [
+            0.094,
+            -0.292,
+            0.714
+          ],
+          "Right": [
+            -0.094,
+            -0.242,
+            0.704
+          ]
+        },
+        "grip_y_range_m": {
+          "Left": [
+            -0.402,
+            -0.182
+          ],
+          "Right": [
+            -0.352,
+            -0.132
+          ]
+        },
+        "grip_z_range_m": {
+          "Left": [
+            0.704,
+            0.724
+          ],
+          "Right": [
+            0.694,
+            0.714
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            -0.32,
+            -0.939,
+            0.13
+          ],
+          "Right": [
+            0.32,
+            -0.939,
+            0.13
+          ]
+        },
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "İki el önde yatay çekme halatını kavrar (sol el önde, sağ el arkasında); avuç noktası = el kemiği başı + kemik yönünde 0.05 m."
+      },
+      "rope_grip": {
+        "bones": [
+          "mixamorig:LeftHand",
+          "mixamorig:RightHand"
+        ],
+        "grip_point_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "palm_offset_hand_local_m": [
+          0.0,
+          0.05,
+          0.0
+        ],
+        "grip_root_local_m": {
+          "Left": [
+            0.089,
+            -0.402,
+            0.724
+          ],
+          "Right": [
+            -0.089,
+            -0.352,
+            0.714
+          ]
+        },
+        "grip_heave_root_local_m": {
+          "Left": [
+            0.099,
+            -0.182,
+            0.704
+          ],
+          "Right": [
+            -0.099,
+            -0.132,
+            0.694
+          ]
+        },
+        "grip_mean_root_local_m": {
+          "Left": [
+            0.094,
+            -0.292,
+            0.714
+          ],
+          "Right": [
+            -0.094,
+            -0.242,
+            0.704
+          ]
+        },
+        "grip_y_range_m": {
+          "Left": [
+            -0.402,
+            -0.182
+          ],
+          "Right": [
+            -0.352,
+            -0.132
+          ]
+        },
+        "grip_z_range_m": {
+          "Left": [
+            0.704,
+            0.724
+          ],
+          "Right": [
+            0.694,
+            0.714
+          ]
+        },
+        "hand_forward_root_local": {
+          "Left": [
+            -0.32,
+            -0.939,
+            0.13
+          ],
+          "Right": [
+            0.32,
+            -0.939,
+            0.13
+          ]
+        },
+        "space": "character root local, Blender Z up / -Y forward",
+        "note": "Halat önden (-Y) gelir; iki el halatı önde kavrayıp geriye yaslanarak birlikte çeker."
+      }
+    },
+    "Tow_Fall_Sit": {
+      "file": "Tow_Fall_Sit.fbx",
+      "duration_s": 0.9,
+      "frames": 28,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Halat boşalınca dengesini kaybedip kollar savrularak ve bacaklar havaya kalkarak geriye popo üstü düşüş; yerde oturur pozda biter.",
+      "action_sha256": "34d61b9e38eada0ec7059be46aa255cc1c9d1ce60a86a8481e5ae9a3f37ef284",
+      "ground_frame": 17,
+      "vertical_pose_motion": "Kalça yüksekliği klipte; yatay ilerleme Unity kodundan."
+    },
+    "Tow_SitUp": {
+      "file": "Tow_SitUp.fbx",
+      "duration_s": 0.8,
+      "frames": 25,
+      "loop": false,
+      "in_place": true,
+      "root_motion": false,
+      "character": "crew",
+      "preview_mesh": "SK_RescueCrew_Blue",
+      "description": "Tow_Fall_Sit sonundaki yerde oturuş pozundan kalkıp halata yeniden uzanarak Tow_Pull başlangıç pozuna geçiş.",
+      "action_sha256": "e0a6d39b586c5bc788c09e41fb424de30d7707ff40d0b83da088e65e9a421dbb",
+      "vertical_pose_motion": "Kalça yüksekliği klipte; yatay ilerleme Unity kodundan."
+    },
+    "Patient_SitWave": {
+      "file": "Patient_SitWave.fbx",
+      "duration_s": 1.6,
+      "frames": 49,
+      "loop": true,
+      "in_place": true,
+      "root_motion": false,
+      "character": "Patient",
+      "preview_mesh": "SK_Patient_Tourist",
+      "description": "Araç koltuğunda oturan paniklemiş hasta: kalça ve bacaklar koltukta sabit, sol kol yukarıda hızlı hızlı el sallar, gövde ve baş hafifçe sallanır.",
+      "action_sha256": "7125c1664a5859c8a49dc0376898a687ba7a3ee49905b711ac88ae6a3bac1b8f",
+      "seat_surface_root_local_z": 0.262,
+      "wave_hand": "mixamorig:LeftHand",
+      "wave_cycles": 4
     }
   },
-  "actions_sha256": "8c8c1172846cb48b9f6775f6752f4113ca8b2d0eaa68d674b0d4ace6bbc3c5aa",
-  "source_sha256": "7959efb861648ce6f064853774c2540f0a98cf7c5fb739f6ce752815a022a2a5"
+  "actions_sha256": "2206d3a8e1c0d3acaf1032d5843bb739c7cd2d8eda5c4ba5fb1ea9331e2170c3",
+  "source_sha256": "0c954a597ad522247f5aa5ceac67d71aa500260475a07f2884e2a8779fd2e455"
 }
