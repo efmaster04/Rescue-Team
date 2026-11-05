@@ -278,6 +278,13 @@ public class OrbitCamera : MonoBehaviour
         var animator = target.GetComponentInChildren<Animator>();
         if (animator != null && animator.isHuman) Head = animator.GetBoneTransform(HumanBodyBones.Head);
         if (animator != null && target.GetComponent<FirstPersonBody>() == null) target.gameObject.AddComponent<FirstPersonBody>();
+        // Kamera dibe girince karakter saydamlaşır (mesafe CurrentDistance); yalnız bu kameranın hedefi, co-op'ta öbür oyuncu değil
+        if (animator != null)
+        {
+            var fade = target.GetComponent<CameraProximityFade>();
+            if (fade == null) fade = target.gameObject.AddComponent<CameraProximityFade>();
+            fade.Bind(this);
+        }
         ApplyModeToTarget();
     }
 
