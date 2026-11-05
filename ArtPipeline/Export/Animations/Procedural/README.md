@@ -1,4 +1,4 @@
-# Prosedürel animasyon klipleri (r6, 49 klip)
+# Prosedürel animasyon klipleri (r7, 53 klip)
 
 Mixamo erişimi olmadığı için anahtar kareli olarak betikle üretilen klipler. Hepsi RescueCrew / Patient ortak
 31 kemikli `mixamorig:` iskeleti için, 30 fps, her karede anahtar (bake). Ton: Dear Passengers gibi abartılı ve komik.
@@ -280,3 +280,20 @@ RescueCrew (`crew`, `SK_RescueCrew_Blue`, 31 `mixamorig:` kemik) için slapstick
 ### Unity import ve doğrulama (r6)
 - **Rig / Bake Into Pose:** Humanoid, Copy From Other Avatar → `SK_RescueCrew_Blue`; Root Transform Rotation, Position Y ve Position XZ **Bake Into Pose açık, Based Upon Original**; `Crouch_Idle` ve `Crouch_Walk` için **Loop Time + Loop Pose açık**, `Punch_Jab` için kapalı.
 - **Doğrulama (`verify_procedural_anims.py`, 49 dosya):** 30 fps, 31 kemik/bağ pozu, tam kare sayısı (16, 61, 25), döngülerde ilk/son kare tam matris eşitliği, yatay kalça kayması ≤ 0.1 mm, `Punch_Jab` ve `Crouch_Idle`'da sabit ayaklar (< 1 cm), `Crouch_Walk`'ta 1.2 m/sn hedef hızda ayak kayması < 3 cm/adım, eklem dönüş sınırları (≤ 150°, eğilmede diz açısı 25°–140° ve kalça yüksekliği 0.26–0.35 m), `Punch_Jab` `hit_frame=7`'de en ileri el uzanımı ve her karede kol–gövde / bacak–bacak içe girme ≤ 3 cm.
+
+## r7: mahsur aracı halatla çekme finali (4 klip)
+
+Halatla mahsur aracı çekme finali için 3 oyuncu (`crew`, `SK_RescueCrew_Blue`) ve 1 araçtaki hasta (`Patient`, `SK_Patient_Tourist`) klibi. Hepsi 30 fps, 31 `mixamorig:` kemikli ortak iskelet ve yerindedir (`in_place=true`, `root_motion=false`).
+
+| Klip | Süre / kare | Döngü | Karakter | Olay / tutuş / not |
+|---|---|---|---|---|
+| Tow_Pull | 1.2 sn / 37 | evet | crew | Yüzü çekme yönünde (`-Y`), halat iki elde önde; geriye yaslanıp ritmik "hey-hop" asılma (`heave_frame=19`) ve öne toparlanma; ayaklar yere sabit; `hold_grip` ve `rope_grip` |
+| Tow_Fall_Sit | 0.9 sn / 28 | hayır | crew | Halat boşalınca geriye popo üstü düşüş (`ground_frame=17`), bacaklar havaya kalkar, kollar savrulur, yerde oturur pozda biter (`z≈0.177` m) |
+| Tow_SitUp | 0.8 sn / 25 | hayır | crew | `Tow_Fall_Sit` bitiş pozundan kalkıp `Tow_Pull` ilk pozuna yumuşak geçiş |
+| Patient_SitWave | 1.6 sn / 49 | evet | Patient | Araç koltuğunda (`z≈0.367` m, koltuk yüzeyi `z=0.262` m) kalça ve bacaklar `Patient_SitDazed` pozunda sabit; sol kol yukarıda hızlı yardım sallaması (4 salınım), gövde/baş telaşlı |
+
+### Unity import, tutuş ve doğrulama (r7)
+- **Rig / Bake Into Pose:** Humanoid, Copy From Other Avatar → `SK_RescueCrew_Blue`; Root Transform Rotation, Position Y ve Position XZ **Bake Into Pose açık, Based Upon Original** (`Tow_Fall_Sit` ve `Tow_SitUp` dikey kalça hareketini korur). `Tow_Pull` ve `Patient_SitWave` için **Loop Time + Loop Pose açık**, `Tow_Fall_Sit` ve `Tow_SitUp` için kapalı.
+- **Halat tutuşu (`Tow_Pull` → `hold_grip` / `rope_grip`):** İki el (`mixamorig:LeftHand`, `mixamorig:RightHand`), kemik-yerel avuç ofseti `(0, 0.05, 0)` m; `grip_root_local_m` (t=0/t=1 başlangıç/bitiş), `heave_grip_root_local_m` (`heave_frame=19`), `grip_mean_root_local_m` ve her kare için `hands_root_local_m` kayıtlıdır.
+- **Geçişler:** `Tow_Fall_Sit` son kare → `Tow_SitUp` ilk kare ve `Tow_SitUp` son kare → `Tow_Pull` ilk kare ortak poz fonksiyonlarıyla (`tow_sit_ground_pose`, `tow_pull_pose`) üretilir (dönüş farkı ≤ 2°, konum farkı ≤ 5 mm).
+- **Doğrulama (`verify_procedural_anims.py`, 53 dosya):** 30 fps, 31 kemik/bağ pozu, tam kare sayısı (37, 28, 25, 49), döngü matris eşitliği, yatay kalça kayması ≤ 0.1 mm, `Tow_Pull` ve `Patient_SitWave`'de sabit ayaklar (≤ 1 cm), kuaterniyon çift örtüsü korumalı (`min(deg, 360-deg)`) eklem dönüş sınırı ≤ 150°, kol–gövde ve bacak–bacak içe girme ≤ 3 cm, `Tow_Fall_Sit`/`Tow_SitUp` zemin sınırı (≥ -2 cm), olay kareleri (`heave_frame=19`, `ground_frame=17`) ve geçiş uyumu.

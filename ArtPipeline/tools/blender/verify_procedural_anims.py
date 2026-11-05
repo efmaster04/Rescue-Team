@@ -39,16 +39,19 @@ COMBAT_EXPECTED = {
     'HitReact':(.5,False), 'Thief_Sneak_Walk':(.6,True), 'Thief_Run_Carry':(.4,True),
     'Thief_Run':(.4,True), 'Thief_Grab':(.8,False), 'Thief_Punch':(.8,False),
     'Thief_Stunned':(1.2,True), 'Thief_ThrowInVan':(.8,False),
-    'Punch_Jab':(.5,False), 'Crouch_Idle':(2.,True), 'Crouch_Walk':(.8,True)}
+    'Punch_Jab':(.5,False), 'Crouch_Idle':(2.,True), 'Crouch_Walk':(.8,True),
+    'Tow_Pull':(1.2,True), 'Tow_Fall_Sit':(.9,False), 'Tow_SitUp':(.8,False)}
 CROUCH_PUNCH_CLIPS = {'Punch_Jab', 'Crouch_Idle', 'Crouch_Walk'}
+TOW_CLIPS = {'Tow_Pull', 'Tow_Fall_Sit', 'Tow_SitUp', 'Patient_SitWave'}
 JOINT_DEG_LIMIT = 150.0
 EXPECTED.update(COMBAT_EXPECTED)
-SEATED_EXPECTED = {'Drive_Seated': (2.0, True), 'Passenger_Seated': (2.4, True)}
+SEATED_EXPECTED = {'Drive_Seated': (2.0, True), 'Passenger_Seated': (2.4, True), 'Patient_SitWave': (1.6, True)}
 EXPECTED.update(SEATED_EXPECTED)
 WHEEL_CLIPS = {'Drive_Seated'}
 WHEEL_LIMIT = 0.03
 TRANSITIONS = [('Tackle_Dive','Tackle_GetUp',2), ('Throw_Aim','Throw_Release',2),
-               ('Thief_Grab','Thief_Run_Carry',5)]
+               ('Thief_Grab','Thief_Run_Carry',5),
+               ('Tow_Fall_Sit','Tow_SitUp',2), ('Tow_SitUp','Tow_Pull',2)]
 # Sedye tutuşu: her karede avuç noktası (el kemiği başı + kemik yönünde GRIP_POINT) meta'daki sap noktasına
 # GRIP_LIMIT'ten yakın olmalı; meta'daki iki sap noktası sedyenin sap aralığıyla uyumlu olmalı.
 STRETCHER_META = ROOT / 'Export/Stretcher/stretcher_meta.json'
@@ -389,7 +392,8 @@ def bone_rot_diff(rig, f0, f1):
     worst = 0.0
     for pb in rig.pose.bones:
         q = pb.matrix.to_quaternion()
-        worst = max(worst, math.degrees(a[pb.name].rotation_difference(q).angle))
+        d = math.degrees(a[pb.name].rotation_difference(q).angle)
+        worst = max(worst, min(d, 360.0 - d))
     return worst
 
 
@@ -567,7 +571,7 @@ def check_coil_meta(rig, name, m, n, errors):
 def check_strip(name, errors):
     path = OUT/'renders'/(name+'_strip.png')
     if not path.exists():
-        if name in CROUCH_PUNCH_CLIPS:
+        if name in CROUCH_PUNCH_CLIPS | TOW_CLIPS:
             return
         errors.append(name+': serit eksik')
         return
@@ -601,7 +605,8 @@ def check_combat_meta(name, m, n, errors):
     events = {'Push_Shove':{'hit_frame':9}, 'Tackle_Dive':{'hit_frame':12,'ground_frame':22},
         'Throw_Release':{'release_frame':8}, 'Whistle_Blow':{'blow_frames':[15,27]},
         'Thief_Grab':{'grab_frame':11}, 'Thief_Punch':{'hit_frame':14},
-        'Thief_ThrowInVan':{'release_frame':14}, 'Punch_Jab':{'hit_frame':7}}
+        'Thief_ThrowInVan':{'release_frame':14}, 'Punch_Jab':{'hit_frame':7},
+        'Tow_Pull':{'heave_frame':19}, 'Tow_Fall_Sit':{'ground_frame':17}}
     for key, value in events.get(name,{}).items():
         if m.get(key) != value or any(not 1 <= f <= n for f in (value if isinstance(value,list) else [value])):
             errors.append(name+': '+key+' hatali')
@@ -614,6 +619,11 @@ def check_combat_meta(name, m, n, errors):
         if (grip.get('bones') != {s:PREFIX+s+'Hand' for s in ('Left','Right')}
                 or grip.get('palm_offset_hand_local_m') != [0,.05,0]):
             errors.append(name+': loot_grip hatali')
+    if name == 'Tow_Pull':
+        grip = m.get('hold_grip') or m.get('rope_grip') or {}
+        if (grip.get('palm_offset_hand_local_m', grip.get('grip_point_hand_local_m')) != [0, .05, 0]
+                or set(grip.get('grip_root_local_m', {}).keys()) != {'Left', 'Right'}):
+            errors.append(name+': tow grip meta hatali')
 
 
 def check_crouch_punch(rig, f0, f1, name, m, hips, errors):
@@ -661,6 +671,77 @@ def check_crouch_punch(rig, f0, f1, name, m, hips, errors):
                 name, m.get('hit_frame', -1), hand_y.get(hf, 0.0), best_y))
 
 
+def check_tow(rig, f0, f1, name, m, hips, errors):
+    """Tow_Pull, Tow_Fall_Sit, Tow_SitUp ve Patient_SitWave için eklem sınırı, sabit ayak, olay karesi ve tutuş kontrolü."""
+    scene = bpy.context.scene
+    mw = rig.matrix_world
+    rest_rel = {pb.name: (pb.parent.bone.matrix_local.inverted() @ pb.bone.matrix_local).to_quaternion()
+                for pb in rig.pose.bones if pb.parent}
+    max_deg = 0.0
+    foot0 = {}
+    max_foot_drift = 0.0
+    hand_y = {}
+    foot_z = {}
+    wave_x, wave_z = [], []
+    palm0 = {}
+    for f in range(f0, f1 + 1):
+        scene.frame_set(f)
+        for pb in rig.pose.bones:
+            if not pb.parent:
+                continue
+            pose_rel = (pb.parent.matrix.inverted() @ pb.matrix).to_quaternion()
+            deg = math.degrees(rest_rel[pb.name].rotation_difference(pose_rel).angle)
+            deg = min(deg, 360.0 - deg)  # kuaterniyon cift ortusu: min(deg, 360-deg)
+            max_deg = max(max_deg, deg)
+        fz = 0.0
+        for side in ('Left', 'Right'):
+            fp = mw @ rig.pose.bones[PREFIX + side + 'Foot'].head
+            fz += fp.z * 0.5
+            if f == f0:
+                foot0[side] = fp
+                pb_h = rig.pose.bones[PREFIX + side + 'Hand']
+                palm0[side] = mw @ pb_h.head + (mw.to_3x3() @ pb_h.matrix.col[1].xyz).normalized() * GRIP_POINT
+            else:
+                max_foot_drift = max(max_foot_drift, (fp - foot0[side]).length)
+        foot_z[f] = fz
+        hl = mw @ rig.pose.bones[PREFIX + 'LeftHand'].head
+        hr = mw @ rig.pose.bones[PREFIX + 'RightHand'].head
+        hand_y[f] = 0.5 * (hl.y + hr.y)
+        wave_x.append(hl.x)
+        wave_z.append(hl.z)
+    if max_deg > JOINT_DEG_LIMIT:
+        errors.append('%s: eklem donusu sinir disi %.1f derece' % (name, max_deg))
+    if name in ('Tow_Pull', 'Patient_SitWave') and max_foot_drift > 0.01:
+        errors.append('%s: yerinde klipte ayak kaymasi %.4f m' % (name, max_foot_drift))
+    if name == 'Tow_Pull':
+        hf = f0 + int(m.get('heave_frame', 1)) - 1
+        best_hy = max(hand_y.values())
+        min_hz = min(p.z for p in hips)
+        if abs(hand_y.get(hf, -1.0) - best_hy) > 0.002 or abs(hips[hf - f0].z - min_hz) > 0.002:
+            errors.append('%s: heave_frame (%d) en guclu asilma karesi degil' % (name, m.get('heave_frame', -1)))
+        grip = m.get('hold_grip') or m.get('rope_grip') or {}
+        g0 = grip.get('grip_root_local_m', {})
+        for side in ('Left', 'Right'):
+            if side not in g0 or (palm0[side] - Vector(g0[side])).length > 0.003:
+                errors.append('%s: %s el grip_root_local_m FBX ile uyusmuyor' % (name, side))
+    if name == 'Tow_Fall_Sit':
+        gf = f0 + int(m.get('ground_frame', 1)) - 1
+        min_hz = min(p.z for p in hips)
+        if abs(hips[gf - f0].z - min_hz) > 0.002 or not 0.13 <= hips[gf - f0].z <= 0.19:
+            errors.append('%s: ground_frame (%d) popo yere degme karesi degil (z=%.4f vs min=%.4f)' % (
+                name, m.get('ground_frame', -1), hips[gf - f0].z, min_hz))
+        if foot_z.get(gf, 0.0) <= 0.22:
+            errors.append('%s: ground_frame karesinde bacaklar havada degil (z=%.3f)' % (name, foot_z.get(gf, 0.0)))
+        if not 0.15 <= hips[-1].z <= 0.20 or not 0.09 <= foot_z[f1] <= 0.14:
+            errors.append('%s: bitis yerde oturur pozda degil' % name)
+    if name == 'Patient_SitWave':
+        zmin, zmax = min(p.z for p in hips), max(p.z for p in hips)
+        if zmin < 0.36 or zmax > 0.375 or (zmax - zmin) > 0.005:
+            errors.append('%s: kalca koltukta sabit degil (z=%.4f..%.4f)' % (name, zmin, zmax))
+        if min(wave_z) < 0.85 or (max(wave_x) - min(wave_x)) < 0.08:
+            errors.append('%s: el yukarida sallanmiyor' % name)
+
+
 def check_transitions(errors, only):
     for left,right,limit in TRANSITIONS:
         if only and left not in only and right not in only:
@@ -673,8 +754,8 @@ def check_transitions(errors, only):
             bpy.context.scene.frame_set(round(frame))
             ends.append({b.name:b.matrix.copy() for b in rig.pose.bones})
             remove(objs,acts)
-        angle=max(math.degrees(a.to_quaternion().rotation_difference(ends[1][n].to_quaternion()).angle)
-                  for n,a in ends[0].items())
+        angle=max(min(d, 360.0 - d) for d in (math.degrees(a.to_quaternion().rotation_difference(ends[1][n].to_quaternion()).angle)
+                  for n,a in ends[0].items()))
         distance=max((a.translation-ends[1][n].translation).length for n,a in ends[0].items())
         print('TRANSITION %s -> %s rotation=%.5fdeg position=%.6fm' % (left,right,angle,distance),flush=True)
         if angle>limit or distance>.005:
@@ -764,8 +845,8 @@ def main():
             if name in COMBAT_EXPECTED:
                 check_combat_meta(name,m,n,errors)
                 check_strip(name,errors)
-                if name in CROUCH_PUNCH_CLIPS:
-                    check_crouch_punch(rig, f0, f1, name, m, hips, errors)
+                if name in CROUCH_PUNCH_CLIPS | TOW_CLIPS:
+                    (check_tow if name in TOW_CLIPS else check_crouch_punch)(rig, f0, f1, name, m, hips, errors)
                 if slide > .0001:
                     errors.append(name+': yeni klip yatay kalca hareketi sifir degil')
                 if name == 'Tackle_Dive':
@@ -779,8 +860,8 @@ def main():
             if name in COIL_CLIPS:
                 check_coil_meta(rig,name,m,n,errors)
                 check_strip(name,errors)
-                if name in CROUCH_PUNCH_CLIPS:
-                    check_crouch_punch(rig, f0, f1, name, m, hips, errors)
+                if name in CROUCH_PUNCH_CLIPS | TOW_CLIPS:
+                    (check_tow if name in TOW_CLIPS else check_crouch_punch)(rig, f0, f1, name, m, hips, errors)
             if name in COIL_CLIPS | COMBAT_EXPECTED.keys() | SEATED_EXPECTED.keys():
                 if loop:
                     scene.frame_set(f0)
@@ -788,6 +869,11 @@ def main():
                     scene.frame_set(f1)
                     if max(abs(b.matrix[i][j]-first[b.name][i][j]) for b in rig.pose.bones for i in range(4) for j in range(4)) > .00001:
                         errors.append(name+': dongu matrisleri esit degil')
+            if name == 'Patient_SitWave':
+                check_strip(name, errors)
+                check_tow(rig, f0, f1, name, m, hips, errors)
+                if slide > .0001:
+                    errors.append(name+': yeni klip yatay kalca hareketi sifir degil')
             if m.get('in_place') and slide >= 0.02:
                 errors.append('%s: kalca kaymasi %.3f m' % (name, slide))
             if m.get('frames') != n or m.get('loop') != loop:
@@ -874,7 +960,7 @@ def main():
                 if l > wl:
                     wl, wfl = l, f
             ch.rig.animation_data.action = None
-            if name in ('Tackle_Dive','Tackle_GetUp'):
+            if name in ('Tackle_Dive','Tackle_GetUp','Tow_Fall_Sit','Tow_SitUp'):
                 print('GROUND %s min_z=%.5fm' % (name,ground_min),flush=True)
                 if ground_min < -.02:
                     errors.append(name+': tackle mesh zeminin 2 cm altina giriyor')

@@ -82,6 +82,11 @@ CLIPS = [
     ('Punch_Jab', 0.5, False, True, False, 'crew'),
     ('Crouch_Idle', 2.0, True, True, False, 'crew'),
     ('Crouch_Walk', 0.8, True, True, False, 'crew'),
+    # r7: mahsur aracı halatla çekme finali (crew + Patient)
+    ('Tow_Pull', 1.2, True, True, False, 'crew'),
+    ('Tow_Fall_Sit', 0.9, False, True, False, 'crew'),
+    ('Tow_SitUp', 0.8, False, True, False, 'crew'),
+    ('Patient_SitWave', 1.6, True, True, False, 'Patient'),
 ]
 # Taşıma döngüleri: oyundaki hedef hız (m/sn) ve yere basma oranı. Ayak yerdeyken yerel olarak tam bu hızla
 # geriye kayar (stride = hız × basma oranı × süre); oynatma hızı 1.0 iken dünyada ayak kaymaz.
@@ -149,6 +154,10 @@ DESCRIPTIONS = {
     'Punch_Jab': 'Kısa hazırlık, sağ kolla hızlı düz yumruk ve geri toparlanma; slapstick, kök ve ayaklar yerinde.',
     'Crouch_Idle': 'Dizler bükük, kalça alçak (ayakta kalça yüksekliğinin ~%66\'sı) eğik bekleme; hafif nefes salınımı.',
     'Crouch_Walk': 'Dizler bükük, kalça alçak ve gövde öne eğik yürüyüş; yerinde döngü (1.2 m/sn).',
+    'Tow_Pull': 'İki elle önde yatay halata asılıp geriye yaslanarak ritmik "hey-hop" çekiş ve öne küçük toparlanma; ayaklar yerinde sabit.',
+    'Tow_Fall_Sit': 'Halat boşalınca dengesini kaybedip kollar savrularak ve bacaklar havaya kalkarak geriye popo üstü düşüş; yerde oturur pozda biter.',
+    'Tow_SitUp': 'Tow_Fall_Sit sonundaki yerde oturuş pozundan kalkıp halata yeniden uzanarak Tow_Pull başlangıç pozuna geçiş.',
+    'Patient_SitWave': 'Araç koltuğunda oturan paniklemiş hasta: kalça ve bacaklar koltukta sabit, sol kol yukarıda hızlı hızlı el sallar, gövde ve baş hafifçe sallanır.',
 }
 PREVIEW = {'Patient_SitDazed_ArmSling': 'SK_Patient_Civilian'}
 
@@ -1320,6 +1329,8 @@ COMBAT_EVENTS = {
     'Thief_Punch': {'hit_frame': 14},
     'Thief_ThrowInVan': {'release_frame': 14},
     'Punch_Jab': {'hit_frame': 7},
+    'Tow_Pull': {'heave_frame': 19},
+    'Tow_Fall_Sit': {'ground_frame': 17},
 }
 
 
@@ -1596,6 +1607,10 @@ def combat_meta(name):
             'attachment':'Ganimet merkezi iki avucun ortası; nesne boyutuna göre Unity el IK hedefleri.'}
     if name in ('Tackle_Dive','Tackle_GetUp'):
         m['vertical_pose_motion'] = 'Kalça yüksekliği klipte; yatay ilerleme Unity kodundan.'
+    if name in ('Tow_Fall_Sit', 'Tow_SitUp'):
+        m['vertical_pose_motion'] = 'Kalça yüksekliği klipte; yatay ilerleme Unity kodundan.'
+    if name in TOW_GRIP_CLIPS:
+        m.update(tow_grip_meta(name))
     return m
 
 
@@ -1774,6 +1789,212 @@ def clip_crouch_walk(P, t, T):
     walk_legs(P, ph, stride=stride, lift=0.085, width=0.045, toe_out=14, stance=stance)
 
 
+# ---------------------------------------------------------------- r7: mahsur aracı halatla çekme finali (crew + Patient)
+TOW_HEAVE_FRAME = 19
+TOW_FALL_GROUND_FRAME = 17
+TOW_GRIP_CLIPS = {'Tow_Pull'}
+
+
+def tow_pull_pose(P, heave=0.0, s1=0.0):
+    """Tow_Pull ortak pozu: heave=0.0 önde kavrama (başlangıç/son), heave=1.0 en güçlü geriye yaslanıp asılma."""
+    hz = -0.055 - 0.050 * heave
+    hip_pitch = 8.0 - 22.0 * heave
+    spine_pitch = 12.0 - 28.0 * heave
+    P.hips((0, 0, hz), pitch=hip_pitch, roll=2.5 * s1, yaw=3.0 * s1)
+    P.spine(pitch=spine_pitch, roll=-3.0 * s1, yaw=-3.5 * s1)
+    P.neck_head(pitch=-14.0 + 28.0 * heave, roll=2.0 * s1, yaw=4.0 * s1)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=4.0 + 4.0 * heave, fwd=12.0 - 4.0 * heave)
+        stagger = -0.025 * s
+        wrist = (
+            s * (0.105 + 0.010 * heave),
+            -0.33 + stagger + 0.22 * heave,
+            0.72 - 0.025 * heave - 0.005 * (1 - s),
+        )
+        d = Vector((-s * 0.32, -0.94, 0.08 + 0.10 * heave)).normalized()
+        P.arm_ik(side, wrist, pole=(s * 1.0, 0.25, -0.35), hand_dir=d)
+        P.fist(side, 0.9)
+        P.leg(side, (s * (FOOT_X + 0.035), -0.025 * s, ANKLE_Z),
+              pole=(s * 0.50, -1.0, 0.10), pitch=0.0, yaw=s * 14.0, auto_toe=False)
+
+
+def tow_sit_ground_pose(P):
+    """Tow_Fall_Sit bitişi ve Tow_SitUp başlangıcı: yerde popo üstü oturuş, bacaklar önde, eller yanda."""
+    P.hips((0, 0, -0.282), pitch=-14.0)
+    P.spine(pitch=18.0)
+    P.neck_head(pitch=8.0)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=2.0, fwd=4.0)
+        P.arm_ik(side, (s * 0.25, -0.14, 0.34), pole=(s * 1.0, 0.35, 0.10),
+                 hand_dir=Vector((-s * 0.20, -0.90, -0.38)).normalized())
+        P.fist(side, 0.35)
+        P.leg(side, (s * 0.18, -0.28, 0.112), pole=(s * 0.55, -0.35, 1.0),
+              pitch=-42.0, yaw=s * 12.0, auto_toe=False)
+
+
+def clip_tow_pull(P, t, T):
+    """Ritmik 'hey-hop' halat çekişi: geriye yaslanıp güçlü asılma (heave_frame=19), sonra öne küçük toparlanma."""
+    ph = 0.0 if abs(t - T) < 1e-6 else (t / T)
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    heave = 0.5 * (1.0 - c1)
+    tow_pull_pose(P, heave, s1)
+
+
+def clip_tow_fall_sit(P, t, T):
+    """Halat boşalınca geriye popo üstü düşüş (ground_frame=17); bacaklar havaya kalkar, kollar savrulur, yerde oturur."""
+    if t <= 1e-6:
+        tow_pull_pose(P, 0.0, 0.0)
+        return
+    if t >= T - 1e-6:
+        tow_sit_ground_pose(P)
+        return
+    tg = (TOW_FALL_GROUND_FRAME - 1) / FPS
+    if t <= 0.10:
+        hz = -0.055 + 0.010 * smooth(t / 0.10)
+    elif t <= tg:
+        hz = -0.045 + (-0.302 - (-0.045)) * smooth((t - 0.10) / (tg - 0.10))
+    elif t <= 0.70:
+        hz = -0.302 + (-0.268 - (-0.302)) * smooth((t - tg) / (0.70 - tg))
+    else:
+        hz = -0.268 + (-0.282 - (-0.268)) * smooth((t - 0.70) / (T - 0.70))
+    hip_pitch = sp(t, [(0.0, 8.0), (0.12, -16.0), (tg, -24.0), (0.70, -10.0), (T, -14.0)])
+    spine_pitch = sp(t, [(0.0, 12.0), (0.12, -14.0), (tg, -14.0), (0.70, 22.0), (T, 18.0)])
+    head_pitch = sp(t, [(0.0, -14.0), (0.12, -18.0), (tg, 20.0), (0.70, 12.0), (T, 8.0)])
+    wob = math.sin(TAU * 2.2 * t) * smooth(t / 0.12) * (1.0 - smooth((t - 0.50) / 0.32))
+    P.hips((0, 0, hz), pitch=hip_pitch, roll=4.5 * wob, yaw=3.0 * wob)
+    P.spine(pitch=spine_pitch, roll=-5.5 * wob, yaw=-4.0 * wob)
+    P.neck_head(pitch=head_pitch, roll=7.0 * wob, yaw=9.0 * wob)
+    u_flail = smooth(t / 0.22)
+    u_settle = smooth((t - tg) / (T - tg))
+    up_shrug = (4.0 * (1.0 - u_flail) + 12.0 * u_flail) * (1.0 - u_settle) + 2.0 * u_settle
+    fwd_shrug = (12.0 * (1.0 - u_flail) + 2.0 * u_flail) * (1.0 - u_settle) + 4.0 * u_settle
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=up_shrug, fwd=fwd_shrug)
+        w0 = Vector((s * 0.105, -0.33 - 0.025 * s, 0.72 - 0.005 * (1 - s)))
+        flail = P.head(side + 'Arm') + Vector((s * 0.15, -0.15, 0.13 + 0.03 * s * math.sin(TAU * 3.5 * t)))
+        w_sit = Vector((s * 0.25, -0.14, 0.34))
+        wrist = w0.lerp(flail, u_flail).lerp(w_sit, u_settle)
+        pole = Vector((s * 1.0, 0.25, -0.35)).lerp(Vector((s * 1.0, 0.35, 0.10)), u_settle)
+        d0 = Vector((-s * 0.32, -0.94, 0.08)).normalized()
+        d_flail = Vector((s * 0.20, -0.55, 0.80)).normalized()
+        d_sit = Vector((-s * 0.20, -0.90, -0.38)).normalized()
+        d = d0.lerp(d_flail, u_flail).lerp(d_sit, u_settle).normalized()
+        P.arm_ik(side, wrist, pole=pole, hand_dir=d)
+        P.fist(side, (0.9 * (1.0 - u_flail) + 0.05 * u_flail) * (1.0 - u_settle) + 0.35 * u_settle)
+    u_kick = smooth((t - 0.06) / (tg - 0.06))
+    u_leg_down = smooth((t - tg) / (T - tg))
+    u_pole = smooth(t / 0.28)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        a0 = Vector((s * (FOOT_X + 0.035), -0.025 * s, ANKLE_Z))
+        a_kick = Vector((s * 0.18, -0.26, 0.29 + 0.02 * s))
+        a_sit = Vector((s * 0.18, -0.28, 0.112))
+        ankle = a0.lerp(a_kick, u_kick).lerp(a_sit, u_leg_down)
+        lp = Vector((s * 0.50, -1.0, 0.10)).lerp(Vector((s * 0.55, -0.35, 1.0)), u_pole)
+        fp = (-56.0 * u_kick) * (1.0 - u_leg_down) + (-42.0) * u_leg_down
+        fyaw = s * (14.0 * (1.0 - u_pole) + 12.0 * u_pole)
+        P.leg(side, ankle, pole=lp, pitch=fp, yaw=fyaw, auto_toe=False)
+
+
+def clip_tow_situp(P, t, T):
+    """Tow_Fall_Sit son pozundan kalkıp halata yeniden uzanarak Tow_Pull ilk pozuna yumuşak geçiş."""
+    if t <= 1e-6:
+        tow_sit_ground_pose(P)
+        return
+    if t >= T - 1e-6:
+        tow_pull_pose(P, 0.0, 0.0)
+        return
+    hz = sp(t, [(0.0, -0.282), (0.18, -0.265), (0.42, -0.185), (0.66, -0.068), (T, -0.055)])
+    hip_pitch = sp(t, [(0.0, -14.0), (0.28, 22.0), (0.55, 14.0), (T, 8.0)])
+    spine_pitch = sp(t, [(0.0, 18.0), (0.28, 24.0), (0.55, 16.0), (T, 12.0)])
+    head_pitch = sp(t, [(0.0, 8.0), (0.28, -22.0), (0.55, -18.0), (T, -14.0)])
+    P.hips((0, 0, hz), pitch=hip_pitch)
+    P.spine(pitch=spine_pitch)
+    P.neck_head(pitch=head_pitch)
+    u_arm = smooth(t / T)
+    u_push = math.sin(PI * clamp(t / 0.45, 0.0, 1.0))
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        P.shrug(side, up=2.0 + 2.0 * u_arm, fwd=4.0 + 8.0 * u_arm)
+        w_sit = Vector((s * 0.25, -0.14, 0.34))
+        w_pull = Vector((s * 0.105, -0.33 - 0.025 * s, 0.72 - 0.005 * (1 - s)))
+        wrist = w_sit.lerp(w_pull, u_arm) + Vector((s * 0.03, -0.04, -0.03)) * u_push
+        pole = Vector((s * 1.0, 0.35, 0.10)).lerp(Vector((s * 1.0, 0.25, -0.35)), u_arm)
+        d_sit = Vector((-s * 0.20, -0.90, -0.38)).normalized()
+        d_pull = Vector((-s * 0.32, -0.94, 0.08)).normalized()
+        d = d_sit.lerp(d_pull, u_arm).normalized()
+        P.arm_ik(side, wrist, pole=pole, hand_dir=d)
+        P.fist(side, 0.35 + 0.55 * u_arm)
+    u_tuck = smooth(t / 0.42)
+    for s, side in ((1, 'Left'), (-1, 'Right')):
+        a_sit = Vector((s * 0.18, -0.28, 0.112))
+        a_stand = Vector((s * (FOOT_X + 0.035), -0.025 * s, ANKLE_Z))
+        ankle = a_sit.lerp(a_stand, u_tuck) + Vector((0.0, 0.0, 0.045 * math.sin(PI * u_tuck)))
+        lp = Vector((s * 0.55, -0.35, 1.0)).lerp(Vector((s * 0.50, -1.0, 0.10)), u_tuck)
+        fp = -42.0 * (1.0 - u_tuck)
+        fyaw = s * (12.0 * (1.0 - u_tuck) + 14.0 * u_tuck)
+        P.leg(side, ankle, pole=lp, pitch=fp, yaw=fyaw, auto_toe=False)
+
+
+def clip_patient_sit_wave(P, t, T):
+    """Koltukta oturan paniklemiş hasta: kalça ve bacaklar Patient_SitDazed pozunda sabit, sol kol yukarıda hızlı el sallar."""
+    ph = 0.0 if abs(t - T) < 1e-6 else (t / T)
+    s1, c1 = math.sin(TAU * ph), math.cos(TAU * ph)
+    s2, c2 = math.sin(2 * TAU * ph), math.cos(2 * TAU * ph)
+    w4 = math.sin(4 * TAU * ph)
+    w4_lag = math.sin(4 * TAU * ph - 0.55)
+    P.hips((0, 0, SIT_HZ), pitch=-6.0)
+    P.spine(pitch=10.0 + 4.0 * s2, roll=-6.0 * s1 - 2.0 * w4, yaw=-5.0 * s1 + 2.0 * c2)
+    P.neck_head(pitch=6.0 + 8.0 * c2, roll=8.0 * s1 + 3.0 * w4, yaw=14.0 * s2)
+    P.shrug('Left', up=8.0 + 3.0 * s2, fwd=10.0)
+    up = Vector((0.82, -0.22, 0.52 + 0.06 * s2)).normalized()
+    fore = Vector((0.35 + 0.48 * w4, -0.25, 0.88)).normalized()
+    hand = Vector((0.35 + 0.62 * w4_lag, -0.28, 0.85)).normalized()
+    P.arm('Left', up, fore, hand)
+    P.fist('Left', -0.25)
+    P.shrug('Right', up=-3.0 + 2.0 * c2, fwd=6.0)
+    P.arm_ik('Right', (-0.17, -0.24, 0.48 + 0.01 * s2), pole=(-1.0, 0.4, -0.3), hand_dir=(0.25, -1.0, -0.35))
+    P.fist('Right', 0.45)
+    sit_legs(P, 0.0)
+
+
+def tow_grip_meta(name):
+    rec = _GRIP_SAMPLES[name]
+    r = lambda v: [round(x, 3) for x in v]
+    start = {s: r(rec[s][0][0]) for s in ('Left', 'Right')}
+    heave = {s: r(rec[s][TOW_HEAVE_FRAME - 1][0]) for s in ('Left', 'Right')}
+    mean = {s: r(sum((p for p, _ in rec[s][:-1]), Vector()) / (len(rec[s]) - 1)) for s in ('Left', 'Right')}
+    dirs = {s: r((sum((d for _, d in rec[s][:-1]), Vector()) / (len(rec[s]) - 1)).normalized()) for s in ('Left', 'Right')}
+    yr = {s: [round(min(p.y for p, _ in rec[s]), 3), round(max(p.y for p, _ in rec[s]), 3)] for s in ('Left', 'Right')}
+    zr = {s: [round(min(p.z for p, _ in rec[s]), 3), round(max(p.z for p, _ in rec[s]), 3)] for s in ('Left', 'Right')}
+    return {
+        'hold_grip': {
+            'bones': {'Left': PREFIX + 'LeftHand', 'Right': PREFIX + 'RightHand'},
+            'palm_offset_hand_local_m': [0.0, GRIP_POINT, 0.0],
+            'grip_point_hand_local_m': [0.0, GRIP_POINT, 0.0],
+            'grip_root_local_m': start,
+            'grip_heave_root_local_m': heave,
+            'grip_mean_root_local_m': mean,
+            'grip_y_range_m': yr,
+            'grip_z_range_m': zr,
+            'hand_forward_root_local': dirs,
+            'space': 'character root local, Blender Z up / -Y forward',
+            'note': 'İki el önde yatay çekme halatını kavrar (sol el önde, sağ el arkasında); avuç noktası = el kemiği başı + kemik yönünde 0.05 m.',
+        },
+        'rope_grip': {
+            'bones': [PREFIX + 'LeftHand', PREFIX + 'RightHand'],
+            'grip_point_hand_local_m': [0.0, GRIP_POINT, 0.0],
+            'palm_offset_hand_local_m': [0.0, GRIP_POINT, 0.0],
+            'grip_root_local_m': start,
+            'grip_heave_root_local_m': heave,
+            'grip_mean_root_local_m': mean,
+            'grip_y_range_m': yr,
+            'grip_z_range_m': zr,
+            'hand_forward_root_local': dirs,
+            'space': 'character root local, Blender Z up / -Y forward',
+            'note': 'Halat önden (-Y) gelir; iki el halatı önde kavrayıp geriye yaslanarak birlikte çeker.',
+        },
+    }
+
+
 CLIP_FUNCS = {
     'Push_Shove': clip_shove,
     'Tackle_Dive': clip_tackle,
@@ -1824,6 +2045,10 @@ CLIP_FUNCS = {
     'Punch_Jab': clip_punch_jab,
     'Crouch_Idle': clip_crouch_idle,
     'Crouch_Walk': clip_crouch_walk,
+    'Tow_Pull': clip_tow_pull,
+    'Tow_Fall_Sit': clip_tow_fall_sit,
+    'Tow_SitUp': clip_tow_situp,
+    'Patient_SitWave': clip_patient_sit_wave,
 }
 
 # ---------------------------------------------------------------- aksiyon / export
@@ -1864,7 +2089,7 @@ def make_action(P, name, duration):
         fn(P, t, duration)
         if name in COIL_CLIPS:
             sample_coil(P, name, f)
-        if name in GRIP_CLIPS or name in WHEEL_CLIPS:
+        if name in GRIP_CLIPS or name in WHEEL_CLIPS or name in TOW_GRIP_CLIPS:
             sample_grip(P, name)
         for pb in rig.pose.bones:
             q = pb.rotation_quaternion.copy()
@@ -2181,6 +2406,9 @@ def render_strip(name, n, loop, actors, all_objs, cam, tmp, floor, props=(), ext
               'Rope_Throw':[1,7,11,15,19,22,28,34,40,43],
               'Thief_Punch':[1,5,8,11,14,17,21,25],
               'Punch_Jab':[1,3,5,7,9,12,16],
+              'Tow_Pull':[1,7,13,19,25,31,37],
+              'Tow_Fall_Sit':[1,5,10,14,17,22,28],
+              'Tow_SitUp':[1,5,9,13,17,21,25],
               'Cabinet_TakeCoil':[1,7,11,17,23,29,35,43]}.get(name, frames)
     tiles = []
     for f in frames:
@@ -2263,6 +2491,7 @@ def rope_meta(name):
 EXTRA_META = {
     'Patient_SitDazed': lambda: {'seat_surface_root_local_z': SEAT_Z},
     'Patient_SitDazed_ArmSling': lambda: {'seat_surface_root_local_z': SEAT_Z},
+    'Patient_SitWave': lambda: {'seat_surface_root_local_z': SEAT_Z, 'wave_hand': PREFIX + 'LeftHand', 'wave_cycles': 4},
     'Passenger_Seated': lambda: {'seat_surface_root_local_z': SEAT_Z,
                                  'door_grip_root_local_m': [-0.275, -0.298, 0.642]},
     'Patient_DraggedOut': lambda: {
