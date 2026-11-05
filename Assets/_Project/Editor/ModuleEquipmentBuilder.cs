@@ -64,6 +64,7 @@ namespace CompanySimEditor
         internal static ModulePackageVisual[] Build(CompanyCatalog catalog)
         {
             Directory.CreateDirectory(Folder+"/Meshes");Directory.CreateDirectory(Folder+"/Materials");PrepareMaterials();
+            if(ServiceModuleArtImporter.Available)ServiceModuleArtImporter.EnsureMaterials();
             var result=new List<ModulePackageVisual>();var summary=new List<string>();
             foreach(var definition in catalog.modules)
             {
@@ -88,8 +89,10 @@ namespace CompanySimEditor
                     var bounds=device.GetComponent<MeshFilter>().sharedMesh.bounds;
                     if(bounds.min.y<.072f||bounds.max.y>.441f||Mathf.Abs(bounds.min.x)>.322f||Mathf.Abs(bounds.max.x)>.322f||bounds.min.z<-.222f||bounds.max.z>.231f)
                         throw new Exception("Equipment must fit the existing portable collision, "+definition.id+": "+bounds);
-                    Attach(root.transform,"ModuleSkidAndBrackets",Skid(),definition.id+"_Skid");
+                    var skid=Attach(root.transform,"ModuleSkidAndBrackets",Skid(),definition.id+"_Skid");
                     var port=Attach(root.transform,"ServicePort",ServicePort(),definition.id+"_Port");port.transform.localPosition=new Vector3(-.29f,.27f,.20f);
+                    // The Blender service module art supplies the shared skid and port when present.
+                    if(ServiceModuleArtImporter.Available)ServiceModuleArtImporter.ConfigureFixtures(skid,port);
                     Label(root.transform,definition.displayName);
                     var prefab=PrefabUtility.SaveAsPrefabAsset(root,Prefabs+"/ServiceModule_"+definition.id+".prefab");
                     result.Add(new ModulePackageVisual{moduleId=definition.id,prefab=prefab});

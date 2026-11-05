@@ -2,6 +2,10 @@
 
 Uses the equipment pass's modelling helpers; supplied office/vehicle files are
 never opened. Run: blender --background --python this_file.py [-- towing water].
+
+Superseded on 2026-11-05 by gen_service_modules.py, which writes all five modules and the
+shared skid/port into the same manifest. Running this file would drop fire/tech/cargo from
+module_manifest.json, so it refuses unless --legacy is given. Kept for reference.
 """
 from pathlib import Path
 import sys, math, json
@@ -239,7 +243,9 @@ def run(id):
     print('MODULE_RESULT '+json.dumps(info),flush=True);return info
 
 if __name__=='__main__':
-    chosen=sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else IDS
+    if '--legacy' not in sys.argv:
+        raise SystemExit('gen_refined_modules.py is superseded by gen_service_modules.py (pass --legacy to force).')
+    chosen=[a for a in (sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else []) if a!='--legacy'] or IDS
     manifest=OUTPUT.parent/'module_manifest.json'
     existing=json.loads(manifest.read_text()) if manifest.exists() else {'version':1,'blender':'5.2','models':[]}
     lookup={m['id']:m for m in existing['models']}

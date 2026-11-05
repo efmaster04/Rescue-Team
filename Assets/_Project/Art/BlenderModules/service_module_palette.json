@@ -1,0 +1,134 @@
+{
+  "materials": [
+    {
+      "name": "SM_Frame",
+      "color": [
+        0.205,
+        0.222,
+        0.232
+      ],
+      "metallic": 0.35,
+      "smoothness": 0.5
+    },
+    {
+      "name": "SM_Dark",
+      "color": [
+        0.088,
+        0.093,
+        0.097
+      ],
+      "metallic": 0.2,
+      "smoothness": 0.4
+    },
+    {
+      "name": "SM_Rubber",
+      "color": [
+        0.058,
+        0.06,
+        0.062
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12
+    },
+    {
+      "name": "SM_Steel",
+      "color": [
+        0.6,
+        0.615,
+        0.615
+      ],
+      "metallic": 0.85,
+      "smoothness": 0.64
+    },
+    {
+      "name": "SM_Rope",
+      "color": [
+        0.52,
+        0.53,
+        0.525
+      ],
+      "metallic": 0.85,
+      "smoothness": 0.58
+    },
+    {
+      "name": "SM_Alu",
+      "color": [
+        0.7,
+        0.705,
+        0.69
+      ],
+      "metallic": 0.8,
+      "smoothness": 0.58
+    },
+    {
+      "name": "SM_TowYellow",
+      "color": [
+        0.8,
+        0.6,
+        0.205
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.5
+    },
+    {
+      "name": "SM_PumpBlue",
+      "color": [
+        0.18,
+        0.36,
+        0.47
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.54
+    },
+    {
+      "name": "SM_FireRed",
+      "color": [
+        0.6,
+        0.125,
+        0.09
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.55
+    },
+    {
+      "name": "SM_Ivory",
+      "color": [
+        0.8,
+        0.76,
+        0.66
+      ],
+      "metallic": 0.05,
+      "smoothness": 0.45
+    },
+    {
+      "name": "SM_Glass",
+      "color": [
+        0.04,
+        0.05,
+        0.056
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.88
+    },
+    {
+      "name": "SM_LampGreen",
+      "color": [
+        0.3,
+        0.62,
+        0.36
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.7
+    },
+    {
+      "name": "SM_LampAmber",
+      "color": [
+        0.86,
+        0.56,
+        0.18
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.7
+    }
+  ]
+}

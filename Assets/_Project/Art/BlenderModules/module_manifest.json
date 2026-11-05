@@ -7,55 +7,51 @@
       "lods": [
         {
           "name": "towing_LOD0",
-          "triangles": 195896,
+          "triangles": 5624,
           "materials": [
-            "CastAlloy",
-            "GraphiteEnamel",
-            "Rubber",
-            "SatinSteel",
-            "MachinedRecess",
-            "WireRope",
-            "SafetyOrange"
+            "SM_Frame",
+            "SM_TowYellow",
+            "SM_Dark",
+            "SM_Rope",
+            "SM_Rubber",
+            "SM_Steel"
           ]
         },
         {
           "name": "towing_LOD1",
-          "triangles": 69325,
+          "triangles": 1876,
           "materials": [
-            "CastAlloy",
-            "GraphiteEnamel",
-            "Rubber",
-            "SatinSteel",
-            "MachinedRecess",
-            "WireRope",
-            "SafetyOrange"
+            "SM_Frame",
+            "SM_TowYellow",
+            "SM_Dark",
+            "SM_Rope",
+            "SM_Rubber",
+            "SM_Steel"
           ]
         },
         {
           "name": "towing_LOD2",
-          "triangles": 17902,
+          "triangles": 540,
           "materials": [
-            "CastAlloy",
-            "GraphiteEnamel",
-            "Rubber",
-            "SatinSteel",
-            "MachinedRecess",
-            "WireRope",
-            "SafetyOrange"
+            "SM_Frame",
+            "SM_TowYellow",
+            "SM_Dark",
+            "SM_Rope",
+            "SM_Steel"
           ]
         }
       ],
-      "blend": "Art/Blender/Models/RefinedModules/towing.blend",
+      "blend": "Art/Blender/Models/ServiceModules/service_modules.blend",
       "bounds_blender": {
         "min": [
-          -0.2821999788284302,
-          -0.14355625212192535,
-          0.08100000023841858
+          -0.272,
+          -0.1155,
+          0.0735
         ],
         "max": [
-          0.2751999795436859,
-          0.20999999344348907,
-          0.36719998717308044
+          0.266,
+          0.2112,
+          0.35
         ]
       }
     },
@@ -64,57 +60,228 @@
       "lods": [
         {
           "name": "water_LOD0",
-          "triangles": 203160,
+          "triangles": 4844,
           "materials": [
-            "EquipmentEnamel",
-            "CastAlloy",
-            "GraphiteEnamel",
-            "MachinedRecess",
-            "SatinSteel",
-            "Rubber",
-            "ValveBrass"
+            "SM_Frame",
+            "SM_PumpBlue",
+            "SM_Dark",
+            "SM_Steel",
+            "SM_Rubber"
           ]
         },
         {
           "name": "water_LOD1",
-          "triangles": 73080,
+          "triangles": 2496,
           "materials": [
-            "EquipmentEnamel",
-            "CastAlloy",
-            "GraphiteEnamel",
-            "MachinedRecess",
-            "SatinSteel",
-            "Rubber",
-            "ValveBrass"
+            "SM_Frame",
+            "SM_PumpBlue",
+            "SM_Dark",
+            "SM_Steel",
+            "SM_Rubber"
           ]
         },
         {
           "name": "water_LOD2",
-          "triangles": 20236,
+          "triangles": 720,
           "materials": [
-            "EquipmentEnamel",
-            "CastAlloy",
-            "GraphiteEnamel",
-            "MachinedRecess",
-            "SatinSteel",
-            "Rubber",
-            "ValveBrass"
+            "SM_Frame",
+            "SM_PumpBlue",
+            "SM_Dark",
+            "SM_Steel"
           ]
         }
       ],
-      "blend": "Art/Blender/Models/RefinedModules/water.blend",
+      "blend": "Art/Blender/Models/ServiceModules/service_modules.blend",
       "bounds_blender": {
         "min": [
-          -0.2785000205039978,
-          -0.1474946141242981,
-          0.07750000059604645
+          -0.284,
+          -0.166,
+          0.0735
         ],
         "max": [
-          0.2785000205039978,
-          0.15014129877090454,
-          0.34549999237060547
+          0.284,
+          0.164,
+          0.431
         ]
       }
+    },
+    {
+      "id": "fire",
+      "lods": [
+        {
+          "name": "fire_LOD0",
+          "triangles": 6244,
+          "materials": [
+            "SM_FireRed",
+            "SM_Dark",
+            "SM_Rubber",
+            "SM_Steel",
+            "SM_Frame"
+          ]
+        },
+        {
+          "name": "fire_LOD1",
+          "triangles": 2100,
+          "materials": [
+            "SM_FireRed",
+            "SM_Dark",
+            "SM_Rubber",
+            "SM_Steel",
+            "SM_Frame"
+          ]
+        },
+        {
+          "name": "fire_LOD2",
+          "triangles": 632,
+          "materials": [
+            "SM_FireRed",
+            "SM_Rubber",
+            "SM_Steel",
+            "SM_Frame",
+            "SM_Dark"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/ServiceModules/service_modules.blend",
+      "bounds_blender": {
+        "min": [
+          -0.238,
+          -0.207,
+          0.0735
+        ],
+        "max": [
+          0.238,
+          0.205,
+          0.417
+        ]
+      }
+    },
+    {
+      "id": "tech",
+      "lods": [
+        {
+          "name": "tech_LOD0",
+          "triangles": 2508,
+          "materials": [
+            "SM_Ivory",
+            "SM_Frame",
+            "SM_PumpBlue",
+            "SM_Rubber",
+            "SM_Dark",
+            "SM_Glass",
+            "SM_LampGreen",
+            "SM_LampAmber",
+            "SM_Steel",
+            "SM_FireRed"
+          ]
+        },
+        {
+          "name": "tech_LOD1",
+          "triangles": 1360,
+          "materials": [
+            "SM_Ivory",
+            "SM_Frame",
+            "SM_PumpBlue",
+            "SM_Rubber",
+            "SM_Dark",
+            "SM_Glass",
+            "SM_LampGreen",
+            "SM_LampAmber",
+            "SM_FireRed",
+            "SM_Steel"
+          ]
+        },
+        {
+          "name": "tech_LOD2",
+          "triangles": 120,
+          "materials": [
+            "SM_Ivory",
+            "SM_Frame",
+            "SM_Dark",
+            "SM_PumpBlue",
+            "SM_FireRed",
+            "SM_Steel"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/ServiceModules/service_modules.blend",
+      "bounds_blender": {
+        "min": [
+          -0.27,
+          -0.17,
+          0.0735
+        ],
+        "max": [
+          0.252,
+          0.165,
+          0.409
+        ]
+      }
+    },
+    {
+      "id": "cargo",
+      "lods": [
+        {
+          "name": "cargo_LOD0",
+          "triangles": 2240,
+          "materials": [
+            "SM_Alu",
+            "SM_Rubber",
+            "SM_Dark",
+            "SM_Steel"
+          ]
+        },
+        {
+          "name": "cargo_LOD1",
+          "triangles": 1464,
+          "materials": [
+            "SM_Alu",
+            "SM_Rubber",
+            "SM_Dark",
+            "SM_Steel"
+          ]
+        },
+        {
+          "name": "cargo_LOD2",
+          "triangles": 144,
+          "materials": [
+            "SM_Alu",
+            "SM_Dark"
+          ]
+        }
+      ],
+      "blend": "Art/Blender/Models/ServiceModules/service_modules.blend",
+      "bounds_blender": {
+        "min": [
+          -0.2675,
+          -0.1882,
+          0.0735
+        ],
+        "max": [
+          0.2675,
+          0.1682,
+          0.4205
+        ]
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "ServiceModuleSkid",
+      "triangles": 856,
+      "materials": [
+        "SM_Frame",
+        "SM_Rubber",
+        "SM_Dark"
+      ]
+    },
+    {
+      "name": "ServiceModulePort",
+      "triangles": 284,
+      "materials": [
+        "SM_Steel",
+        "SM_Dark"
+      ]
     }
   ]
 }
