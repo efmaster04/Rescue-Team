@@ -353,8 +353,19 @@ ROOMS_SPEC = [
 ]
 
 
+# Duvar üstü tavan döşemesinin alt yüzüne (y=3.24) yalnız değiyordu: tavan kenarı duvarın iç yüzünde bitince dış duvar üstünden
+# gelen alçak güneş (8°) bu birleşim çizgisinden odaya ışık tabakası sızdırıyor, karşı duvarlarda çapraz şerit oluyordu (ölçüm:
+# güney duvarı birleşimi ofis ve mutfak). Duvar tavanın içine uzar; tavan altından görünmez, iç yükseklik 3,16 m kalır.
+WALL_INTO_CEILING = 0.05
+
+
+def wall_top(y_top):
+    return y_top + WALL_INTO_CEILING if abs(y_top - 3.24) < 1e-4 else y_top
+
+
 def add_layered_wall_x(geo, z0, z1, x_min, x_max, y_top=3.24, openings=None, trim_side=0):
     """Z ekseni boyunca uzanan duvar parçasını alt 0.96 m mavi bant, üst sıva ve kapı/pencere boşluklarıyla üretir."""
+    y_top = wall_top(y_top)
     openings = sorted(openings or [], key=lambda o: o[0])
     points = [z0]
     for o in openings:
@@ -401,6 +412,7 @@ def add_layered_wall_x(geo, z0, z1, x_min, x_max, y_top=3.24, openings=None, tri
 
 def add_layered_wall_z(geo, x0, x1, z_min, z_max, y_top=3.24, openings=None, trim_side=0):
     """X ekseni boyunca uzanan duvar parçasını alt 0.96 m mavi bant, üst sıva ve kapı/pencere boşluklarıyla üretir."""
+    y_top = wall_top(y_top)
     openings = sorted(openings or [], key=lambda o: o[0])
     points = [x0]
     for o in openings:

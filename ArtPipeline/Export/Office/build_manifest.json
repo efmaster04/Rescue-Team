@@ -72,13 +72,6 @@
     "Room_RingRoom_Windows": 24
   },
   "city_map_texture_found": true,
-  "render_seconds": {
-    "room_office_eye": 6.875,
-    "room_kitchen_eye": 6.283,
-    "room_storage_eye": 6.215,
-    "room_locker_eye": 6.255,
-    "room_ring_eye": 6.283,
-    "isometric_roofless": 4.987
-  },
-  "total_build_seconds": 37.958
+  "render_seconds": {},
+  "total_build_seconds": 0.954
 }
