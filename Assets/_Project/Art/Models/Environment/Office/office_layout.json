@@ -1,0 +1,2302 @@
+{
+  "schema_version": 1,
+  "schema_notes": {
+    "box_collider": "Çoğu eşya tek kutu kullanır: center/size eşya pivotuna göre (yerel, rotation_y ile döner).",
+    "box_colliders_exception": "Yalnız BoxingRing_01: tek box_collider yerine box_colliders listesi (platform + halat kutuları, güney kenarda 1.4 m açıklık). Aynı yerel çerçeve.",
+    "steps": "Yalnız RingSteps_01: box_collider sınır kutusudur; steps alanı basamak çıkış bilgisini verir."
+  },
+  "units": "metres",
+  "coordinates": {
+    "system": "Unity",
+    "x": "east(+), west(-)",
+    "y": "up(+), floor=0",
+    "z": "north/back(+), south/front(-)"
+  },
+  "character_eye_height_m": 1.09,
+  "shell_fbx": "Office_Shell.fbx",
+  "wall_heights_m": {
+    "floor_y": 0.0,
+    "blue_band_height_m": 0.96,
+    "inner_wall_height_m": 3.16,
+    "ceiling_slab_min_y": 3.24,
+    "ceiling_slab_max_y": 3.39,
+    "storage_garage_wall_top_y": 4.0
+  },
+  "metal_shelf_heights_m": [
+    0.12,
+    0.55,
+    0.98,
+    1.4
+  ],
+  "city_map_texture": {
+    "path": "Assets/_Project/Art/Models/Environment/Environment_OfficeGarage.fbm/O26_city_map.png",
+    "found": true
+  },
+  "rooms": [
+    {
+      "id": "Office",
+      "name_tr": "Ana Ofis",
+      "bounds_min": [
+        -4.8,
+        0.0,
+        -5.2
+      ],
+      "bounds_max": [
+        0.0,
+        3.16,
+        1.2
+      ],
+      "center": [
+        -2.4,
+        1.58,
+        -2.0
+      ],
+      "size": [
+        4.8,
+        3.16,
+        6.4
+      ],
+      "shell_objects": {
+        "floor": "Room_Office_Floor",
+        "walls": "Room_Office_Walls",
+        "windows": "Room_Office_Windows",
+        "ceiling": "Room_Office_Ceiling",
+        "fixtures": "Room_Office_Fixtures"
+      }
+    },
+    {
+      "id": "Kitchen",
+      "name_tr": "Mutfak",
+      "bounds_min": [
+        -9.8,
+        0.0,
+        -5.2
+      ],
+      "bounds_max": [
+        -4.8,
+        3.16,
+        1.2
+      ],
+      "center": [
+        -7.3,
+        1.58,
+        -2.0
+      ],
+      "size": [
+        5.0,
+        3.16,
+        6.4
+      ],
+      "shell_objects": {
+        "floor": "Room_Kitchen_Floor",
+        "walls": "Room_Kitchen_Walls",
+        "windows": "Room_Kitchen_Windows",
+        "ceiling": "Room_Kitchen_Ceiling",
+        "fixtures": "Room_Kitchen_Fixtures"
+      }
+    },
+    {
+      "id": "Storage",
+      "name_tr": "Depo",
+      "bounds_min": [
+        -4.8,
+        0.0,
+        1.2
+      ],
+      "bounds_max": [
+        0.0,
+        3.16,
+        5.2
+      ],
+      "center": [
+        -2.4,
+        1.58,
+        3.2
+      ],
+      "size": [
+        4.8,
+        3.16,
+        4.0
+      ],
+      "shell_objects": {
+        "floor": "Room_Storage_Floor",
+        "walls": "Room_Storage_Walls",
+        "windows": null,
+        "ceiling": "Room_Storage_Ceiling",
+        "fixtures": "Room_Storage_Fixtures"
+      }
+    },
+    {
+      "id": "LockerRoom",
+      "name_tr": "Soyunma",
+      "bounds_min": [
+        -9.8,
+        0.0,
+        1.2
+      ],
+      "bounds_max": [
+        -4.8,
+        3.16,
+        5.2
+      ],
+      "center": [
+        -7.3,
+        1.58,
+        3.2
+      ],
+      "size": [
+        5.0,
+        3.16,
+        4.0
+      ],
+      "shell_objects": {
+        "floor": "Room_LockerRoom_Floor",
+        "walls": "Room_LockerRoom_Walls",
+        "windows": "Room_LockerRoom_Windows",
+        "ceiling": "Room_LockerRoom_Ceiling",
+        "fixtures": "Room_LockerRoom_Fixtures"
+      }
+    },
+    {
+      "id": "RingRoom",
+      "name_tr": "Ring Odası",
+      "bounds_min": [
+        -9.8,
+        0.0,
+        5.2
+      ],
+      "bounds_max": [
+        0.0,
+        3.16,
+        12.0
+      ],
+      "center": [
+        -4.9,
+        1.58,
+        8.6
+      ],
+      "size": [
+        9.8,
+        3.16,
+        6.8
+      ],
+      "shell_objects": {
+        "floor": "Room_RingRoom_Floor",
+        "walls": "Room_RingRoom_Walls",
+        "windows": "Room_RingRoom_Windows",
+        "ceiling": "Room_RingRoom_Ceiling",
+        "fixtures": "Room_RingRoom_Fixtures"
+      }
+    }
+  ],
+  "door_openings": [
+    {
+      "id": "Door_Front_Preserved",
+      "type": "preserved",
+      "connects": [
+        "Exterior",
+        "Office"
+      ],
+      "center": [
+        -3.18,
+        1.125,
+        -5.18
+      ],
+      "size": [
+        1.08,
+        2.25,
+        0.24
+      ],
+      "bounds_min": [
+        -3.72,
+        0.0,
+        -5.3
+      ],
+      "bounds_max": [
+        -2.64,
+        2.25,
+        -5.06
+      ]
+    },
+    {
+      "id": "Door_Garage_Preserved",
+      "type": "preserved",
+      "connects": [
+        "Office",
+        "Garage"
+      ],
+      "center": [
+        0.0,
+        1.09,
+        -2.88
+      ],
+      "size": [
+        0.16,
+        2.18,
+        1.04
+      ],
+      "bounds_min": [
+        -0.08,
+        0.0,
+        -3.4
+      ],
+      "bounds_max": [
+        0.08,
+        2.18,
+        -2.36
+      ]
+    },
+    {
+      "id": "Door_Office_Kitchen",
+      "type": "new_framed_doorless",
+      "connects": [
+        "Office",
+        "Kitchen"
+      ],
+      "center": [
+        -4.8,
+        1.09,
+        -2.0
+      ],
+      "size": [
+        0.16,
+        2.18,
+        1.2
+      ],
+      "bounds_min": [
+        -4.88,
+        0.0,
+        -2.6
+      ],
+      "bounds_max": [
+        -4.72,
+        2.18,
+        -1.4
+      ]
+    },
+    {
+      "id": "Door_Office_Storage",
+      "type": "new_framed_doorless",
+      "connects": [
+        "Office",
+        "Storage"
+      ],
+      "center": [
+        -2.4,
+        1.09,
+        1.2
+      ],
+      "size": [
+        1.2,
+        2.18,
+        0.16
+      ],
+      "bounds_min": [
+        -3.0,
+        0.0,
+        1.12
+      ],
+      "bounds_max": [
+        -1.8,
+        2.18,
+        1.28
+      ]
+    },
+    {
+      "id": "Door_Kitchen_LockerRoom",
+      "type": "new_framed_doorless",
+      "connects": [
+        "Kitchen",
+        "LockerRoom"
+      ],
+      "center": [
+        -7.3,
+        1.09,
+        1.2
+      ],
+      "size": [
+        1.2,
+        2.18,
+        0.16
+      ],
+      "bounds_min": [
+        -7.9,
+        0.0,
+        1.12
+      ],
+      "bounds_max": [
+        -6.7,
+        2.18,
+        1.28
+      ]
+    },
+    {
+      "id": "Door_LockerRoom_RingRoom",
+      "type": "new_framed_doorless",
+      "connects": [
+        "LockerRoom",
+        "RingRoom"
+      ],
+      "center": [
+        -7.3,
+        1.09,
+        5.2
+      ],
+      "size": [
+        1.2,
+        2.18,
+        0.16
+      ],
+      "bounds_min": [
+        -7.9,
+        0.0,
+        5.12
+      ],
+      "bounds_max": [
+        -6.7,
+        2.18,
+        5.28
+      ]
+    },
+    {
+      "id": "Passage_Storage_Garage",
+      "type": "wide_framed_doorless",
+      "connects": [
+        "Storage",
+        "Garage"
+      ],
+      "center": [
+        0.0,
+        1.25,
+        2.6
+      ],
+      "size": [
+        0.24,
+        2.5,
+        2.0
+      ],
+      "bounds_min": [
+        -0.12,
+        0.0,
+        1.6
+      ],
+      "bounds_max": [
+        0.12,
+        2.5,
+        3.6
+      ]
+    }
+  ],
+  "wall_colliders": [
+    {
+      "name": "Wall_West_Exterior",
+      "center": [
+        -9.92,
+        1.62,
+        3.4
+      ],
+      "size": [
+        0.24,
+        3.24,
+        17.2
+      ]
+    },
+    {
+      "name": "Wall_North_Exterior",
+      "center": [
+        -4.9,
+        1.62,
+        12.12
+      ],
+      "size": [
+        9.8,
+        3.24,
+        0.24
+      ]
+    },
+    {
+      "name": "Wall_South_Kitchen",
+      "center": [
+        -7.3,
+        1.62,
+        -5.32
+      ],
+      "size": [
+        5.0,
+        3.24,
+        0.24
+      ]
+    },
+    {
+      "name": "Wall_South_Office_W",
+      "center": [
+        -4.26,
+        1.62,
+        -5.3
+      ],
+      "size": [
+        1.08,
+        3.24,
+        0.24
+      ]
+    },
+    {
+      "name": "Wall_South_Office_E",
+      "center": [
+        -1.32,
+        1.62,
+        -5.3
+      ],
+      "size": [
+        2.64,
+        3.24,
+        0.24
+      ]
+    },
+    {
+      "name": "Wall_South_Office_Lintel",
+      "center": [
+        -3.18,
+        2.745,
+        -5.3
+      ],
+      "size": [
+        1.08,
+        0.99,
+        0.24
+      ]
+    },
+    {
+      "name": "Wall_X48_South",
+      "center": [
+        -4.8,
+        1.62,
+        -3.9
+      ],
+      "size": [
+        0.16,
+        3.24,
+        2.6
+      ]
+    },
+    {
+      "name": "Wall_X48_DoorLintel",
+      "center": [
+        -4.8,
+        2.71,
+        -2.0
+      ],
+      "size": [
+        0.16,
+        1.06,
+        1.2
+      ]
+    },
+    {
+      "name": "Wall_X48_North",
+      "center": [
+        -4.8,
+        1.62,
+        1.9
+      ],
+      "size": [
+        0.16,
+        3.24,
+        6.6
+      ]
+    },
+    {
+      "name": "Wall_Z12_W",
+      "center": [
+        -8.85,
+        1.62,
+        1.2
+      ],
+      "size": [
+        1.9,
+        3.24,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z12_DoorKitchenLintel",
+      "center": [
+        -7.3,
+        2.71,
+        1.2
+      ],
+      "size": [
+        1.2,
+        1.06,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z12_Mid",
+      "center": [
+        -4.85,
+        1.62,
+        1.2
+      ],
+      "size": [
+        3.7,
+        3.24,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z12_DoorOfficeLintel",
+      "center": [
+        -2.4,
+        2.71,
+        1.2
+      ],
+      "size": [
+        1.2,
+        1.06,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z12_E",
+      "center": [
+        -0.9,
+        1.62,
+        1.2
+      ],
+      "size": [
+        1.8,
+        3.24,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z52_W",
+      "center": [
+        -8.85,
+        1.62,
+        5.2
+      ],
+      "size": [
+        1.9,
+        3.24,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z52_DoorRingLintel",
+      "center": [
+        -7.3,
+        2.71,
+        5.2
+      ],
+      "size": [
+        1.2,
+        1.06,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_Z52_E",
+      "center": [
+        -3.35,
+        1.62,
+        5.2
+      ],
+      "size": [
+        6.7,
+        3.24,
+        0.16
+      ]
+    },
+    {
+      "name": "Wall_East_Office_S",
+      "center": [
+        -0.08,
+        1.62,
+        -4.3
+      ],
+      "size": [
+        0.03,
+        3.24,
+        1.8
+      ]
+    },
+    {
+      "name": "Wall_East_Office_Lintel",
+      "center": [
+        -0.08,
+        2.71,
+        -2.88
+      ],
+      "size": [
+        0.03,
+        1.06,
+        1.04
+      ]
+    },
+    {
+      "name": "Wall_East_Office_N",
+      "center": [
+        -0.08,
+        1.62,
+        -0.58
+      ],
+      "size": [
+        0.03,
+        3.24,
+        3.56
+      ]
+    },
+    {
+      "name": "Wall_East_Storage_S",
+      "center": [
+        0.0,
+        2.0,
+        1.4
+      ],
+      "size": [
+        0.24,
+        4.0,
+        0.4
+      ]
+    },
+    {
+      "name": "Wall_East_Storage_Lintel",
+      "center": [
+        0.0,
+        3.25,
+        2.6
+      ],
+      "size": [
+        0.24,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "name": "Wall_East_Storage_N",
+      "center": [
+        0.0,
+        2.0,
+        4.4
+      ],
+      "size": [
+        0.24,
+        4.0,
+        1.6
+      ]
+    },
+    {
+      "name": "Wall_East_RingRoom",
+      "center": [
+        0.0,
+        1.62,
+        8.6
+      ],
+      "size": [
+        0.24,
+        3.24,
+        6.8
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "Desk_01",
+      "asset": "Desk",
+      "fbx": "Desk.fbx",
+      "room": "Office",
+      "position": [
+        -1.05,
+        0.0,
+        -0.1
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.27,
+          0.0
+        ],
+        "size": [
+          1.21,
+          0.54,
+          0.63
+        ]
+      }
+    },
+    {
+      "id": "Chair_01",
+      "asset": "Chair",
+      "fbx": "Chair.fbx",
+      "room": "Office",
+      "position": [
+        -1.05,
+        0.0,
+        0.48
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.34,
+          0.0
+        ],
+        "size": [
+          0.48,
+          0.68,
+          0.48
+        ]
+      }
+    },
+    {
+      "id": "Monitor_01",
+      "asset": "Monitor",
+      "fbx": "Monitor.fbx",
+      "room": "Office",
+      "position": [
+        -1.05,
+        0.54,
+        -0.02
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.165,
+          0.0
+        ],
+        "size": [
+          0.44,
+          0.33,
+          0.16
+        ]
+      }
+    },
+    {
+      "id": "Clipboard_01",
+      "asset": "Clipboard",
+      "fbx": "Clipboard.fbx",
+      "room": "Office",
+      "position": [
+        -0.68,
+        0.54,
+        -0.18
+      ],
+      "rotation_y": 15.0,
+      "box_collider": null
+    },
+    {
+      "id": "Mug_01",
+      "asset": "Mug",
+      "fbx": "Mug.fbx",
+      "room": "Office",
+      "position": [
+        -1.42,
+        0.54,
+        -0.16
+      ],
+      "rotation_y": 35.0,
+      "box_collider": null
+    },
+    {
+      "id": "PenHolder_01",
+      "asset": "PenHolder",
+      "fbx": "PenHolder.fbx",
+      "room": "Office",
+      "position": [
+        -1.48,
+        0.54,
+        0.06
+      ],
+      "rotation_y": 10.0,
+      "box_collider": null
+    },
+    {
+      "id": "PaperStack_01",
+      "asset": "PaperStack",
+      "fbx": "PaperStack.fbx",
+      "room": "Office",
+      "position": [
+        -0.62,
+        0.54,
+        0.08
+      ],
+      "rotation_y": -12.0,
+      "box_collider": null
+    },
+    {
+      "id": "PC_01",
+      "asset": "PC",
+      "fbx": "PC.fbx",
+      "room": "Office",
+      "position": [
+        -0.3,
+        0.0,
+        -0.1
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.18,
+          0.0
+        ],
+        "size": [
+          0.18,
+          0.36,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "TrashBin_01",
+      "asset": "TrashBin",
+      "fbx": "TrashBin.fbx",
+      "room": "Office",
+      "position": [
+        -1.82,
+        0.0,
+        -0.12
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.16,
+          0.0
+        ],
+        "size": [
+          0.29,
+          0.32,
+          0.29
+        ]
+      }
+    },
+    {
+      "id": "CardboardBox_01",
+      "asset": "CardboardBox",
+      "fbx": "CardboardBox.fbx",
+      "room": "Office",
+      "position": [
+        -0.38,
+        0.0,
+        -0.68
+      ],
+      "rotation_y": 165.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.17,
+          0.0
+        ],
+        "size": [
+          0.44,
+          0.34,
+          0.38
+        ]
+      }
+    },
+    {
+      "id": "FloorCables_01",
+      "asset": "FloorCables",
+      "fbx": "FloorCables.fbx",
+      "room": "Office",
+      "position": [
+        -0.68,
+        0.0,
+        -0.52
+      ],
+      "rotation_y": 12.0,
+      "box_collider": null
+    },
+    {
+      "id": "CityMapBoard_01",
+      "asset": "CityMapBoard",
+      "fbx": "CityMapBoard.fbx",
+      "room": "Office",
+      "position": [
+        -0.12,
+        1.02,
+        -0.1
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null,
+      "texture_path": "Assets/_Project/Art/Models/Environment/Environment_OfficeGarage.fbm/O26_city_map.png",
+      "texture_found": true
+    },
+    {
+      "id": "PosterA_01",
+      "asset": "PosterA",
+      "fbx": "PosterA.fbx",
+      "room": "Office",
+      "position": [
+        -0.12,
+        1.18,
+        -1.45
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null
+    },
+    {
+      "id": "WallBoard_01",
+      "asset": "WallBoard",
+      "fbx": "WallBoard.fbx",
+      "room": "Office",
+      "position": [
+        -0.95,
+        1.16,
+        1.09
+      ],
+      "rotation_y": 180.0,
+      "box_collider": null
+    },
+    {
+      "id": "WallClock_01",
+      "asset": "WallClock",
+      "fbx": "WallClock.fbx",
+      "room": "Office",
+      "position": [
+        -4.77,
+        1.92,
+        -0.65
+      ],
+      "rotation_y": 90.0,
+      "box_collider": null
+    },
+    {
+      "id": "DocumentShelf_01",
+      "asset": "DocumentShelf",
+      "fbx": "DocumentShelf.fbx",
+      "room": "Office",
+      "position": [
+        -4.5,
+        0.0,
+        0.13
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.67,
+          0.0
+        ],
+        "size": [
+          0.88,
+          1.34,
+          0.34
+        ]
+      }
+    },
+    {
+      "id": "FilingCabinet_01",
+      "asset": "FilingCabinet",
+      "fbx": "FilingCabinet.fbx",
+      "room": "Office",
+      "position": [
+        -4.42,
+        0.0,
+        0.82
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.74,
+          0.0
+        ],
+        "size": [
+          0.48,
+          1.48,
+          0.58
+        ]
+      }
+    },
+    {
+      "id": "FilingCabinet_02",
+      "asset": "FilingCabinet",
+      "fbx": "FilingCabinet.fbx",
+      "room": "Office",
+      "position": [
+        -4.42,
+        0.0,
+        -3.55
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.74,
+          0.0
+        ],
+        "size": [
+          0.48,
+          1.48,
+          0.58
+        ]
+      }
+    },
+    {
+      "id": "PaperStack_02",
+      "asset": "PaperStack",
+      "fbx": "PaperStack.fbx",
+      "room": "Office",
+      "position": [
+        -4.38,
+        0.0,
+        -0.48
+      ],
+      "rotation_y": 75.0,
+      "box_collider": null
+    },
+    {
+      "id": "PaperStack_03",
+      "asset": "PaperStack",
+      "fbx": "PaperStack.fbx",
+      "room": "Office",
+      "position": [
+        -4.42,
+        1.48,
+        -3.55
+      ],
+      "rotation_y": 82.0,
+      "box_collider": null
+    },
+    {
+      "id": "CardboardBox_02",
+      "asset": "CardboardBox",
+      "fbx": "CardboardBox.fbx",
+      "room": "Office",
+      "position": [
+        -3.85,
+        0.0,
+        0.86
+      ],
+      "rotation_y": 15.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.17,
+          0.0
+        ],
+        "size": [
+          0.44,
+          0.34,
+          0.38
+        ]
+      }
+    },
+    {
+      "id": "TrashBin_02",
+      "asset": "TrashBin",
+      "fbx": "TrashBin.fbx",
+      "room": "Office",
+      "position": [
+        -4.42,
+        0.0,
+        -4.12
+      ],
+      "rotation_y": 20.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.16,
+          0.0
+        ],
+        "size": [
+          0.29,
+          0.32,
+          0.29
+        ]
+      }
+    },
+    {
+      "id": "FloorCables_02",
+      "asset": "FloorCables",
+      "fbx": "FloorCables.fbx",
+      "room": "Office",
+      "position": [
+        -4.12,
+        0.0,
+        -3.05
+      ],
+      "rotation_y": 95.0,
+      "box_collider": null
+    },
+    {
+      "id": "Plant_01",
+      "asset": "Plant",
+      "fbx": "Plant.fbx",
+      "room": "Office",
+      "position": [
+        -2.28,
+        0.0,
+        -4.85
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.31,
+          0.0
+        ],
+        "size": [
+          0.38,
+          0.62,
+          0.38
+        ]
+      }
+    },
+    {
+      "id": "Plant_02",
+      "asset": "Plant",
+      "fbx": "Plant.fbx",
+      "room": "Office",
+      "position": [
+        -4.35,
+        0.0,
+        -4.75
+      ],
+      "rotation_y": 45.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.31,
+          0.0
+        ],
+        "size": [
+          0.38,
+          0.62,
+          0.38
+        ]
+      }
+    },
+    {
+      "id": "Rug_01",
+      "asset": "Rug",
+      "fbx": "Rug.fbx",
+      "room": "Office",
+      "position": [
+        -2.15,
+        0.0,
+        -1.95
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.0075,
+          0.0
+        ],
+        "size": [
+          2.0,
+          0.015,
+          1.4
+        ]
+      }
+    },
+    {
+      "id": "KitchenCounter_01",
+      "asset": "KitchenCounter",
+      "fbx": "KitchenCounter.fbx",
+      "room": "Kitchen",
+      "position": [
+        -9.42,
+        0.0,
+        -1.05
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.3,
+          0.0
+        ],
+        "size": [
+          1.8,
+          0.6,
+          0.58
+        ]
+      }
+    },
+    {
+      "id": "CoffeeMachine_01",
+      "asset": "CoffeeMachine",
+      "fbx": "CoffeeMachine.fbx",
+      "room": "Kitchen",
+      "position": [
+        -9.4,
+        0.6,
+        -0.6
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.15,
+          0.0
+        ],
+        "size": [
+          0.24,
+          0.3,
+          0.26
+        ]
+      }
+    },
+    {
+      "id": "WallCabinet_01",
+      "asset": "WallCabinet",
+      "fbx": "WallCabinet.fbx",
+      "room": "Kitchen",
+      "position": [
+        -9.6,
+        1.38,
+        -1.05
+      ],
+      "rotation_y": 90.0,
+      "box_collider": null
+    },
+    {
+      "id": "Fridge_01",
+      "asset": "Fridge",
+      "fbx": "Fridge.fbx",
+      "room": "Kitchen",
+      "position": [
+        -9.4,
+        0.0,
+        0.35
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.625,
+          0.0
+        ],
+        "size": [
+          0.64,
+          1.25,
+          0.62
+        ]
+      }
+    },
+    {
+      "id": "WaterDispenser_01",
+      "asset": "WaterDispenser",
+      "fbx": "WaterDispenser.fbx",
+      "room": "Kitchen",
+      "position": [
+        -8.75,
+        0.0,
+        0.85
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.59,
+          0.0
+        ],
+        "size": [
+          0.34,
+          1.18,
+          0.36
+        ]
+      }
+    },
+    {
+      "id": "CupShelf_01",
+      "asset": "CupShelf",
+      "fbx": "CupShelf.fbx",
+      "room": "Kitchen",
+      "position": [
+        -5.8,
+        1.32,
+        1.0
+      ],
+      "rotation_y": 180.0,
+      "box_collider": null
+    },
+    {
+      "id": "TrashBin_03",
+      "asset": "TrashBin",
+      "fbx": "TrashBin.fbx",
+      "room": "Kitchen",
+      "position": [
+        -9.45,
+        0.0,
+        -2.18
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.16,
+          0.0
+        ],
+        "size": [
+          0.29,
+          0.32,
+          0.29
+        ]
+      }
+    },
+    {
+      "id": "Sofa_01",
+      "asset": "Sofa",
+      "fbx": "Sofa.fbx",
+      "room": "Kitchen",
+      "position": [
+        -7.35,
+        0.0,
+        -4.7
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.33,
+          0.0
+        ],
+        "size": [
+          1.56,
+          0.66,
+          0.72
+        ]
+      }
+    },
+    {
+      "id": "SideTable_01",
+      "asset": "SideTable",
+      "fbx": "SideTable.fbx",
+      "room": "Kitchen",
+      "position": [
+        -6.15,
+        0.0,
+        -4.65
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.21,
+          0.0
+        ],
+        "size": [
+          0.5,
+          0.42,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "DiningTable_01",
+      "asset": "DiningTable",
+      "fbx": "DiningTable.fbx",
+      "room": "Kitchen",
+      "position": [
+        -7.35,
+        0.0,
+        -3.35
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.28,
+          0.0
+        ],
+        "size": [
+          1.16,
+          0.56,
+          0.72
+        ]
+      }
+    },
+    {
+      "id": "Stool_01",
+      "asset": "Stool",
+      "fbx": "Stool.fbx",
+      "room": "Kitchen",
+      "position": [
+        -7.65,
+        0.0,
+        -2.72
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.18,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.36,
+          0.34
+        ]
+      }
+    },
+    {
+      "id": "Stool_02",
+      "asset": "Stool",
+      "fbx": "Stool.fbx",
+      "room": "Kitchen",
+      "position": [
+        -7.05,
+        0.0,
+        -2.72
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.18,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.36,
+          0.34
+        ]
+      }
+    },
+    {
+      "id": "Stool_03",
+      "asset": "Stool",
+      "fbx": "Stool.fbx",
+      "room": "Kitchen",
+      "position": [
+        -8.18,
+        0.0,
+        -3.35
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.18,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.36,
+          0.34
+        ]
+      }
+    },
+    {
+      "id": "PictureFrame_01",
+      "asset": "PictureFrame",
+      "fbx": "PictureFrame.fbx",
+      "room": "Kitchen",
+      "position": [
+        -7.35,
+        1.15,
+        -5.16
+      ],
+      "rotation_y": 0.0,
+      "box_collider": null
+    },
+    {
+      "id": "WallClock_02",
+      "asset": "WallClock",
+      "fbx": "WallClock.fbx",
+      "room": "Kitchen",
+      "position": [
+        -4.91,
+        1.85,
+        -3.6
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null
+    },
+    {
+      "id": "PosterB_01",
+      "asset": "PosterB",
+      "fbx": "PosterB.fbx",
+      "room": "Kitchen",
+      "position": [
+        -4.91,
+        1.18,
+        -0.35
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null
+    },
+    {
+      "id": "MetalShelf_01",
+      "asset": "MetalShelf",
+      "fbx": "MetalShelf.fbx",
+      "room": "Storage",
+      "position": [
+        -3.85,
+        0.0,
+        4.82
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.725,
+          0.0
+        ],
+        "size": [
+          1.2,
+          1.45,
+          0.45
+        ]
+      },
+      "shelf_heights_y_m": [
+        0.12,
+        0.55,
+        0.98,
+        1.4
+      ]
+    },
+    {
+      "id": "MetalShelf_02",
+      "asset": "MetalShelf",
+      "fbx": "MetalShelf.fbx",
+      "room": "Storage",
+      "position": [
+        -2.4,
+        0.0,
+        4.82
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.725,
+          0.0
+        ],
+        "size": [
+          1.2,
+          1.45,
+          0.45
+        ]
+      },
+      "shelf_heights_y_m": [
+        0.12,
+        0.55,
+        0.98,
+        1.4
+      ]
+    },
+    {
+      "id": "MetalShelf_03",
+      "asset": "MetalShelf",
+      "fbx": "MetalShelf.fbx",
+      "room": "Storage",
+      "position": [
+        -0.95,
+        0.0,
+        4.82
+      ],
+      "rotation_y": 180.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.725,
+          0.0
+        ],
+        "size": [
+          1.2,
+          1.45,
+          0.45
+        ]
+      },
+      "shelf_heights_y_m": [
+        0.12,
+        0.55,
+        0.98,
+        1.4
+      ]
+    },
+    {
+      "id": "RepairBench_01",
+      "asset": "RepairBench",
+      "fbx": "RepairBench.fbx",
+      "room": "Storage",
+      "position": [
+        -4.34,
+        0.0,
+        2.65
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.34,
+          0.0
+        ],
+        "size": [
+          1.4,
+          0.68,
+          0.6
+        ]
+      }
+    },
+    {
+      "id": "Pegboard_01",
+      "asset": "Pegboard",
+      "fbx": "Pegboard.fbx",
+      "room": "Storage",
+      "position": [
+        -4.68,
+        0.98,
+        2.65
+      ],
+      "rotation_y": 90.0,
+      "box_collider": null
+    },
+    {
+      "id": "CardboardBox_03",
+      "asset": "CardboardBox",
+      "fbx": "CardboardBox.fbx",
+      "room": "Storage",
+      "position": [
+        -4.25,
+        0.0,
+        4.15
+      ],
+      "rotation_y": 20.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.17,
+          0.0
+        ],
+        "size": [
+          0.44,
+          0.34,
+          0.38
+        ]
+      }
+    },
+    {
+      "id": "CardboardBox_04",
+      "asset": "CardboardBox",
+      "fbx": "CardboardBox.fbx",
+      "room": "Storage",
+      "position": [
+        -0.85,
+        0.0,
+        4.18
+      ],
+      "rotation_y": -15.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.17,
+          0.0
+        ],
+        "size": [
+          0.44,
+          0.34,
+          0.38
+        ]
+      }
+    },
+    {
+      "id": "FloorCables_03",
+      "asset": "FloorCables",
+      "fbx": "FloorCables.fbx",
+      "room": "Storage",
+      "position": [
+        -4.15,
+        0.0,
+        1.75
+      ],
+      "rotation_y": 85.0,
+      "box_collider": null
+    },
+    {
+      "id": "WallBoard_02",
+      "asset": "WallBoard",
+      "fbx": "WallBoard.fbx",
+      "room": "Storage",
+      "position": [
+        -0.95,
+        1.18,
+        1.31
+      ],
+      "rotation_y": 0.0,
+      "box_collider": null
+    },
+    {
+      "id": "LockerClosed_01",
+      "asset": "LockerClosed",
+      "fbx": "LockerClosed.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -9.5,
+        0.0,
+        1.65
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.75,
+          0.0
+        ],
+        "size": [
+          0.45,
+          1.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "LockerClosed_02",
+      "asset": "LockerClosed",
+      "fbx": "LockerClosed.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -9.5,
+        0.0,
+        4.55
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.75,
+          0.0
+        ],
+        "size": [
+          0.45,
+          1.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "LockerClosed_03",
+      "asset": "LockerClosed",
+      "fbx": "LockerClosed.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.18,
+        0.0,
+        2.5
+      ],
+      "rotation_y": 270.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.75,
+          0.0
+        ],
+        "size": [
+          0.45,
+          1.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "LockerOpen_01",
+      "asset": "LockerOpen",
+      "fbx": "LockerOpen.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.215,
+        0.0,
+        3.1
+      ],
+      "rotation_y": 270.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.75,
+          0.0
+        ],
+        "size": [
+          0.62,
+          1.5,
+          0.65
+        ]
+      }
+    },
+    {
+      "id": "HangingUniform_01",
+      "asset": "HangingUniform",
+      "fbx": "HangingUniform.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.215,
+        0.52,
+        3.1
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null
+    },
+    {
+      "id": "LockerClosed_04",
+      "asset": "LockerClosed",
+      "fbx": "LockerClosed.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.18,
+        0.0,
+        1.9
+      ],
+      "rotation_y": 270.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.75,
+          0.0
+        ],
+        "size": [
+          0.45,
+          1.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "LockerClosed_05",
+      "asset": "LockerClosed",
+      "fbx": "LockerClosed.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.18,
+        0.0,
+        3.7
+      ],
+      "rotation_y": 270.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.75,
+          0.0
+        ],
+        "size": [
+          0.45,
+          1.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "Bench_01",
+      "asset": "Bench",
+      "fbx": "Bench.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -8.85,
+        0.0,
+        3.2
+      ],
+      "rotation_y": 90.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.16,
+          0.0
+        ],
+        "size": [
+          1.3,
+          0.32,
+          0.36
+        ]
+      }
+    },
+    {
+      "id": "TowelStack_01",
+      "asset": "TowelStack",
+      "fbx": "TowelStack.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -8.85,
+        0.32,
+        2.85
+      ],
+      "rotation_y": 15.0,
+      "box_collider": null
+    },
+    {
+      "id": "GymBag_01",
+      "asset": "GymBag",
+      "fbx": "GymBag.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -8.85,
+        0.0,
+        2.22
+      ],
+      "rotation_y": 25.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.14,
+          0.0
+        ],
+        "size": [
+          0.52,
+          0.28,
+          0.3
+        ]
+      }
+    },
+    {
+      "id": "ShoePair_01",
+      "asset": "ShoePair",
+      "fbx": "ShoePair.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.65,
+        0.0,
+        2.5
+      ],
+      "rotation_y": 260.0,
+      "box_collider": null
+    },
+    {
+      "id": "ShoePair_02",
+      "asset": "ShoePair",
+      "fbx": "ShoePair.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -8.85,
+        0.0,
+        4.02
+      ],
+      "rotation_y": 80.0,
+      "box_collider": null
+    },
+    {
+      "id": "PosterA_02",
+      "asset": "PosterA",
+      "fbx": "PosterA.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.85,
+        1.25,
+        1.31
+      ],
+      "rotation_y": 0.0,
+      "box_collider": null
+    },
+    {
+      "id": "PosterB_02",
+      "asset": "PosterB",
+      "fbx": "PosterB.fbx",
+      "room": "LockerRoom",
+      "position": [
+        -5.85,
+        1.25,
+        5.09
+      ],
+      "rotation_y": 180.0,
+      "box_collider": null
+    },
+    {
+      "id": "BoxingRing_01",
+      "asset": "BoxingRing",
+      "fbx": "BoxingRing.fbx",
+      "room": "RingRoom",
+      "position": [
+        -4.9,
+        0.0,
+        8.6
+      ],
+      "rotation_y": 0.0,
+      "box_colliders": [
+        {
+          "name": "Platform",
+          "center": [
+            0.0,
+            0.175,
+            0.0
+          ],
+          "size": [
+            4.6,
+            0.35,
+            4.6
+          ]
+        },
+        {
+          "name": "Rope_North",
+          "center": [
+            0.0,
+            0.855,
+            2.08
+          ],
+          "size": [
+            4.32,
+            1.01,
+            0.16
+          ]
+        },
+        {
+          "name": "Rope_East",
+          "center": [
+            2.08,
+            0.855,
+            0.0
+          ],
+          "size": [
+            0.16,
+            1.01,
+            4.0
+          ]
+        },
+        {
+          "name": "Rope_West",
+          "center": [
+            -2.08,
+            0.855,
+            0.0
+          ],
+          "size": [
+            0.16,
+            1.01,
+            4.0
+          ]
+        },
+        {
+          "name": "Rope_South_West",
+          "center": [
+            -1.43,
+            0.855,
+            -2.08
+          ],
+          "size": [
+            1.46,
+            1.01,
+            0.16
+          ]
+        },
+        {
+          "name": "Rope_South_East",
+          "center": [
+            1.43,
+            0.855,
+            -2.08
+          ],
+          "size": [
+            1.46,
+            1.01,
+            0.16
+          ]
+        }
+      ]
+    },
+    {
+      "id": "RingSteps_01",
+      "asset": "RingSteps",
+      "fbx": "RingSteps.fbx",
+      "room": "RingRoom",
+      "position": [
+        -4.9,
+        0.0,
+        5.85
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.175,
+          0.0
+        ],
+        "size": [
+          1.2,
+          0.35,
+          0.9
+        ]
+      },
+      "steps": {
+        "count": 3,
+        "rise_m": 0.1167,
+        "tread_depth_m": 0.3,
+        "width_m": 1.2,
+        "climb_direction_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "top_y_m": 0.35
+      }
+    },
+    {
+      "id": "CornerStool_01",
+      "asset": "CornerStool",
+      "fbx": "CornerStool.fbx",
+      "room": "RingRoom",
+      "position": [
+        -7.55,
+        0.0,
+        6.65
+      ],
+      "rotation_y": 45.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.17,
+          0.0
+        ],
+        "size": [
+          0.32,
+          0.34,
+          0.32
+        ]
+      }
+    },
+    {
+      "id": "CornerStool_02",
+      "asset": "CornerStool",
+      "fbx": "CornerStool.fbx",
+      "room": "RingRoom",
+      "position": [
+        -2.25,
+        0.0,
+        10.55
+      ],
+      "rotation_y": 225.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.17,
+          0.0
+        ],
+        "size": [
+          0.32,
+          0.34,
+          0.32
+        ]
+      }
+    },
+    {
+      "id": "PunchingBag_01",
+      "asset": "PunchingBag",
+      "fbx": "PunchingBag.fbx",
+      "room": "RingRoom",
+      "position": [
+        -1.25,
+        0.96,
+        9.8
+      ],
+      "rotation_y": 0.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          1.14,
+          0.0
+        ],
+        "size": [
+          0.4,
+          2.28,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "GymBag_02",
+      "asset": "GymBag",
+      "fbx": "GymBag.fbx",
+      "room": "RingRoom",
+      "position": [
+        -9.25,
+        0.0,
+        6.4
+      ],
+      "rotation_y": 75.0,
+      "box_collider": {
+        "center": [
+          0.0,
+          0.14,
+          0.0
+        ],
+        "size": [
+          0.52,
+          0.28,
+          0.3
+        ]
+      }
+    },
+    {
+      "id": "TowelStack_02",
+      "asset": "TowelStack",
+      "fbx": "TowelStack.fbx",
+      "room": "RingRoom",
+      "position": [
+        -6.6,
+        0.35,
+        6.44
+      ],
+      "rotation_y": 0.0,
+      "box_collider": null
+    },
+    {
+      "id": "ShoePair_03",
+      "asset": "ShoePair",
+      "fbx": "ShoePair.fbx",
+      "room": "RingRoom",
+      "position": [
+        -1.25,
+        0.0,
+        11.2
+      ],
+      "rotation_y": 210.0,
+      "box_collider": null
+    },
+    {
+      "id": "PosterA_03",
+      "asset": "PosterA",
+      "fbx": "PosterA.fbx",
+      "room": "RingRoom",
+      "position": [
+        -2.2,
+        1.25,
+        11.97
+      ],
+      "rotation_y": 180.0,
+      "box_collider": null
+    },
+    {
+      "id": "PosterB_03",
+      "asset": "PosterB",
+      "fbx": "PosterB.fbx",
+      "room": "RingRoom",
+      "position": [
+        -7.8,
+        1.25,
+        11.97
+      ],
+      "rotation_y": 180.0,
+      "box_collider": null
+    },
+    {
+      "id": "WallBoard_03",
+      "asset": "WallBoard",
+      "fbx": "WallBoard.fbx",
+      "room": "RingRoom",
+      "position": [
+        -0.15,
+        1.2,
+        7.2
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null
+    },
+    {
+      "id": "WallClock_03",
+      "asset": "WallClock",
+      "fbx": "WallClock.fbx",
+      "room": "RingRoom",
+      "position": [
+        -0.15,
+        2.05,
+        8.6
+      ],
+      "rotation_y": 270.0,
+      "box_collider": null
+    }
+  ]
+}
