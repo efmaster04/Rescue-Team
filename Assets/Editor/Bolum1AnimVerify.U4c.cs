@@ -280,7 +280,10 @@ public static partial class Bolum1AnimVerify
             "elde " + held + ", önce nişangah " + crossBefore + " → " + crossOn + " (ortada " + centered + "), nişan " + aiming + ", gövde-kamera " + faceErr.ToString("F0", Inv) + "°, ışın: " + aimHit + " (hırsız göğsüne " + M(aimErr) + ", uzaklık " + M(thiefDist) + ")");
         BeforeCapture = FaceLabels;
         yield return CaptureWithHud("u4c_nisangah", cam.position, A.transform.position + Vector3.up * 0.9f, 50f);
-        // Bırak → eşya hırsıza isabet eder, nişangah kaybolur
+        // Bırak → eşya hırsıza isabet eder, nişangah kaybolur. Bu fazın konusu nişan ve balistik (12 m/sn, 8 m): çanta orta sınıf, menzili
+        // kısa (kullanıcı kararı 2026-11-05; CarryClassVerify ölçer), burada çarpan geçici 1. Asset kaydedilmez, faz sonunda geri yazılır.
+        float savedMediumFactor = Player.Rules.mediumThrowFactor;
+        Player.Rules.mediumThrowFactor = 1f;
         int hits0 = item.ThrowHits; float hp0 = A.Health;
         combat.SetThrowHeld(false);
         yield return null; yield return null;
@@ -293,6 +296,7 @@ public static partial class Bolum1AnimVerify
             "nişangah kapandı " + crossOff + ", isabet +" + (item.ThrowHits - hits0) + ", can " + hp0.ToString("F0", Inv) + " → " + A.Health.ToString("F0", Inv) + " (" + A.LastHitReason + "), hedef " + V(combat.LastAimPoint) + ", yay " + arc);
         yield return Until(() => !item.IsFlying, 8f, "eşya indi");
         yield return Until(() => !combat.Busy && Player.HasControl, 3f, "atış bitti");
+        Player.Rules.mediumThrowFactor = savedMediumFactor;
         // Işın boşa giderse: gökyüzüne bakan kamera → hedef 20 m ilerisi
         cam.position = arena - vf * 2.5f + Vector3.up * 1.6f;
         cam.rotation = Quaternion.LookRotation((vf + Vector3.up * 0.9f).normalized, Vector3.up);
