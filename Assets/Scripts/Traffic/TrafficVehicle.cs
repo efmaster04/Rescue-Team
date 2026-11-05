@@ -57,6 +57,8 @@ public class TrafficVehicle : MonoBehaviour
     // U4: dış durak (ThiefVan): şeritte bu s'den ileri gitmez (+sonsuz = yok); parktayken araç hiç sürülmez ve kaybolmaz.
     [NonSerialized] public float externalStopS = float.PositiveInfinity;
     [NonSerialized] public bool parked;
+    // Hırsız kamyoneti minibüse çarpmamalı (sürülüyor, görev bitti, vuruş bütçesi doldu): bekleme sayacı işlemez, süren çarpma biter
+    [NonSerialized] public bool ramSuppressed;
 
     private readonly HashSet<TrafficCone> ignoredCones = new HashSet<TrafficCone>();
     private MaterialPropertyBlock block;
@@ -107,7 +109,7 @@ public class TrafficVehicle : MonoBehaviour
             if (ramBlocks) ramFarS = Mathf.Max(ramFarS, farNow);
             if (Follower.RearS > ramFarS + 1f || Time.time - ramStartTime > settings.vanRamMaxSeconds) RammingObstacle = null;
             // Yük bölümüne ekipten biri girdiyse süren çarpma biter: araç yeniden engel görüp durur (korna ve bekleme sürer)
-            else if (RammingObstacle is ServiceVanDriver crewVan && crewVan.CrewInCargo) { RammingObstacle = null; ramBlocks = false; }
+            else if (ramSuppressed || (RammingObstacle is ServiceVanDriver crewVan && crewVan.CrewInCargo)) { RammingObstacle = null; ramBlocks = false; }
         }
 
         // 1) Öndeki engel
@@ -172,7 +174,7 @@ public class TrafficVehicle : MonoBehaviour
             // gaza basmadan arkadan çıkan araçça çarpılmasın (review P2-4). İlk hareketten sonra kural normal işler.
             // Yük bölümünde ekipten biri (ayakta ya da yerde) varken de sayaç donar: araç çarpmaz, korna çalıp bekler; ekip çıkınca
             // bekle-korna-çarp döngüsü kaldığı yerden sürer.
-            bool gracePeriod = b.obstacle is ServiceVanDriver van && ((van.CrewInside && van.MaxSpeedReached < 1f) || van.CrewInCargo);
+            bool gracePeriod = ramSuppressed || (b.obstacle is ServiceVanDriver van && ((van.CrewInside && van.MaxSpeedReached < 1f) || van.CrewInCargo));
             if (!gracePeriod) ObstacleWaitTime += dt;
             if (Time.time - lastObstacleHorn >= settings.vanHornInterval)
             {
@@ -219,7 +221,10 @@ public class TrafficVehicle : MonoBehaviour
 
         if (Follower.AtEnd)
         {
-            if (GetComponent<ThiefVan>() != null) Debug.Log("ThiefVan şerit sonunda kayboluyor: " + name + " s " + Follower.Distance.ToString("F1") + "/" + Follower.lane.Length.ToString("F1") + " park " + parked + " dışDurak " + externalStopS);
+            // Hırsız kamyoneti hiç park etmeden şeridin sonuna vardıysa bu bir hatadır (normal kalkıştan sonraki kayboluş loglanmaz:
+            // eski "ThiefVan şerit sonunda kayboluyor" satırı her kalkışta yazılıp hata sanılıyordu, 2026-11-05)
+            var thiefVan = GetComponent<ThiefVan>();
+            if (thiefVan != null && !thiefVan.HasParked) Debug.LogWarning("ThiefVan park etmeden şerit sonunda kayboldu: " + name + " faz " + thiefVan.Phase + " s " + Follower.Distance.ToString("F1") + "/" + Follower.lane.Length.ToString("F1") + " dışDurak " + externalStopS);
             Despawned?.Invoke(this);
             Destroy(gameObject);
         }

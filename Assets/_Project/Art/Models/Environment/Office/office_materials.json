@@ -1,0 +1,260 @@
+{
+ "note": "build_office.py PALETTE: roughness/metallic/alpha (renk FBX icinde lineer)",
+ "materials": {
+  "M_Plaster": {
+   "rough": 0.76,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_PlasterLight": {
+   "rough": 0.76,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_WallBlue": {
+   "rough": 0.68,
+   "metal": 0.06,
+   "alpha": 1.0
+  },
+  "M_MutedBlue": {
+   "rough": 0.7,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_ServiceBlue": {
+   "rough": 0.58,
+   "metal": 0.18,
+   "alpha": 1.0
+  },
+  "M_CobaltBlue": {
+   "rough": 0.68,
+   "metal": 0.02,
+   "alpha": 1.0
+  },
+  "M_RingBlue": {
+   "rough": 0.64,
+   "metal": 0.02,
+   "alpha": 1.0
+  },
+  "M_Oak": {
+   "rough": 0.68,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_OakLight": {
+   "rough": 0.66,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_OakDark": {
+   "rough": 0.74,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_Timber": {
+   "rough": 0.7,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_TimberEdge": {
+   "rough": 0.68,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_Fibreboard": {
+   "rough": 0.82,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_PegHole": {
+   "rough": 0.95,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_FilingGreen": {
+   "rough": 0.56,
+   "metal": 0.24,
+   "alpha": 1.0
+  },
+  "M_TealMetal": {
+   "rough": 0.58,
+   "metal": 0.22,
+   "alpha": 1.0
+  },
+  "M_GalvanizedSteel": {
+   "rough": 0.52,
+   "metal": 0.58,
+   "alpha": 1.0
+  },
+  "M_WarmGrayMetal": {
+   "rough": 0.48,
+   "metal": 0.47,
+   "alpha": 1.0
+  },
+  "M_SilverSteel": {
+   "rough": 0.55,
+   "metal": 0.35,
+   "alpha": 1.0
+  },
+  "M_ToolSteel": {
+   "rough": 0.32,
+   "metal": 0.76,
+   "alpha": 1.0
+  },
+  "M_Anthracite": {
+   "rough": 0.48,
+   "metal": 0.42,
+   "alpha": 1.0
+  },
+  "M_CharcoalTrim": {
+   "rough": 0.6,
+   "metal": 0.04,
+   "alpha": 1.0
+  },
+  "M_CharcoalABS": {
+   "rough": 0.68,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_DarkRubber": {
+   "rough": 0.92,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_ToolboxRed": {
+   "rough": 0.38,
+   "metal": 0.28,
+   "alpha": 1.0
+  },
+  "M_ToolboxLipRed": {
+   "rough": 0.42,
+   "metal": 0.22,
+   "alpha": 1.0
+  },
+  "M_SafetyOrange": {
+   "rough": 0.62,
+   "metal": 0.04,
+   "alpha": 1.0
+  },
+  "M_SafetyOchre": {
+   "rough": 0.56,
+   "metal": 0.18,
+   "alpha": 1.0
+  },
+  "M_BeigeFabric": {
+   "rough": 0.82,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_BeigeCushion": {
+   "rough": 0.84,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_SoftBeige": {
+   "rough": 0.72,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_FridgeWhite": {
+   "rough": 0.46,
+   "metal": 0.05,
+   "alpha": 1.0
+  },
+  "M_CreamCeramic": {
+   "rough": 0.26,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_CreamPaper": {
+   "rough": 0.74,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_InkGray": {
+   "rough": 0.72,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_Coffee": {
+   "rough": 0.28,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_Terracotta": {
+   "rough": 0.8,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_PottingSoil": {
+   "rough": 0.96,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_FoliageDeep": {
+   "rough": 0.7,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_FoliageOlive": {
+   "rough": 0.7,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_FoliageSunlit": {
+   "rough": 0.7,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_NavyCanvas": {
+   "rough": 0.86,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_ReflectiveTrim": {
+   "rough": 0.42,
+   "metal": 0.25,
+   "alpha": 1.0
+  },
+  "M_ScreenDark": {
+   "rough": 0.14,
+   "metal": 0.18,
+   "alpha": 1.0
+  },
+  "M_LedGreen": {
+   "rough": 0.35,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_LightDiffuser": {
+   "rough": 0.28,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_Concrete": {
+   "rough": 0.76,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_SmokyGlass": {
+   "rough": 0.18,
+   "metal": 0.08,
+   "alpha": 1.0
+  },
+  "M_MauveHill": {
+   "rough": 0.72,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "M_CityMap": {
+   "rough": 0.92,
+   "metal": 0.0,
+   "alpha": 1.0
+  },
+  "Glass": {
+   "rough": 0.08,
+   "metal": 0.05,
+   "alpha": 0.32
+  }
+ }
+}

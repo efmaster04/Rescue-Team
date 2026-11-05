@@ -464,15 +464,48 @@ public static class OfficeGarageVerify
             ceiling != null ? "alt yüz " + M(GarageCeiling.UndersideY) + ", boyut " + V(ceiling.size) : "collider yok");
         if (!built) yield break;
 
+        // Her tavan kutusu ayrı denenir: farklı yükseklikteki tavanlar ayrı gruptadır, biri öbürünün altına inmemeli.
+        float highestUnderside = float.MinValue;
+        foreach (var box in GarageCeiling.Colliders) highestUnderside = Mathf.Max(highestUnderside, box.bounds.min.y);
+        Check("(tavan) en yüksek kutu ColliderInstance, alt yüzü UndersideY",
+            Mathf.Abs(highestUnderside - GarageCeiling.UndersideY) < .01f, GarageCeiling.Colliders.Count + " kutu, en yüksek alt yüz " + M(highestUnderside));
+        foreach (var box in GarageCeiling.Colliders) yield return VerifyCeilingThrowUnder(box);
+    }
+
+    // Kutunun altında üstü bu kutuya açık, boş bir nokta bulur (kolon, duvar, ring vb. üstüne denk gelmesin).
+    private static bool FindOpenPointUnder(BoxCollider ceiling, out Vector3 point)
+    {
+        Bounds roof = ceiling.bounds;
+        float y = roof.min.y - 2f;
+        for (float x = roof.min.x + .5f; x <= roof.max.x - .5f; x += .5f)
+        {
+            for (float z = roof.min.z + .5f; z <= roof.max.z - .5f; z += .5f)
+            {
+                var candidate = new Vector3(x, y, z);
+                if (Physics.CheckBox(candidate, Vector3.one * .15f, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore)) continue;
+                if (Physics.Raycast(candidate, Vector3.up, out RaycastHit hit, 3f, ~0, QueryTriggerInteraction.Ignore) && hit.collider == ceiling)
+                {
+                    point = candidate;
+                    return true;
+                }
+            }
+        }
+        point = default;
+        return false;
+    }
+
+    private static IEnumerator VerifyCeilingThrowUnder(BoxCollider ceiling)
+    {
+        float underside = ceiling.bounds.min.y;
+        string label = "(tavan " + M(underside) + ") ";
+        bool open = FindOpenPointUnder(ceiling, out Vector3 ahead);
+        Check(label + "kutunun altında üstü açık boş nokta bulundu", open, open ? V(ahead) : "boş nokta yok");
+        if (!open) yield break;
+
         // Ayrı bir CarryableItem, mevcut alet çantası ve kayıt akışını bozmaz.
         GameObject prop = GameObject.CreatePrimitive(PrimitiveType.Cube);
         prop.name = "GarageVerify_CarryableItem_Ceiling";
         prop.transform.localScale = Vector3.one * .2f;
-        Vector3 ahead = player.transform.position + player.transform.forward * 1.2f;
-        Bounds roof = ceiling.bounds;
-        ahead.x = Mathf.Clamp(ahead.x, roof.min.x + .5f, roof.max.x - .5f);
-        ahead.z = Mathf.Clamp(ahead.z, roof.min.z + .5f, roof.max.z - .5f);
-        ahead.y = GarageCeiling.UndersideY - 2f;
         prop.transform.position = ahead;
         var item = prop.AddComponent<CarryableItem>();
         var body = prop.GetComponent<Rigidbody>();
@@ -491,9 +524,9 @@ public static class OfficeGarageVerify
                 if (y < previousY - .005f && body.linearVelocity.y < 0f) descending = true;
                 previousY = y;
             }
-            Check("(tavan) CarryableItem 25 m/sn yukarı fırlatılınca 2 sn içinde tavanı aşmaz ve geri düşer",
-                maximumY <= GarageCeiling.UndersideY + .5f && descending && body.collisionDetectionMode != CollisionDetectionMode.Discrete,
-                "en yüksek Y " + M(maximumY) + ", alt yüz " + M(GarageCeiling.UndersideY) +
+            Check(label + "CarryableItem 25 m/sn yukarı fırlatılınca 2 sn içinde tavanı aşmaz ve geri düşer",
+                maximumY <= underside + .5f && descending && body.collisionDetectionMode != CollisionDetectionMode.Discrete,
+                "en yüksek Y " + M(maximumY) + ", alt yüz " + M(underside) +
                 ", iniş " + descending + ", çarpışma modu " + body.collisionDetectionMode);
         }
         finally { UnityEngine.Object.Destroy(prop); }

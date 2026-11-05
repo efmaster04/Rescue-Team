@@ -44,3 +44,6 @@ crashlytics-buildid.txt
 __pycache__/
 *.py[cod]
 *.blend[1-9]
+
+# Blender/OptiX kernel önbelleği (makineye özel)
+ArtPipeline/Export/**/cache/
