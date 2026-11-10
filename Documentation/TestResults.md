@@ -1,5 +1,7 @@
 # Ofis ve garaj doğrulaması
 
+6 Kasım 2026, Kurtarma Hangarı, yeni modeller ve inceleme düzeltmeleri: `GarageHangarVerify` **GARAGEHANGAR VERIFY OK** (`Captures/Hangar/hangar_verify_report.txt`). Aynı koşuda `OfficeGarageVerify`, `OfficeExpansionVerify`, `SelVadisiVerify`, `MissionBridgeVerify` ve `Bolum1Verify` de geçti. İlk hangar koşusu geçiş hattında bir engel buldu: geçişin önündeki zemin sandığı ve yedek lastik. Sandık köşeye, lastik varilin ortasına alındı. Sel Vadisi'nde görüş hattı kuralıyla kıyıdan 36 ailenin 23'ü görülebiliyor (gereken 8). Koşular bu makinede Unity 6000.5.5f1'de, yalnız yerelde değiştirilen paket ve fizik ayarlarıyla yapıldı. İnsanla serbest oynanış yapılmadı. [Kurtarma Hangarı](KurtarmaHangari.md), [Sel Vadisi doğrulaması](SelVadisiSahaGorevi.md#doğrulama).
+
 1 Kasım 2026, Blender ekipmanları ve ek depo rafı düzeltmesi: `Logs/blender_equipment_full_validation.txt` içinde **10 PASS** ve **Validation complete**. Son kova sapı görselinden sonra `Logs/blender_equipment_finish_validation.txt` içindeki iki modül/taşıma grubu da geçti. [Blender dosyaları ve modeller](BlenderEquipmentPass.md).
 
 Son kompakt raf yerleşimi `Logs/urgent_shelf_final_garage_validation.txt` ile doğrulandı: test gerçek depolama geliştirmesini satın alır, kaydeder/yükler, görünür raf ile collider eşleşmesini sınar ve raf açıkken gerçek W/E ile garaj/arka basamak/lift yolunu çalıştırır. `Logs/urgent_shelf_layout_regression.txt` eski üç bölmeli kopyayı tek doğru bölmeye çevirir. [Raf hatası ve görüntüler](StorageUpgradeFix.md).

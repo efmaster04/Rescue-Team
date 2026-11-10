@@ -1,6 +1,6 @@
 # Başlatma ve kontroller
 
-Unity 6000.5.5f1 ile `C:/Users/uur/oyunnn` projesini açın. URP, Input System ve uGUI paketleri manifestte tanımlıdır. `Assets/_Project/Scenes/OfficeGarage.unity` sahnesini açıp Play'e basın. Sahne ayrıca Build Settings'in ilk sahnesidir. Sahneyi ve veri varlıklarını yeniden üretmek için editör menüsünde `Company > Build Office and Garage` kullanılır.
+Depoyu klonladığınız klasörü Unity 6000.6.3f1 ile açın (README adımları; Sel Vadisi haritası ilk açılışta üretilir). URP, Input System ve uGUI paketleri manifestte tanımlıdır. `Assets/_Project/Scenes/OfficeGarage.unity` sahnesini açıp Play'e basın. Sahne ayrıca Build Settings'in ilk sahnesidir. Sahneyi ve veri varlıklarını yeniden üretmek için editör menüsünde `Company > Build Office and Garage` kullanılır.
 
 | Tuş | İşlem |
 | --- | --- |
@@ -13,7 +13,7 @@ Unity 6000.5.5f1 ile `C:/Users/uur/oyunnn` projesini açın. URP, Input System v
 | R | Elde tutulan nesneyi döndür |
 | Tab | Hazırlık panelini göster/gizle |
 | Esc | Dünyada duraklat/devam et; bilgisayarda uygulamadan masaüstüne, sonra oyuna dön |
-| F9 | Yalnız editör/geliştirme derlemesinde örnek saha sonucunu işle |
+| F9 | Yalnız editör/geliştirme derlemesinde, iş sahada (`Deployed`) görünürken örnek saha sonucunu işle |
 
 Başlangıçta ofis masasının önündesiniz. Monitöre bakıp E ile bilgisayarı açın. Yedi masaüstü uygulaması vardır: İşler, Araç, Depo, Mağaza, Finans, Şirket ve Posta. İşler → İlanlar bölümünden iş kabul edin; isteğe bağlı sözleşme kutuyla seçilir. Hazırlık ve sevkiyat Aktif iş, ödeme Raporlar bölümündedir.
 
@@ -23,7 +23,7 @@ Depodaki ekipmana E ile bakıp alın. Arka kapıdan yük alanına E ile sabitley
 
 Modülsüz araçla da lift çalışır. Üzerinde yarım takılmış modül varsa önce bağlantıları tamamlayın. Kumanda yazısı engel nedenini gösterir. [Lift düzeltmesinin doğrulaması](LiftFix.md).
 
-Saha görevine gitmeden geliştirme testinde F9 ile dönüş sonucu oluşturabilirsiniz; İşler → Raporlar'da onaylayın. Hasarlı ekipmanı tezgâhta onarın; elde eşya yokken aynı tezgâh van bakımını yapar. Mağaza ekipman, Şirket → Geliştirmeler bina yatırımları içindir. Kaydet düğmesi ve otomatik kayıt şirket durumunu, fiziksel modülleri ve yarım montajı saklar.
+F9 yalnız ofiste ve iş `Deployed` kayıtlıyken çalışır. Normal akışta göreve çıkınca saha sahnesi açılır ve ofiste F9'a basılacak an olmaz. Saha görevi sırasında oyun kapatılıp yeniden açılırsa bilgisayar "Sahaya git" gösterir; F9 o işi örnek sonuçla kapatır. Sonucu İşler → Raporlar'da onaylayın. Hasarlı ekipmanı tezgâhta onarın; elde eşya yokken aynı tezgâh van bakımını yapar. Mağaza ekipman, Şirket → Geliştirmeler bina yatırımları içindir. Kaydet düğmesi ve otomatik kayıt şirket durumunu, fiziksel modülleri ve yarım montajı saklar.
 
 Uygulama penceresinin sağ üstündeki çizgi masaüstüne döndürür, kare pencereyi büyütür/küçültür, X uygulamayı kapatıp masaüstüne döndürür. Bilgisayardan çıkmak için alt çubuktaki Çıkış düğmesini kullanın. Uzun içerikler fare tekerleğiyle kaydırılır. Arayüz 16:9 çalışma alanını farklı ekran oranlarına sığdırır.
 
@@ -42,6 +42,8 @@ Mevcut sahnenin ışık, yansıma ve kamera kurulumunu uygulamak için `Company 
 Garajın yüzey, LED armatür, yön levhası, kapı fiziği ve gölge kurulumunu ayrıca `Company > Refine Garage and Doors` ile uygulayabilirsiniz. Bu kurulum artık aynı minibüsün tam kaynak modelini ve yeni metal tezgâh/dolap/tavan/servis zemini düzenlemesini de uygular. Lift kumandasının E hedefi kolonun önündeki küçük paneldedir. [Garaj ve kapı notları](GarageRefinement.md), [tam araç ve atölye notları](VanAndWorkshop.md) kaynak denetimini ve testleri açıklar.
 
 Saha görevleri ayrı sahnelerde oynanır: Bölüm 1 kurtarma işi ve [Sel Vadisi saha görevi](SelVadisiSahaGorevi.md). F9 sonucu gerçek saha oynanışı değildir. Çok oyunculu oturum başlatma seçeneği yoktur.
+
+Garajın doğu duvarının kuzey ucundaki geçişten (hava hortumu makarasının yanı) Kurtarma Hangarı'na yürünür. Hangarın doğudaki açık araç kapısı dışarı çıkar; güneydeki sarmal kapı kapalıdır. Ekip köpeği Fındık köşesinde uyur, yaklaşınca uyanır; ona bakıp E ile sevebilirsiniz. Hangarı yeniden kurmak için `Rescue Team > Ofis-Garaj > Garajı Büyüt: Kurtarma Hangarı`, kaldırmak için `Kurtarma Hangarını Kaldır` kullanılır. [Hangar notları](KurtarmaHangari.md).
 
 Son model/atmosfer düzenlemesi `Company > Refine Workshop Models and Atmosphere` ile uygulanır. Tekerlek, tezgâh ve raf yüzeyleri kaynak ofis düzenine dokunmadan yenilenir. [Önce/sonra görselleri ve kapsam](WorkshopCraft.md).
 

@@ -2,7 +2,10 @@
 
 Unity ile geliştirilen şirket ve garaj simülasyonu. Ofisteki bilgisayardan iş,
 ekipman, araç ve şirket işlemleri yönetilir. Garajda ekipmanlar elle taşınır;
-modüller dört cıvata ve servis bağlantısıyla araca takılır.
+modüller dört cıvata ve servis bağlantısıyla araca takılır. Garajın doğu
+duvarındaki geçiş, yaklaşık 200 m²'lik Kurtarma Hangarı'na açılır. Hangarda
+kurtarma konvoyu (drone aracı, römork ve bot), drone'lar, ekipman duvarı, erzak,
+alet tezgâhı ve ekip köpeği Fındık bulunur.
 
 Bu depo oyunun Unity proje dosyalarını içerir. Hazır bir çalıştırılabilir oyun
 paketi değildir. Mevcut geliştirme sürümünde ofis, garaj ve iki saha görevi
@@ -15,7 +18,7 @@ Projeyi açmak için:
 2. Unity Hub üzerinden klasörü **Unity 6000.6.3f1** ile açın. 6000.5 bu projenin
    fizik ayarını yanlış okur ve karakter zeminden düşer.
 3. Paketlerin ve varlıkların ilk aktarımının tamamlanmasını bekleyin.
-4. Unity Sel Vadisi haritasını üretmeyi sorar; kabul edin (yaklaşık 20 saniye).
+4. Unity Sel Vadisi haritasını üretmeyi sorar; kabul edin (yaklaşık 1 dakika).
 5. `Assets/_Project/Scenes/OfficeGarage.unity` sahnesini açıp **Play** düğmesine basın.
 
 Ofis sahnesi depoda hazırdır. Sel Vadisi haritası (sahne ve yaklaşık 220 MB mesh)
@@ -34,6 +37,7 @@ URP, Input System ve diğer paketler `Packages/manifest.json` içinde tanımlıd
 | Esc | Duraklat veya bilgisayardan geri dön |
 
 [Kurulum ve ayrıntılı kontroller](Documentation/SetupAndControls.md) ·
+[Kurtarma Hangarı](Documentation/KurtarmaHangari.md) ·
 [Sel Vadisi saha görevi](Documentation/SelVadisiSahaGorevi.md) ·
 [Elle modül montajı](Documentation/ManualGarageSystems.md) ·
 [Doğrulama kayıtları](Documentation/TestResults.md)
