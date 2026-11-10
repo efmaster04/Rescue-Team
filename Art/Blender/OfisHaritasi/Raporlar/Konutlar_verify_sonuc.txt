@@ -1,0 +1,293 @@
+Konutlar verify sonucu: TEMIZ
+== Malzeme JSON ==
+  OK    her malzemede zorunlu alanlar var
+  OK    butun malzemeler KN_ onekli
+  OK    renkler sRGB 0-1
+  OK    KN_Siva=konut_siva, KN_Panjur=konut_panjur randomize
+  OK    konut_siva paleti 7 ton (7)
+  OK    konut_panjur paleti 4 ton (4)
+== Sahne geneli ==
+  OK    FONT/egri nesnesi yok (turler: ['MESH'])
+  OK    bpy.data.curves bos (yazi verisi yok)
+== Apartman_A ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (13 nesne)
+  OK    parsel [22.0, 22.0] = [22, 22]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 2866 <= 8000 (COL dahil 2986)
+  OK    manifest ucgen sayisi dogru (2866)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (10: ['KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Doseme', 'KN_Duvar', 'KN_Kapi', 'KN_Kiremit', 'KN_Panjur', 'KN_Siva'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (10) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 12.00 x 10.00 = 12 x 10
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 5.00 m geride (4-6)
+  OK    sacak/duvar ust kotu 9.45 = 9.45
+  OK    zemin kat kotu 0.45
+  OK    kat sayisi (sacak-zemin)/3,0 = 3.00 (3 kat, 3,0 m)
+  OK    on bahce duvari var
+  OK    yan duvarlar yok
+  OK    On: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    On: kare demir cubuk 58 adet, aralik 0.210-0.230 m
+  OK    on duvar kapi bosluklari [1.19, 3.0] = [1.2, 3.0]
+  OK    giris_kesimleri [6.6, 9.6] arac kapisi hizasinda
+  OK    park 1 (8.1, 3.3) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    park 2 (8.1, 8.8) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    agac 1 (-8.4, 2.2) bina/yol/duvara degmiyor (binaya 3.7 m)
+  OK    agac 2 (3.6, 1.9) bina/yol/duvara degmiyor (binaya 3.1 m)
+  OK    agac 3 (-6.5, 18.8) bina/yol/duvara degmiyor (binaya 3.8 m)
+  OK    agac 4 (4.5, 19.0) bina/yol/duvara degmiyor (binaya 4.0 m)
+  OK    manifest boyut [22.0, 14.333, 15.663] (Unity X,Y,Z)
+== Apartman_B ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (4 nesne)
+  OK    parsel [22.0, 22.0] = [22, 22]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 2300 <= 8000 (COL dahil 2324)
+  OK    manifest ucgen sayisi dogru (2300)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (13: ['KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Depo', 'KN_Doseme', 'KN_Duvar', 'KN_Kapi', 'KN_Kepenk', 'KN_Kolektor', 'KN_Panjur', 'KN_Siva', 'KN_Tabela'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (2) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 14.00 x 11.00 = 14 x 11
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 4.00 m geride (4-6)
+  OK    parapet ust kotu 10.75 = 10.75
+  OK    zemin kat kotu 0.15
+  OK    duz cati kotu 9.75 (144 m2): 3,6 m dukkan kati + 2 x 3,0 m = 3 kat
+  OK    on bahce duvari yok
+  OK    yan duvarlar yok
+  OK    arac kapisi yok -> park yeri listesi bos
+  OK    agac 1 (-6.0, 18.6) bina/yol/duvara degmiyor (binaya 3.6 m)
+  OK    agac 2 (5.5, 19.0) bina/yol/duvara degmiyor (binaya 4.0 m)
+  OK    manifest boyut [22.0, 13.11, 16.6] (Unity X,Y,Z)
+== Apartman_C ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (18 nesne)
+  OK    parsel [22.0, 24.0] = [22, 24]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 4330 <= 8000 (COL dahil 4486)
+  OK    manifest ucgen sayisi dogru (4330)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (9: ['KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Duvar', 'KN_Kapi', 'KN_Kiremit', 'KN_Panjur', 'KN_Siva'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (13) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 13.00 x 10.00 = 13 x 10
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 5.00 m geride (4-6)
+  OK    sacak/duvar ust kotu 7.60 = 7.6
+  OK    zemin kat kotu 0.9
+  OK    zemin + 1 kat (3,0 m) + cati kati 6,9
+  OK    on bahce duvari var
+  OK    yan duvarlar var
+  OK    On: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    On: kare demir cubuk 60 adet, aralik 0.220-0.230 m
+  OK    Sol: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sol: kare demir cubuk 88 adet, aralik 0.210-0.220 m
+  OK    Sag: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sag: kare demir cubuk 88 adet, aralik 0.210-0.220 m
+  OK    on duvar kapi bosluklari [1.19, 3.0] = [1.2, 3.0]
+  OK    giris_kesimleri [-10.63, -7.63] arac kapisi hizasinda
+  OK    park 1 (-9.13, 3.3) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    agac 1 (-3.4, 2.4) bina/yol/duvara degmiyor (binaya 2.6 m)
+  OK    agac 2 (8.6, 2.6) bina/yol/duvara degmiyor (binaya 3.2 m)
+  OK    agac 3 (-5.0, 19.6) bina/yol/duvara degmiyor (binaya 4.6 m)
+  OK    agac 4 (4.8, 20.2) bina/yol/duvara degmiyor (binaya 5.2 m)
+  OK    manifest boyut [22.0, 12.271, 24.0] (Unity X,Y,Z)
+== Ev_A ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (21 nesne)
+  OK    parsel [18.0, 22.0] = [18, 22]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 3980 <= 6000 (COL dahil 4160)
+  OK    manifest ucgen sayisi dogru (3980)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (10: ['KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Doseme', 'KN_Duvar', 'KN_Kapi', 'KN_Kiremit', 'KN_Panjur', 'KN_Siva'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (15) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 9.00 x 8.00 = 9 x 8
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 6.00 m geride (4-6)
+  OK    sacak/duvar ust kotu 3.50 = 3.5
+  OK    zemin kat kotu 0.6
+  OK    on bahce duvari var
+  OK    yan duvarlar var
+  OK    arka duvar var (butun parsel siniri)
+  OK    On: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    On: kare demir cubuk 46 adet, aralik 0.210-0.230 m
+  OK    Sol: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sol: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Sag: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sag: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Arka: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Arka: kare demir cubuk 66 adet, aralik 0.210-0.220 m
+  OK    on duvar kapi bosluklari [1.19, 3.0] = [1.2, 3.0]
+  OK    giris_kesimleri [-8.63, -5.63] arac kapisi hizasinda
+  OK    park 1 (-7.13, 3.3) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    agac noktasi sayisi 4 (2-4)
+  OK    agac 1 (5.8, 2.4) bina/yol/duvara degmiyor (binaya 2.1 m)
+  OK    agac 2 (6.9, 10.0) bina/yol/duvara degmiyor (binaya 2.4 m)
+  OK    agac 3 (-5.8, 17.8) bina/yol/duvara degmiyor (binaya 4.0 m)
+  OK    agac 4 (2.6, 18.6) bina/yol/duvara degmiyor (binaya 4.6 m)
+  OK    manifest boyut [18.0, 7.685, 22.0] (Unity X,Y,Z)
+== Ev_B ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (15 nesne)
+  OK    parsel [18.0, 22.0] = [18, 22]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 4535 <= 6000 (COL dahil 4643)
+  OK    manifest ucgen sayisi dogru (4535)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (12: ['KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Depo', 'KN_Duvar', 'KN_Kapi', 'KN_Kepenk', 'KN_Kiremit', 'KN_Kolektor', 'KN_Panjur', 'KN_Siva'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (9) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 8.00 x 8.00 = 8 x 8
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 5.00 m geride (4-6)
+  OK    sacak/duvar ust kotu 6.10 = 6.1
+  OK    zemin kat kotu 0.3
+  OK    iki kat (2.00 x 3,0 m)
+  OK    on bahce duvari var
+  OK    yan duvarlar var
+  OK    arka duvar var (butun parsel siniri)
+  OK    On: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    On: kare demir cubuk 47 adet, aralik 0.210-0.220 m
+  OK    Sol: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sol: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Sag: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sag: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Arka: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Arka: kare demir cubuk 66 adet, aralik 0.210-0.220 m
+  OK    on duvar kapi bosluklari [1.19, 3.0] = [1.2, 3.0]
+  OK    giris_kesimleri [5.63, 8.63] arac kapisi hizasinda
+  OK    park 1 (7.13, 3.3) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    agac noktasi sayisi 4 (2-4)
+  OK    agac 1 (-6.8, 2.6) bina/yol/duvara degmiyor (binaya 3.7 m)
+  OK    agac 2 (6.9, 11.0) bina/yol/duvara degmiyor (binaya 2.9 m)
+  OK    agac 3 (-6.4, 16.6) bina/yol/duvara degmiyor (binaya 4.3 m)
+  OK    agac 4 (3.0, 18.0) bina/yol/duvara degmiyor (binaya 5.0 m)
+  OK    manifest boyut [18.0, 10.156, 22.0] (Unity X,Y,Z)
+== Ev_C ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (22 nesne)
+  OK    parsel [18.0, 22.0] = [18, 22]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 4203 <= 6000 (COL dahil 4395)
+  OK    manifest ucgen sayisi dogru (4203)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (11: ['KN_Ahsap', 'KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Duvar', 'KN_Kapi', 'KN_Kepenk', 'KN_Kiremit', 'KN_Panjur', 'KN_Siva'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (16) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 11.00 x 9.00 = 11 x 9
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 5.00 m geride (4-6)
+  OK    sacak/duvar ust kotu 3.20 = 3.2
+  OK    zemin kat kotu 0.3
+  OK    on bahce duvari var
+  OK    yan duvarlar var
+  OK    arka duvar var (butun parsel siniri)
+  OK    On: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    On: kare demir cubuk 43 adet, aralik 0.200-0.240 m
+  OK    Sol: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sol: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Sag: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sag: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Arka: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Arka: kare demir cubuk 66 adet, aralik 0.210-0.220 m
+  OK    on duvar kapi bosluklari [1.19, 3.0] = [1.2, 3.0]
+  OK    giris_kesimleri [4.4, 7.4] arac kapisi hizasinda
+  OK    park 1 (5.9, 8.0) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    agac noktasi sayisi 4 (2-4)
+  OK    agac 1 (-5.4, 2.3) bina/yol/duvara degmiyor (binaya 2.7 m)
+  OK    agac 2 (1.6, 5.2) bina/yol/duvara degmiyor (binaya 2.5 m)
+  OK    agac 3 (-4.2, 18.0) bina/yol/duvara degmiyor (binaya 4.0 m)
+  OK    agac 4 (4.2, 17.6) bina/yol/duvara degmiyor (binaya 3.7 m)
+  OK    manifest boyut [18.0, 6.458, 22.0] (Unity X,Y,Z)
+== Ev_D ==
+  OK    koleksiyon var
+  OK    manifest nesne listesi sahneyle ayni (32 nesne)
+  OK    parsel [18.0, 22.0] = [18, 22]
+  OK    parsel disina tasma yok (+-0,05 m)
+  OK    gorunur meshler ucgenlenmis
+  OK    ucgen 4416 <= 6000 (COL dahil 4728)
+  OK    manifest ucgen sayisi dogru (4416)
+  OK    duz golgeleme (smooth yok)
+  OK    malzemeler JSON'da (11: ['KN_Ahsap', 'KN_Bant', 'KN_Beton', 'KN_Cam', 'KN_Demir', 'KN_Doseme', 'KN_Duvar', 'KN_Kapi', 'KN_Kiremit', 'KN_Panjur', 'KN_Siva'])
+  OK    her gorunur meshte malzeme var
+  OK    COL_ kutulari (26) 8 koseli, eksen hizali, donussuz
+  OK    carpisma adlari COL_ onekli
+  OK    bina izi 9.00 x 9.00 = 9 x 9
+  OK    gorunur bina mesh izi COL izini kapsiyor
+  OK    bina on cephesi on kenardan 6.00 m geride (4-6)
+  OK    sacak/duvar ust kotu 5.90 = 5.9
+  OK    zemin kat kotu 0.25
+  OK    iki kat (1.95 x 3,0 m)
+  OK    on bahce duvari var
+  OK    yan duvarlar var
+  OK    arka duvar var (butun parsel siniri)
+  OK    On: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    On: kare demir cubuk 44 adet, aralik 0.210-0.230 m
+  OK    Sol: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sol: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Sag: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Sag: kare demir cubuk 77 adet, aralik 0.220-0.230 m
+  OK    Arka: taban 0,50 m + parmaklik 0,70 m (demir 0.50-1.20, harpusta [0.5, 1.43])
+  OK    Arka: kare demir cubuk 66 adet, aralik 0.210-0.220 m
+  OK    on duvar kapi bosluklari [1.2, 3.0] = [1.2, 3.0]
+  OK    giris_kesimleri [-8.63, -5.63] arac kapisi hizasinda
+  OK    park 1 (-7.13, 3.3) bos alanda, arac kapisinin arkasinda, yon 0
+  OK    agac noktasi sayisi 4 (2-4)
+  OK    agac 1 (1.8, 2.4) bina/yol/duvara degmiyor (binaya 2.4 m)
+  OK    agac 2 (-5.8, 18.2) bina/yol/duvara degmiyor (binaya 3.7 m)
+  OK    agac 3 (2.0, 19.0) bina/yol/duvara degmiyor (binaya 4.0 m)
+  OK    agac 4 (7.0, 13.0) bina/yol/duvara degmiyor (binaya 2.0 m)
+  OK    manifest boyut [18.0, 9.826, 22.0] (Unity X,Y,Z)
+== FBX yeniden ice aktarma ==
+  OK    Apartman_A.fbx var (93 kB)
+  OK    Apartman_A: ad listesi korunuyor (13 mesh)
+  OK    Apartman_A: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Apartman_A: malzeme adlari korunuyor
+  OK    Apartman_A: COL kutulari ice aktarimdan sonra eksen hizali
+  OK    Apartman_B.fbx var (73 kB)
+  OK    Apartman_B: ad listesi korunuyor (4 mesh)
+  OK    Apartman_B: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Apartman_B: malzeme adlari korunuyor
+  OK    Apartman_B: COL kutulari ice aktarimdan sonra eksen hizali
+  OK    Apartman_C.fbx var (122 kB)
+  OK    Apartman_C: ad listesi korunuyor (18 mesh)
+  OK    Apartman_C: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Apartman_C: malzeme adlari korunuyor
+  OK    Apartman_C: COL kutulari ice aktarimdan sonra eksen hizali
+  OK    Ev_A.fbx var (122 kB)
+  OK    Ev_A: ad listesi korunuyor (21 mesh)
+  OK    Ev_A: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Ev_A: malzeme adlari korunuyor
+  OK    Ev_A: COL kutulari ice aktarimdan sonra eksen hizali
+  OK    Ev_B.fbx var (123 kB)
+  OK    Ev_B: ad listesi korunuyor (15 mesh)
+  OK    Ev_B: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Ev_B: malzeme adlari korunuyor
+  OK    Ev_B: COL kutulari ice aktarimdan sonra eksen hizali
+  OK    Ev_C.fbx var (129 kB)
+  OK    Ev_C: ad listesi korunuyor (22 mesh)
+  OK    Ev_C: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Ev_C: malzeme adlari korunuyor
+  OK    Ev_C: COL kutulari ice aktarimdan sonra eksen hizali
+  OK    Ev_D.fbx var (150 kB)
+  OK    Ev_D: ad listesi korunuyor (32 mesh)
+  OK    Ev_D: olculer korunuyor (en buyuk sapma 0.00 mm)
+  OK    Ev_D: malzeme adlari korunuyor
+  OK    Ev_D: COL kutulari ice aktarimdan sonra eksen hizali

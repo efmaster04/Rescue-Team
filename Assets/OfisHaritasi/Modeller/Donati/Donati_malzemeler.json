@@ -1,0 +1,454 @@
+{
+  "materials": [
+    {
+      "name": "DN_Galvaniz",
+      "color": [
+        0.6,
+        0.62,
+        0.61
+      ],
+      "metallic": 0.55,
+      "smoothness": 0.38,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Boya_Koyu",
+      "color": [
+        0.2,
+        0.21,
+        0.21
+      ],
+      "metallic": 0.25,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Siyah_Mat",
+      "color": [
+        0.075,
+        0.075,
+        0.072
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.22,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Sinyal_Kirmizi",
+      "color": [
+        0.3,
+        0.055,
+        0.045
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.7,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "yanik_emission": [
+        1.0,
+        0.1,
+        0.05
+      ],
+      "not": "sonuk ton; Unity yanik halde emission'i yanik_emission ile acar"
+    },
+    {
+      "name": "DN_Sinyal_Sari",
+      "color": [
+        0.36,
+        0.24,
+        0.045
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.7,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "yanik_emission": [
+        1.0,
+        0.6,
+        0.08
+      ],
+      "not": "sonuk ton; Unity yanik halde emission'i yanik_emission ile acar"
+    },
+    {
+      "name": "DN_Sinyal_Yesil",
+      "color": [
+        0.045,
+        0.22,
+        0.16
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.7,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "yanik_emission": [
+        0.12,
+        1.0,
+        0.55
+      ],
+      "not": "sonuk ton; Unity yanik halde emission'i yanik_emission ile acar"
+    },
+    {
+      "name": "DN_Lamba",
+      "color": [
+        0.98,
+        0.93,
+        0.8
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.5,
+      "emission": [
+        1.0,
+        0.85,
+        0.62
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Tabela_Kirmizi",
+      "color": [
+        0.68,
+        0.11,
+        0.09
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Tabela_Mavi",
+      "color": [
+        0.08,
+        0.27,
+        0.55
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Beyaz",
+      "color": [
+        0.88,
+        0.88,
+        0.85
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Beton",
+      "color": [
+        0.63,
+        0.62,
+        0.59
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Dokum",
+      "color": [
+        0.15,
+        0.16,
+        0.15
+      ],
+      "metallic": 0.35,
+      "smoothness": 0.3,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Ahsap",
+      "color": [
+        0.47,
+        0.32,
+        0.2
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.25,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Cam_Opak",
+      "color": [
+        0.62,
+        0.7,
+        0.74
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.7,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Metal_Acik",
+      "color": [
+        0.67,
+        0.68,
+        0.67
+      ],
+      "metallic": 0.3,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Konteyner",
+      "color": [
+        0.22,
+        0.28,
+        0.24
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.3,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Lastik",
+      "color": [
+        0.065,
+        0.065,
+        0.062
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.1,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Tas",
+      "color": [
+        0.71,
+        0.67,
+        0.58
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.15,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Tas_Koyu",
+      "color": [
+        0.5,
+        0.47,
+        0.41
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.15,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Musluk",
+      "color": [
+        0.55,
+        0.46,
+        0.28
+      ],
+      "metallic": 0.7,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Izolator",
+      "color": [
+        0.78,
+        0.77,
+        0.72
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.6,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Boya_Yesil",
+      "color": [
+        0.17,
+        0.3,
+        0.24
+      ],
+      "metallic": 0.2,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Oyun_Kirmizi",
+      "color": [
+        0.62,
+        0.2,
+        0.15
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Yaprak_1",
+      "color": [
+        0.26,
+        0.36,
+        0.15
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.28,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Yaprak_2",
+      "color": [
+        0.42,
+        0.5,
+        0.2
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.28,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Yaprak_3",
+      "color": [
+        0.17,
+        0.27,
+        0.15
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.28,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "DN_Govde",
+      "color": [
+        0.32,
+        0.23,
+        0.16
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.28,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    }
+  ]
+}

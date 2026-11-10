@@ -1,0 +1,1161 @@
+{
+  "set": "Konutlar",
+  "surum": 1,
+  "birim": "metre",
+  "eksen": "Unity yerel: x = Blender x, y = yukari (Blender z), z = Blender y. Orijin parselin sokak tarafi on kenarinin ortasi; sokak -Z, parsel +Z.",
+  "notlar": "bina_izleri min/max = Unity [x, z]. park_yerleri konum = Unity [x, y, z], yon_derece 0 = arac onu +Z. agac_noktalari Unity [x, 0, z]. giris_kesimleri = on kenarda (z=0) bordurun alcaltilacagi Unity x araliklari. Duvar nesneleri ayri: komsu parsellerle ortak sinirda <id>_Duvar_Sol/Sag ve ilgili COL_<id>_Duvar_Sol/Sag_* birlikte kapatilabilir.",
+  "varliklar": [
+    {
+      "id": "Apartman_A",
+      "fbx": "Apartman_A.fbx",
+      "boyut": [
+        22.0,
+        14.333,
+        15.663
+      ],
+      "yukseklik_zemin_ustu": 13.733,
+      "sinir_kutusu": {
+        "min": [
+          -11.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          11.0,
+          13.733,
+          15.663
+        ]
+      },
+      "ucgen": 2866,
+      "ucgen_carpisma": 120,
+      "ucgen_butce": 8000,
+      "parsel": [
+        22.0,
+        22.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kutle",
+          "tur": "bina",
+          "min": [
+            -6.0,
+            5.0
+          ],
+          "max": [
+            6.0,
+            15.0
+          ],
+          "yukseklik": 12.863
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          6.6,
+          9.6
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            8.1,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            8.1,
+            0.04,
+            8.8
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -8.4,
+          0.0,
+          2.2
+        ],
+        [
+          3.6,
+          0.0,
+          1.9
+        ],
+        [
+          -6.5,
+          0.0,
+          18.8
+        ],
+        [
+          4.5,
+          0.0,
+          19.0
+        ]
+      ],
+      "nesneler": [
+        "Apartman_A_Bina",
+        "Apartman_A_Bahce",
+        "Apartman_A_Duvar_On"
+      ],
+      "carpisma": [
+        "COL_Apartman_A_Balkon_Sol",
+        "COL_Apartman_A_Balkon_Sag",
+        "COL_Apartman_A_Basamak_1",
+        "COL_Apartman_A_Basamak_2",
+        "COL_Apartman_A_Basamak_3",
+        "COL_Apartman_A_Bina",
+        "COL_Apartman_A_Cati",
+        "COL_Apartman_A_Duvar_On_1",
+        "COL_Apartman_A_Duvar_On_2",
+        "COL_Apartman_A_Duvar_On_3"
+      ],
+      "malzemeler": [
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Doseme",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kiremit",
+        "KN_Panjur",
+        "KN_Siva"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "acik_somon",
+        "konut_panjur": "bej"
+      },
+      "bahce_duvari": {
+        "On": {
+          "kapilar": [
+            [
+              -0.6,
+              0.6
+            ],
+            [
+              6.6,
+              9.6
+            ]
+          ],
+          "parmaklik_cubugu": 58
+        }
+      },
+      "ozellikler": {
+        "kat": 3,
+        "kat_yuksekligi": 3.0,
+        "zemin_kotu": 0.45,
+        "sacak_kotu": 9.45,
+        "cati": "kirma kiremit",
+        "bahce_duvari": "yalniz on"
+      }
+    },
+    {
+      "id": "Apartman_B",
+      "fbx": "Apartman_B.fbx",
+      "boyut": [
+        22.0,
+        13.11,
+        16.6
+      ],
+      "yukseklik_zemin_ustu": 12.51,
+      "sinir_kutusu": {
+        "min": [
+          -11.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          11.0,
+          12.51,
+          16.6
+        ]
+      },
+      "ucgen": 2300,
+      "ucgen_carpisma": 24,
+      "ucgen_butce": 8000,
+      "parsel": [
+        22.0,
+        22.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kutle",
+          "tur": "bina",
+          "min": [
+            -7.0,
+            4.0
+          ],
+          "max": [
+            7.0,
+            15.0
+          ],
+          "yukseklik": 10.75
+        },
+        {
+          "ad": "cikma",
+          "tur": "ust_kat_cikmasi",
+          "min": [
+            -2.8,
+            3.2
+          ],
+          "max": [
+            2.8,
+            4.0
+          ],
+          "yukseklik": 10.75
+        },
+        {
+          "ad": "merdiven_kulesi",
+          "tur": "cati_ustu",
+          "min": [
+            -1.5,
+            11.0
+          ],
+          "max": [
+            1.5,
+            14.4
+          ],
+          "yukseklik": 12.51
+        }
+      ],
+      "giris_kesimleri": [],
+      "park_yerleri": [],
+      "agac_noktalari": [
+        [
+          -6.0,
+          0.0,
+          18.6
+        ],
+        [
+          5.5,
+          0.0,
+          19.0
+        ]
+      ],
+      "nesneler": [
+        "Apartman_B_Bina",
+        "Apartman_B_Bahce"
+      ],
+      "carpisma": [
+        "COL_Apartman_B_Bina",
+        "COL_Apartman_B_Merdiven_Kulesi"
+      ],
+      "malzemeler": [
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Depo",
+        "KN_Doseme",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kepenk",
+        "KN_Kolektor",
+        "KN_Panjur",
+        "KN_Siva",
+        "KN_Tabela"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "acik_hardal",
+        "konut_panjur": "gri_mavi"
+      },
+      "bahce_duvari": {},
+      "ozellikler": {
+        "kat": 3,
+        "kat_yuksekligi": 3.0,
+        "zemin_kat_yuksekligi": 3.6,
+        "cati": "duz, parapetli",
+        "dukkan": 2,
+        "gunes_kolektoru": 3,
+        "cikma": "orta, 5,6 x 0,8 m",
+        "bahce_duvari": "yok"
+      }
+    },
+    {
+      "id": "Apartman_C",
+      "fbx": "Apartman_C.fbx",
+      "boyut": [
+        22.0,
+        12.271,
+        24.0
+      ],
+      "yukseklik_zemin_ustu": 11.671,
+      "sinir_kutusu": {
+        "min": [
+          -11.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          11.0,
+          11.671,
+          24.0
+        ]
+      },
+      "ucgen": 4330,
+      "ucgen_carpisma": 156,
+      "ucgen_butce": 8000,
+      "parsel": [
+        22.0,
+        24.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kutle",
+          "tur": "bina",
+          "min": [
+            -6.5,
+            5.0
+          ],
+          "max": [
+            6.5,
+            15.0
+          ],
+          "yukseklik": 11.561
+        },
+        {
+          "ad": "yan_balkon",
+          "tur": "balkon",
+          "min": [
+            6.5,
+            7.9
+          ],
+          "max": [
+            7.8,
+            12.0
+          ],
+          "yukseklik": 4.9
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -10.63,
+          -7.63
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -9.13,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -3.4,
+          0.0,
+          2.4
+        ],
+        [
+          8.6,
+          0.0,
+          2.6
+        ],
+        [
+          -5.0,
+          0.0,
+          19.6
+        ],
+        [
+          4.8,
+          0.0,
+          20.2
+        ]
+      ],
+      "nesneler": [
+        "Apartman_C_Bina",
+        "Apartman_C_Bahce",
+        "Apartman_C_Duvar_On",
+        "Apartman_C_Duvar_Sol",
+        "Apartman_C_Duvar_Sag"
+      ],
+      "carpisma": [
+        "COL_Apartman_C_Sahanlik",
+        "COL_Apartman_C_Basamak_1",
+        "COL_Apartman_C_Basamak_2",
+        "COL_Apartman_C_Basamak_3",
+        "COL_Apartman_C_Basamak_4",
+        "COL_Apartman_C_Basamak_5",
+        "COL_Apartman_C_Korkuluk",
+        "COL_Apartman_C_Bina",
+        "COL_Apartman_C_Cati",
+        "COL_Apartman_C_Duvar_On_1",
+        "COL_Apartman_C_Duvar_On_2",
+        "COL_Apartman_C_Duvar_Sol_1",
+        "COL_Apartman_C_Duvar_Sag_1"
+      ],
+      "malzemeler": [
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kiremit",
+        "KN_Panjur",
+        "KN_Siva"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "acik_gri_yesil",
+        "konut_panjur": "bej"
+      },
+      "bahce_duvari": {
+        "On": {
+          "kapilar": [
+            [
+              -10.63,
+              -7.63
+            ],
+            [
+              0.4,
+              1.6
+            ]
+          ],
+          "parmaklik_cubugu": 60
+        },
+        "Sol": {
+          "kapilar": [],
+          "parmaklik_cubugu": 88
+        },
+        "Sag": {
+          "kapilar": [],
+          "parmaklik_cubugu": 88
+        }
+      },
+      "ozellikler": {
+        "kat": "zemin + 1 + cati kati",
+        "kat_yuksekligi": 3.0,
+        "zemin_kotu": 0.9,
+        "sacak_kotu": 7.6,
+        "cati": "besik kiremit (mahya Y, alinlik sokaga)",
+        "bahce_duvari": "on + yanlar"
+      }
+    },
+    {
+      "id": "Ev_A",
+      "fbx": "Ev_A.fbx",
+      "boyut": [
+        18.0,
+        7.685,
+        22.0
+      ],
+      "yukseklik_zemin_ustu": 7.085,
+      "sinir_kutusu": {
+        "min": [
+          -9.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          9.0,
+          7.085,
+          22.0
+        ]
+      },
+      "ucgen": 3980,
+      "ucgen_carpisma": 180,
+      "ucgen_butce": 6000,
+      "parsel": [
+        18.0,
+        22.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kutle",
+          "tur": "bina",
+          "min": [
+            -4.5,
+            6.0
+          ],
+          "max": [
+            4.5,
+            14.0
+          ],
+          "yukseklik": 6.365
+        },
+        {
+          "ad": "veranda",
+          "tur": "veranda",
+          "min": [
+            -4.5,
+            4.0
+          ],
+          "max": [
+            4.5,
+            6.0
+          ],
+          "yukseklik": 3.5
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -8.63,
+          -5.63
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -7.13,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          5.8,
+          0.0,
+          2.4
+        ],
+        [
+          6.9,
+          0.0,
+          10.0
+        ],
+        [
+          -5.8,
+          0.0,
+          17.8
+        ],
+        [
+          2.6,
+          0.0,
+          18.6
+        ]
+      ],
+      "nesneler": [
+        "Ev_A_Bina",
+        "Ev_A_Bahce",
+        "Ev_A_Duvar_On",
+        "Ev_A_Duvar_Sol",
+        "Ev_A_Duvar_Sag",
+        "Ev_A_Duvar_Arka"
+      ],
+      "carpisma": [
+        "COL_Ev_A_Kolon_-4.3",
+        "COL_Ev_A_Kolon_-1.4",
+        "COL_Ev_A_Kolon_+1.4",
+        "COL_Ev_A_Kolon_+4.3",
+        "COL_Ev_A_Basamak_1",
+        "COL_Ev_A_Basamak_2",
+        "COL_Ev_A_Basamak_3",
+        "COL_Ev_A_Bina",
+        "COL_Ev_A_Veranda",
+        "COL_Ev_A_Cati",
+        "COL_Ev_A_Duvar_On_1",
+        "COL_Ev_A_Duvar_On_2",
+        "COL_Ev_A_Duvar_Arka_1",
+        "COL_Ev_A_Duvar_Sol_1",
+        "COL_Ev_A_Duvar_Sag_1"
+      ],
+      "malzemeler": [
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Doseme",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kiremit",
+        "KN_Panjur",
+        "KN_Siva"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "krem",
+        "konut_panjur": "koyu_yesil"
+      },
+      "bahce_duvari": {
+        "On": {
+          "kapilar": [
+            [
+              -8.63,
+              -5.63
+            ],
+            [
+              -0.6,
+              0.6
+            ]
+          ],
+          "parmaklik_cubugu": 46
+        },
+        "Arka": {
+          "kapilar": [],
+          "parmaklik_cubugu": 66
+        },
+        "Sol": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        },
+        "Sag": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        }
+      },
+      "ozellikler": {
+        "kat": 1,
+        "zemin_kotu": 0.6,
+        "sacak_kotu": 3.5,
+        "cati": "kirma kiremit",
+        "veranda": "4 kolon, 3 basamak"
+      }
+    },
+    {
+      "id": "Ev_B",
+      "fbx": "Ev_B.fbx",
+      "boyut": [
+        18.0,
+        10.156,
+        22.0
+      ],
+      "yukseklik_zemin_ustu": 9.556,
+      "sinir_kutusu": {
+        "min": [
+          -9.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          9.0,
+          9.556,
+          22.0
+        ]
+      },
+      "ucgen": 4535,
+      "ucgen_carpisma": 108,
+      "ucgen_butce": 6000,
+      "parsel": [
+        18.0,
+        22.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kutle",
+          "tur": "bina",
+          "min": [
+            -4.0,
+            5.0
+          ],
+          "max": [
+            4.0,
+            13.0
+          ],
+          "yukseklik": 8.936
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          5.63,
+          8.63
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            7.13,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -6.8,
+          0.0,
+          2.6
+        ],
+        [
+          6.9,
+          0.0,
+          11.0
+        ],
+        [
+          -6.4,
+          0.0,
+          16.6
+        ],
+        [
+          3.0,
+          0.0,
+          18.0
+        ]
+      ],
+      "nesneler": [
+        "Ev_B_Bina",
+        "Ev_B_Bahce",
+        "Ev_B_Duvar_On",
+        "Ev_B_Duvar_Sol",
+        "Ev_B_Duvar_Sag",
+        "Ev_B_Duvar_Arka"
+      ],
+      "carpisma": [
+        "COL_Ev_B_Basamak_1",
+        "COL_Ev_B_Basamak_2",
+        "COL_Ev_B_Bina",
+        "COL_Ev_B_Cati",
+        "COL_Ev_B_Duvar_On_1",
+        "COL_Ev_B_Duvar_On_2",
+        "COL_Ev_B_Duvar_Arka_1",
+        "COL_Ev_B_Duvar_Sol_1",
+        "COL_Ev_B_Duvar_Sag_1"
+      ],
+      "malzemeler": [
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Depo",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kepenk",
+        "KN_Kiremit",
+        "KN_Kolektor",
+        "KN_Panjur",
+        "KN_Siva"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "acik_mavi_gri",
+        "konut_panjur": "kahve"
+      },
+      "bahce_duvari": {
+        "On": {
+          "kapilar": [
+            [
+              1.2,
+              2.4
+            ],
+            [
+              5.63,
+              8.63
+            ]
+          ],
+          "parmaklik_cubugu": 47
+        },
+        "Arka": {
+          "kapilar": [],
+          "parmaklik_cubugu": 66
+        },
+        "Sol": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        },
+        "Sag": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        }
+      },
+      "ozellikler": {
+        "kat": 2,
+        "kat_yuksekligi": 3.0,
+        "zemin_kotu": 0.3,
+        "sacak_kotu": 6.1,
+        "cati": "kirma kiremit (piramit) + gunes enerjisi"
+      }
+    },
+    {
+      "id": "Ev_C",
+      "fbx": "Ev_C.fbx",
+      "boyut": [
+        18.0,
+        6.458,
+        22.0
+      ],
+      "yukseklik_zemin_ustu": 5.858,
+      "sinir_kutusu": {
+        "min": [
+          -9.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          9.0,
+          5.858,
+          22.0
+        ]
+      },
+      "ucgen": 4203,
+      "ucgen_carpisma": 192,
+      "ucgen_butce": 6000,
+      "parsel": [
+        18.0,
+        22.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kanat",
+          "tur": "bina",
+          "min": [
+            -7.5,
+            9.0
+          ],
+          "max": [
+            3.5,
+            14.0
+          ],
+          "yukseklik": 5.038
+        },
+        {
+          "ad": "on_kanat",
+          "tur": "bina",
+          "min": [
+            -7.5,
+            5.0
+          ],
+          "max": [
+            -2.5,
+            9.0
+          ],
+          "yukseklik": 5.038
+        },
+        {
+          "ad": "cardak",
+          "tur": "cardak",
+          "min": [
+            4.1,
+            5.4
+          ],
+          "max": [
+            7.7,
+            11.0
+          ],
+          "yukseklik": 2.7
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          4.4,
+          7.4
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            5.9,
+            0.04,
+            8.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -5.4,
+          0.0,
+          2.3
+        ],
+        [
+          1.6,
+          0.0,
+          5.2
+        ],
+        [
+          -4.2,
+          0.0,
+          18.0
+        ],
+        [
+          4.2,
+          0.0,
+          17.6
+        ]
+      ],
+      "nesneler": [
+        "Ev_C_Bina",
+        "Ev_C_Bahce",
+        "Ev_C_Duvar_On",
+        "Ev_C_Duvar_Sol",
+        "Ev_C_Duvar_Sag",
+        "Ev_C_Duvar_Arka"
+      ],
+      "carpisma": [
+        "COL_Ev_C_Basamak_1",
+        "COL_Ev_C_Basamak_2",
+        "COL_Ev_C_Cardak_Direk_1",
+        "COL_Ev_C_Cardak_Direk_2",
+        "COL_Ev_C_Cardak_Direk_3",
+        "COL_Ev_C_Cardak_Direk_4",
+        "COL_Ev_C_Cardak_Direk_5",
+        "COL_Ev_C_Bina",
+        "COL_Ev_C_Kanat",
+        "COL_Ev_C_Cati",
+        "COL_Ev_C_Duvar_On_1",
+        "COL_Ev_C_Duvar_On_2",
+        "COL_Ev_C_Duvar_On_3",
+        "COL_Ev_C_Duvar_Arka_1",
+        "COL_Ev_C_Duvar_Sol_1",
+        "COL_Ev_C_Duvar_Sag_1"
+      ],
+      "malzemeler": [
+        "KN_Ahsap",
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kepenk",
+        "KN_Kiremit",
+        "KN_Panjur",
+        "KN_Siva"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "kirik_beyaz",
+        "konut_panjur": "koyu_yesil"
+      },
+      "bahce_duvari": {
+        "On": {
+          "kapilar": [
+            [
+              -2.0,
+              -0.8
+            ],
+            [
+              4.4,
+              7.4
+            ]
+          ],
+          "parmaklik_cubugu": 43
+        },
+        "Arka": {
+          "kapilar": [],
+          "parmaklik_cubugu": 66
+        },
+        "Sol": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        },
+        "Sag": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        }
+      },
+      "ozellikler": {
+        "kat": 1,
+        "zemin_kotu": 0.3,
+        "sacak_kotu": 3.2,
+        "plan": "L 11 x 9",
+        "cati": "besik kiremit, iki mahya",
+        "cardak": "ahsap araba sundurmasi"
+      }
+    },
+    {
+      "id": "Ev_D",
+      "fbx": "Ev_D.fbx",
+      "boyut": [
+        18.0,
+        9.826,
+        22.0
+      ],
+      "yukseklik_zemin_ustu": 9.226,
+      "sinir_kutusu": {
+        "min": [
+          -9.0,
+          -0.6,
+          0.0
+        ],
+        "max": [
+          9.0,
+          9.226,
+          22.0
+        ]
+      },
+      "ucgen": 4416,
+      "ucgen_carpisma": 312,
+      "ucgen_butce": 6000,
+      "parsel": [
+        18.0,
+        22.0
+      ],
+      "bina_izleri": [
+        {
+          "ad": "ana_kutle",
+          "tur": "bina",
+          "min": [
+            -4.0,
+            6.0
+          ],
+          "max": [
+            5.0,
+            15.0
+          ],
+          "yukseklik": 8.706
+        },
+        {
+          "ad": "dis_merdiven",
+          "tur": "merdiven",
+          "min": [
+            -1.9,
+            4.75
+          ],
+          "max": [
+            4.49,
+            6.0
+          ],
+          "yukseklik": 4.0
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -8.63,
+          -5.63
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -7.13,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          1.8,
+          0.0,
+          2.4
+        ],
+        [
+          -5.8,
+          0.0,
+          18.2
+        ],
+        [
+          2.0,
+          0.0,
+          19.0
+        ],
+        [
+          7.0,
+          0.0,
+          13.0
+        ]
+      ],
+      "nesneler": [
+        "Ev_D_Bina",
+        "Ev_D_Bahce",
+        "Ev_D_Duvar_On",
+        "Ev_D_Duvar_Sol",
+        "Ev_D_Duvar_Sag",
+        "Ev_D_Duvar_Arka"
+      ],
+      "carpisma": [
+        "COL_Ev_D_Sahanlik",
+        "COL_Ev_D_Basamak_1",
+        "COL_Ev_D_Basamak_2",
+        "COL_Ev_D_Basamak_3",
+        "COL_Ev_D_Basamak_4",
+        "COL_Ev_D_Basamak_5",
+        "COL_Ev_D_Basamak_6",
+        "COL_Ev_D_Basamak_7",
+        "COL_Ev_D_Basamak_8",
+        "COL_Ev_D_Basamak_9",
+        "COL_Ev_D_Basamak_10",
+        "COL_Ev_D_Basamak_11",
+        "COL_Ev_D_Basamak_12",
+        "COL_Ev_D_Basamak_13",
+        "COL_Ev_D_Basamak_14",
+        "COL_Ev_D_Basamak_15",
+        "COL_Ev_D_Basamak_16",
+        "COL_Ev_D_Basamak_17",
+        "COL_Ev_D_Korkuluk",
+        "COL_Ev_D_Bina",
+        "COL_Ev_D_Cati",
+        "COL_Ev_D_Duvar_On_1",
+        "COL_Ev_D_Duvar_On_2",
+        "COL_Ev_D_Duvar_Arka_1",
+        "COL_Ev_D_Duvar_Sol_1",
+        "COL_Ev_D_Duvar_Sag_1"
+      ],
+      "malzemeler": [
+        "KN_Ahsap",
+        "KN_Bant",
+        "KN_Beton",
+        "KN_Cam",
+        "KN_Demir",
+        "KN_Doseme",
+        "KN_Duvar",
+        "KN_Kapi",
+        "KN_Kiremit",
+        "KN_Panjur",
+        "KN_Siva"
+      ],
+      "onizleme_renkleri": {
+        "konut_siva": "acik_bej",
+        "konut_panjur": "kahve"
+      },
+      "bahce_duvari": {
+        "On": {
+          "kapilar": [
+            [
+              -8.63,
+              -5.63
+            ],
+            [
+              5.2,
+              6.4
+            ]
+          ],
+          "parmaklik_cubugu": 44
+        },
+        "Arka": {
+          "kapilar": [],
+          "parmaklik_cubugu": 66
+        },
+        "Sol": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        },
+        "Sag": {
+          "kapilar": [],
+          "parmaklik_cubugu": 77
+        }
+      },
+      "ozellikler": {
+        "kat": 2,
+        "kat_yuksekligi": 3.0,
+        "zemin_kotu": 0.25,
+        "sacak_kotu": 5.9,
+        "cati": "besik kiremit, genis ahsap sacak",
+        "merdiven": "on cephede dis merdiven",
+        "zemin": "depo (cift kanat ahsap kapi)"
+      }
+    }
+  ]
+}

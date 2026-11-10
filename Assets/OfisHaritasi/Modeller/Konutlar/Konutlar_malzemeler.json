@@ -1,0 +1,340 @@
+{
+  "materials": [
+    {
+      "name": "KN_Siva",
+      "color": [
+        0.86,
+        0.8,
+        0.66
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.1,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "randomize": "konut_siva"
+    },
+    {
+      "name": "KN_Bant",
+      "color": [
+        0.91,
+        0.9,
+        0.86
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.15,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Kiremit",
+      "color": [
+        0.43,
+        0.22,
+        0.165
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.18,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Cam",
+      "color": [
+        0.1,
+        0.12,
+        0.13
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.8,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Panjur",
+      "color": [
+        0.45,
+        0.5,
+        0.53
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.3,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "randomize": "konut_panjur"
+    },
+    {
+      "name": "KN_Duvar",
+      "color": [
+        0.63,
+        0.6,
+        0.54
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.08,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Demir",
+      "color": [
+        0.17,
+        0.18,
+        0.18
+      ],
+      "metallic": 0.45,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Kapi",
+      "color": [
+        0.42,
+        0.3,
+        0.21
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.3,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Beton",
+      "color": [
+        0.68,
+        0.67,
+        0.63
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.08,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Doseme",
+      "color": [
+        0.6,
+        0.56,
+        0.5
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Ahsap",
+      "color": [
+        0.48,
+        0.36,
+        0.26
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.22,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Kolektor",
+      "color": [
+        0.1,
+        0.14,
+        0.21
+      ],
+      "metallic": 0.2,
+      "smoothness": 0.82,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Depo",
+      "color": [
+        0.9,
+        0.9,
+        0.87
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Kepenk",
+      "color": [
+        0.56,
+        0.58,
+        0.58
+      ],
+      "metallic": 0.5,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    },
+    {
+      "name": "KN_Tabela",
+      "color": [
+        0.33,
+        0.41,
+        0.43
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.3,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0
+    }
+  ],
+  "palettes": {
+    "konut_siva": [
+      {
+        "ad": "krem",
+        "color": [
+          0.86,
+          0.8,
+          0.66
+        ]
+      },
+      {
+        "ad": "acik_hardal",
+        "color": [
+          0.83,
+          0.72,
+          0.47
+        ]
+      },
+      {
+        "ad": "acik_somon",
+        "color": [
+          0.86,
+          0.72,
+          0.62
+        ]
+      },
+      {
+        "ad": "kirik_beyaz",
+        "color": [
+          0.9,
+          0.88,
+          0.82
+        ]
+      },
+      {
+        "ad": "acik_gri_yesil",
+        "color": [
+          0.71,
+          0.76,
+          0.67
+        ]
+      },
+      {
+        "ad": "acik_mavi_gri",
+        "color": [
+          0.69,
+          0.74,
+          0.78
+        ]
+      },
+      {
+        "ad": "acik_bej",
+        "color": [
+          0.82,
+          0.75,
+          0.63
+        ]
+      }
+    ],
+    "konut_panjur": [
+      {
+        "ad": "koyu_yesil",
+        "color": [
+          0.33,
+          0.4,
+          0.32
+        ]
+      },
+      {
+        "ad": "kahve",
+        "color": [
+          0.44,
+          0.32,
+          0.23
+        ]
+      },
+      {
+        "ad": "gri_mavi",
+        "color": [
+          0.45,
+          0.5,
+          0.53
+        ]
+      },
+      {
+        "ad": "bej",
+        "color": [
+          0.76,
+          0.72,
+          0.64
+        ]
+      }
+    ]
+  }
+}
