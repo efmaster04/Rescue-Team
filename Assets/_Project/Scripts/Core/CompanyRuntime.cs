@@ -156,6 +156,8 @@ namespace CompanySim
             var job = catalog.Job(id);
             // Görev köprüsü: saha sahnesi olmayan işler kilitli ("Yakında").
             if (job && !job.HasFieldScene) { Notify("Bu iş yakında açılacak."); return false; }
+            // saha haritası bu bilgisayarda yoksa (Sel Vadisi her makinede üretilir) kabul edilmez; yoksa çıkış hiç yapılamaz
+            if (job && !Application.CanStreamedLevelBeLoaded(job.fieldScene)) { Notify("Bu işin saha haritası bu bilgisayarda yok: " + job.fieldScene); return false; }
             if (!job || (acceptContract && (string.IsNullOrEmpty(job.contractTitle) || job.contractBonus <= 0))) return false;
             if (Data.reputation < job.minimumReputation)
             {
@@ -165,6 +167,15 @@ namespace CompanySim
             Data.activeJobId = id; Data.phase = JobPhase.Accepted;
             Data.contractAccepted = acceptContract;
             Mutated("Görev kabul edildi. Garaj hazırlık listesini kontrol edin.");
+            return true;
+        }
+
+        // Kabul edilmiş ama göreve çıkılmamış iş bırakılabilir (hazırlık tamamlanamıyorsa kayıt kilitlenmesin).
+        public bool CancelAcceptedJob()
+        {
+            if (Data.phase != JobPhase.Accepted) return false;
+            Data.activeJobId = ""; Data.contractAccepted = false; Data.phase = JobPhase.None;
+            Mutated("İş bırakıldı.");
             return true;
         }
 

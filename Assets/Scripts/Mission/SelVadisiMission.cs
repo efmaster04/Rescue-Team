@@ -32,11 +32,14 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
     public float maxWadeDepth = 0.75f;
     [Tooltip("Bildirilen ailenin üstünde yanan işaretin malzemesi (kurulum aracı atar).")]
     public Material beaconMaterial;
+    [Tooltip("Burada kimse oyuncuyu kaldıramaz: sert düşüşten bu kadar saniye sonra kurtarma alanında doğar.")]
+    public float downedRespawnSeconds = 4f;
 
     public const string Title = "SEL VADİSİ · Mahsur kalanları bul";
     public const string HintReportPrefix = "E: Telsizle bildir (";
     public const string HintDesk = "E: Koordinasyon masasına raporu ver";
     public const string NoticeTooDeep = "Sel suyu çok derin ve akıntılı! Kurtarma alanına dönüldü.";
+    public const string NoticeDowned = "Sert düştün. Kurtarma alanına dönüldü.";
     // "Hızlı müdahale" sözleşmesinin hedef saha süresi (dk). İş tanımındaki araç aşınması sınırı bundan hesaplanır
     // (FieldPayout: gidiş-dönüş yol + sahada geçen her dakika); geçen süre görev panelinde gösterilir.
     public const float QuickResponseMinutes = 15f;
@@ -50,6 +53,7 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
     public int Required { get { return Mathf.Max(1, Mathf.Min(requiredReports, groups.Count)); } }
     public string Hint { get; private set; } = "";
     public int WaterRespawns { get; private set; }
+    public int DownedRespawns { get; private set; }
     public Vector3 LastGuardPosition { get; private set; }
 
     private sealed class Group
@@ -59,6 +63,7 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
         public string where, whereAt;
         public bool reported;
         public GameObject beacon;
+        public readonly List<Transform> members = new List<Transform>();
     }
 
     private readonly List<Group> groups = new List<Group>();
@@ -111,6 +116,7 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
                 byKey[key] = g; groups.Add(g);
             }
             g.center += p.root.position; g.count++;
+            g.members.Add(p.root);
             if (p.root.position.y > g.top.y) g.top = p.root.position;
         }
         foreach (var g in groups) { g.center /= Mathf.Max(1, g.count); g.center += Vector3.up * 1.1f; }
@@ -120,6 +126,7 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
     {
         if (!IsFinished) Elapsed += Time.deltaTime;
         GuardWater();
+        GuardDowned();
         aimed = null;
         Hint = "";
         var kb = Keyboard.current;
@@ -162,6 +169,7 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
             float limit = aimAngle + 12f * Mathf.Clamp01(1f - dist / 15f);     // close by, a looser cone
             float ang = Vector3.Angle(f, d);
             if (ang > limit) continue;
+            if (!Visible(o, g)) continue;   // evin ya da arazinin arkasındaki aile bildirilemez
             float score = ang / limit + dist / reportRange * 0.3f;
             if (score < bestScore) { bestScore = score; best = g; }
         }
@@ -206,6 +214,9 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
     public Vector3 GroupCenter(int i) { return groups[i].center; }
     public bool GroupReported(int i) { return groups[i].reported; }
     public int GroupSize(int i) { return groups[i].count; }
+    public IReadOnlyList<Transform> GroupMembers(int i) { return groups[i].members; }
+    // E ile bildirmedeki görüş hattı kuralı (doğrulama ve ipucu için)
+    public bool GroupVisibleFrom(int i, Vector3 eye) { return Visible(eye, groups[i]); }
 
     // Verilen bakış ışınının hedeflediği aileyi bildirir (E ile aynı kural). Bildirildiyse true.
     public bool ReportAlong(Vector3 eye, Vector3 dir)
@@ -237,7 +248,8 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
     private void GuardWater()
     {
         if (player == null || fallRespawn == null || Time.time - lastRespawn < 1.5f) return;
-        Vector3 p = player.transform.position;
+        // yere yığılmış oyuncunun kökü donar; derinliği gövdenin düştüğü yerden ölç
+        Vector3 p = player.IsDown && player.knockdown != null ? player.knockdown.GroundPosition : player.transform.position;
         float depth = Valley.WaterLevel(p.z) - p.y;
         if (depth > maxWadeDepth)
         {
@@ -247,6 +259,38 @@ public sealed class SelVadisiMission : MonoBehaviour, IFieldMission
             fallRespawn.Respawn();
             GameNotice.Show(NoticeTooDeep);
         }
+    }
+
+    // Sert düşüş (3 m+) oyuncuyu yere yığar; Bölüm 1'deki yardımcı robot burada yok, kendi kendine kalkma da yok.
+    private void GuardDowned()
+    {
+        if (player == null || fallRespawn == null || player.knockdown == null || !player.IsDown) return;
+        if (Time.time - player.knockdown.DownSince < downedRespawnSeconds || Time.time - lastRespawn < 1.5f) return;
+        lastRespawn = Time.time;
+        DownedRespawns++;
+        fallRespawn.Respawn();          // RespawnAt → knockdown.ResetStanding (derin su ile aynı yol)
+        GameNotice.Show(NoticeDowned);
+    }
+
+    private static readonly RaycastHit[] losHits = new RaycastHit[16];
+
+    // Görüş hattı: ailenin en az bir üyesinin başı (kök + 1,6 m) bakış noktasından görünmeli; oyuncunun kendi çarpıştırıcıları sayılmaz.
+    private bool Visible(Vector3 o, Group g)
+    {
+        if (g.members.Count == 0) return true;
+        foreach (var m in g.members)
+        {
+            if (m == null) continue;
+            Vector3 d = m.position + Vector3.up * 1.6f - o;
+            float len = d.magnitude;
+            if (len < 0.3f) return true;
+            int n = Physics.RaycastNonAlloc(o, d / len, losHits, len - 0.25f, ~0, QueryTriggerInteraction.Ignore);
+            bool blocked = false;
+            for (int i = 0; i < n && !blocked; i++)
+                blocked = player == null || !losHits[i].collider.transform.IsChildOf(player.transform);
+            if (!blocked) return true;
+        }
+        return false;
     }
 
     // ---- HUD ----

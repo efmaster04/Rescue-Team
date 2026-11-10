@@ -97,13 +97,14 @@ namespace CompanySim
         {
             var p = ScriptableObject.CreateInstance<VolumeProfile>();
             p.name = "OfficeInteriorGrade (çalışma anı)";
-            var wb = p.Add<WhiteBalance>(true); wb.temperature.Override(9f); wb.tint.Override(2f);
-            var ca = p.Add<ColorAdjustments>(true); ca.postExposure.Override(0.08f); ca.contrast.Override(8f); ca.saturation.Override(7f);
-            var smh = p.Add<ShadowsMidtonesHighlights>(true);
+            var wb = p.Add<WhiteBalance>(); wb.temperature.Override(9f); wb.tint.Override(2f);
+            var ca = p.Add<ColorAdjustments>(); ca.postExposure.Override(0.08f); ca.contrast.Override(8f); ca.saturation.Override(7f);
+            var smh = p.Add<ShadowsMidtonesHighlights>();
             smh.shadows.Override(new Vector4(1.02f, 0.98f, 0.92f, 0f));
             smh.highlights.Override(new Vector4(1.0f, 0.99f, 0.96f, 0f));
-            var bloom = p.Add<Bloom>(true); bloom.intensity.Override(0.22f); bloom.threshold.Override(0.95f); bloom.scatter.Override(0.62f);
-            var vig = p.Add<Vignette>(true); vig.intensity.Override(0.2f); vig.smoothness.Override(0.5f);
+            // yalnız yazılan alanlar; profilin yüksek kaliteli süzmesi korunur
+            var bloom = p.Add<Bloom>(); bloom.intensity.Override(0.22f); bloom.threshold.Override(0.95f); bloom.scatter.Override(0.62f);
+            var vig = p.Add<Vignette>(); vig.intensity.Override(0.2f); vig.smoothness.Override(0.5f);
             return p;
         }
 
@@ -111,21 +112,26 @@ namespace CompanySim
         {
             var cam = Camera.main;
             if (cam == null) return;
-            Vector3 c = cam.transform.position;
-            // kameranın ayak izine yatay uzaklığı (içerideyken 0)
-            float dx = Mathf.Max(FootprintMin.x - c.x, 0f, c.x - FootprintMax.x);
-            float dz = Mathf.Max(FootprintMin.z - c.z, 0f, c.z - FootprintMax.z);
-            float outside = Mathf.Sqrt(dx * dx + dz * dz);
-            float target = 1f - Mathf.Clamp01(outside / Mathf.Max(0.01f, blend));
-            Weight = Mathf.MoveTowards(Weight, target, Time.unscaledDeltaTime * 2.5f);
+            if (orbit == null || orbit.gameObject != cam.gameObject) orbit = cam.GetComponent<OrbitCamera>();
+            // "içeride" oyuncunun konumundan karar verilir (kamera garaja taşabilir); geçiş zamanla yumuşar
+            Vector3 c = orbit != null && orbit.target != null ? orbit.target.position : cam.transform.position;
+            bool inside = c.x > FootprintMin.x && c.x < FootprintMax.x && c.z > FootprintMin.z && c.z < FootprintMax.z;
+            Weight = Mathf.MoveTowards(Weight, inside ? 1f : 0f, Time.unscaledDeltaTime * 2.5f);
             volume.weight = Weight;
 
-            // kamera mesafesini yalnız ofisin içindeyken yazar; dışarıda başka kodların (sürüş, garaj) yazdığı değeri izler
-            if (orbit == null) orbit = cam.GetComponent<OrbitCamera>();
+            // kamera mesafesi: girişte dış değer bir kez alınır, içeride yaklaşılır, çıkışta aynen geri yazılır (kayıp birikmez)
             if (orbit != null)
             {
-                if (Weight <= 0.001f || outdoorDistance < 0f) outdoorDistance = orbit.distance;
-                else orbit.distance = Mathf.Lerp(outdoorDistance, Mathf.Min(outdoorDistance, indoorCameraDistance), Weight);
+                if (Weight > 0.001f)
+                {
+                    if (outdoorDistance < 0f) outdoorDistance = orbit.distance;
+                    orbit.distance = Mathf.Lerp(outdoorDistance, Mathf.Min(outdoorDistance, indoorCameraDistance), Weight);
+                }
+                else if (outdoorDistance > 0f)
+                {
+                    orbit.distance = outdoorDistance;
+                    outdoorDistance = -1f;
+                }
             }
         }
     }

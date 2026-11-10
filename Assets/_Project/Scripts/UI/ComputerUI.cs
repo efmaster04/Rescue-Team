@@ -212,13 +212,20 @@ namespace CompanySim
             if(job.recommendedEquipment.Length>0) Row("Önerilen: "+string.Join(", ",job.recommendedEquipment.Select(x=>catalog.Item(x)?.displayName??x)),17,Soft,34);
             if(!string.IsNullOrWhiteSpace(job.specialTerms)) Row(job.specialTerms,17,Soft,48);
             if(!job.HasFieldScene) Row("Yakında: bu işin saha görevi henüz hazır değil.",17,Peach,34);
-            bool available=Runtime.Data.phase==JobPhase.None && Runtime.Data.reputation>=job.minimumReputation && job.HasFieldScene;
+            bool loadable=!job.HasFieldScene || Application.CanStreamedLevelBeLoaded(job.fieldScene);
+            if(job.HasFieldScene && !loadable) Row("Saha haritası bu bilgisayarda üretilmemiş.",17,Peach,34);
+            bool available=Runtime.Data.phase==JobPhase.None && Runtime.Data.reputation>=job.minimumReputation && job.HasFieldScene && loadable;
             JobActions(job,available);
             if(!job.HasFieldScene && jobFooter)
             {
                 // Kabul düğmesi ve gerekçe "Yakında" der (itibar/aktif iş gerekçesi yerine).
                 var caption=jobFooter.Find("AcceptJob/Caption")?.GetComponent<Text>(); if(caption) caption.text="Yakında";
                 var reason=jobFooter.Find("AcceptDisabledReason")?.GetComponent<Text>(); if(reason) reason.text="Bu iş yakında açılacak.";
+            }
+            else if(!loadable && jobFooter)
+            {
+                var caption=jobFooter.Find("AcceptJob/Caption")?.GetComponent<Text>(); if(caption) caption.text="Harita yok";
+                var reason=jobFooter.Find("AcceptDisabledReason")?.GetComponent<Text>(); if(reason) reason.text="Saha haritası bu bilgisayarda üretilmedi.";
             }
         }
         void Fleet()
@@ -372,6 +379,7 @@ namespace CompanySim
                 Property("Araç durumu","%"+Mathf.RoundToInt(Runtime.Data.vehicleCondition));
                 Row(missing.Count==0?"Hazırlık tamam — garajda şoför kapısından minibüse binin.":"Eksik: "+string.Join(", ",missing),14,
                     missing.Count==0?Soft:Red,42);
+                ToolbarButton("DropJob","İşi bırak",()=>Runtime.CancelAcceptedJob());
             }
             else if (Runtime.Data.phase==JobPhase.Deployed)
             {

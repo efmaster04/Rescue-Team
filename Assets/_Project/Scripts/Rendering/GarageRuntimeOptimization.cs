@@ -23,10 +23,12 @@ namespace CompanySim
         {
             if(Ready) return;
             var candidates=new List<GameObject>();
+            var dressing=OfficeInteriorMood.Instance?OfficeInteriorMood.Instance.Dressing:null; // çalışma anı ofis dekoru birleştirilmez
             foreach(var renderer in FindObjectsByType<MeshRenderer>())
             {
                 if(!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.isPartOfStaticBatch) continue;
                 if(renderer.GetComponentInParent<InteractableBehaviour>() || renderer.GetComponentInParent<ServiceVehicle>()) continue;
+                if(dressing && renderer.transform.IsChildOf(dressing.transform)) continue;
                 if(lift && lift.Owns(renderer.transform)) continue;
                 var filter=renderer.GetComponent<MeshFilter>();
                 if(!filter || !filter.sharedMesh || !filter.sharedMesh.isReadable || filter.sharedMesh.vertexCount==0) continue;

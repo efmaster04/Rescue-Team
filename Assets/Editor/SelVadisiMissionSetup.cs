@@ -40,15 +40,38 @@ public static class SelVadisiMissionSetup
     [MenuItem("Rescue Team/Sel Vadisi/Saha Görevini Kur")]
     public static void ApplyMenu()
     {
+        if (!MenuGuard()) return;
         if (!EditorUtility.DisplayDialog("Sel Vadisi", SVBuild.ScenePath + " saha görevine çevrilecek (oyuncu, çarpıştırıcılar, görev) ve kaydedilecek. Devam?", "Kur", "Vazgeç")) return;
-        Apply(false);
+        KeepingOpenScenes(() => Apply(false));
     }
 
     [MenuItem("Rescue Team/Sel Vadisi/Haritayı Yeniden Üret ve Görevi Kur")]
     public static void RebuildMenu()
     {
+        if (!MenuGuard()) return;
         if (!EditorUtility.DisplayDialog("Sel Vadisi", "Harita kodla baştan üretilecek (yaklaşık 1 dakika) ve saha görevi kurulacak. Devam?", "Üret", "Vazgeç")) return;
-        Apply(true);
+        KeepingOpenScenes(() => Apply(true));
+    }
+
+    // Menüden çalıştırma: Play modunda reddedilir (üretim önce Generated klasörünü siler), kaydedilmemiş sahne değişiklikleri için önce sorulur.
+    public static bool MenuGuard()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            EditorUtility.DisplayDialog("Sel Vadisi", "Önce Play modundan çıkın.", "Tamam");
+            return false;
+        }
+        return EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+    }
+
+    // Kurulum harita sahnesini tek başına açar; bitince kullanıcının açık sahneleri geri yüklenir (adsız sahne yoksa).
+    public static void KeepingOpenScenes(Action work)
+    {
+        var setup = EditorSceneManager.GetSceneManagerSetup();
+        bool restorable = setup != null && setup.Length > 0;
+        if (restorable) foreach (var s in setup) if (string.IsNullOrEmpty(s.path)) restorable = false;
+        try { work(); }
+        finally { if (restorable) EditorSceneManager.RestoreSceneManagerSetup(setup); }
     }
 
     public static void ApplyBatch()
@@ -312,7 +335,9 @@ public static class SelVadisiMissionSetup
         // varsayılan %10 sınırı hiç sağlanamazdı. Sınır: yol + QuickResponseMinutes dakikalık saha süresi.
         job.contractMaxEquipmentWear = 10f;
         job.contractMaxVehicleWear = QuickResponseVehicleWearLimit(job.distanceKm);
-        job.requiredModule = "";
+        // her iş takılı ve sabit bir modül ister (PreparationRules); boş kimlik hiçbir modülle eşleşmez ve çıkışı kilitler.
+        // Kasa modülü yeni kayıtta zaten takılıdır; ip, sedye ve çanta (32 kg) 420 kg / 8 yuvaya sığar.
+        job.requiredModule = "cargo";
         job.requiredEquipment = new[] { "rope" };
         job.recommendedEquipment = new[] { "stretcher", "case" };
         job.fieldScene = SceneName;

@@ -35,13 +35,19 @@ public static class SelVadisiVerify
     private static readonly List<string> startTrace = new List<string>();
 
     [MenuItem("Rescue Team/Sel Vadisi/Doğrula")]
-    public static void Menu() { Start(false); }
+    public static void Menu()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) { EditorUtility.DisplayDialog("Sel Vadisi", "Doğrulama Play modunu kendisi başlatır; önce Play modundan çıkın.", "Tamam"); return; }
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        Start(false);
+    }
 
     public static void Run() { Start(true); }
 
     private static void Start(bool isBatch)
     {
         report = new StringBuilder(); allOk = true; batch = isBatch; stage = 0;
+        trace.Clear(); startTrace.Clear();
         Line("SELVADISI VERIFY " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", Inv));
         try
         {
@@ -70,6 +76,8 @@ public static class SelVadisiVerify
             }
             string sceneGuid = AssetDatabase.AssetPathToGUID(SVBuild.ScenePath);
             Check("(a) harita sahnesinin GUID'i sabit (Build Settings her makinede aynı)", sceneGuid == SVBuild.HostSceneGuid, sceneGuid);
+            Check("(a) Tools > Sel Vadisi menüsü oyunda görev kurulumuna yönlenir; sahne görev sahnesi", SVBuild.InHostGame && SVBuild.HostRebuild != null && SelVadisiAutoSetup.IsMissionScene(),
+                "kanca " + (SVBuild.HostRebuild != null) + ", görev sahnesi " + SelVadisiAutoSetup.IsMissionScene());
 
             // (b) sahne
             EditorSceneManager.OpenScene(SVBuild.ScenePath, OpenSceneMode.Single);
@@ -135,16 +143,36 @@ public static class SelVadisiVerify
                     stage = 2;
                     break;
                 case 2:
-                    // en yakın kuru noktadan her aileyi sırayla bildir
-                    int done = 0;
+                    // Oyuncu kıyıda dolaşıp bakar: her aile önce en yakın kuru noktadan, görüş kapalıysa menzildeki başka kuru
+                    // noktalardan denenir (E ile bildirmedeki görüş hattı kuralı geçerli). Tüm aileler için görünürlük sayılır.
+                    int nearOk = 0, anyOk = 0;
+                    var blockers = new Dictionary<string, int>();
                     var order = Enumerable.Range(0, mission.GroupCount).OrderBy(i => NearestDry(mission.GroupCenter(i)).dist).ToList();
                     foreach (int i in order)
                     {
-                        if (mission.Reported >= mission.Required) break;
-                        var (pt, d) = NearestDry(mission.GroupCenter(i));
+                        Vector3 c = mission.GroupCenter(i);
+                        var (pt, d) = NearestDry(c);
                         Vector3 eye = pt + Vector3.up * 1.4f;
-                        if (mission.ReportAlong(eye, mission.GroupCenter(i) - eye)) done++;
+                        Vector3? seen = null;
+                        if (mission.GroupVisibleFrom(i, eye)) { nearOk++; seen = eye; }
+                        else
+                        {
+                            string b = Blocker(i, eye);
+                            blockers[b] = (blockers.TryGetValue(b, out int k) ? k : 0) + 1;
+                            foreach (var cand in DryAround(c, mission.reportRange - 2f, 240))
+                            {
+                                Vector3 e = cand + Vector3.up * 1.4f;
+                                if (mission.GroupVisibleFrom(i, e)) { seen = e; break; }
+                            }
+                        }
+                        if (seen == null) continue;
+                        anyOk++;
+                        if (mission.Reported < mission.Required && !mission.GroupReported(i)) mission.ReportAlong(seen.Value, c - seen.Value);
                     }
+                    Line("  görüş hattı: en yakın kuru noktadan " + nearOk + ", kıyıda dolaşınca " + anyOk + " / " + mission.GroupCount + " aile görülüyor");
+                    Line("  en yakın noktada görüşü kesen: " + string.Join(", ", blockers.OrderByDescending(kv => kv.Value).Take(8).Select(kv => kv.Key + " ×" + kv.Value)));
+                    // evlerin arkasında kalan aileler bildirilemez (görüş hattı); görev gerekenin en az iki katı seçenek bırakmalı
+                    Check("(c) kıyıdan görülebilen aile, gerekenin en az iki katı (görüş hattı)", anyOk >= 2 * mission.Required, anyOk + " / " + mission.GroupCount + ", gereken " + mission.Required);
                     Check("(c) gereken aileler kıyıdan bildirildi", mission.Reported >= mission.Required, mission.Reported + " / " + mission.Required + " aile, " + mission.PeopleReported + " kişi");
                     Check("(c) bildirilen ailelere işaret kondu", UnityEngine.Object.FindObjectsByType<SelVadisiBeacon>().Length == mission.Reported, "");
                     // masaya git ve rapor ver
@@ -205,6 +233,33 @@ public static class SelVadisiVerify
              " | menzil " + mission.reportRange.ToString("F0", Inv));
         Check("(c) gereken sayıda aile bildirme menzilinde kıyıdan görülebilir", dists.Count(d => d <= mission.reportRange - 2f) >= mission.Required,
             dists.Count(d => d <= mission.reportRange - 2f) + " aile menzilde, gereken " + mission.Required);
+    }
+
+    // c'ye göz yüksekliğinden r içinde kalan kuru noktalar, yakından uzağa, en çok max tane (listeye yayılmış)
+    private static List<Vector3> DryAround(Vector3 c, float r, int max)
+    {
+        var near = dry.Where(p => (p + Vector3.up * 1.4f - c).sqrMagnitude <= r * r)
+                      .OrderBy(p => (p.x - c.x) * (p.x - c.x) + (p.z - c.z) * (p.z - c.z)).ToList();
+        if (near.Count <= max) return near;
+        float step = near.Count / (float)max;
+        return Enumerable.Range(0, max).Select(k => near[Mathf.Min(near.Count - 1, Mathf.FloorToInt(k * step))]).ToList();
+    }
+
+    // en yakın kuru noktadan ilk üyenin başına giden ışını kesen çarpıştırıcı (ad sonundaki numaralar atılır) ve yeri
+    private static string Blocker(int i, Vector3 eye)
+    {
+        foreach (var m in mission.GroupMembers(i))
+        {
+            if (m == null) continue;
+            Vector3 d = m.position + Vector3.up * 1.6f - eye;
+            float len = d.magnitude;
+            var hit = Physics.RaycastAll(eye, d / len, len - 0.25f, ~0, QueryTriggerInteraction.Ignore)
+                .Where(h => player == null || !h.collider.transform.IsChildOf(player.transform)).OrderBy(h => h.distance).FirstOrDefault();
+            if (hit.collider == null) return "yok";
+            string where = hit.distance < 3f ? "gözün dibinde" : len - hit.distance < 3f ? "ailenin dibinde" : "arada";
+            return hit.collider.name.TrimEnd('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_', '.', ' ') + " (" + where + ")";
+        }
+        return "-";
     }
 
     private static (Vector3 pt, float dist) NearestDry(Vector3 c)

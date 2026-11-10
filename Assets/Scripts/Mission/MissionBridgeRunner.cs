@@ -124,7 +124,7 @@ public sealed class MissionBridgeRunner : MonoBehaviour
                 GUI.Label(new Rect(r.x + 24 * scale, y, pw - 48 * scale, 32 * scale), T(line), panelStyle);
                 y += 32 * scale;
             }
-            GUI.Label(new Rect(r.x + 24 * scale, y + 6 * scale, pw - 48 * scale, 36 * scale), MissionBridge.ReturnHint + "    ·    R: Yeniden başlat", panelStyle);
+            GUI.Label(new Rect(r.x + 24 * scale, y + 6 * scale, pw - 48 * scale, 36 * scale), MissionBridge.ReturnHint + (MissionDirector.Instance != null ? "    ·    R: Yeniden başlat" : ""), panelStyle);
         }
     }
 }

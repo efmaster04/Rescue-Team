@@ -5,6 +5,12 @@ Sahne: `Assets/SelVadisi/SelVadisi_BuyukHarita.unity` (1040 × 1520 m)
 Unity menüsü: **Tools > Sel Vadisi > Büyük Haritayı Oluştur** haritayı kodla baştan üretir
 (eski `Generated` klasörünü silip yeniden kurar). **Tools > Sel Vadisi > Sahneyi Aç** sahneyi açar.
 
+> **Rescue Team oyununun içinde:** Harita saha görevi olarak oynanır ve
+> **Rescue Team > Sel Vadisi > Haritayı Yeniden Üret ve Görevi Kur** ile üretilir. Yukarıdaki iki
+> Tools menüsü de oyunda bu kuruluma yönlenir (oyuncu, görev ve koordinasyon masası kurulur).
+> Aşağıdaki serbest uçuş kamerası ve "Oynatma" tuşları yalnız bağımsız harita projesinde geçerlidir.
+> Görev: `Documentation/SelVadisiSahaGorevi.md`.
+
 ## İçerik
 - Kıvrılan vadi: alçak poligon tepeler, kayalık yamaçlar, teraslar, akış yukarısında dar kanyon, aşağıda geniş taşkın ovası
 - Akan çamurlu sel suyu: akıntı haritası (evlerin, direklerin, köprü ayaklarının etrafında dönen akım),

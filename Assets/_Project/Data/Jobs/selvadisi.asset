@@ -33,7 +33,7 @@ MonoBehaviour:
   contractBonus: 260
   contractMaxEquipmentWear: 10
   contractMaxVehicleWear: 23
-  requiredModule: 
+  requiredModule: cargo
   requiredEquipment:
   - rope
   recommendedEquipment:

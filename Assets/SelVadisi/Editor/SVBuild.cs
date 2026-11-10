@@ -20,10 +20,16 @@ namespace SelVadisi.EditorBuild
         static Texture2D texNoise, texNormal, texFlow;
         static int meshCounter;
 
+        // Oyunun içinde (InHostGame) düz harita (FlyCamera; oyuncu, görev ve masa yok) görev sahnesinin üstüne yazılmamalı.
+        // Rescue Team bu kancayı bağlar (SelVadisiAutoSetup): Tools menüsü de haritayı görev kurulumuyla birlikte üretir.
+        public static System.Action HostRebuild;
+
         [MenuItem("Tools/Sel Vadisi/Büyük Haritayı Oluştur", priority = 0)]
         public static void BuildMenu()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) { EditorUtility.DisplayDialog("Sel Vadisi", "Önce Play modundan çıkın.", "Tamam"); return; }
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            if (InHostGame && HostRebuild != null) { HostRebuild(); return; }
             Build();
             EditorUtility.DisplayDialog("Sel Vadisi", "Büyük harita oluşturuldu:\n" + ScenePath + "\n\nPlay'e basıp WASD + sağ tık ile gezebilir, 1-6 tuşlarıyla kamera noktalarına geçebilir, C ile sinematik tur başlatabilirsin.", "Tamam");
         }
@@ -37,6 +43,9 @@ namespace SelVadisi.EditorBuild
 
         public static void Build()
         {
+            // Play modunda üretim Generated klasörünü silip sonra hata verirdi: hiçbir şeye dokunmadan dur
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new System.InvalidOperationException("Sel Vadisi: harita Play modunda üretilemez; önce Play modundan çıkın.");
             var sw = System.Diagnostics.Stopwatch.StartNew();
             meshCounter = 0;
             banks.Clear();
