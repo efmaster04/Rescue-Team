@@ -56,6 +56,7 @@ public static class OfficeDressingBuilder
         office = OfficeMaterials();
         groups = new Dictionary<Material, MB>();
         rng = new System.Random(20261106);
+        lights = 0;
         var go = new GameObject("18_OfficeDressing");
         root = go.transform;
 
@@ -110,6 +111,7 @@ public static class OfficeDressingBuilder
     private static Material Office(string name)
     {
         if (office.TryGetValue(name, out var m)) return m;
+        Debug.LogWarning("[OfficeDressing] ofis malzemesi yok: " + name);
         return Mat("Dekor_" + name, new Color(0.6f, 0.6f, 0.6f), 0.4f);
     }
 
@@ -193,7 +195,7 @@ public static class OfficeDressingBuilder
     // picture with a wooden frame on a wall (normal points into the room)
     private static void Framed(Material image, Vector3 c, Vector3 normal, float w, float h, float border = 0.035f)
     {
-        var frame = Office("M_OakDark");
+        var frame = Office("M_TimberEdge");
         Vector3 n = normal.normalized, right = Vector3.Cross(Vector3.up, n).normalized;
         float d = 0.025f;
         Vector3 back = c - n * d * 0.5f;
@@ -291,7 +293,7 @@ public static class OfficeDressingBuilder
         // 2) high shelves on the north wall (inner face z≈1.12), clear of the storage door x[-3.0,-1.8]
         foreach (float cx in new[] { -3.9f, -0.95f })
         {
-            Box(Office("M_OakDark"), new Vector3(cx, 2.25f, 1.0f), new Vector3(1.3f, 0.03f, 0.24f));
+            Box(Office("M_TimberEdge"), new Vector3(cx, 2.25f, 1.0f), new Vector3(1.3f, 0.03f, 0.24f));
             foreach (float s in new[] { -0.5f, 0.5f }) Box(Office("M_Anthracite"), new Vector3(cx + s, 2.17f, 1.08f), new Vector3(0.03f, 0.14f, 0.08f));
         }
         string[] binder = { "M_ServiceBlue", "M_SafetyOrange", "M_FilingGreen", "M_CobaltBlue", "M_InkGray", "M_SafetyOchre" };
@@ -303,11 +305,11 @@ public static class OfficeDressingBuilder
             bx += w;
         }
         // safety helmet and a trophy on the first shelf
-        G(Office("M_SafetyOrange")).Ico(new Vector3(-3.45f, 2.33f, 1.0f), new Vector3(0.13f, 0.09f, 0.15f), W, 1, 0f, rng);
-        Box(Office("M_SafetyOrange"), new Vector3(-3.45f, 2.275f, 0.92f), new Vector3(0.18f, 0.01f, 0.1f));
-        G(Office("M_SafetyOchre")).Cyl(new Vector3(-3.2f, 2.265f, 1.0f), 0.04f, 0.05f, 8, W);
-        G(Office("M_SafetyOchre")).Cyl(new Vector3(-3.2f, 2.315f, 1.0f), 0.012f, 0.07f, 6, W);
-        G(Office("M_SafetyOchre")).Cyl(new Vector3(-3.2f, 2.385f, 1.0f), 0.03f, 0.07f, 8, W, 0.055f);
+        G(Office("M_SafetyOrange")).Ico(new Vector3(-3.5f, 2.33f, 1.0f), new Vector3(0.13f, 0.09f, 0.15f), W, 1, 0f, rng);
+        Box(Office("M_SafetyOrange"), new Vector3(-3.5f, 2.275f, 0.92f), new Vector3(0.18f, 0.01f, 0.1f));
+        G(Office("M_SafetyOchre")).Cyl(new Vector3(-3.29f, 2.265f, 1.0f), 0.04f, 0.05f, 8, W);
+        G(Office("M_SafetyOchre")).Cyl(new Vector3(-3.29f, 2.315f, 1.0f), 0.012f, 0.07f, 6, W);
+        G(Office("M_SafetyOchre")).Cyl(new Vector3(-3.29f, 2.385f, 1.0f), 0.03f, 0.07f, 8, W, 0.055f);
         // second shelf: radio, boxes, a trailing plant
         Box(Office("M_CharcoalABS"), new Vector3(-1.4f, 2.32f, 1.0f), new Vector3(0.26f, 0.11f, 0.12f));
         Rod(Office("M_Anthracite"), new Vector3(-1.3f, 2.37f, 1.0f), new Vector3(-1.28f, 2.62f, 1.0f), 0.004f);
@@ -335,9 +337,9 @@ public static class OfficeDressingBuilder
 
         // 4) framed flood photos on the south wall (inner face z≈-5.12): left of the front door and between door and window
         var photos = PhotoTextures.Select((p, i) => Mat("Dekor_Foto" + (i + 1), Color.white, 0.3f, AssetDatabase.LoadAssetAtPath<Texture2D>(p))).ToArray();
-        Framed(photos[0], new Vector3(-4.25f, 1.38f, -5.11f), Vector3.forward, 0.5f, 0.34f);
-        Framed(photos[1], new Vector3(-4.25f, 1.92f, -5.11f), Vector3.forward, 0.4f, 0.28f);
-        Framed(photos[2], new Vector3(-2.3f, 1.55f, -5.11f), Vector3.forward, 0.3f, 0.4f);
+        Framed(photos[0], new Vector3(-4.25f, 1.38f, -5.155f), Vector3.forward, 0.5f, 0.34f);
+        Framed(photos[1], new Vector3(-4.25f, 1.92f, -5.155f), Vector3.forward, 0.4f, 0.28f);
+        Framed(photos[2], new Vector3(-2.3f, 1.55f, -5.155f), Vector3.forward, 0.3f, 0.4f);
 
         // 5) desk lamp at the back-left of the desk (desk top y=0.54, x[-1.655,-0.445], z[-0.415,0.215])
         var glow = Mat("Dekor_LambaGlow", new Color(1f, 0.9f, 0.72f), 0.5f, null, 2.4f);
@@ -365,14 +367,20 @@ public static class OfficeDressingBuilder
         Box(Office("M_CharcoalABS"), new Vector3(-4.36f, 1.515f, 0.62f), new Vector3(0.06f, 0.07f, 0.1f));
 
         // 8) tall plant in the north-east corner (clear of PC_01 and WallBoard_01)
-        Plant(new Vector3(-0.36f, 0f, 0.86f), 1.35f);
+        Plant(new Vector3(-0.51f, 0f, 0.86f), 0.85f);
+
+        // 10) kurtarma ekibinin masası ve dolabı: yazıcı (FilingCabinet_02 üstü, y=1.48), çalışma masasında çikolata ve şekerler
+        GearItem("Aletler/ElektrikliAletlerSeti.fbx", "LASER_PRINTER_MFP", new Vector3(-4.42f, 1.48f, -3.55f), 90f);
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "CHOCOLATE", new Vector3(-0.86f, 0.54f, 0.13f), 10f);
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "BONBON_RED", new Vector3(-1.3f, 0.54f, 0.14f), 30f);
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "BONBON_GOLD", new Vector3(-1.22f, 0.54f, 0.18f), -25f);
 
         // 9) wall AC unit above the kitchen door (west wall x≈-4.72, door z[-2.6,-1.4]; OperationsBoard is at z<-2.655)
         var acMat = Office("M_FridgeWhite");
         Box(acMat, new Vector3(-4.66f, 2.62f, -2.0f), new Vector3(0.18f, 0.24f, 0.78f));
         Box(Office("M_InkGray"), new Vector3(-4.565f, 2.53f, -2.0f), new Vector3(0.01f, 0.025f, 0.7f));
         // smoke detector (no 'Ceiling' in names)
-        G(Office("M_FridgeWhite")).Cyl(new Vector3(-2.4f, 3.12f, -2.2f), 0.06f, 0.035f, 12, W);
+        G(Office("M_FridgeWhite")).Cyl(new Vector3(-2.4f, 3.205f, -2.2f), 0.06f, 0.035f, 12, W, -1f, true, true);
     }
 
     private static void DressKitchen()
@@ -382,7 +390,7 @@ public static class OfficeDressingBuilder
         var shade = Mat("Dekor_Abajur", new Color(0.16f, 0.32f, 0.34f), 0.35f);
         foreach (float x in new[] { -7.7f, -7.0f })
         {
-            Vector3 top = new Vector3(x, 3.16f, -3.35f), lamp = new Vector3(x, 1.78f, -3.35f);
+            Vector3 top = new Vector3(x, 3.24f, -3.35f), lamp = new Vector3(x, 1.78f, -3.35f);
             Rod(Office("M_CharcoalTrim"), top, lamp + Vector3.up * 0.1f, 0.004f);
             G(shade).Cyl(lamp, 0.15f, 0.1f, 14, W, 0.04f, true, false);
             G(glow).Ico(lamp + Vector3.up * 0.02f, Vector3.one * 0.035f, W, 0, 0f, rng);
@@ -400,14 +408,24 @@ public static class OfficeDressingBuilder
         var cushionB = Mat("Dekor_MinderPetrol", new Color(0.13f, 0.38f, 0.4f), 0.12f, null, 0f, "OfficeDetail_Fabric", OfficeImportSettings.CraftTextures + "Cloth_Normal.png", 6f);
         foreach (var (x, m) in new[] { (-7.78f, cushionA), (-6.95f, cushionB) })
         {
-            G(m).Push(new Vector3(x, 0.52f, -4.86f), Quaternion.Euler(-14f, x < -7.3f ? 8f : -6f, 0f));
+            G(m).Push(new Vector3(x, 0.50f, -4.73f), Quaternion.Euler(-14f, x < -7.3f ? 8f : -6f, 0f));
             G(m).Ico(Vector3.zero, new Vector3(0.2f, 0.17f, 0.07f), W, 1, 0.02f, rng);
             G(m).Pop();
         }
-        Box(cushionB, new Vector3(-6.66f, 0.47f, -4.68f), new Vector3(0.26f, 0.025f, 0.5f));
-        Box(cushionB, new Vector3(-6.54f, 0.34f, -4.68f), new Vector3(0.02f, 0.26f, 0.48f));
+        Box(cushionB, new Vector3(-6.65f, 0.515f, -4.68f), new Vector3(0.17f, 0.025f, 0.5f));
+        Box(cushionB, new Vector3(-6.568f, 0.39f, -4.68f), new Vector3(0.02f, 0.27f, 0.48f));
         // fruit bowl and mugs on the dining table (top y=0.56)
         G(Office("M_CreamCeramic")).Cyl(new Vector3(-7.35f, 0.56f, -3.35f), 0.07f, 0.05f, 12, W, 0.11f, false, true);
+        // kâsenin içi (Cyl yalnız dış yüz üretir) ve tabanı
+        for (int k = 0; k < 12; k++)
+        {
+            float a0 = k * Mathf.PI / 6f, a1 = (k + 1) * Mathf.PI / 6f;
+            Vector3 cb = new Vector3(-7.35f, 0.564f, -3.35f), ct = new Vector3(-7.35f, 0.61f, -3.35f);
+            Vector3 b0 = cb + new Vector3(Mathf.Cos(a0), 0f, Mathf.Sin(a0)) * 0.066f, b1 = cb + new Vector3(Mathf.Cos(a1), 0f, Mathf.Sin(a1)) * 0.066f;
+            Vector3 t0 = ct + new Vector3(Mathf.Cos(a0), 0f, Mathf.Sin(a0)) * 0.104f, t1 = ct + new Vector3(Mathf.Cos(a1), 0f, Mathf.Sin(a1)) * 0.104f;
+            G(Office("M_CreamCeramic")).Quad(b0, t0, t1, b1, W, -new Vector3(Mathf.Cos((a0 + a1) * 0.5f), 0f, Mathf.Sin((a0 + a1) * 0.5f)));
+        }
+        G(Office("M_CreamCeramic")).Cyl(new Vector3(-7.35f, 0.56f, -3.35f), 0.066f, 0.004f, 12, W);
         Color[] fruit = { new Color(0.95f, 0.5f, 0.08f), new Color(0.8f, 0.12f, 0.1f), new Color(0.95f, 0.85f, 0.2f), new Color(0.45f, 0.7f, 0.2f) };
         for (int i = 0; i < 6; i++)
         {
@@ -418,11 +436,33 @@ public static class OfficeDressingBuilder
         foreach (var p in new[] { new Vector3(-7.72f, 0.56f, -3.2f), new Vector3(-6.98f, 0.56f, -3.48f) })
         {
             G(Office("M_CreamCeramic")).Cyl(p, 0.026f, 0.06f, 10, W);
-            G(Office("M_Coffee")).Cyl(p + Vector3.up * 0.055f, 0.022f, 0.002f, 10, W);
+            G(Office("M_Coffee")).Cyl(p + Vector3.up * 0.0605f, 0.022f, 0.002f, 10, W);
         }
         // kettle on the counter (top y=0.60)
         G(Office("M_SilverSteel")).Cyl(new Vector3(-9.4f, 0.6f, -1.6f), 0.07f, 0.13f, 12, W, 0.055f);
         Rod(Office("M_CharcoalABS"), new Vector3(-9.4f, 0.75f, -1.66f), new Vector3(-9.4f, 0.75f, -1.54f), 0.008f);
+        // pizza gecesi: koltuk yanındaki sehpada (SideTable_01, üst y=0.42) tahtada pizza; yemek masasında kola kutusu ve bardağı
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "PIZZA_BOARD", new Vector3(-6.15f, 0.42f, -4.65f), 20f);
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "PIZZA", new Vector3(-6.15f, 0.436f, -4.65f), 20f);
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "COLA_CAN", new Vector3(-6.92f, 0.56f, -3.2f), 0f);
+        GearItem("YiyecekIcecek/YiyecekIcecekSeti.fbx", "COLA_GLASS", new Vector3(-7.08f, 0.56f, -3.58f), 0f);
+    }
+
+    // kurtarma ekipmanı / yiyecek setlerinden bir öğeyi (kök tabanı merkezinde) dekor köküne yerleştirir
+    private static void GearItem(string setRel, string item, Vector3 pos, float yaw)
+    {
+        var set = RescueGearAssembly.Spawn(setRel, root, Vector3.zero, Quaternion.identity);
+        PrefabUtility.UnpackPrefabInstance(set, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+        var t = RescueGearAssembly.Find(set.transform, item);
+        if (t != null)
+        {
+            t.SetParent(root, true);
+            t.rotation = Quaternion.Euler(0f, yaw, 0f) * t.rotation;
+            t.position = pos;
+            t.name = "Dekor_" + item;
+        }
+        else Debug.LogWarning("[OfficeDressing] setde yok: " + item);
+        UnityEngine.Object.DestroyImmediate(set);
     }
 
     private static void DressStorage()
@@ -439,7 +479,7 @@ public static class OfficeDressingBuilder
                     float w = R(0.18f, 0.34f);
                     if (x + w > sx + 0.56f) break;
                     double u = rng.NextDouble();
-                    Vector3 c = new Vector3(x + w * 0.5f, by + 0.015f, 4.82f + R(-0.04f, 0.04f));
+                    Vector3 c = new Vector3(x + w * 0.5f, by, 4.82f + R(-0.04f, 0.04f));
                     if (u < 0.12) { x += w * 0.6f; continue; }   // a gap
                     if (u < 0.3)
                     {
@@ -452,7 +492,7 @@ public static class OfficeDressingBuilder
                     {
                         // rope coil
                         var pts = new List<Vector3>();
-                        for (int k = 0; k <= 16; k++) { float a = k / 16f * Mathf.PI * 2f; pts.Add(c + new Vector3(Mathf.Cos(a) * 0.1f, 0.03f, Mathf.Sin(a) * 0.1f)); }
+                        for (int k = 0; k <= 16; k++) { float a = k / 16f * Mathf.PI * 2f; pts.Add(c + new Vector3(Mathf.Cos(a) * 0.1f, 0.022f, Mathf.Sin(a) * 0.1f)); }
                         G(Office("M_SafetyOchre")).Tube(pts, 0.025f, 6, W);
                         x += 0.26f; continue;
                     }
@@ -491,8 +531,8 @@ public static class OfficeDressingBuilder
         // hero spots over BoxingRing_01 (-4.9, 8.6)
         foreach (float x in new[] { -6.0f, -3.8f })
         {
-            G(Office("M_Anthracite")).Cyl(new Vector3(x, 3.02f, 8.6f), 0.09f, 0.14f, 10, W, 0.07f);
-            Light("Ring_Spot", new Vector3(x, 2.98f, 8.6f), new Color(1f, 0.95f, 0.86f), 3.2f, 6f, LightType.Spot, Vector3.down + new Vector3(x < -4.9f ? 0.12f : -0.12f, 0f, 0f), 68f);
+            G(Office("M_Anthracite")).Cyl(new Vector3(x, 3.10f, 8.6f), 0.09f, 0.14f, 10, W, 0.07f, true, true);
+            Light("Ring_Spot", new Vector3(x, 3.06f, 8.6f), new Color(1f, 0.95f, 0.86f), 3.2f, 6f, LightType.Spot, Vector3.down + new Vector3(x < -4.9f ? 0.12f : -0.12f, 0f, 0f), 68f);
         }
         // mat under the punching bag (-1.25, 9.80)
         Box(Office("M_DarkRubber"), new Vector3(-1.25f, 0.006f, 9.8f), new Vector3(1.1f, 0.012f, 1.1f));
@@ -500,7 +540,7 @@ public static class OfficeDressingBuilder
         string[] flagCols = { "Dekor_FlamaKirmizi", "Dekor_FlamaBeyaz", "Dekor_FlamaMavi", "Dekor_FlamaSari" };
         Color[] fc = { new Color(0.85f, 0.16f, 0.14f), new Color(0.94f, 0.93f, 0.9f), new Color(0.13f, 0.32f, 0.72f), new Color(0.95f, 0.75f, 0.15f) };
         int nflags = 20;
-        Vector3 a0 = new Vector3(-9.4f, 2.75f, 11.88f), a1 = new Vector3(-0.6f, 2.75f, 11.88f);
+        Vector3 a0 = new Vector3(-9.78f, 2.75f, 11.985f), a1 = new Vector3(-0.14f, 2.75f, 11.985f);
         var cord = new List<Vector3>();
         for (int k = 0; k <= 30; k++) { float u = k / 30f; var p = Vector3.Lerp(a0, a1, u); p.y -= Mathf.Sin(u * Mathf.PI) * 0.22f; cord.Add(p); }
         G(Office("M_CharcoalTrim")).Tube(cord, 0.004f, 4, W);
