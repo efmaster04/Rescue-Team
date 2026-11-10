@@ -1,0 +1,80 @@
+{
+ "materials": [
+  {
+   "name": "21 Dark gray bumper steel",
+   "base": [
+    0.28999999165534973,
+    0.28999999165534973,
+    0.27000001072883606,
+    1.0
+   ],
+   "metallic": 0.27000001072883606,
+   "roughness": 0.7099999785423279,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "11 Warm gray metal",
+   "base": [
+    0.36000001430511475,
+    0.3499999940395355,
+    0.3100000023841858,
+    1.0
+   ],
+   "metallic": 0.4699999988079071,
+   "roughness": 0.47999998927116394,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "09 Satin charcoal trim",
+   "base": [
+    0.10999999940395355,
+    0.1080000028014183,
+    0.10100000351667404,
+    1.0
+   ],
+   "metallic": 0.019999999552965164,
+   "roughness": 0.6100000143051147,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "10 Grille recess",
+   "base": [
+    0.03500000014901161,
+    0.035999998450279236,
+    0.03400000184774399,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8799999952316284,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}

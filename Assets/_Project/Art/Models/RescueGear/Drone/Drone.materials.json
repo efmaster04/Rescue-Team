@@ -1,0 +1,270 @@
+{
+ "materials": [
+  {
+   "name": "09 Satin charcoal trim",
+   "base": [
+    0.10999999940395355,
+    0.1080000028014183,
+    0.10100000351667404,
+    1.0
+   ],
+   "metallic": 0.019999999552965164,
+   "roughness": 0.6100000143051147,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "05 Desaturated blue stripe",
+   "base": [
+    0.08500000089406967,
+    0.24500000476837158,
+    0.3449999988079071,
+    1.0
+   ],
+   "metallic": 0.07999999821186066,
+   "roughness": 0.6899999976158142,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "01 Warm ivory paint",
+   "base": [
+    0.6600000262260437,
+    0.6200000047683716,
+    0.5299999713897705,
+    1.0
+   ],
+   "metallic": 0.18000000715255737,
+   "roughness": 0.6200000047683716,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "10 Grille recess",
+   "base": [
+    0.03500000014901161,
+    0.035999998450279236,
+    0.03400000184774399,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8799999952316284,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "36 Drone karbon",
+   "base": [
+    0.029999999329447746,
+    0.03200000151991844,
+    0.03500000014901161,
+    1.0
+   ],
+   "metallic": 0.20000000298023224,
+   "roughness": 0.44999998807907104,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "41 LED kırmızı",
+   "base": [
+    0.30000001192092896,
+    0.017999999225139618,
+    0.012000000104308128,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    1.0,
+    0.05999999865889549,
+    0.03999999910593033
+   ],
+   "emissionStrength": 5.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "37 Motor metali",
+   "base": [
+    0.20000000298023224,
+    0.20000000298023224,
+    0.20999999344348907,
+    1.0
+   ],
+   "metallic": 0.8500000238418579,
+   "roughness": 0.3199999928474426,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "42 LED yeşil",
+   "base": [
+    0.035999998450279236,
+    0.30000001192092896,
+    0.07500000298023224,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    0.11999999731779099,
+    1.0,
+    0.25
+   ],
+   "emissionStrength": 4.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "38 Pervane siyahı",
+   "base": [
+    0.02199999988079071,
+    0.02199999988079071,
+    0.024000000208616257,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.5,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "07 Dark charcoal rubber",
+   "base": [
+    0.04699999839067459,
+    0.04600000008940697,
+    0.0430000014603138,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.9300000071525574,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "39 Kamera merceği",
+   "base": [
+    0.006000000052154064,
+    0.00800000037997961,
+    0.012000000104308128,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.05000000074505806,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "21 Dark gray bumper steel",
+   "base": [
+    0.28999999165534973,
+    0.28999999165534973,
+    0.27000001072883606,
+    1.0
+   ],
+   "metallic": 0.27000001072883606,
+   "roughness": 0.7099999785423279,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "11 Warm gray metal",
+   "base": [
+    0.36000001430511475,
+    0.3499999940395355,
+    0.3100000023841858,
+    1.0
+   ],
+   "metallic": 0.4699999988079071,
+   "roughness": 0.47999998927116394,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "22 Tow equipment mustard",
+   "base": [
+    0.5799999833106995,
+    0.3799999952316284,
+    0.054999999701976776,
+    1.0
+   ],
+   "metallic": 0.2199999988079071,
+   "roughness": 0.5600000023841858,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}

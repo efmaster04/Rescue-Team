@@ -1,0 +1,384 @@
+{
+ "materials": [
+  {
+   "name": "01 Petrol teal plastic",
+   "base": [
+    0.04500000178813934,
+    0.17000000178813934,
+    0.1899999976158142,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "08 Anthracite plastic",
+   "base": [
+    0.029999999329447746,
+    0.03200000151991844,
+    0.03500000014901161,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6499999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "09 Dark grey plastic",
+   "base": [
+    0.07000000029802322,
+    0.0729999989271164,
+    0.07699999958276749,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6200000047683716,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "21 Vent shadow",
+   "base": [
+    0.009999999776482582,
+    0.010999999940395355,
+    0.012000000104308128,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.949999988079071,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "11 Black rubber",
+   "base": [
+    0.02199999988079071,
+    0.023000000044703484,
+    0.02500000037252903,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8500000238418579,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "10 Mid grey plastic",
+   "base": [
+    0.1899999976158142,
+    0.19499999284744263,
+    0.20000000298023224,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6200000047683716,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "12 Satin steel",
+   "base": [
+    0.44999998807907104,
+    0.4699999988079071,
+    0.47999998927116394,
+    1.0
+   ],
+   "metallic": 0.699999988079071,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "17 Green indicator",
+   "base": [
+    0.20000000298023224,
+    0.8500000238418579,
+    0.30000001192092896,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    0.20000000298023224,
+    0.8500000238418579,
+    0.30000001192092896
+   ],
+   "emissionStrength": 2.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "06 Warm cream plastic",
+   "base": [
+    0.6000000238418579,
+    0.550000011920929,
+    0.44999998807907104,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6000000238418579,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "16 Dim screen glass",
+   "base": [
+    0.019999999552965164,
+    0.07000000029802322,
+    0.07999999821186066,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.25,
+   "emission": [
+    0.019999999552965164,
+    0.07000000029802322,
+    0.07999999821186066
+   ],
+   "emissionStrength": 0.25,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "15 Paper",
+   "base": [
+    0.800000011920929,
+    0.7900000214576721,
+    0.7400000095367432,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8999999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "03 Coral red plastic",
+   "base": [
+    0.5199999809265137,
+    0.0949999988079071,
+    0.05000000074505806,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "20 Grinding disc",
+   "base": [
+    0.10000000149011612,
+    0.0949999988079071,
+    0.09000000357627869,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8999999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "04 Sage machine enamel",
+   "base": [
+    0.12999999523162842,
+    0.20999999344348907,
+    0.12999999523162842,
+    1.0
+   ],
+   "metallic": 0.10000000149011612,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "13 Dark steel",
+   "base": [
+    0.18000000715255737,
+    0.1899999976158142,
+    0.20000000298023224,
+    1.0
+   ],
+   "metallic": 0.6000000238418579,
+   "roughness": 0.5,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "05 Light sage cover",
+   "base": [
+    0.17000000178813934,
+    0.26499998569488525,
+    0.16500000655651093,
+    1.0
+   ],
+   "metallic": 0.10000000149011612,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "14 Black knob",
+   "base": [
+    0.01600000075995922,
+    0.01600000075995922,
+    0.017999999225139618,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.3799999952316284,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "18 Stop button red",
+   "base": [
+    0.550000011920929,
+    0.03999999910593033,
+    0.029999999329447746,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.44999998807907104,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "19 Start button green",
+   "base": [
+    0.05999999865889549,
+    0.30000001192092896,
+    0.10000000149011612,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.5,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "07 Ochre insert",
+   "base": [
+    0.5199999809265137,
+    0.23999999463558197,
+    0.05000000074505806,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6499999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}

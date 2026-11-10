@@ -1,0 +1,878 @@
+{
+ "materials": [
+  {
+   "name": "15 - Wood serving board",
+   "base": [
+    0.4000000059604645,
+    0.18000000715255737,
+    0.06199999898672104,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6200000047683716,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "16 - Wood board seam",
+   "base": [
+    0.17000000178813934,
+    0.06800000369548798,
+    0.02199999988079071,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.699999988079071,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "01 - Pizza baked underside",
+   "base": [
+    0.41999998688697815,
+    0.1599999964237213,
+    0.03999999910593033,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8199999928474426,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "02 - Pizza golden crust",
+   "base": [
+    0.5400000214576721,
+    0.2199999988079071,
+    0.05000000074505806,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6800000071525574,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "05 - Pizza tomato sauce",
+   "base": [
+    0.41999998688697815,
+    0.035999998450279236,
+    0.012000000104308128,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.3799999952316284,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "06 - Pizza melted mozzarella",
+   "base": [
+    0.8199999928474426,
+    0.4699999988079071,
+    0.0949999988079071,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.41999998688697815,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "04 - Pizza soft crumb",
+   "base": [
+    0.7400000095367432,
+    0.5299999713897705,
+    0.27000001072883606,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8999999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "03 - Pizza crust blister",
+   "base": [
+    0.1599999964237213,
+    0.054999999701976776,
+    0.01600000075995922,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.75,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "08 - Pizza pepperoni",
+   "base": [
+    0.36000001430511475,
+    0.029999999329447746,
+    0.013000000268220901,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.33000001311302185,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "09 - Pizza pepperoni crisp rim",
+   "base": [
+    0.12999999523162842,
+    0.012000000104308128,
+    0.006000000052154064,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.41999998688697815,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "12 - Pizza mushroom flesh",
+   "base": [
+    0.5799999833106995,
+    0.41999998688697815,
+    0.25,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.6000000238418579,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "13 - Pizza mushroom skin",
+   "base": [
+    0.23999999463558197,
+    0.12999999523162842,
+    0.05999999865889549,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "11 - Pizza green pepper",
+   "base": [
+    0.04500000178813934,
+    0.23000000417232513,
+    0.02199999988079071,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.2800000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "10 - Pizza black olive",
+   "base": [
+    0.017999999225139618,
+    0.014000000432133675,
+    0.01600000075995922,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.2199999988079071,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "07 - Pizza toasted cheese",
+   "base": [
+    0.5,
+    0.18000000715255737,
+    0.02199999988079071,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.44999998807907104,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "14 - Pizza basil leaf",
+   "base": [
+    0.01600000075995922,
+    0.08500000089406967,
+    0.010999999940395355,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "17 - Chocolate",
+   "base": [
+    0.10499999672174454,
+    0.03999999910593033,
+    0.01600000075995922,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.30000001192092896,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "18 - Silver foil",
+   "base": [
+    0.8600000143051147,
+    0.8600000143051147,
+    0.8799999952316284,
+    1.0
+   ],
+   "metallic": 0.8500000238418579,
+   "roughness": 0.30000001192092896,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "19 - Chocolate sleeve paper",
+   "base": [
+    0.20000000298023224,
+    0.00800000037997961,
+    0.01600000075995922,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.41999998688697815,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "20 - Sleeve gold print",
+   "base": [
+    0.8600000143051147,
+    0.5600000023841858,
+    0.1899999976158142,
+    1.0
+   ],
+   "metallic": 1.0,
+   "roughness": 0.30000001192092896,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "21 - Sleeve cream print",
+   "base": [
+    0.8600000143051147,
+    0.7599999904632568,
+    0.5799999833106995,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.5,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "26 - Clear tumbler glass",
+   "base": [
+    0.800000011920929,
+    0.8999999761581421,
+    0.949999988079071,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.019999999552965164,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 0.09000000357627869,
+   "transmission": 0.0
+  },
+  {
+   "name": "27 - Cola",
+   "base": [
+    0.08500000089406967,
+    0.019999999552965164,
+    0.004000000189989805,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.05000000074505806,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "28 - Cola foam",
+   "base": [
+    0.5,
+    0.3199999928474426,
+    0.17000000178813934,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.75,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "29 - Ice cubes",
+   "base": [
+    0.800000011920929,
+    0.9200000166893005,
+    0.9800000190734863,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.05000000074505806,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 0.550000011920929,
+   "transmission": 0.0
+  },
+  {
+   "name": "30 - Straw red stripe",
+   "base": [
+    0.6800000071525574,
+    0.017999999225139618,
+    0.02500000037252903,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.3499999940395355,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "31 - Straw white",
+   "base": [
+    0.8799999952316284,
+    0.8600000143051147,
+    0.8399999737739563,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.3499999940395355,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "22 - Can bare aluminium",
+   "base": [
+    0.8399999737739563,
+    0.8399999737739563,
+    0.8600000143051147,
+    1.0
+   ],
+   "metallic": 0.8999999761581421,
+   "roughness": 0.23999999463558197,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "23 - Can red lacquer",
+   "base": [
+    0.5199999809265137,
+    0.009999999776482582,
+    0.014000000432133675,
+    1.0
+   ],
+   "metallic": 0.3499999940395355,
+   "roughness": 0.25999999046325684,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "24 - Can white print",
+   "base": [
+    0.8600000143051147,
+    0.8500000238418579,
+    0.8299999833106995,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.30000001192092896,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "25 - Condensation droplets",
+   "base": [
+    0.20000000298023224,
+    0.2199999988079071,
+    0.25,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.0,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 0.3799999952316284,
+   "transmission": 0.0
+  },
+  {
+   "name": "32 - Candy wrapper red",
+   "base": [
+    0.6000000238418579,
+    0.014999999664723873,
+    0.02500000037252903,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.1599999964237213,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "33 - Candy wrapper white",
+   "base": [
+    0.8799999952316284,
+    0.8600000143051147,
+    0.8199999928474426,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.18000000715255737,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "34 - Candy wrapper gold",
+   "base": [
+    0.8999999761581421,
+    0.5799999833106995,
+    0.15000000596046448,
+    1.0
+   ],
+   "metallic": 1.0,
+   "roughness": 0.20000000298023224,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "35 - Candy wrapper deep gold",
+   "base": [
+    0.4000000059604645,
+    0.17000000178813934,
+    0.02500000037252903,
+    1.0
+   ],
+   "metallic": 1.0,
+   "roughness": 0.2800000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "36 - Candy wrapper teal",
+   "base": [
+    0.014999999664723873,
+    0.36000001430511475,
+    0.3400000035762787,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.18000000715255737,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "37 - Lollipop pink",
+   "base": [
+    0.8399999737739563,
+    0.07000000029802322,
+    0.25999999046325684,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.14000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "38 - Lollipop cream",
+   "base": [
+    0.8999999761581421,
+    0.8399999737739563,
+    0.7400000095367432,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.14000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "39 - Lollipop blue",
+   "base": [
+    0.05999999865889549,
+    0.36000001430511475,
+    0.800000011920929,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.14000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "40 - Paper stick",
+   "base": [
+    0.8600000143051147,
+    0.8500000238418579,
+    0.800000011920929,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.800000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "41 - Peppermint red",
+   "base": [
+    0.6800000071525574,
+    0.012000000104308128,
+    0.017999999225139618,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.14000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "42 - Peppermint white",
+   "base": [
+    0.8999999761581421,
+    0.8899999856948853,
+    0.8600000143051147,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.1599999964237213,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "43 - Gummy red",
+   "base": [
+    0.7200000286102295,
+    0.019999999552965164,
+    0.01600000075995922,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.20000000298023224,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "44 - Gummy green",
+   "base": [
+    0.18000000715255737,
+    0.550000011920929,
+    0.02500000037252903,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.20000000298023224,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "45 - Gummy yellow",
+   "base": [
+    0.949999988079071,
+    0.5799999833106995,
+    0.03500000014901161,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.20000000298023224,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "46 - Gummy orange",
+   "base": [
+    0.949999988079071,
+    0.2199999988079071,
+    0.012000000104308128,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.20000000298023224,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}

@@ -1,0 +1,289 @@
+{
+ "materials": [
+  {
+   "name": "Kopek_Kurk",
+   "base": [
+    0.7230551242828369,
+    0.28314873576164246,
+    0.0666259378194809,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8199999928474426,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Krem",
+   "base": [
+    0.9301108717918396,
+    0.8307698965072632,
+    0.6938717365264893,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8500000238418579,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Dudak",
+   "base": [
+    0.04373503103852272,
+    0.023153366521000862,
+    0.020288562402129173,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Agiz_Ici",
+   "base": [
+    0.10702310502529144,
+    0.01850022003054619,
+    0.02955683507025242,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Pati",
+   "base": [
+    0.10461648553609848,
+    0.06301001459360123,
+    0.052860647439956665,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.699999988079071,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Kurk_Koyu",
+   "base": [
+    0.6038273572921753,
+    0.1946178376674652,
+    0.04666508734226227,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8199999928474426,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Kulak_Ici",
+   "base": [
+    0.8879231214523315,
+    0.5457244515419006,
+    0.44520118832588196,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.800000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Goz",
+   "base": [
+    0.010960093699395657,
+    0.005605391692370176,
+    0.0036765073891729116,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.05999999865889549,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Goz_Bebek",
+   "base": [
+    0.002124688820913434,
+    0.0015176349552348256,
+    0.0012141079641878605,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.05000000074505806,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Goz_Iris",
+   "base": [
+    0.10224173218011856,
+    0.03560131415724754,
+    0.009721217676997185,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.07999999821186066,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Goz_Parilti",
+   "base": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.30000001192092896,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 1.600000023841858,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Burun",
+   "base": [
+    0.023153366521000862,
+    0.01599629409611225,
+    0.014443843625485897,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.2199999988079071,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Dil",
+   "base": [
+    0.7605245113372803,
+    0.2015562504529953,
+    0.25015828013420105,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Tasma",
+   "base": [
+    0.5457244515419006,
+    0.0423114113509655,
+    0.027320891618728638,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.550000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "Kopek_Kunye",
+   "base": [
+    0.7454041838645935,
+    0.43965718150138855,
+    0.04817182570695877,
+    1.0
+   ],
+   "metallic": 0.949999988079071,
+   "roughness": 0.2800000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}

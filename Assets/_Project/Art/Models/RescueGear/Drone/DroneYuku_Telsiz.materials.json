@@ -1,0 +1,156 @@
+{
+ "materials": [
+  {
+   "name": "02 Sunlit ivory",
+   "base": [
+    0.7799999713897705,
+    0.7300000190734863,
+    0.6200000047683716,
+    1.0
+   ],
+   "metallic": 0.12999999523162842,
+   "roughness": 0.6499999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "05 Desaturated blue stripe",
+   "base": [
+    0.08500000089406967,
+    0.24500000476837158,
+    0.3449999988079071,
+    1.0
+   ],
+   "metallic": 0.07999999821186066,
+   "roughness": 0.6899999976158142,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "09 Satin charcoal trim",
+   "base": [
+    0.10999999940395355,
+    0.1080000028014183,
+    0.10100000351667404,
+    1.0
+   ],
+   "metallic": 0.019999999552965164,
+   "roughness": 0.6100000143051147,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "07 Dark charcoal rubber",
+   "base": [
+    0.04699999839067459,
+    0.04600000008940697,
+    0.0430000014603138,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.9300000071525574,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "11 Warm gray metal",
+   "base": [
+    0.36000001430511475,
+    0.3499999940395355,
+    0.3100000023841858,
+    1.0
+   ],
+   "metallic": 0.4699999988079071,
+   "roughness": 0.47999998927116394,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "10 Grille recess",
+   "base": [
+    0.03500000014901161,
+    0.035999998450279236,
+    0.03400000184774399,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8799999952316284,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "21 Dark gray bumper steel",
+   "base": [
+    0.28999999165534973,
+    0.28999999165534973,
+    0.27000001072883606,
+    1.0
+   ],
+   "metallic": 0.27000001072883606,
+   "roughness": 0.7099999785423279,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "42 LED yeşil",
+   "base": [
+    0.035999998450279236,
+    0.30000001192092896,
+    0.07500000298023224,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.4000000059604645,
+   "emission": [
+    0.11999999731779099,
+    1.0,
+    0.25
+   ],
+   "emissionStrength": 4.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}

@@ -1,0 +1,80 @@
+{
+ "materials": [
+  {
+   "name": "64 Can yeleği turuncusu",
+   "base": [
+    0.6000000238418579,
+    0.20999999344348907,
+    0.05999999865889549,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.800000011920929,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "02 Sunlit ivory",
+   "base": [
+    0.7799999713897705,
+    0.7300000190734863,
+    0.6200000047683716,
+    1.0
+   ],
+   "metallic": 0.12999999523162842,
+   "roughness": 0.6499999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "18 Dark taupe cloth",
+   "base": [
+    0.27000001072883606,
+    0.25999999046325684,
+    0.2199999988079071,
+    1.0
+   ],
+   "metallic": 0.0,
+   "roughness": 0.8999999761581421,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  },
+  {
+   "name": "22 Tow equipment mustard",
+   "base": [
+    0.5799999833106995,
+    0.3799999952316284,
+    0.054999999701976776,
+    1.0
+   ],
+   "metallic": 0.2199999988079071,
+   "roughness": 0.5600000023841858,
+   "emission": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissionStrength": 0.0,
+   "alpha": 1.0,
+   "transmission": 0.0
+  }
+ ]
+}
