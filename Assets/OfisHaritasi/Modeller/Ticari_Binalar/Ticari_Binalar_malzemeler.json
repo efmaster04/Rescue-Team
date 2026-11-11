@@ -1,0 +1,641 @@
+{
+  "materials": [
+    {
+      "name": "TB_Kaplama",
+      "color": [
+        0.7,
+        0.71,
+        0.7
+      ],
+      "metallic": 0.35,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "randomize": "atolye_kaplama",
+      "aciklama": "Atolye trapez celik kaplama (her kopyada palete gore)"
+    },
+    {
+      "name": "TB_Siva",
+      "color": [
+        0.8,
+        0.74,
+        0.61
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Dukkan / market / atolye krem siva"
+    },
+    {
+      "name": "TB_Beton_Boya",
+      "color": [
+        0.67,
+        0.67,
+        0.65
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.15,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Boyali beton: kolon, kiris, harpusta, subasman"
+    },
+    {
+      "name": "TB_Trim",
+      "color": [
+        0.19,
+        0.2,
+        0.22
+      ],
+      "metallic": 0.3,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Antrasit trim: kose profili, oluk, cerceve"
+    },
+    {
+      "name": "TB_Trim_Mavi",
+      "color": [
+        0.29,
+        0.36,
+        0.43
+      ],
+      "metallic": 0.25,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Mavi-gri celik kapi"
+    },
+    {
+      "name": "TB_Kepenk",
+      "color": [
+        0.61,
+        0.62,
+        0.61
+      ],
+      "metallic": 0.55,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Galvaniz sarmal kepenk ve kutusu"
+    },
+    {
+      "name": "TB_Cam",
+      "color": [
+        0.1,
+        0.12,
+        0.13
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.85,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Opak koyu cam (ici gorunmez)"
+    },
+    {
+      "name": "TB_Cam_Vitrin",
+      "color": [
+        0.13,
+        0.16,
+        0.17
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.9,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 0.5,
+      "aciklama": "Yari saydam koyu vitrin cami (market, benzinlik)"
+    },
+    {
+      "name": "TB_Ic_Koyu",
+      "color": [
+        0.15,
+        0.15,
+        0.14
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.15,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Vitrin arkasi koyu ic yuzey"
+    },
+    {
+      "name": "TB_Ic_Raf",
+      "color": [
+        0.45,
+        0.42,
+        0.36
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.2,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Ic yuzeyde raf bantlari"
+    },
+    {
+      "name": "TB_Ic_Acik",
+      "color": [
+        0.78,
+        0.78,
+        0.74
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.2,
+      "emission": [
+        0.3,
+        0.3,
+        0.28
+      ],
+      "alpha": 1.0,
+      "aciklama": "Ic tavan (aydinlik, hafif isik)"
+    },
+    {
+      "name": "TB_Beton",
+      "color": [
+        0.57,
+        0.56,
+        0.53
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Avlu betonu"
+    },
+    {
+      "name": "TB_Asfalt",
+      "color": [
+        0.23,
+        0.23,
+        0.23
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Asfalt"
+    },
+    {
+      "name": "TB_Beton_Duvar",
+      "color": [
+        0.61,
+        0.6,
+        0.57
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.12,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Bahce duvari / dusuk beton duvar"
+    },
+    {
+      "name": "TB_Bordur",
+      "color": [
+        0.69,
+        0.68,
+        0.65
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.18,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Bordur, ada kenari"
+    },
+    {
+      "name": "TB_Kaldirim",
+      "color": [
+        0.63,
+        0.6,
+        0.56
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.15,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Market onu kaldirim"
+    },
+    {
+      "name": "TB_Cim",
+      "color": [
+        0.29,
+        0.37,
+        0.2
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.05,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Cimlik ada / tarh"
+    },
+    {
+      "name": "TB_Cit",
+      "color": [
+        0.25,
+        0.28,
+        0.28
+      ],
+      "metallic": 0.45,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Boyali celik cit"
+    },
+    {
+      "name": "TB_Cati_Sac",
+      "color": [
+        0.53,
+        0.55,
+        0.56
+      ],
+      "metallic": 0.45,
+      "smoothness": 0.35,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Trapez cati saci"
+    },
+    {
+      "name": "TB_Cati_Isik",
+      "color": [
+        0.63,
+        0.67,
+        0.68
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.6,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Cati isiklik seridi"
+    },
+    {
+      "name": "TB_Cati_Membran",
+      "color": [
+        0.38,
+        0.38,
+        0.37
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.1,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Duz cati membrani"
+    },
+    {
+      "name": "TB_Boya_Beyaz",
+      "color": [
+        0.86,
+        0.85,
+        0.8
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.3,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Yol cizgi boyasi"
+    },
+    {
+      "name": "TB_Beyaz",
+      "color": [
+        0.86,
+        0.85,
+        0.81
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Kirik beyaz panel (kanopi, pompa, klima)"
+    },
+    {
+      "name": "TB_Petrol",
+      "color": [
+        0.08,
+        0.28,
+        0.29
+      ],
+      "metallic": 0.1,
+      "smoothness": 0.45,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Koyu petrol yesili tek serit"
+    },
+    {
+      "name": "TB_Tabela",
+      "color": [
+        0.84,
+        0.83,
+        0.78
+      ],
+      "metallic": 0.05,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "randomize": "ticari_tabela",
+      "aciklama": "Bos tabela paneli (yazisiz)"
+    },
+    {
+      "name": "TB_Tabela_2",
+      "color": [
+        0.18,
+        0.25,
+        0.37
+      ],
+      "metallic": 0.05,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "randomize": "ticari_tabela",
+      "aciklama": "Ikinci dukkan icin bos tabela paneli"
+    },
+    {
+      "name": "TB_Kaucuk",
+      "color": [
+        0.06,
+        0.06,
+        0.06
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.1,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Hortum, tekerlek, lastik"
+    },
+    {
+      "name": "TB_Palet",
+      "color": [
+        0.5,
+        0.4,
+        0.27
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.08,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Ahsap palet"
+    },
+    {
+      "name": "TB_Varil_Mavi",
+      "color": [
+        0.17,
+        0.26,
+        0.37
+      ],
+      "metallic": 0.3,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Yag varili mavi"
+    },
+    {
+      "name": "TB_Varil_Kirmizi",
+      "color": [
+        0.43,
+        0.16,
+        0.12
+      ],
+      "metallic": 0.3,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Yag varili kiremit"
+    },
+    {
+      "name": "TB_Konteyner",
+      "color": [
+        0.25,
+        0.31,
+        0.28
+      ],
+      "metallic": 0.2,
+      "smoothness": 0.35,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Cop konteyneri"
+    },
+    {
+      "name": "TB_Galvaniz",
+      "color": [
+        0.58,
+        0.59,
+        0.59
+      ],
+      "metallic": 0.6,
+      "smoothness": 0.4,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Galvaniz boru, braket, sepet"
+    },
+    {
+      "name": "TB_Plastik",
+      "color": [
+        0.45,
+        0.18,
+        0.15
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.35,
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "alpha": 1.0,
+      "aciklama": "Donuk kirmizi plastik (araba sapi)"
+    },
+    {
+      "name": "TB_Lamba",
+      "color": [
+        0.95,
+        0.94,
+        0.9
+      ],
+      "metallic": 0.0,
+      "smoothness": 0.3,
+      "emission": [
+        0.8,
+        0.78,
+        0.72
+      ],
+      "alpha": 1.0,
+      "aciklama": "Kanopi tavan lambasi"
+    }
+  ],
+  "palettes": {
+    "atolye_kaplama": [
+      [
+        0.7,
+        0.71,
+        0.7
+      ],
+      [
+        0.8,
+        0.79,
+        0.75
+      ],
+      [
+        0.53,
+        0.59,
+        0.63
+      ],
+      [
+        0.67,
+        0.64,
+        0.57
+      ],
+      [
+        0.59,
+        0.64,
+        0.59
+      ]
+    ],
+    "ticari_tabela": [
+      [
+        0.84,
+        0.83,
+        0.78
+      ],
+      [
+        0.18,
+        0.25,
+        0.37
+      ],
+      [
+        0.41,
+        0.16,
+        0.14
+      ],
+      [
+        0.66,
+        0.53,
+        0.21
+      ],
+      [
+        0.1,
+        0.3,
+        0.31
+      ]
+    ]
+  }
+}

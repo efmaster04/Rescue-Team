@@ -1,0 +1,1724 @@
+{
+  "set": "Donati",
+  "surum": 1,
+  "eksen": "Koordinatlar Unity yerel ekseninde: [x, y, z] = Blender (x, z, y). On yuz Unity -Z.",
+  "fbx_ayari": "axis_forward=Z, axis_up=Y, bake_space_transform, FBX_SCALE_ALL, use_triangles",
+  "malzemeler": "Donati_malzemeler.json",
+  "varliklar": [
+    {
+      "id": "Trafik_Isigi_Kollu",
+      "fbx": "Trafik_Isigi_Kollu.fbx",
+      "tur": "trafik",
+      "boyut": [
+        4.27,
+        6.55,
+        0.786
+      ],
+      "ucgen": 1328,
+      "ucgen_butcesi": 2500,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -4.04,
+          -0.25,
+          -0.576
+        ],
+        "max": [
+          0.23,
+          6.55,
+          0.21
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Isik_Yesil_1",
+          "tur": "lens",
+          "konum": [
+            -3.72,
+            5.635,
+            -0.314
+          ]
+        },
+        {
+          "ad": "Isik_Sari_1",
+          "tur": "lens",
+          "konum": [
+            -3.72,
+            5.91,
+            -0.314
+          ]
+        },
+        {
+          "ad": "Isik_Kirmizi_1",
+          "tur": "lens",
+          "konum": [
+            -3.72,
+            6.185,
+            -0.314
+          ]
+        },
+        {
+          "ad": "Isik_Yesil_2",
+          "tur": "lens",
+          "konum": [
+            0.0,
+            2.835,
+            -0.382
+          ]
+        },
+        {
+          "ad": "Isik_Sari_2",
+          "tur": "lens",
+          "konum": [
+            0.0,
+            3.11,
+            -0.382
+          ]
+        },
+        {
+          "ad": "Isik_Kirmizi_2",
+          "tur": "lens",
+          "konum": [
+            0.0,
+            3.385,
+            -0.382
+          ]
+        },
+        {
+          "ad": "Trafik_Isigi_Kollu",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            3.25,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "lensler": {
+        "kirmizi": [
+          "Isik_Kirmizi_1",
+          "Isik_Kirmizi_2"
+        ],
+        "sari": [
+          "Isik_Sari_1",
+          "Isik_Sari_2"
+        ],
+        "yesil": [
+          "Isik_Yesil_1",
+          "Isik_Yesil_2"
+        ]
+      },
+      "basliklar": [
+        {
+          "ad": "kol_basligi",
+          "lens_eki": "_1",
+          "alt_kenar": 5.4,
+          "merkez_x": -3.72
+        },
+        {
+          "ad": "direk_basligi",
+          "lens_eki": "_2",
+          "alt_kenar": 2.6,
+          "merkez_x": 0.0
+        }
+      ],
+      "kol": {
+        "yon_unity": [
+          -1,
+          0,
+          0
+        ],
+        "uzunluk": 4.0,
+        "yukseklik": 6.32
+      },
+      "baslik_yonu_unity": [
+        0,
+        0,
+        -1
+      ],
+      "lens_yaricapi": 0.1,
+      "direk_yuksekligi": 6.5
+    },
+    {
+      "id": "Trafik_Isigi_Direk",
+      "fbx": "Trafik_Isigi_Direk.fbx",
+      "tur": "trafik",
+      "boyut": [
+        0.46,
+        3.62,
+        0.712
+      ],
+      "ucgen": 672,
+      "ucgen_butcesi": 2500,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.23,
+          -0.25,
+          -0.552
+        ],
+        "max": [
+          0.23,
+          3.62,
+          0.16
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Isik_Yesil_1",
+          "tur": "lens",
+          "konum": [
+            0.0,
+            2.835,
+            -0.358
+          ]
+        },
+        {
+          "ad": "Isik_Sari_1",
+          "tur": "lens",
+          "konum": [
+            0.0,
+            3.11,
+            -0.358
+          ]
+        },
+        {
+          "ad": "Isik_Kirmizi_1",
+          "tur": "lens",
+          "konum": [
+            0.0,
+            3.385,
+            -0.358
+          ]
+        },
+        {
+          "ad": "Trafik_Isigi_Direk",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.6,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "lensler": {
+        "kirmizi": [
+          "Isik_Kirmizi_1"
+        ],
+        "sari": [
+          "Isik_Sari_1"
+        ],
+        "yesil": [
+          "Isik_Yesil_1"
+        ]
+      },
+      "basliklar": [
+        {
+          "ad": "direk_basligi",
+          "lens_eki": "_1",
+          "alt_kenar": 2.6,
+          "merkez_x": 0.0
+        }
+      ],
+      "baslik_yonu_unity": [
+        0,
+        0,
+        -1
+      ],
+      "lens_yaricapi": 0.1,
+      "direk_yuksekligi": 3.2
+    },
+    {
+      "id": "Tabela_YolVer",
+      "fbx": "Tabela_YolVer.fbx",
+      "tur": "trafik",
+      "boyut": [
+        0.9,
+        2.83,
+        0.106
+      ],
+      "ucgen": 153,
+      "ucgen_butcesi": 800,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.45,
+          -0.25,
+          -0.07
+        ],
+        "max": [
+          0.45,
+          2.83,
+          0.036
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Tabela_YolVer",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.4,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "tabela_yuzu_yonu_unity": [
+        0,
+        0,
+        -1
+      ],
+      "tabela_merkezi": [
+        0,
+        2.52,
+        -0.065
+      ],
+      "tabela_olcusu": [
+        0.9,
+        0.779
+      ],
+      "direk_yuksekligi": 2.8
+    },
+    {
+      "id": "Tabela_Dur",
+      "fbx": "Tabela_Dur.fbx",
+      "tur": "trafik",
+      "boyut": [
+        0.75,
+        2.83,
+        0.106
+      ],
+      "ucgen": 178,
+      "ucgen_butcesi": 800,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.375,
+          -0.25,
+          -0.07
+        ],
+        "max": [
+          0.375,
+          2.83,
+          0.036
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Tabela_Dur",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.4,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "tabela_yuzu_yonu_unity": [
+        0,
+        0,
+        -1
+      ],
+      "tabela_merkezi": [
+        0,
+        2.4,
+        -0.065
+      ],
+      "tabela_olcusu": [
+        0.75,
+        0.75
+      ],
+      "direk_yuksekligi": 2.8
+    },
+    {
+      "id": "Tabela_YayaGecidi",
+      "fbx": "Tabela_YayaGecidi.fbx",
+      "tur": "trafik",
+      "boyut": [
+        0.6,
+        2.83,
+        0.111
+      ],
+      "ucgen": 159,
+      "ucgen_butcesi": 800,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.3,
+          -0.25,
+          -0.075
+        ],
+        "max": [
+          0.3,
+          2.83,
+          0.036
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Tabela_YayaGecidi",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.4,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "tabela_yuzu_yonu_unity": [
+        0,
+        0,
+        -1
+      ],
+      "tabela_merkezi": [
+        0,
+        2.47,
+        -0.065
+      ],
+      "tabela_olcusu": [
+        0.6,
+        0.6
+      ],
+      "direk_yuksekligi": 2.8
+    },
+    {
+      "id": "Tabela_Park",
+      "fbx": "Tabela_Park.fbx",
+      "tur": "trafik",
+      "boyut": [
+        0.6,
+        2.83,
+        0.111
+      ],
+      "ucgen": 166,
+      "ucgen_butcesi": 800,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.3,
+          -0.25,
+          -0.075
+        ],
+        "max": [
+          0.3,
+          2.83,
+          0.036
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Tabela_Park",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.4,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "tabela_yuzu_yonu_unity": [
+        0,
+        0,
+        -1
+      ],
+      "tabela_merkezi": [
+        0,
+        2.47,
+        -0.065
+      ],
+      "tabela_olcusu": [
+        0.6,
+        0.6
+      ],
+      "direk_yuksekligi": 2.8
+    },
+    {
+      "id": "Bariyer_Otoyol",
+      "fbx": "Bariyer_Otoyol.fbx",
+      "tur": "trafik",
+      "boyut": [
+        4.0,
+        0.75,
+        0.323
+      ],
+      "ucgen": 228,
+      "ucgen_butcesi": 800,
+      "orijin": "segment basi (X=0), ray hatti, zemin; segment +X",
+      "sinirlar_unity": {
+        "min": [
+          0.0,
+          -0.25,
+          -0.083
+        ],
+        "max": [
+          4.0,
+          0.75,
+          0.24
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Bariyer_Otoyol",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Bariyer",
+          "tur": "carpisma",
+          "konum": [
+            2.0,
+            0.375,
+            0.08
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Bariyer"
+      ],
+      "segment_uzunlugu": 4.0,
+      "segment_yonu_unity": [
+        1,
+        0,
+        0
+      ],
+      "dikme_x": [
+        1.0,
+        3.0
+      ],
+      "not": "Uc uca dizerken her kopyayi +X'te 4.0 m kaydir; dikme araligi 2 m kesintisiz."
+    },
+    {
+      "id": "Beton_Bariyer",
+      "fbx": "Beton_Bariyer.fbx",
+      "tur": "trafik",
+      "boyut": [
+        2.0,
+        0.81,
+        0.61
+      ],
+      "ucgen": 60,
+      "ucgen_butcesi": 800,
+      "orijin": "taban merkezi, zemin; uzunluk X ekseninde",
+      "sinirlar_unity": {
+        "min": [
+          -1.0,
+          0.0,
+          -0.305
+        ],
+        "max": [
+          1.0,
+          0.81,
+          0.305
+        ]
+      },
+      "zemin_alti": 0.0,
+      "nesneler": [
+        {
+          "ad": "Beton_Bariyer",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.405,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ],
+      "segment_uzunlugu": 2.0,
+      "segment_yonu_unity": [
+        1,
+        0,
+        0
+      ],
+      "not": "Orijin ortada; uc uca dizerken 2.0 m aralik."
+    },
+    {
+      "id": "Baba",
+      "fbx": "Baba.fbx",
+      "tur": "trafik",
+      "boyut": [
+        0.176,
+        0.9,
+        0.167
+      ],
+      "ucgen": 166,
+      "ucgen_butcesi": 800,
+      "orijin": "eksen, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.088,
+          -0.25,
+          -0.084
+        ],
+        "max": [
+          0.088,
+          0.9,
+          0.084
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Baba",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.45,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ]
+    },
+    {
+      "id": "Sokak_Lambasi",
+      "fbx": "Sokak_Lambasi.fbx",
+      "tur": "aydinlatma",
+      "boyut": [
+        2.62,
+        8.035,
+        0.4
+      ],
+      "ucgen": 312,
+      "ucgen_butcesi": 1000,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -2.42,
+          -0.25,
+          -0.2
+        ],
+        "max": [
+          0.2,
+          8.035,
+          0.2
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Sokak_Lambasi",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "Lamba_Isik",
+          "tur": "isik",
+          "konum": [
+            -2.1,
+            7.828,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            4.0,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "isik_nesnesi": "Lamba_Isik",
+      "isik_noktasi": [
+        -2.1,
+        7.778,
+        0.0
+      ],
+      "isik_yonu_unity": [
+        0,
+        -1,
+        0
+      ],
+      "isik_turu": "spot (asagi)",
+      "kol": {
+        "yon_unity": [
+          -1,
+          0,
+          0
+        ],
+        "uzunluk": 1.8
+      },
+      "direk_yuksekligi": 8.0
+    },
+    {
+      "id": "Park_Lambasi",
+      "fbx": "Park_Lambasi.fbx",
+      "tur": "aydinlatma",
+      "boyut": [
+        0.43,
+        3.5,
+        0.43
+      ],
+      "ucgen": 284,
+      "ucgen_butcesi": 1000,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.215,
+          -0.25,
+          -0.215
+        ],
+        "max": [
+          0.215,
+          3.5,
+          0.215
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Park_Lambasi",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "Lamba_Isik",
+          "tur": "isik",
+          "konum": [
+            0.0,
+            3.06,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.75,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "isik_nesnesi": "Lamba_Isik",
+      "isik_noktasi": [
+        0.0,
+        3.06,
+        0.0
+      ],
+      "isik_turu": "nokta (her yon)",
+      "direk_yuksekligi": 3.5
+    },
+    {
+      "id": "Elektrik_Diregi",
+      "fbx": "Elektrik_Diregi.fbx",
+      "tur": "aydinlatma",
+      "boyut": [
+        1.9,
+        9.24,
+        0.22
+      ],
+      "ucgen": 412,
+      "ucgen_butcesi": 1000,
+      "orijin": "direk ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.95,
+          -0.3,
+          -0.11
+        ],
+        "max": [
+          0.95,
+          9.24,
+          0.11
+        ]
+      },
+      "zemin_alti": 0.3,
+      "nesneler": [
+        {
+          "ad": "Elektrik_Diregi",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "Tel_1",
+          "tur": "nokta",
+          "konum": [
+            -0.85,
+            8.99,
+            0.0
+          ]
+        },
+        {
+          "ad": "Tel_2",
+          "tur": "nokta",
+          "konum": [
+            0.0,
+            9.24,
+            0.0
+          ]
+        },
+        {
+          "ad": "Tel_3",
+          "tur": "nokta",
+          "konum": [
+            0.85,
+            8.99,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Direk",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            4.5,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Direk"
+      ],
+      "tel_noktalari": [
+        {
+          "ad": "Tel_1",
+          "konum": [
+            -0.85,
+            8.99,
+            0.0
+          ]
+        },
+        {
+          "ad": "Tel_2",
+          "konum": [
+            0.0,
+            9.24,
+            0.0
+          ]
+        },
+        {
+          "ad": "Tel_3",
+          "konum": [
+            0.85,
+            8.99,
+            0.0
+          ]
+        }
+      ],
+      "tel_yonu_unity": [
+        0,
+        0,
+        1
+      ],
+      "direk_yuksekligi": 9.0,
+      "not": "Teller Unity Z (Blender Y) boyunca, sokaga paralel uzanir; Tel_1 -X, Tel_2 ust, Tel_3 +X."
+    },
+    {
+      "id": "Otobus_Duragi",
+      "fbx": "Otobus_Duragi.fbx",
+      "tur": "esya",
+      "boyut": [
+        4.2,
+        2.6,
+        1.62
+      ],
+      "ucgen": 780,
+      "ucgen_butcesi": 2000,
+      "orijin": "taban izinin merkezi, zemin; acik on yuz -Y",
+      "sinirlar_unity": {
+        "min": [
+          -2.1,
+          -0.2,
+          -0.82
+        ],
+        "max": [
+          2.1,
+          2.6,
+          0.8
+        ]
+      },
+      "zemin_alti": 0.2,
+      "nesneler": [
+        {
+          "ad": "Otobus_Duragi",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_ArkaPanel",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.235,
+            0.7
+          ]
+        },
+        {
+          "ad": "COL_YanPanel",
+          "tur": "carpisma",
+          "konum": [
+            2.02,
+            1.235,
+            0.015
+          ]
+        },
+        {
+          "ad": "COL_Direk_On",
+          "tur": "carpisma",
+          "konum": [
+            -2.02,
+            1.235,
+            -0.68
+          ]
+        },
+        {
+          "ad": "COL_Bank",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.235,
+            0.455
+          ]
+        },
+        {
+          "ad": "COL_Cati",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            2.52,
+            -0.01
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_ArkaPanel",
+        "COL_YanPanel",
+        "COL_Direk_On",
+        "COL_Bank",
+        "COL_Cati"
+      ]
+    },
+    {
+      "id": "Bank",
+      "fbx": "Bank.fbx",
+      "tur": "esya",
+      "boyut": [
+        1.8,
+        0.881,
+        0.557
+      ],
+      "ucgen": 684,
+      "ucgen_butcesi": 800,
+      "orijin": "taban izinin merkezi, zemin; oturma yonu -Y",
+      "sinirlar_unity": {
+        "min": [
+          -0.9,
+          0.003,
+          -0.27
+        ],
+        "max": [
+          0.9,
+          0.885,
+          0.287
+        ]
+      },
+      "zemin_alti": 0.0,
+      "nesneler": [
+        {
+          "ad": "Bank",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Bank",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.44,
+            0.02
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Bank"
+      ]
+    },
+    {
+      "id": "Cop_Kutusu",
+      "fbx": "Cop_Kutusu.fbx",
+      "tur": "esya",
+      "boyut": [
+        0.444,
+        1.075,
+        0.513
+      ],
+      "ucgen": 332,
+      "ucgen_butcesi": 800,
+      "orijin": "direk ekseni, zemin; kutu diregin onunde (-Y)",
+      "sinirlar_unity": {
+        "min": [
+          -0.222,
+          -0.25,
+          -0.482
+        ],
+        "max": [
+          0.222,
+          1.075,
+          0.031
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Cop_Kutusu",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.54,
+            -0.225
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ]
+    },
+    {
+      "id": "Cop_Konteyneri",
+      "fbx": "Cop_Konteyneri.fbx",
+      "tur": "esya",
+      "boyut": [
+        1.4,
+        1.33,
+        1.158
+      ],
+      "ucgen": 624,
+      "ucgen_butcesi": 800,
+      "orijin": "taban izinin merkezi, zemin; on -Y, kapak mentesesi arkada",
+      "sinirlar_unity": {
+        "min": [
+          -0.7,
+          0.0,
+          -0.585
+        ],
+        "max": [
+          0.7,
+          1.33,
+          0.573
+        ]
+      },
+      "zemin_alti": 0.0,
+      "nesneler": [
+        {
+          "ad": "Cop_Konteyneri",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "Kapak",
+          "tur": "hareketli",
+          "konum": [
+            0.0,
+            1.215,
+            0.55
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.665,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ],
+      "hareketli_parcalar": [
+        {
+          "ad": "Kapak",
+          "mafsal": [
+            0.0,
+            1.215,
+            0.55
+          ],
+          "eksen_unity": [
+            1,
+            0,
+            0
+          ],
+          "acilma": "Unity yerel X etrafinda +110 derece (on kenar kalkar)"
+        }
+      ]
+    },
+    {
+      "id": "Cesme",
+      "fbx": "Cesme.fbx",
+      "tur": "esya",
+      "boyut": [
+        1.6,
+        2.0,
+        0.8
+      ],
+      "ucgen": 593,
+      "ucgen_butcesi": 800,
+      "orijin": "taban izinin merkezi, zemin; on yuz (nis + tekne) -Y",
+      "sinirlar_unity": {
+        "min": [
+          -0.8,
+          -0.2,
+          -0.4
+        ],
+        "max": [
+          0.8,
+          2.0,
+          0.4
+        ]
+      },
+      "zemin_alti": 0.2,
+      "nesneler": [
+        {
+          "ad": "Cesme",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.0,
+            0.145
+          ]
+        },
+        {
+          "ad": "COL_Tekne",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.25,
+            -0.255
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde",
+        "COL_Tekne"
+      ]
+    },
+    {
+      "id": "Oyun_Kaydirak",
+      "fbx": "Oyun_Kaydirak.fbx",
+      "tur": "esya",
+      "boyut": [
+        0.798,
+        1.99,
+        3.613
+      ],
+      "ucgen": 604,
+      "ucgen_butcesi": 800,
+      "orijin": "taban izinin merkezi, zemin; kayma yonu -Y, merdiven +Y",
+      "sinirlar_unity": {
+        "min": [
+          -0.399,
+          -0.2,
+          -2.111
+        ],
+        "max": [
+          0.399,
+          1.99,
+          1.502
+        ]
+      },
+      "zemin_alti": 0.2,
+      "nesneler": [
+        {
+          "ad": "Oyun_Kaydirak",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Kule",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.995,
+            0.55
+          ]
+        },
+        {
+          "ad": "COL_Kaydirak_Ust",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.6,
+            -0.405
+          ]
+        },
+        {
+          "ad": "COL_Kaydirak_Alt",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.375,
+            -1.55
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Kule",
+        "COL_Kaydirak_Ust",
+        "COL_Kaydirak_Alt"
+      ]
+    },
+    {
+      "id": "Oyun_Salincak",
+      "fbx": "Oyun_Salincak.fbx",
+      "tur": "esya",
+      "boyut": [
+        2.9,
+        2.28,
+        1.971
+      ],
+      "ucgen": 580,
+      "ucgen_butcesi": 800,
+      "orijin": "taban izinin merkezi, zemin; salinim Y ekseninde",
+      "sinirlar_unity": {
+        "min": [
+          -1.45,
+          -0.264,
+          -0.986
+        ],
+        "max": [
+          1.45,
+          2.28,
+          0.986
+        ]
+      },
+      "zemin_alti": 0.264,
+      "nesneler": [
+        {
+          "ad": "Oyun_Salincak",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "Oturak_1",
+          "tur": "hareketli",
+          "konum": [
+            -0.55,
+            2.15,
+            0.0
+          ]
+        },
+        {
+          "ad": "Oturak_2",
+          "tur": "hareketli",
+          "konum": [
+            0.55,
+            2.15,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Ayak_Sol",
+          "tur": "carpisma",
+          "konum": [
+            -1.35,
+            1.13,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Ayak_Sag",
+          "tur": "carpisma",
+          "konum": [
+            1.35,
+            1.13,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Ayak_Sol",
+        "COL_Ayak_Sag"
+      ],
+      "hareketli_parcalar": [
+        {
+          "ad": "Oturak_1",
+          "mafsal": [
+            -0.55,
+            2.15,
+            0.0
+          ],
+          "eksen_unity": [
+            1,
+            0,
+            0
+          ],
+          "salinim": "Unity yerel X etrafinda +-35 derece"
+        },
+        {
+          "ad": "Oturak_2",
+          "mafsal": [
+            0.55,
+            2.15,
+            0.0
+          ],
+          "eksen_unity": [
+            1,
+            0,
+            0
+          ],
+          "salinim": "Unity yerel X etrafinda +-35 derece"
+        }
+      ]
+    },
+    {
+      "id": "Agac_Cinar",
+      "fbx": "Agac_Cinar.fbx",
+      "tur": "bitki",
+      "boyut": [
+        9.05,
+        9.345,
+        9.375
+      ],
+      "ucgen": 1128,
+      "ucgen_butcesi": 1500,
+      "orijin": "govde ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -4.571,
+          -0.3,
+          -4.715
+        ],
+        "max": [
+          4.479,
+          9.345,
+          4.66
+        ]
+      },
+      "zemin_alti": 0.3,
+      "nesneler": [
+        {
+          "ad": "Agac_Cinar",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.7,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ],
+      "tac_yaricapi": 4.79,
+      "yukseklik": 9.34,
+      "tac_alt_yuksekligi": 3.81
+    },
+    {
+      "id": "Agac_Kavak",
+      "fbx": "Agac_Kavak.fbx",
+      "tur": "bitki",
+      "boyut": [
+        2.959,
+        13.027,
+        2.976
+      ],
+      "ucgen": 720,
+      "ucgen_butcesi": 1500,
+      "orijin": "govde ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -1.508,
+          -0.3,
+          -1.406
+        ],
+        "max": [
+          1.451,
+          13.027,
+          1.569
+        ]
+      },
+      "zemin_alti": 0.3,
+      "nesneler": [
+        {
+          "ad": "Agac_Kavak",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.15,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ],
+      "tac_yaricapi": 1.6,
+      "yukseklik": 13.03,
+      "tac_alt_yuksekligi": 1.26
+    },
+    {
+      "id": "Agac_Cam",
+      "fbx": "Agac_Cam.fbx",
+      "tur": "bitki",
+      "boyut": [
+        4.733,
+        9.02,
+        4.744
+      ],
+      "ucgen": 268,
+      "ucgen_butcesi": 1500,
+      "orijin": "govde ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -2.406,
+          -0.3,
+          -2.403
+        ],
+        "max": [
+          2.327,
+          9.02,
+          2.341
+        ]
+      },
+      "zemin_alti": 0.3,
+      "nesneler": [
+        {
+          "ad": "Agac_Cam",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ],
+      "tac_yaricapi": 2.53,
+      "yukseklik": 9.02,
+      "tac_alt_yuksekligi": 1.86
+    },
+    {
+      "id": "Agac_Meyve",
+      "fbx": "Agac_Meyve.fbx",
+      "tur": "bitki",
+      "boyut": [
+        3.006,
+        4.03,
+        3.031
+      ],
+      "ucgen": 466,
+      "ucgen_butcesi": 1500,
+      "orijin": "govde ekseni, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -1.461,
+          -0.25,
+          -1.431
+        ],
+        "max": [
+          1.545,
+          4.03,
+          1.6
+        ]
+      },
+      "zemin_alti": 0.25,
+      "nesneler": [
+        {
+          "ad": "Agac_Meyve",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "ad": "COL_Govde",
+          "tur": "carpisma",
+          "konum": [
+            0.0,
+            0.6,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [
+        "COL_Govde"
+      ],
+      "tac_yaricapi": 1.61,
+      "yukseklik": 4.03,
+      "tac_alt_yuksekligi": 1.74
+    },
+    {
+      "id": "Cali_Yuvarlak",
+      "fbx": "Cali_Yuvarlak.fbx",
+      "tur": "bitki",
+      "boyut": [
+        1.566,
+        1.203,
+        1.548
+      ],
+      "ucgen": 200,
+      "ucgen_butcesi": 400,
+      "orijin": "taban merkezi, zemin (Z=0)",
+      "sinirlar_unity": {
+        "min": [
+          -0.781,
+          -0.03,
+          -0.749
+        ],
+        "max": [
+          0.786,
+          1.203,
+          0.8
+        ]
+      },
+      "zemin_alti": 0.03,
+      "nesneler": [
+        {
+          "ad": "Cali_Yuvarlak",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [],
+      "tac_yaricapi": 0.83,
+      "yukseklik": 1.2
+    },
+    {
+      "id": "Cali_Cit",
+      "fbx": "Cali_Cit.fbx",
+      "tur": "bitki",
+      "boyut": [
+        2.0,
+        1.122,
+        0.774
+      ],
+      "ucgen": 214,
+      "ucgen_butcesi": 400,
+      "orijin": "segment basi (X=0), cit ekseni, zemin; segment +X",
+      "sinirlar_unity": {
+        "min": [
+          0.0,
+          -0.05,
+          -0.386
+        ],
+        "max": [
+          2.0,
+          1.122,
+          0.388
+        ]
+      },
+      "zemin_alti": 0.05,
+      "nesneler": [
+        {
+          "ad": "Cali_Cit",
+          "tur": "gorsel",
+          "konum": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "carpisma": [],
+      "segment_uzunlugu": 2.0,
+      "segment_yonu_unity": [
+        1,
+        0,
+        0
+      ],
+      "yukseklik": 1.1,
+      "tac_yaricapi": 0.37,
+      "not": "Uc uca dizerken her kopyayi +X'te 2.0 m kaydir; uc kesitler ayni oldugu icin dikis gorunmez."
+    }
+  ]
+}

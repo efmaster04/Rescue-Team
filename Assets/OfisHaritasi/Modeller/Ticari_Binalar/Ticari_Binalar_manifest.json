@@ -1,0 +1,1007 @@
+{
+  "set": "Ticari_Binalar",
+  "surum": 1,
+  "eksen": "Unity yerel: x = Blender X, y = yukari (Blender Z), z = Blender Y. On cephe ve sokak -z yonunde.",
+  "orijin": "Parselin sokak tarafindaki on kenarinin ortasi, zemin kotu 0.",
+  "doseme_ust_kotu": 0.04,
+  "temel_alt_kotu": -0.6,
+  "col_kurali": "COL_ onekli eksen hizali kutular BoxCollider olur ve gizlenir. COL_*_Doseme_* kutulari surulebilir doseme (ust 0,04).",
+  "varliklar": [
+    {
+      "id": "Atolye_A",
+      "fbx": "Atolye_A.fbx",
+      "boyut": [
+        24.0,
+        7.02,
+        32.0
+      ],
+      "boyut_notu": "[X genislik, zemin ustu yukseklik, Z derinlik]; temeller -0,6'ya iner",
+      "ucgen": 5848,
+      "col_ucgen": 192,
+      "ucgen_butcesi": 6000,
+      "parsel": [
+        24.0,
+        32.0
+      ],
+      "parsel_sinirlari": {
+        "x": [
+          -12.0,
+          12.0
+        ],
+        "z": [
+          0.0,
+          32.0
+        ]
+      },
+      "bina_izleri": [
+        {
+          "ad": "Atolye_A_Bina",
+          "min": [
+            -10.0,
+            0.0,
+            11.0
+          ],
+          "max": [
+            4.0,
+            7.02,
+            29.0
+          ],
+          "boyut": [
+            14.0,
+            7.02,
+            18.0
+          ]
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -8.5,
+          -2.5
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            0.9,
+            0.04,
+            7.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            3.6,
+            0.04,
+            7.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            7.0,
+            0.04,
+            18.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            9.8,
+            0.04,
+            18.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -6.0,
+          0.0,
+          30.6
+        ],
+        [
+          0.5,
+          0.0,
+          30.6
+        ]
+      ],
+      "hareketli": [
+        {
+          "ad": "Atolye_A_Kepenk_1",
+          "tur": "sarmal_kepenk",
+          "genislik": 4.0,
+          "yukseklik": 4.2
+        }
+      ],
+      "nesneler": [
+        "Atolye_A_Bina",
+        "Atolye_A_Cati",
+        "Atolye_A_Cit",
+        "Atolye_A_Doseme",
+        "Atolye_A_Esya",
+        "Atolye_A_Kepenk_1"
+      ],
+      "col_kutulari": [
+        "COL_Atolye_A_Bina",
+        "COL_Atolye_A_Cit_On_1",
+        "COL_Atolye_A_Cit_On_2",
+        "COL_Atolye_A_Cit_Yan_Sag",
+        "COL_Atolye_A_Cit_Yan_Sol",
+        "COL_Atolye_A_Doseme_On",
+        "COL_Atolye_A_Doseme_Yan",
+        "COL_Atolye_A_Duvar_Arka",
+        "COL_Atolye_A_Duvar_Yan_Sag",
+        "COL_Atolye_A_Duvar_Yan_Sol",
+        "COL_Atolye_A_Kapi_Babasi_1",
+        "COL_Atolye_A_Kapi_Babasi_2",
+        "COL_Atolye_A_Palet_1",
+        "COL_Atolye_A_Palet_2",
+        "COL_Atolye_A_Palet_3",
+        "COL_Atolye_A_Variller"
+      ],
+      "hedef_olculer": {
+        "govde": [
+          14.0,
+          18.0
+        ],
+        "sacak": 5.5,
+        "kepenk": [
+          4.0,
+          4.2
+        ],
+        "kapi_boslugu": 6.0
+      }
+    },
+    {
+      "id": "Atolye_B",
+      "fbx": "Atolye_B.fbx",
+      "boyut": [
+        20.0,
+        5.97,
+        28.0
+      ],
+      "boyut_notu": "[X genislik, zemin ustu yukseklik, Z derinlik]; temeller -0,6'ya iner",
+      "ucgen": 3250,
+      "col_ucgen": 156,
+      "ucgen_butcesi": 6000,
+      "parsel": [
+        20.0,
+        28.0
+      ],
+      "parsel_sinirlari": {
+        "x": [
+          -10.0,
+          10.0
+        ],
+        "z": [
+          0.0,
+          28.0
+        ]
+      },
+      "bina_izleri": [
+        {
+          "ad": "Atolye_B_Bina",
+          "min": [
+            -9.6,
+            0.0,
+            14.0
+          ],
+          "max": [
+            0.4,
+            5.07,
+            26.0
+          ],
+          "boyut": [
+            10.0,
+            5.07,
+            12.0
+          ]
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -9.5,
+          9.5
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -7.5,
+            0.04,
+            9.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -3.7,
+            0.04,
+            9.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            6.0,
+            0.04,
+            8.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            2.9,
+            0.04,
+            20.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            5.9,
+            0.04,
+            20.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -5.0,
+          0.0,
+          27.0
+        ]
+      ],
+      "hareketli": [
+        {
+          "ad": "Atolye_B_Kepenk_1",
+          "tur": "sarmal_kepenk",
+          "genislik": 3.2,
+          "yukseklik": 3.6
+        },
+        {
+          "ad": "Atolye_B_Kepenk_2",
+          "tur": "sarmal_kepenk",
+          "genislik": 3.2,
+          "yukseklik": 3.6
+        }
+      ],
+      "nesneler": [
+        "Atolye_B_Bina",
+        "Atolye_B_Cati",
+        "Atolye_B_Cit",
+        "Atolye_B_Doseme",
+        "Atolye_B_Esya",
+        "Atolye_B_Kepenk_1",
+        "Atolye_B_Kepenk_2",
+        "Atolye_B_Sundurma"
+      ],
+      "col_kutulari": [
+        "COL_Atolye_B_Bina",
+        "COL_Atolye_B_Doseme_On",
+        "COL_Atolye_B_Doseme_Yan",
+        "COL_Atolye_B_Duvar_Arka",
+        "COL_Atolye_B_Duvar_Yan_Sag",
+        "COL_Atolye_B_Duvar_Yan_Sol",
+        "COL_Atolye_B_Lastik_1",
+        "COL_Atolye_B_Lastik_2",
+        "COL_Atolye_B_Palet_1",
+        "COL_Atolye_B_Sundurma_Direk_1",
+        "COL_Atolye_B_Sundurma_Direk_2",
+        "COL_Atolye_B_Sundurma_Direk_3",
+        "COL_Atolye_B_Variller"
+      ],
+      "hedef_olculer": {
+        "govde": [
+          10.0,
+          12.0
+        ],
+        "kepenk_sayisi": 2
+      }
+    },
+    {
+      "id": "Atolye_C",
+      "fbx": "Atolye_C.fbx",
+      "boyut": [
+        30.0,
+        7.57,
+        28.0
+      ],
+      "boyut_notu": "[X genislik, zemin ustu yukseklik, Z derinlik]; temeller -0,6'ya iner",
+      "ucgen": 5348,
+      "col_ucgen": 228,
+      "ucgen_butcesi": 6000,
+      "parsel": [
+        30.0,
+        28.0
+      ],
+      "parsel_sinirlari": {
+        "x": [
+          -15.0,
+          15.0
+        ],
+        "z": [
+          0.0,
+          28.0
+        ]
+      },
+      "bina_izleri": [
+        {
+          "ad": "Atolye_C_Bina",
+          "min": [
+            -11.0,
+            0.0,
+            12.0
+          ],
+          "max": [
+            11.0,
+            6.67,
+            26.0
+          ],
+          "boyut": [
+            22.0,
+            6.67,
+            14.0
+          ]
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -11.1,
+          -5.1
+        ],
+        [
+          -0.1,
+          5.9
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -3.05,
+            0.04,
+            7.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            7.95,
+            0.04,
+            7.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            12.9,
+            0.04,
+            17.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -12.9,
+            0.04,
+            17.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -6.0,
+          0.0,
+          27.0
+        ],
+        [
+          6.0,
+          0.0,
+          27.0
+        ]
+      ],
+      "hareketli": [
+        {
+          "ad": "Atolye_C_Kepenk_1",
+          "tur": "sarmal_kepenk",
+          "genislik": 4.0,
+          "yukseklik": 4.4
+        },
+        {
+          "ad": "Atolye_C_Kepenk_2",
+          "tur": "sarmal_kepenk",
+          "genislik": 4.0,
+          "yukseklik": 4.4
+        }
+      ],
+      "nesneler": [
+        "Atolye_C_Bina",
+        "Atolye_C_Cati",
+        "Atolye_C_Cit",
+        "Atolye_C_Doseme",
+        "Atolye_C_Esya",
+        "Atolye_C_Kepenk_1",
+        "Atolye_C_Kepenk_2"
+      ],
+      "col_kutulari": [
+        "COL_Atolye_C_Bina",
+        "COL_Atolye_C_Cit_On_1",
+        "COL_Atolye_C_Cit_On_2",
+        "COL_Atolye_C_Cit_On_3",
+        "COL_Atolye_C_Cit_Yan_Sag",
+        "COL_Atolye_C_Cit_Yan_Sol",
+        "COL_Atolye_C_Doseme_On",
+        "COL_Atolye_C_Doseme_Yan_Sag",
+        "COL_Atolye_C_Doseme_Yan_Sol",
+        "COL_Atolye_C_Duvar_Arka",
+        "COL_Atolye_C_Duvar_Yan_Sag",
+        "COL_Atolye_C_Duvar_Yan_Sol",
+        "COL_Atolye_C_Kapi_Babasi_1",
+        "COL_Atolye_C_Kapi_Babasi_2",
+        "COL_Atolye_C_Kapi_Babasi_3",
+        "COL_Atolye_C_Kapi_Babasi_4",
+        "COL_Atolye_C_Palet_1",
+        "COL_Atolye_C_Sacak",
+        "COL_Atolye_C_Variller"
+      ],
+      "hedef_olculer": {
+        "govde": [
+          22.0,
+          14.0
+        ],
+        "kepenk_sayisi": 2
+      }
+    },
+    {
+      "id": "Benzinlik",
+      "fbx": "Benzinlik.fbx",
+      "boyut": [
+        36.0,
+        6.2,
+        30.0
+      ],
+      "boyut_notu": "[X genislik, zemin ustu yukseklik, Z derinlik]; temeller -0,6'ya iner",
+      "ucgen": 4432,
+      "col_ucgen": 336,
+      "ucgen_butcesi": 10000,
+      "parsel": [
+        36.0,
+        30.0
+      ],
+      "parsel_sinirlari": {
+        "x": [
+          -18.0,
+          18.0
+        ],
+        "z": [
+          0.0,
+          30.0
+        ]
+      },
+      "bina_izleri": [
+        {
+          "ad": "Benzinlik_Market",
+          "min": [
+            -6.0,
+            0.0,
+            21.5
+          ],
+          "max": [
+            6.0,
+            4.2,
+            29.5
+          ],
+          "boyut": [
+            12.0,
+            4.2,
+            8.0
+          ]
+        },
+        {
+          "ad": "Benzinlik_Kanopi",
+          "min": [
+            -9.0,
+            0.0,
+            7.0
+          ],
+          "max": [
+            9.0,
+            6.2,
+            17.0
+          ],
+          "boyut": [
+            18.0,
+            6.2,
+            10.0
+          ]
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          -15.5,
+          -7.5
+        ],
+        [
+          7.5,
+          15.5
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -5.85,
+            0.04,
+            12.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -1.35,
+            0.04,
+            12.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            1.35,
+            0.04,
+            12.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            5.85,
+            0.04,
+            12.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            8.25,
+            0.04,
+            24.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            10.75,
+            0.04,
+            24.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            13.25,
+            0.04,
+            24.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -8.25,
+            0.04,
+            24.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -10.75,
+            0.04,
+            24.5
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -16.7,
+          0.0,
+          1.65
+        ],
+        [
+          16.7,
+          0.0,
+          1.65
+        ],
+        [
+          -2.0,
+          0.0,
+          1.65
+        ]
+      ],
+      "hareketli": [],
+      "nesneler": [
+        "Benzinlik_Doseme",
+        "Benzinlik_Hava_Su",
+        "Benzinlik_Kanopi",
+        "Benzinlik_Kanopi_Lamba",
+        "Benzinlik_Market",
+        "Benzinlik_Market_Cati",
+        "Benzinlik_Pilon",
+        "Benzinlik_Pompa_Adalari"
+      ],
+      "col_kutulari": [
+        "COL_Benzinlik_Ada_Kose_Sag",
+        "COL_Benzinlik_Ada_Kose_Sol",
+        "COL_Benzinlik_Ada_Orta",
+        "COL_Benzinlik_Ada_Pompa_1",
+        "COL_Benzinlik_Ada_Pompa_2",
+        "COL_Benzinlik_Bordur_Arka",
+        "COL_Benzinlik_Bordur_Sag",
+        "COL_Benzinlik_Bordur_Sol",
+        "COL_Benzinlik_Doseme_1",
+        "COL_Benzinlik_Doseme_2",
+        "COL_Benzinlik_Doseme_3",
+        "COL_Benzinlik_Doseme_4",
+        "COL_Benzinlik_Doseme_5",
+        "COL_Benzinlik_Doseme_6",
+        "COL_Benzinlik_Doseme_7",
+        "COL_Benzinlik_Doseme_8",
+        "COL_Benzinlik_Doseme_9",
+        "COL_Benzinlik_Doseme_Beton",
+        "COL_Benzinlik_Hava_Su",
+        "COL_Benzinlik_Kaldirim",
+        "COL_Benzinlik_Kanopi",
+        "COL_Benzinlik_Kolon_1",
+        "COL_Benzinlik_Kolon_2",
+        "COL_Benzinlik_Kolon_3",
+        "COL_Benzinlik_Kolon_4",
+        "COL_Benzinlik_Market",
+        "COL_Benzinlik_Market_Alin",
+        "COL_Benzinlik_Pilon"
+      ],
+      "hedef_olculer": {
+        "kanopi": [
+          18.0,
+          10.0
+        ],
+        "kanopi_alt": 5.2,
+        "market": [
+          12.0,
+          8.0
+        ],
+        "kolon_sayisi": 4,
+        "ada_sayisi": 2,
+        "pompa_sayisi": 4
+      }
+    },
+    {
+      "id": "Market",
+      "fbx": "Market.fbx",
+      "boyut": [
+        30.0,
+        5.43,
+        32.0
+      ],
+      "boyut_notu": "[X genislik, zemin ustu yukseklik, Z derinlik]; temeller -0,6'ya iner",
+      "ucgen": 3230,
+      "col_ucgen": 168,
+      "ucgen_butcesi": 8000,
+      "parsel": [
+        30.0,
+        32.0
+      ],
+      "parsel_sinirlari": {
+        "x": [
+          -15.0,
+          15.0
+        ],
+        "z": [
+          0.0,
+          32.0
+        ]
+      },
+      "bina_izleri": [
+        {
+          "ad": "Market_Bina",
+          "min": [
+            -10.0,
+            0.0,
+            17.7
+          ],
+          "max": [
+            10.0,
+            4.5,
+            31.7
+          ],
+          "boyut": [
+            20.0,
+            4.5,
+            14.0
+          ]
+        }
+      ],
+      "giris_kesimleri": [
+        [
+          6.0,
+          14.0
+        ]
+      ],
+      "park_yerleri": [
+        {
+          "konum": [
+            -8.25,
+            0.04,
+            14.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -5.75,
+            0.04,
+            14.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -3.25,
+            0.04,
+            14.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -0.75,
+            0.04,
+            14.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            1.75,
+            0.04,
+            14.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            4.25,
+            0.04,
+            14.0
+          ],
+          "yon_derece": 0,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -13.25,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 180,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -10.75,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 180,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -8.25,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 180,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        },
+        {
+          "konum": [
+            -5.75,
+            0.04,
+            3.3
+          ],
+          "yon_derece": 180,
+          "boyut": [
+            2.5,
+            5.0
+          ]
+        }
+      ],
+      "agac_noktalari": [
+        [
+          -1.0,
+          0.0,
+          3.0
+        ],
+        [
+          3.5,
+          0.0,
+          3.0
+        ],
+        [
+          -12.6,
+          0.0,
+          20.5
+        ],
+        [
+          -12.6,
+          0.0,
+          27.5
+        ]
+      ],
+      "hareketli": [
+        {
+          "ad": "Market_Kepenk_1",
+          "tur": "sarmal_kepenk",
+          "genislik": 3.0,
+          "yukseklik": 3.2
+        }
+      ],
+      "nesneler": [
+        "Market_Araba_Sundurmasi",
+        "Market_Bina",
+        "Market_Cati",
+        "Market_Doseme",
+        "Market_Kepenk_1",
+        "Market_Konteyner_Alani"
+      ],
+      "col_kutulari": [
+        "COL_Market_Ada_Kose",
+        "COL_Market_Ada_On_Serit",
+        "COL_Market_Ada_On_Tarh",
+        "COL_Market_Araba_Sundurmasi",
+        "COL_Market_Bina",
+        "COL_Market_Doseme_On",
+        "COL_Market_Doseme_Yan",
+        "COL_Market_Giris_Parapeti",
+        "COL_Market_Kaldirim",
+        "COL_Market_Konteyner_Duvar_Arka",
+        "COL_Market_Konteyner_Duvar_Sag",
+        "COL_Market_Konteyner_Duvar_Sol",
+        "COL_Market_Konteynerler",
+        "COL_Market_Sacak"
+      ],
+      "hedef_olculer": {
+        "govde": [
+          20.0,
+          14.0
+        ],
+        "yukseklik": 4.5,
+        "park_aralik": [
+          8,
+          10
+        ]
+      }
+    }
+  ]
+}

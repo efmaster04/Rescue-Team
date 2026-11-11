@@ -1,0 +1,74 @@
+Donati verify sonucu: TEMIZ  (1392 kontrol)
+
+[JSON] 25 varlik, 27 malzeme
+[BLEND] 73 nesne, FONT/CURVE yok: True
+
+[Trafik_Isigi_Kollu] tur=trafik ucgen=1328/2500 boyut=[4.27, 6.55, 0.786]
+  kol_basligi: alt kenar 5.400 m, x=-3.72
+  direk_basligi: alt kenar 2.600 m, x=0.0
+  kol ucu x=-4.040, direk ust 6.550
+
+[Trafik_Isigi_Direk] tur=trafik ucgen=672/2500 boyut=[0.46, 3.62, 0.712]
+  direk_basligi: alt kenar 2.600 m, x=0.0
+  direk ust 3.240
+
+[Tabela_YolVer] tur=trafik ucgen=153/800 boyut=[0.9, 2.83, 0.106]
+  renkli yuz 2, hepsi -Y: True
+
+[Tabela_Dur] tur=trafik ucgen=178/800 boyut=[0.75, 2.83, 0.106]
+  renkli yuz 12, hepsi -Y: True
+
+[Tabela_YayaGecidi] tur=trafik ucgen=159/800 boyut=[0.6, 2.83, 0.111]
+  renkli yuz 5, hepsi -Y: True
+
+[Tabela_Park] tur=trafik ucgen=166/800 boyut=[0.6, 2.83, 0.111]
+  renkli yuz 12, hepsi -Y: True
+
+[Bariyer_Otoyol] tur=trafik ucgen=228/800 boyut=[4.0, 0.75, 0.323]
+
+[Beton_Bariyer] tur=trafik ucgen=60/800 boyut=[2.0, 0.81, 0.61]
+
+[Baba] tur=trafik ucgen=166/800 boyut=[0.176, 0.9, 0.167]
+
+[Sokak_Lambasi] tur=aydinlatma ucgen=312/1000 boyut=[2.62, 8.035, 0.4]
+  Lamba_Isik orijin (-2.1, 0.0, 7.828), isik noktasi (-2.1, 0.0, 7.778)
+
+[Park_Lambasi] tur=aydinlatma ucgen=284/1000 boyut=[0.43, 3.5, 0.43]
+  Lamba_Isik orijin (0.0, 0.0, 3.06), isik noktasi (0.0, 0.0, 3.06)
+
+[Elektrik_Diregi] tur=aydinlatma ucgen=412/1000 boyut=[1.9, 9.24, 0.22]
+  Tel_1 (-0.85, 0.0, 8.99) (Unity [-0.85, 8.99, 0.0])
+  Tel_2 (0.0, 0.0, 9.24) (Unity [0.0, 9.24, 0.0])
+  Tel_3 (0.85, 0.0, 8.99) (Unity [0.85, 8.99, 0.0])
+
+[Otobus_Duragi] tur=esya ucgen=780/2000 boyut=[4.2, 2.6, 1.62]
+
+[Bank] tur=esya ucgen=684/800 boyut=[1.8, 0.881, 0.557]
+
+[Cop_Kutusu] tur=esya ucgen=332/800 boyut=[0.444, 1.075, 0.513]
+
+[Cop_Konteyneri] tur=esya ucgen=624/800 boyut=[1.4, 1.33, 1.158]
+
+[Cesme] tur=esya ucgen=593/800 boyut=[1.6, 2.0, 0.8]
+
+[Oyun_Kaydirak] tur=esya ucgen=604/800 boyut=[0.798, 1.99, 3.613]
+
+[Oyun_Salincak] tur=esya ucgen=580/800 boyut=[2.9, 2.28, 1.971]
+
+[Agac_Cinar] tur=bitki ucgen=1128/1500 boyut=[9.05, 9.345, 9.375]
+  yukseklik 9.34 m, tac yaricapi 4.79 m, COL_Govde z 0..3.40
+
+[Agac_Kavak] tur=bitki ucgen=720/1500 boyut=[2.959, 13.027, 2.976]
+  yukseklik 13.03 m, tac yaricapi 1.6 m, COL_Govde z 0..2.30
+
+[Agac_Cam] tur=bitki ucgen=268/1500 boyut=[4.733, 9.02, 4.744]
+  yukseklik 9.02 m, tac yaricapi 2.53 m, COL_Govde z 0..2.00
+
+[Agac_Meyve] tur=bitki ucgen=466/1500 boyut=[3.006, 4.03, 3.031]
+  yukseklik 4.03 m, tac yaricapi 1.61 m, COL_Govde z 0..1.20
+
+[Cali_Yuvarlak] tur=bitki ucgen=200/400 boyut=[1.566, 1.203, 1.548]
+
+[Cali_Cit] tur=bitki ucgen=214/400 boyut=[2.0, 1.122, 0.774]
+
+TOPLAM UCGEN (gorsel): 11311

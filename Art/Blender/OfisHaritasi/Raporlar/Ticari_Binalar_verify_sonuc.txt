@@ -1,0 +1,183 @@
+Ticari_Binalar dogrulama
+============================================================
+[Malzeme JSON]
+  OK   34 malzeme, adlar benzersiz
+  OK   butun malzemeler TB_ onekli
+  OK   TB_Kaplama randomize=atolye_kaplama paleti var
+  OK   TB_Tabela randomize=ticari_tabela paleti var
+  OK   TB_Tabela_2 randomize=ticari_tabela paleti var
+  OK   atolye_kaplama paleti 5 renk
+  OK   TB_Kaplama randomize=atolye_kaplama
+  OK   TB_Siva mevcut
+  OK   TB_Cam opak
+  OK   .blend icinde FONT nesnesi yok
+  OK   .blend icinde yazi egrisi yok
+
+[Atolye_A]  parsel 24.0 x 32.0
+  OK   koleksiyon var
+  OK   6 gorsel + 16 COL nesnesi, hepsi MESH
+  OK   nesne adlari varlik onekli
+  OK   manifest nesne listesi .blend ile ayni
+  OK   butun nesneler donus 0 / olcek 1
+  OK   sabit nesnelerin orijini parsel orijininde
+  OK   parsel icinde: X -12.000..12.000, Y(Unity Z) 0.000..32.000
+  OK   en alt kot -0.600 (temel -0,6)
+  OK   gorsel ucgen 5848 <= butce 6000
+  OK   manifest ucgen sayisi dogru
+  OK   kullanilan 17 malzemenin hepsi JSON'da
+  OK   her gorsel mesh malzemeli
+  OK   yuz malzeme indeksleri gecerli
+  OK   16 COL kutusu eksenlere hizali 8 koseli kutu
+  OK   COL kutularinda malzeme yok
+  OK   govde 14.00 x 18.00 m (hedef 14.0 x 18.0)
+  OK   yan duvar sacak kotu 5.50 m (hedef 5.5)
+  OK   Atolye_A_Kepenk_1 var
+  OK   Atolye_A_Kepenk_1: aciklik 4.00 x 4.20 m (hedef 4.0 x 4.2), orijin ust kenarda z=4.24
+  OK   buyuk kepenk 4.0 x 4.2 m
+  OK   on arac kapisi boslugu 6.00 m (hedef 6.0)
+  OK   4 park yeri dosemede, duvar/bina/esyaya ve birbirine girmiyor
+  OK   giris kesimleri [[-8.5, -2.5]] acik ve dosemeli
+  OK   manifest boyut [24.0, 7.02, 32.0]
+       bina izleri: [('Atolye_A_Bina', [14.0, 7.02, 18.0])]
+
+[Atolye_B]  parsel 20.0 x 28.0
+  OK   koleksiyon var
+  OK   8 gorsel + 13 COL nesnesi, hepsi MESH
+  OK   nesne adlari varlik onekli
+  OK   manifest nesne listesi .blend ile ayni
+  OK   butun nesneler donus 0 / olcek 1
+  OK   sabit nesnelerin orijini parsel orijininde
+  OK   parsel icinde: X -10.000..10.000, Y(Unity Z) 0.000..28.000
+  OK   en alt kot -0.600 (temel -0,6)
+  OK   gorsel ucgen 3250 <= butce 6000
+  OK   manifest ucgen sayisi dogru
+  OK   kullanilan 18 malzemenin hepsi JSON'da
+  OK   her gorsel mesh malzemeli
+  OK   yuz malzeme indeksleri gecerli
+  OK   13 COL kutusu eksenlere hizali 8 koseli kutu
+  OK   COL kutularinda malzeme yok
+  OK   govde 10.00 x 12.00 m (hedef 10.0 x 12.0)
+  OK   Atolye_B_Kepenk_1 var
+  OK   Atolye_B_Kepenk_1: aciklik 3.20 x 3.60 m (hedef 3.2 x 3.6), orijin ust kenarda z=3.64
+  OK   Atolye_B_Kepenk_2 var
+  OK   Atolye_B_Kepenk_2: aciklik 3.20 x 3.60 m (hedef 3.2 x 3.6), orijin ust kenarda z=3.64
+  OK   kepenk sayisi 2 (hedef 2)
+  OK   5 park yeri dosemede, duvar/bina/esyaya ve birbirine girmiyor
+  OK   giris kesimleri [[-9.5, 9.5]] acik ve dosemeli
+  OK   manifest boyut [20.0, 5.97, 28.0]
+       bina izleri: [('Atolye_B_Bina', [10.0, 5.07, 12.0])]
+
+[Atolye_C]  parsel 30.0 x 28.0
+  OK   koleksiyon var
+  OK   7 gorsel + 19 COL nesnesi, hepsi MESH
+  OK   nesne adlari varlik onekli
+  OK   manifest nesne listesi .blend ile ayni
+  OK   butun nesneler donus 0 / olcek 1
+  OK   sabit nesnelerin orijini parsel orijininde
+  OK   parsel icinde: X -15.000..15.000, Y(Unity Z) 0.000..28.000
+  OK   en alt kot -0.600 (temel -0,6)
+  OK   gorsel ucgen 5348 <= butce 6000
+  OK   manifest ucgen sayisi dogru
+  OK   kullanilan 17 malzemenin hepsi JSON'da
+  OK   her gorsel mesh malzemeli
+  OK   yuz malzeme indeksleri gecerli
+  OK   19 COL kutusu eksenlere hizali 8 koseli kutu
+  OK   COL kutularinda malzeme yok
+  OK   govde 22.00 x 14.00 m (hedef 22.0 x 14.0)
+  OK   Atolye_C_Kepenk_1 var
+  OK   Atolye_C_Kepenk_1: aciklik 4.00 x 4.40 m (hedef 4.0 x 4.4), orijin ust kenarda z=4.44
+  OK   Atolye_C_Kepenk_2 var
+  OK   Atolye_C_Kepenk_2: aciklik 4.00 x 4.40 m (hedef 4.0 x 4.4), orijin ust kenarda z=4.44
+  OK   kepenk sayisi 2 (hedef 2)
+  OK   4 park yeri dosemede, duvar/bina/esyaya ve birbirine girmiyor
+  OK   giris kesimleri [[-11.1, -5.1], [-0.1, 5.9]] acik ve dosemeli
+  OK   manifest boyut [30.0, 7.57, 28.0]
+       bina izleri: [('Atolye_C_Bina', [22.0, 6.67, 14.0])]
+
+[Benzinlik]  parsel 36.0 x 30.0
+  OK   koleksiyon var
+  OK   8 gorsel + 28 COL nesnesi, hepsi MESH
+  OK   nesne adlari varlik onekli
+  OK   manifest nesne listesi .blend ile ayni
+  OK   butun nesneler donus 0 / olcek 1
+  OK   sabit nesnelerin orijini parsel orijininde
+  OK   parsel icinde: X -18.000..18.000, Y(Unity Z) 0.000..30.000
+  OK   en alt kot -0.600 (temel -0,6)
+  OK   gorsel ucgen 4432 <= butce 10000
+  OK   manifest ucgen sayisi dogru
+  OK   kullanilan 21 malzemenin hepsi JSON'da
+  OK   her gorsel mesh malzemeli
+  OK   yuz malzeme indeksleri gecerli
+  OK   28 COL kutusu eksenlere hizali 8 koseli kutu
+  OK   COL kutularinda malzeme yok
+  OK   kanopi 18.00 x 10.00 m (hedef 18.0 x 10.0)
+  OK   kanopi alt yuzu 5.200 m (hedef 5.2)
+  OK   kanopi COL alti 5.20 m: arac gecebilir
+  OK   kanopi lambalari 5,15 m ustunde
+  OK   market binasi 12.00 x 8.00 m
+  OK   kanopi kolonu 4 (4-6)
+  OK   pompa adasi 2
+  OK   9 park yeri dosemede, duvar/bina/esyaya ve birbirine girmiyor
+  OK   giris kesimleri [[-15.5, -7.5], [7.5, 15.5]] acik ve dosemeli
+  OK   manifest boyut [36.0, 6.2, 30.0]
+       bina izleri: [('Benzinlik_Market', [12.0, 4.2, 8.0]), ('Benzinlik_Kanopi', [18.0, 6.2, 10.0])]
+
+[Market]  parsel 30.0 x 32.0
+  OK   koleksiyon var
+  OK   6 gorsel + 14 COL nesnesi, hepsi MESH
+  OK   nesne adlari varlik onekli
+  OK   manifest nesne listesi .blend ile ayni
+  OK   butun nesneler donus 0 / olcek 1
+  OK   sabit nesnelerin orijini parsel orijininde
+  OK   parsel icinde: X -15.000..15.000, Y(Unity Z) 0.000..32.000
+  OK   en alt kot -0.600 (temel -0,6)
+  OK   gorsel ucgen 3230 <= butce 8000
+  OK   manifest ucgen sayisi dogru
+  OK   kullanilan 24 malzemenin hepsi JSON'da
+  OK   her gorsel mesh malzemeli
+  OK   yuz malzeme indeksleri gecerli
+  OK   14 COL kutusu eksenlere hizali 8 koseli kutu
+  OK   COL kutularinda malzeme yok
+  OK   govde 20.00 x 14.00 m (hedef 20.0 x 14.0)
+  OK   bina yuksekligi 4.50 m (hedef 4.5)
+  OK   Market_Kepenk_1 var
+  OK   Market_Kepenk_1: aciklik 3.00 x 3.20 m (hedef 3.0 x 3.2), orijin ust kenarda z=3.24
+  OK   otopark yeri 10 (8-10)
+  OK   10 park yeri dosemede, duvar/bina/esyaya ve birbirine girmiyor
+  OK   giris kesimleri [[6.0, 14.0]] acik ve dosemeli
+  OK   manifest boyut [30.0, 5.43, 32.0]
+       bina izleri: [('Market_Bina', [20.0, 4.5, 14.0])]
+
+[FBX yeniden ice aktarma]
+  OK   Atolye_A.fbx var (151 KB)
+  OK   Atolye_A: 22 nesne, adlar ayni
+  OK   Atolye_A: FBX icinde FONT yok
+  OK   Atolye_A: olcu, ucgen ve malzemeler korunuyor
+  OK   Atolye_A: FBX icindeki COL kutulari hala eksen hizali
+       Atolye_A: ice aktarim sonrasi donus/olcek 0/1 olmayan nesne: 0
+  OK   Atolye_B.fbx var (120 KB)
+  OK   Atolye_B: 21 nesne, adlar ayni
+  OK   Atolye_B: FBX icinde FONT yok
+  OK   Atolye_B: olcu, ucgen ve malzemeler korunuyor
+  OK   Atolye_B: FBX icindeki COL kutulari hala eksen hizali
+       Atolye_B: ice aktarim sonrasi donus/olcek 0/1 olmayan nesne: 0
+  OK   Atolye_C.fbx var (151 KB)
+  OK   Atolye_C: 26 nesne, adlar ayni
+  OK   Atolye_C: FBX icinde FONT yok
+  OK   Atolye_C: olcu, ucgen ve malzemeler korunuyor
+  OK   Atolye_C: FBX icindeki COL kutulari hala eksen hizali
+       Atolye_C: ice aktarim sonrasi donus/olcek 0/1 olmayan nesne: 0
+  OK   Benzinlik.fbx var (164 KB)
+  OK   Benzinlik: 36 nesne, adlar ayni
+  OK   Benzinlik: FBX icinde FONT yok
+  OK   Benzinlik: olcu, ucgen ve malzemeler korunuyor
+  OK   Benzinlik: FBX icindeki COL kutulari hala eksen hizali
+       Benzinlik: ice aktarim sonrasi donus/olcek 0/1 olmayan nesne: 0
+  OK   Market.fbx var (120 KB)
+  OK   Market: 20 nesne, adlar ayni
+  OK   Market: FBX icinde FONT yok
+  OK   Market: olcu, ucgen ve malzemeler korunuyor
+  OK   Market: FBX icindeki COL kutulari hala eksen hizali
+       Market: ice aktarim sonrasi donus/olcek 0/1 olmayan nesne: 0
+
+SONUC: TEMIZ

@@ -1,0 +1,1234 @@
+{
+  "set": "Araclar",
+  "eksen": "Unity yerel [x, y(yukari), z(ileri)]; on = +Z, sag = +X, lastik alti y=0",
+  "araclar": [
+    {
+      "id": "Arac_Hatchback",
+      "fbx": "Arac_Hatchback.fbx",
+      "boyut": [
+        1.745,
+        1.482,
+        3.966
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 4076,
+      "tip": "binek",
+      "kutle_kg": 1100,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 2.5,
+      "agirlik_merkezi": [
+        0,
+        0.42,
+        0.15
+      ],
+      "ceker": "on",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.75,
+            0.3,
+            1.175
+          ],
+          "yaricap": 0.3,
+          "genislik": 0.185,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.75,
+            0.3,
+            1.175
+          ],
+          "yaricap": 0.3,
+          "genislik": 0.185,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.74,
+            0.3,
+            -1.325
+          ],
+          "yaricap": 0.3,
+          "genislik": 0.185,
+          "direksiyon": false,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.74,
+            0.3,
+            -1.325
+          ],
+          "yaricap": 0.3,
+          "genislik": 0.185,
+          "direksiyon": false,
+          "ceker": false
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -0.8725,
+          0.0,
+          -1.981
+        ],
+        "max": [
+          0.8725,
+          1.482,
+          1.985
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.6175,
+            0.26,
+            -1.955
+          ],
+          "max": [
+            0.6175,
+            0.98,
+            1.955
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -0.86,
+            0.63,
+            -1.915
+          ],
+          "max": [
+            0.86,
+            0.98,
+            1.915
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.62,
+            0.98,
+            -1.745
+          ],
+          "max": [
+            0.62,
+            1.46,
+            0.775
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_Sedan",
+      "fbx": "Arac_Sedan.fbx",
+      "boyut": [
+        1.785,
+        1.457,
+        4.516
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 4432,
+      "tip": "binek",
+      "kutle_kg": 1300,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 2.64,
+      "agirlik_merkezi": [
+        0,
+        0.43,
+        0.12
+      ],
+      "ceker": "on",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.765,
+            0.31,
+            1.35
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.765,
+            0.31,
+            1.35
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.76,
+            0.31,
+            -1.29
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": false,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.76,
+            0.31,
+            -1.29
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": false,
+          "ceker": false
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -0.899,
+          0.0,
+          -2.256
+        ],
+        "max": [
+          0.899,
+          1.457,
+          2.26
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.6325,
+            0.26,
+            -2.23
+          ],
+          "max": [
+            0.6325,
+            0.985,
+            2.23
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -0.88,
+            0.65,
+            -2.19
+          ],
+          "max": [
+            0.88,
+            0.985,
+            2.19
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.64,
+            0.985,
+            -1.65
+          ],
+          "max": [
+            0.64,
+            1.455,
+            0.7
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_Taksi",
+      "fbx": "Arac_Taksi.fbx",
+      "boyut": [
+        1.785,
+        1.603,
+        4.516
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 4520,
+      "tip": "binek",
+      "kutle_kg": 1350,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 2.64,
+      "agirlik_merkezi": [
+        0,
+        0.44,
+        0.12
+      ],
+      "ceker": "on",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.765,
+            0.31,
+            1.35
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.765,
+            0.31,
+            1.35
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.76,
+            0.31,
+            -1.29
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": false,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.76,
+            0.31,
+            -1.29
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": false,
+          "ceker": false
+        }
+      ],
+      "boya_malzemesi": "AR_Taksi_Sari",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -0.899,
+          0.0,
+          -2.256
+        ],
+        "max": [
+          0.899,
+          1.6028,
+          2.26
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.6325,
+            0.26,
+            -2.23
+          ],
+          "max": [
+            0.6325,
+            0.985,
+            2.23
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -0.88,
+            0.65,
+            -2.19
+          ],
+          "max": [
+            0.88,
+            0.985,
+            2.19
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.64,
+            0.985,
+            -1.65
+          ],
+          "max": [
+            0.64,
+            1.6028,
+            0.7
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_SUV",
+      "fbx": "Arac_SUV.fbx",
+      "boyut": [
+        1.848,
+        1.659,
+        4.426
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 4984,
+      "tip": "binek",
+      "kutle_kg": 1450,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 2.62,
+      "agirlik_merkezi": [
+        0,
+        0.52,
+        0.12
+      ],
+      "ceker": "on",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.785,
+            0.34,
+            1.32
+          ],
+          "yaricap": 0.34,
+          "genislik": 0.215,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.785,
+            0.34,
+            1.32
+          ],
+          "yaricap": 0.34,
+          "genislik": 0.215,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.785,
+            0.34,
+            -1.3
+          ],
+          "yaricap": 0.34,
+          "genislik": 0.215,
+          "direksiyon": false,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.785,
+            0.34,
+            -1.3
+          ],
+          "yaricap": 0.34,
+          "genislik": 0.215,
+          "direksiyon": false,
+          "ceker": false
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -0.9238,
+          0.0,
+          -2.213
+        ],
+        "max": [
+          0.9238,
+          1.659,
+          2.213
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.6475,
+            0.36,
+            -2.18
+          ],
+          "max": [
+            0.6475,
+            1.12,
+            2.18
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -0.9,
+            0.71,
+            -2.14
+          ],
+          "max": [
+            0.9,
+            1.12,
+            2.14
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.66,
+            1.12,
+            -2.05
+          ],
+          "max": [
+            0.66,
+            1.62,
+            0.78
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_Pickup",
+      "fbx": "Arac_Pickup.fbx",
+      "boyut": [
+        1.868,
+        1.8,
+        5.3
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 4520,
+      "tip": "ticari",
+      "kutle_kg": 2000,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 3.1,
+      "agirlik_merkezi": [
+        0,
+        0.6,
+        0.25
+      ],
+      "ceker": "arka",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.79,
+            0.37,
+            1.75
+          ],
+          "yaricap": 0.37,
+          "genislik": 0.245,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.79,
+            0.37,
+            1.75
+          ],
+          "yaricap": 0.37,
+          "genislik": 0.245,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.79,
+            0.37,
+            -1.35
+          ],
+          "yaricap": 0.37,
+          "genislik": 0.245,
+          "direksiyon": false,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.79,
+            0.37,
+            -1.35
+          ],
+          "yaricap": 0.37,
+          "genislik": 0.245,
+          "direksiyon": false,
+          "ceker": true
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -0.941,
+          0.0,
+          -2.65
+        ],
+        "max": [
+          0.941,
+          1.8,
+          2.65
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.6375,
+            0.42,
+            -2.63
+          ],
+          "max": [
+            0.6375,
+            1.25,
+            2.63
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -0.908,
+            0.77,
+            -2.6
+          ],
+          "max": [
+            0.908,
+            1.29,
+            2.6
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.72,
+            1.24,
+            -0.67
+          ],
+          "max": [
+            0.72,
+            1.8,
+            0.95
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_HafifTicari",
+      "fbx": "Arac_HafifTicari.fbx",
+      "boyut": [
+        1.839,
+        1.86,
+        4.415
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 3978,
+      "tip": "ticari",
+      "kutle_kg": 1500,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 2.75,
+      "agirlik_merkezi": [
+        0,
+        0.58,
+        0.1
+      ],
+      "ceker": "on",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.77,
+            0.31,
+            1.38
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.77,
+            0.31,
+            1.38
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": true,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.78,
+            0.31,
+            -1.37
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": false,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.78,
+            0.31,
+            -1.37
+          ],
+          "yaricap": 0.31,
+          "genislik": 0.195,
+          "direksiyon": false,
+          "ceker": false
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -0.9614,
+          0.0,
+          -2.215
+        ],
+        "max": [
+          0.9614,
+          1.86,
+          2.2
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.6425,
+            0.28,
+            -2.18
+          ],
+          "max": [
+            0.6425,
+            1.1,
+            2.18
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -0.9,
+            0.65,
+            -2.14
+          ],
+          "max": [
+            0.9,
+            1.1,
+            2.14
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.84,
+            1.1,
+            -2.16
+          ],
+          "max": [
+            0.84,
+            1.86,
+            1.25
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_Minibus",
+      "fbx": "Arac_Minibus.fbx",
+      "boyut": [
+        2.025,
+        2.6,
+        6.03
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 4672,
+      "tip": "ticari",
+      "kutle_kg": 3200,
+      "azami_hiz_kmh": 70,
+      "aks_mesafesi": 3.66,
+      "agirlik_merkezi": [
+        0,
+        0.78,
+        0.15
+      ],
+      "ceker": "arka",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.87,
+            0.36,
+            2.05
+          ],
+          "yaricap": 0.36,
+          "genislik": 0.215,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.87,
+            0.36,
+            2.05
+          ],
+          "yaricap": 0.36,
+          "genislik": 0.215,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.86,
+            0.36,
+            -1.61
+          ],
+          "yaricap": 0.36,
+          "genislik": 0.215,
+          "direksiyon": false,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.86,
+            0.36,
+            -1.61
+          ],
+          "yaricap": 0.36,
+          "genislik": 0.215,
+          "direksiyon": false,
+          "ceker": true
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -1.1147,
+          0.0,
+          -3.02
+        ],
+        "max": [
+          1.1147,
+          2.6,
+          3.01
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.7225,
+            0.34,
+            -2.98
+          ],
+          "max": [
+            0.7225,
+            1.33,
+            2.98
+          ]
+        },
+        {
+          "ad": "COL_Govde_Ust",
+          "min": [
+            -1.0,
+            0.75,
+            -2.94
+          ],
+          "max": [
+            1.0,
+            1.33,
+            2.94
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.95,
+            1.33,
+            -2.96
+          ],
+          "max": [
+            0.95,
+            2.6,
+            2.0
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Govde_Ust",
+        "COL_Kabin"
+      ]
+    },
+    {
+      "id": "Arac_Kamyon",
+      "fbx": "Arac_Kamyon.fbx",
+      "boyut": [
+        2.3,
+        3.3,
+        7.208
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 5756,
+      "tip": "agir",
+      "kutle_kg": 7500,
+      "azami_hiz_kmh": 60,
+      "aks_mesafesi": 4.0,
+      "agirlik_merkezi": [
+        0,
+        0.95,
+        -0.25
+      ],
+      "ceker": "arka",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -1.0,
+            0.48,
+            2.3
+          ],
+          "yaricap": 0.48,
+          "genislik": 0.295,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            1.0,
+            0.48,
+            2.3
+          ],
+          "yaricap": 0.48,
+          "genislik": 0.295,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.84,
+            0.48,
+            -1.7
+          ],
+          "yaricap": 0.48,
+          "genislik": 0.6,
+          "direksiyon": false,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.84,
+            0.48,
+            -1.7
+          ],
+          "yaricap": 0.48,
+          "genislik": 0.6,
+          "direksiyon": false,
+          "ceker": true
+        }
+      ],
+      "boya_malzemesi": "AR_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -1.3117,
+          0.0,
+          -3.6
+        ],
+        "max": [
+          1.3117,
+          3.3,
+          3.608
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.5,
+            0.4,
+            -3.55
+          ],
+          "max": [
+            0.5,
+            1.12,
+            3.58
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -1.11,
+            0.99,
+            1.68
+          ],
+          "max": [
+            1.11,
+            2.8,
+            3.58
+          ]
+        },
+        {
+          "ad": "COL_Kasa",
+          "min": [
+            -1.15,
+            1.1,
+            -3.6
+          ],
+          "max": [
+            1.15,
+            3.3,
+            1.6
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Kabin",
+        "COL_Kasa"
+      ]
+    },
+    {
+      "id": "Arac_Traktor",
+      "fbx": "Arac_Traktor.fbx",
+      "boyut": [
+        2.01,
+        2.7,
+        3.91
+      ],
+      "boyut_not": "aynalar haric (genislik/yukseklik/uzunluk)",
+      "ucgen": 5736,
+      "tip": "traktor",
+      "kutle_kg": 3200,
+      "azami_hiz_kmh": 25,
+      "aks_mesafesi": 2.25,
+      "agirlik_merkezi": [
+        0,
+        0.78,
+        -0.35
+      ],
+      "ceker": "arka",
+      "tekerler": [
+        {
+          "ad": "Teker_OnSol",
+          "konum": [
+            -0.75,
+            0.4,
+            1.15
+          ],
+          "yaricap": 0.4,
+          "genislik": 0.235,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_OnSag",
+          "konum": [
+            0.75,
+            0.4,
+            1.15
+          ],
+          "yaricap": 0.4,
+          "genislik": 0.235,
+          "direksiyon": true,
+          "ceker": false
+        },
+        {
+          "ad": "Teker_ArkaSol",
+          "konum": [
+            -0.79,
+            0.75,
+            -1.1
+          ],
+          "yaricap": 0.75,
+          "genislik": 0.42,
+          "direksiyon": false,
+          "ceker": true
+        },
+        {
+          "ad": "Teker_ArkaSag",
+          "konum": [
+            0.79,
+            0.75,
+            -1.1
+          ],
+          "yaricap": 0.75,
+          "genislik": 0.42,
+          "direksiyon": false,
+          "ceker": true
+        }
+      ],
+      "boya_malzemesi": "AR_Traktor_Boya",
+      "far_malzemesi": "AR_Far",
+      "stop_malzemesi": "AR_Stop",
+      "sinyal_malzemesi": "AR_Sinyal",
+      "cerceve": {
+        "min": [
+          -1.005,
+          0.0,
+          -1.95
+        ],
+        "max": [
+          1.005,
+          2.7,
+          1.96
+        ]
+      },
+      "carpisma_kutulari": [
+        {
+          "ad": "COL_Govde_Alt",
+          "min": [
+            -0.34,
+            0.4,
+            -1.92
+          ],
+          "max": [
+            0.34,
+            1.46,
+            1.95
+          ]
+        },
+        {
+          "ad": "COL_Kabin",
+          "min": [
+            -0.7,
+            1.62,
+            -1.43
+          ],
+          "max": [
+            0.7,
+            2.7,
+            0.15
+          ]
+        }
+      ],
+      "nesneler": [
+        "Govde",
+        "Teker_OnSol",
+        "Teker_OnSag",
+        "Teker_ArkaSol",
+        "Teker_ArkaSag",
+        "COL_Govde_Alt",
+        "COL_Kabin"
+      ]
+    }
+  ]
+}
