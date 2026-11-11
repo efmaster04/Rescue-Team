@@ -70,7 +70,8 @@ public static class SelVadisiVerify
                 var onTime = FieldPayout.Compute(new FieldPayout.Inputs { succeeded = true, jobPayment = job.payment, distanceKm = job.distanceKm, fieldSeconds = SelVadisiMission.QuickResponseMinutes * 60f - 5f });
                 var late = FieldPayout.Compute(new FieldPayout.Inputs { succeeded = true, jobPayment = job.payment, distanceKm = job.distanceKm, fieldSeconds = (SelVadisiMission.QuickResponseMinutes + 2f) * 60f });
                 Check("(a) Hızlı müdahale sözleşmesi " + SelVadisiMission.QuickResponseMinutes.ToString("0", Inv) + " dk içinde sağlanır, geç kalınca sağlanmaz",
-                    onTime.vehicleWear <= job.contractMaxVehicleWear && onTime.equipmentWear <= job.contractMaxEquipmentWear && late.vehicleWear > job.contractMaxVehicleWear,
+                    onTime.vehicleWear <= job.contractMaxVehicleWear && onTime.equipmentWear <= job.contractMaxEquipmentWear && late.vehicleWear > job.contractMaxVehicleWear &&
+                    Mathf.Approximately(job.contractMaxFieldMinutes, SelVadisiMission.QuickResponseMinutes) && onTime.fieldSeconds <= job.contractMaxFieldMinutes * 60f && late.fieldSeconds > job.contractMaxFieldMinutes * 60f,
                     "sınır %" + job.contractMaxEquipmentWear.ToString("0.#", Inv) + " / %" + job.contractMaxVehicleWear.ToString("0.#", Inv) +
                     ", zamanında araç %" + onTime.vehicleWear.ToString("0.#", Inv) + ", geç %" + late.vehicleWear.ToString("0.#", Inv));
             }

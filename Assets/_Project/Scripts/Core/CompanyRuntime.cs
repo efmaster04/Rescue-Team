@@ -37,6 +37,7 @@ namespace CompanySim
         public int bonus, expenses;
         public float equipmentWear;
         public float vehicleWear;
+        public float fieldSeconds;
         public List<string> consumedItemUids = new List<string>();
     }
     [Serializable] public sealed class CompanySave
@@ -270,6 +271,7 @@ namespace CompanySim
             Data.contractSatisfied = Data.contractAccepted && result.succeeded &&
                 wear <= job.contractMaxEquipmentWear &&
                 Data.reportVehicleWear <= job.contractMaxVehicleWear &&
+                (job.contractMaxFieldMinutes <= 0f || result.fieldSeconds <= job.contractMaxFieldMinutes * 60f) &&
                 (result.consumedItemUids == null || result.consumedItemUids.Count == 0);
             Data.reportContractBonus = Data.contractSatisfied ? job.contractBonus : 0;
             Data.pendingPayment = Mathf.Max(0, Data.reportBasePayment + Data.reportFieldBonus +

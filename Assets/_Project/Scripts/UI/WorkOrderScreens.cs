@@ -47,7 +47,7 @@ namespace CompanySim
                 toggle.SetIsOnWithoutNotify(selectedContract); toggle.interactable=available;
                 toggle.onValueChanged.AddListener(value=>{selectedContract=value; Click();});
                 var title=Label("ContractTitle",box.transform,job.contractTitle,20,Paper); Place(title.gameObject,39,0,500,31);
-                var caption=Label("ContractTerms",box.transform,"Aşınma en fazla %"+job.contractMaxEquipmentWear+" / %"+job.contractMaxVehicleWear+", kayıp yok. +"+Money(job.contractBonus),16,Soft);
+                var caption=Label("ContractTerms",box.transform,"Aşınma en fazla %"+job.contractMaxEquipmentWear+" / %"+job.contractMaxVehicleWear+(job.contractMaxFieldMinutes>0?", sahada en fazla "+job.contractMaxFieldMinutes.ToString("0")+" dk":"")+", kayıp yok. +"+Money(job.contractBonus),16,Soft);
                 Rect(caption.gameObject,Vector2.zero,Vector2.one,new Vector2(39,0),new Vector2(0,-29));
             }
             var price=Label("JobPriceLabel",jobFooter,"İş bedeli",17,Soft); Place(price.gameObject,0,82,190,23);

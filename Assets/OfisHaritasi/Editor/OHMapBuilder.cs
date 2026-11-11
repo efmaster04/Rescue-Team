@@ -22,11 +22,17 @@ namespace OfisHaritasi.EditorTools
             "E11_sloping terrain wedge", "E12_faceted silhouette ridge", "EK_karsi kaldirim", "EK_yakin kaldirim" };
 
         [MenuItem("Rescue Team/Ofis Haritası/Haritayı Kur")]
-        public static void BuildMenu() { Build(true); }
+        public static void BuildMenu()
+        {
+            // Build sahneyi yeniden açar: açık sahnedeki kaydedilmemiş iş sorulmadan kaybolmasın
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Build(true);
+        }
 
         [MenuItem("Rescue Team/Ofis Haritası/Haritayı Kaldır")]
         public static void RemoveMenu()
         {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var scene = EditorSceneManager.OpenScene(ScenePath);
             Remove();
             EditorSceneManager.MarkSceneDirty(scene);
@@ -236,6 +242,17 @@ namespace OfisHaritasi.EditorTools
             floor.transform.SetParent(root.transform, false);
             floor.transform.position = new Vector3(-0.3f, -0.16f, 3.42f);
             floor.AddComponent<BoxCollider>().size = new Vector3(19.7f, 0.30f, 17.75f);
+            // Kurtarma Hangarı bu ayak izinin doğusunda kalır ve kendi zemin çarpıştırıcısı yoktur (kapanan Ground'a basıyordu).
+            // Hangar kuruluysa plakasının altına aynı üst kotta ikinci bir kutu konur; harita kaldırılınca kökle birlikte silinir.
+            if (GameObject.Find(GarageHangarBuilder.RootName))
+            {
+                float hx0 = GarageHangarBuilder.X0, hx1 = GarageHangarBuilder.X1 + GarageHangarBuilder.T;
+                float hz0 = GarageHangarBuilder.Z0 - GarageHangarBuilder.T, hz1 = GarageHangarBuilder.Z1 + GarageHangarBuilder.T;
+                var hangarFloor = new GameObject("Hangar_Zemini");
+                hangarFloor.transform.SetParent(root.transform, false);
+                hangarFloor.transform.position = new Vector3((hx0 + hx1) * 0.5f, -0.16f, (hz0 + hz1) * 0.5f);
+                hangarFloor.AddComponent<BoxCollider>().size = new Vector3(hx1 - hx0, 0.30f, hz1 - hz0);
+            }
             mapRoot.disabledLegacy = new GameObject[0];
             mapRoot.hiddenRenderers = hidden.ToArray();
             Report.AppendLine($"  gizlenen eski dis parca: {hidden.Count}");

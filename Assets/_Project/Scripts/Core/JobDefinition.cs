@@ -14,6 +14,8 @@ namespace CompanySim
         public int contractBonus;
         public float contractMaxEquipmentWear = 10;
         public float contractMaxVehicleWear = 10;
+        // Sözleşmenin saha süresi sınırı (dakika). 0 = süre koşulu yok.
+        public float contractMaxFieldMinutes = 0;
         public string requiredModule;
         public string[] requiredEquipment = Array.Empty<string>();
         public string[] recommendedEquipment = Array.Empty<string>();

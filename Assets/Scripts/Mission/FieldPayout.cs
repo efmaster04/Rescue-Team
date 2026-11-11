@@ -58,6 +58,7 @@ public static class FieldPayout
         public int bonus, expenses, stolenGoodsCharge, missedAmbulanceCharge;
         public int thiefRamCharge, thiefRams; // giderin hırsız kamyoneti vuruşlarından gelen kalemi (₺) ve vuruş sayısı
         public float equipmentWear, vehicleWear;
+        public float fieldSeconds;      // sahada geçen süre (süre koşullu sözleşmeler için)
         public float vanDamage;         // araç aşınmasının sürüş hasarından gelen payı (rapor satırı)
         public List<string> consumedItemUids = new List<string>();
         public List<string> lostNames = new List<string>();
@@ -80,6 +81,7 @@ public static class FieldPayout
         b.vehicleWear = Mathf.Clamp(Round1(i.distanceKm * 2f * VehicleWearPerKm +
             i.fieldSeconds / 60f * VehicleWearPerFieldMinute + Mathf.Max(0f, i.vanDamage)), 0f, 100f);
         b.vanDamage = Round1(Mathf.Max(0f, i.vanDamage));
+        b.fieldSeconds = Mathf.Max(0f, i.fieldSeconds);
         b.consumedItemUids.AddRange(i.lostEquipmentUids);
         b.lostNames.AddRange(i.lostEquipmentNames);
         b.expectedPayout = Mathf.Max(0, (i.succeeded ? cap + b.bonus : 0) - b.expenses);

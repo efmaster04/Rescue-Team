@@ -152,6 +152,7 @@ public static class MissionBridge
         {
             resultId = Guid.NewGuid().ToString("N"), jobId = s.jobId, succeeded = b.succeeded,
             bonus = b.bonus, expenses = b.expenses, equipmentWear = b.equipmentWear, vehicleWear = b.vehicleWear,
+            fieldSeconds = b.fieldSeconds,
             consumedItemUids = new List<string>(b.consumedItemUids),
         };
     }

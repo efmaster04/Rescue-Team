@@ -28,7 +28,12 @@ namespace OfisHaritasi.EditorTools
         }
 
         [MenuItem("Rescue Team/Ofis Haritası/Play Modunda Dene")]
-        public static void RunMenu() { Begin(); }
+        public static void RunMenu()
+        {
+            // Begin sahneyi yeniden açar: açık sahnedeki kaydedilmemiş iş sorulmadan kaybolmasın
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Begin();
+        }
         public static void RunBatch() { Begin(); }
 
         static void Begin()

@@ -335,6 +335,8 @@ public static class SelVadisiMissionSetup
         // varsayılan %10 sınırı hiç sağlanamazdı. Sınır: yol + QuickResponseMinutes dakikalık saha süresi.
         job.contractMaxEquipmentWear = 10f;
         job.contractMaxVehicleWear = QuickResponseVehicleWearLimit(job.distanceKm);
+        // Süre koşulu ayrıca gerçek saha süresiyle ölçülür (aşınma yuvarlaması 15:20 gibi geç raporu kaçırıyordu).
+        job.contractMaxFieldMinutes = SelVadisiMission.QuickResponseMinutes;
         // her iş takılı ve sabit bir modül ister (PreparationRules); boş kimlik hiçbir modülle eşleşmez ve çıkışı kilitler.
         // Kasa modülü yeni kayıtta zaten takılıdır; ip, sedye ve çanta (32 kg) 420 kg / 8 yuvaya sığar.
         job.requiredModule = "cargo";
